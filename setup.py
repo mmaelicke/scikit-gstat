@@ -1,0 +1,37 @@
+from setuptools import setup, find_packages
+
+
+def readme():
+    with open('README.rst') as f:
+        return f.read().strip()
+
+
+def version():
+    with open('VERSION') as f:
+        return f.read().strip()
+
+
+def requirements():
+    with open('requirements.txt') as f:
+        return f.read().strip().split('\n')
+
+
+def classifiers():
+    with open('classifiers.txt') as f:
+        return f.read().strip().split('\n')
+
+
+setup(name='scikit-gstat',
+      license=license(),
+      author='Mirko Maelicke',
+      author_email='mirko.maelicke@kit.edu',
+      description='Geostatistical expansion in the scipy style',
+      long_description=readme(),
+      classifiers=classifiers(),
+      install_requires=requirements(),
+      test_suite='nose.collector',
+      test_require=['nose'],
+      packages=find_packages(),
+      include_package_data=True,
+      zip_safe=False
+)
