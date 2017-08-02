@@ -9,7 +9,6 @@ from scikit-gstat import skgstat             # then skgstat.func-name
 """
 import numpy as np
 from scipy.spatial.distance import pdist as scipy_pdist, squareform
-# from numba import jit
 
 
 def point_dist(X, metric='euclidean', **kwargs):
@@ -37,7 +36,7 @@ def point_dist(X, metric='euclidean', **kwargs):
 
 def nd_dist(X, metric='euclidean'):
     """
-    Wrapper for the two jitted euclidean matrix functions.
+    Wrapper for the two euclidean matrix functions.
 
     The wrapper checks the dimensionality and chooses the correct matrix function.
     As for now, only euclidean distances are implemented. Others will follow.
@@ -65,7 +64,6 @@ def nd_dist(X, metric='euclidean'):
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean']" % str(metric))
 
 
-# @jit
 def _euclidean_dist2D(X):
     """
     Returns the upper triangle of the distance matrice for an array of 2D coordinates.
@@ -88,7 +86,6 @@ def _euclidean_dist2D(X):
 
 
 #_d = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
-# @jit
 def _d(p1, p2):
     s = 0.0
     for i in range(len(p1)):
@@ -98,7 +95,6 @@ def _d(p1, p2):
 pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 
 
-# @jit
 def _euclidean_distND(X):
     """
     Returns the upper triangle of the distance matrix for an array of N-dimensional coordinates.

@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from scipy import special
-# from numba import jit
+
 
 class Variogram_Wrapper:
     """
@@ -42,7 +42,6 @@ class Variogram_Wrapper:
 
 
 @Variogram_Wrapper
-# @jit
 def spherical(h, a, C0, b=0):
     """
     The Spherical variogram function.
@@ -65,7 +64,6 @@ def spherical(h, a, C0, b=0):
 
 
 @Variogram_Wrapper
-# @jit
 def exponential(h, a, C0, b=0):
     """
     The Exponential variogram function.
@@ -87,7 +85,6 @@ def exponential(h, a, C0, b=0):
         return b + C0
 
 @Variogram_Wrapper
-# @jit
 def gaussian(h, a, C0, b=0):
     """
     The Gaussian variogram function.
@@ -107,7 +104,6 @@ def gaussian(h, a, C0, b=0):
 
 
 @Variogram_Wrapper
-# @jit
 def cubic(h, a, C0, b=0):
     """
     The Cubic Variogram function
@@ -127,7 +123,6 @@ def cubic(h, a, C0, b=0):
 
 
 @Variogram_Wrapper
-# @jit
 def stable(h, a, C0, s, b=0):
     """
     The  Stable Variogram function.
@@ -136,6 +131,7 @@ def stable(h, a, C0, s, b=0):
     :param a:
     :param C0:
     :param s:
+    :param b:
     :return:
     """
     # prepare parameters
@@ -148,7 +144,6 @@ def stable(h, a, C0, s, b=0):
 
 
 @Variogram_Wrapper
-# @jit
 def matern(h, a, C0, s, b=0):
     """
     The Matérn model.
