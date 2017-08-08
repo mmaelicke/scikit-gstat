@@ -3,9 +3,9 @@ Variogram Klasse
 """
 
 from skgstat.distance import nd_dist
-from skgstat.binnig import binify_even_width, binify_even_bin, group_to_bin
+from skgstat.binning import binify_even_width, binify_even_bin, group_to_bin
 from skgstat.estimator import matheron, cressie, dowd, genton, minmax, entropy
-from skgstat.models import spherical, exponential, gaussian, cubic, stable, matheron
+from skgstat.models import spherical, exponential, gaussian, cubic, stable, matern
 import numpy as np
 from pandas import DataFrame
 import copy
