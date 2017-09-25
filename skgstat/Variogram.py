@@ -550,7 +550,7 @@ class Variogram(object):
             estimator=self._estimator.__name__,
             range=cof[0] * maxlag,
             sill=cof[1] * maxvar,
-            nugget=cof[-1] if self.use_nugget else 0
+            nugget=cof[-1] * maxvar if self.use_nugget else 0
         )
 
         # handle s parameters

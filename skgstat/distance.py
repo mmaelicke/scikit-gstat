@@ -63,23 +63,24 @@ def nd_dist(X, metric='euclidean'):
     else:
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean']" % str(metric))
 
-
+# if numba is installed uncommment
+# @jit
 def _euclidean_dist2D(X):
     """
-    Returns the upper triangle of the distance matrice for an array of 2D coordinates.
+    Returns the upper triangle of the distance matrix for an array of 2D coordinates.
 
     :param X: np.ndarray
-    :return: upper triangle of the distance matrice
+    :return: upper triangle of the distance matrix
     """
     n = len(X)                  # number of pairs
-    N = int((n**2 - n) / 2)     # dimension (n*n) - determinante ; half of it for upper triangle
+    N = int((n**2 - n) / 2)     # dimension (n*n) - diagonal; half of it for upper triangle
 
     # define the return array
     out = np.empty(N, dtype=np.float)
     lastindex = 0               # indexing through out
 
     for i in np.arange(n):
-        for j in np.arange(i + 1, n):       # skip determinante (j=i), use only upper (j > i)
+        for j in np.arange(i + 1, n):       # skip diagonal (j=i), use only upper (j > i)
             out[lastindex] = np.sqrt( (X[i][0] - X[j][0])**2 + (X[i][1] - X[j][1])**2 )
             lastindex += 1
     return out
@@ -94,21 +95,22 @@ def _d(p1, p2):
 
 pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 
-
+# if numba is installed uncommment
+# @jit
 def _euclidean_distND(X):
     """
     Returns the upper triangle of the distance matrix for an array of N-dimensional coordinates.
     """
 
     n = len(X)                  # number of pairs
-    N = int((n**2 - n) / 2)     # dimension (n*n) - determinante ; half of it for upper triangle
+    N = int((n**2 - n) / 2)     # dimension (n*n) - diagonal ; half of it for upper triangle
 
     # define the return array
     out = np.empty(N, dtype=np.float)
     lastindex = 0               # indexing through out
 
     for i in np.arange(n):
-        for j in np.arange(i + 1, n):       # skip determinante (j=i), use only upper (j > i)
+        for j in np.arange(i + 1, n):       # skip diagonal (j=i), use only upper (j > i)
             out[lastindex] = _d(X[i], X[j])
             lastindex += 1
     return out
