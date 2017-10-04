@@ -9,6 +9,8 @@ from scikit-gstat import skgstat             # then skgstat.func-name
 """
 import numpy as np
 from scipy.spatial.distance import pdist as scipy_pdist, squareform
+# if numba is installed uncomment
+# import numba
 
 
 def point_dist(X, metric='euclidean', **kwargs):
