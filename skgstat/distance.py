@@ -9,7 +9,6 @@ from scikit-gstat import skgstat             # then skgstat.func-name
 """
 import numpy as np
 from scipy.spatial.distance import pdist as scipy_pdist, squareform
-from numba import jit
 
 
 def point_dist(X, metric='euclidean', **kwargs):
@@ -63,44 +62,42 @@ def nd_dist(X, metric='euclidean'):
     else:
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean']" % str(metric))
 
-
-@jit
+# if numba is installed uncommment
+# @jit
 def _euclidean_dist2D(X):
     """
-    Returns the upper triangle of the distance matrice for an array of 2D coordinates.
+    Returns the upper triangle of the distance matrix for an array of 2D coordinates.
 
     :param X: np.ndarray of the x, y coordinates
     :return: upper triangle of the distance matrice
+    :param X: np.ndarray
+    :return: upper triangle of the distance matrix
     """
     n = len(X)                  # number of pairs
-    N = int((n**2 - n) / 2)     # dimension (n*n) - determinante ; half of it for upper triangle
+    N = int((n**2 - n) / 2)     # dimension (n*n) - diagonal; half of it for upper triangle
 
     # define the return array
     out = np.empty(N, dtype=np.float)
     lastindex = 0               # indexing through out
 
     for i in np.arange(n):
-        for j in np.arange(i + 1, n):  # skip determinante (j = i), use only upper (j > i)
-            out[lastindex] = np.sqrt((X[i][0] - X[j][0]) ** 2 + (X[i][1] - X[j][1]) ** 2)
+        for j in np.arange(i + 1, n):       # skip diagonal (j=i), use only upper (j > i)
+            out[lastindex] = np.sqrt( (X[i][0] - X[j][0])**2 + (X[i][1] - X[j][1])**2 )
             lastindex += 1
     return out
 
 
-@jit
-# d = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
+#_d = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 def _d(p1, p2):
     s = 0.0
     for i in range(len(p1)):
         s += (p1[i] - p2[i])**2
     return np.sqrt(s)
 
+pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 
-@jit
-def pyd(p1, p2):
-    return np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
-
-
-@jit
+# if numba is installed uncommment
+# @jit
 def _euclidean_distND(X):
     """
     Returns the upper triangle of the distance matrix for an array of N-dimensional coordinates.
@@ -109,14 +106,14 @@ def _euclidean_distND(X):
     """
 
     n = len(X)                  # number of pairs
-    N = int((n**2 - n) / 2)     # dimension (n*n) - determinante ; half of it for upper triangle
+    N = int((n**2 - n) / 2)     # dimension (n*n) - diagonal ; half of it for upper triangle
 
     # define the return array
     out = np.empty(N, dtype=np.float)
     lastindex = 0               # indexing through out
 
     for i in np.arange(n):
-        for j in np.arange(i + 1, n):       # skip determinante (j=i), use only upper (j > i)
+        for j in np.arange(i + 1, n):       # skip diagonal (j=i), use only upper (j > i)
             out[lastindex] = _d(X[i], X[j])
             lastindex += 1
     return out
