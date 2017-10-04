@@ -3,28 +3,28 @@ Common distance functions for calculating the distance between two geometries, o
 of geometries are collected here. Most functions wrap either scipy.spatial.distance or shapely funcitonality
 these functions accept numpy.matrix/numpy.ndarray objects and can be imported like:
 
-import scikit-gstat                          # then scikit-gstat.func-name
+import skgstat.                              # then skgstat.func-name
 from scikit-gstat import skgstat             # then skgstat.func-name
 
 """
 import numpy as np
 from scipy.spatial.distance import pdist as scipy_pdist, squareform
+from numba import jit
 
 
 def point_dist(X, metric='euclidean', **kwargs):
     """
     Wrapper for scipy.spatial.distance.pdist function.
-
     Returns a distance matrix in squareform for a 1D array of x, y coordinates
 
     :param X: 1D array of x, y coordinates
     :param metric: will be passed to scipy_pdist
             As for now, only euclidean distances are implemented. Others will follow.
     :param kwargs: will be passes to scipy_pdist
-    :return:
+    :return: distance matrix of the given coordinates
     """
     # check X
-    _X = list(X)
+    _X = list(X)  # TODO replace with np.array?
 
     # check that all elements in the index have exactly a x and y coordinate
     if any([not len(e) == 2 for e in _X]):
@@ -41,8 +41,8 @@ def nd_dist(X, metric='euclidean'):
     The wrapper checks the dimensionality and chooses the correct matrix function.
     As for now, only euclidean distances are implemented. Others will follow.
 
-    :param X:
-    :return:
+    :param X: 1D array of x, y coordinates
+    :return: distance matrix of the given coordinates
     """
 
     _X = np.array(X)
@@ -64,11 +64,12 @@ def nd_dist(X, metric='euclidean'):
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean']" % str(metric))
 
 
+@jit
 def _euclidean_dist2D(X):
     """
     Returns the upper triangle of the distance matrice for an array of 2D coordinates.
 
-    :param X: np.ndarray
+    :param X: np.ndarray of the x, y coordinates
     :return: upper triangle of the distance matrice
     """
     n = len(X)                  # number of pairs
@@ -79,25 +80,32 @@ def _euclidean_dist2D(X):
     lastindex = 0               # indexing through out
 
     for i in np.arange(n):
-        for j in np.arange(i + 1, n):       # skip determinante (j=i), use only upper (j > i)
-            out[lastindex] = np.sqrt( (X[i][0] - X[j][0])**2 + (X[i][1] - X[j][1])**2 )
+        for j in np.arange(i + 1, n):  # skip determinante (j = i), use only upper (j > i)
+            out[lastindex] = np.sqrt((X[i][0] - X[j][0]) ** 2 + (X[i][1] - X[j][1]) ** 2)
             lastindex += 1
     return out
 
 
-#_d = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
+@jit
+# d = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 def _d(p1, p2):
     s = 0.0
     for i in range(len(p1)):
         s += (p1[i] - p2[i])**2
     return np.sqrt(s)
 
-pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
+
+@jit
+def pyd(p1, p2):
+    return np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 
 
+@jit
 def _euclidean_distND(X):
     """
     Returns the upper triangle of the distance matrix for an array of N-dimensional coordinates.
+    :param X: np.array of n-dimensional coordinates
+    :return: upper triangle of the distance matrix
     """
 
     n = len(X)                  # number of pairs

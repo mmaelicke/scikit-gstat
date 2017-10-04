@@ -15,17 +15,17 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
 
     :param X: 1D array of x, y coordinates.
     :param N: int with the number of bins
-    :param w: width of the bins
+    :param w: integer or float with width of the bins
     :param dm: numpy.ndarray with the distance matrix
     :param maxlag: maximum lag for the binning
     :param kwargs: will be passed to calculate the point_matrix if no dm is given
     :return: distance matrix
     """
 
-    _X = list(X)
+    _X = list(X)  # TODO replace with numpy array?
     # check that all elements in the index have exactly a x and y coordinate
-    if any([not len(e) == 2 for e in _X]):
-        raise ValueError('The passed point data does not have a x and y coordinate for each point.')
+    if len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+        raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
     if dm is None:
@@ -57,8 +57,8 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
             print('Warning! w = %d is ignored because N is already given' % w)
         w = maxval / N
 
-    # binubound = np.cumsum(np.ones(N) * w)
-    binubound = np.linspace(w, N * w, N)
+    # TODO replace with: binubound = np.linspace(w, N * w, N)
+    binubound = np.cumsum(np.ones(N) * w)
 
     # set the last bound to the actual maxval
     binubound[-1] = np.max(_dm)
@@ -68,7 +68,7 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
 
     # set all bins except the first and last one
     for i in range(1, N - 1):
-        bm[ (_dm > binubound[i - 1]) & (_dm <= binubound[i])] = i
+        bm[(_dm > binubound[i - 1]) & (_dm <= binubound[i])] = i
 
     # set the first bin
     bm[_dm < binubound[0]] = 0
@@ -99,11 +99,11 @@ def binify_even_bin(X, N=10, dm=None, maxlag=None, **kwargs):
     :return:
     """
 
-    _X = list(X)
+    _X = list(X)  # TODO replace with array?
 
     # check that all elements in the index have exactly a x and y coordinate
-    if any([not len(e) == 2 for e in _X]):
-        raise ValueError('The passed point data does not have a x and y coordinate for each point.')
+    if len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+        raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
     if dm is None:
@@ -119,7 +119,7 @@ def binify_even_bin(X, N=10, dm=None, maxlag=None, **kwargs):
 
     # set all bins except the first one
     for i in range(1, N):
-        bm[ (_dm > binubound[i - 1]) & (_dm <= binubound[i]) ] = i
+        bm[(_dm > binubound[i - 1]) & (_dm <= binubound[i])] = i
 
     # set the first bin
     bm[_dm < binubound[0]] = 0
@@ -140,13 +140,13 @@ def group_to_bin(values, bm=None, X=None, azimuth_deg=None, tolerance=22.5, maxl
     will be grouped into the bin. Otherwise they will be ignored.
 
     :param values: np.array with the values at the coordinates X
-    :param bm:
-    :param X:
-    :param azimuth_deg:
-    :param tolerance:
-    :param maxlag:
-    :param kwargs:
-    :return:
+    :param bm: binning matrix of the given values
+    :param X: 1d np.array with x and y coordinates of the given values
+    :param azimuth_deg: int or float with the azimuth degree if a directional Variogram is given
+    :param tolerance: int or float with the tolerance for the directional Variogram
+    :param maxlag: int or float with the maximum lag for the binning
+    :param kwargs: kwargs which will be passed to binify_even_bin
+    :return: list of lists including the values in every bin
     """
     # check if the input was 2D (that means, for each pair, more than one observation is used)
 #    if np.array(values).ndim == 2:
@@ -186,7 +186,7 @@ def group_to_bin(values, bm=None, X=None, azimuth_deg=None, tolerance=22.5, maxl
         raise ValueError('The values are not of same length as the bm axes.')
 
     # result container
-    bin_grp = list([list() for _ in range(np.max(_bm) + 1)])
+    bin_grp = list([list() for _ in range(np.max(_bm) + 1)])  # TODO bin grp doesn't work with np.arrays
 
     if azimuth_deg is not None:
         dir_m = direction(X=X)
@@ -226,6 +226,7 @@ def direction(X):
     # distance
     d = lambda p1,p2: np.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
     # direction-angle clockwise with Y-Axis set to 0 deg.
+
     def d_(p1, p2):
         x = (p2[0] - p1[0], p2[1] - p1[1])
         rad = np.arctan2(*x[::-1])
@@ -244,7 +245,6 @@ def direction(X):
 
     # return
     return m
-
 
 
 def _in_bounds(alpha, lo, up):
