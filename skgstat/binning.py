@@ -23,8 +23,9 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
     """
 
     _X = list(X)  # TODO replace with numpy array?
-    # check that all elements in the index have exactly a x and y coordinate
-    if len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+    # check that all elements in the index have exactly a x and y coordinate or are n dimensional
+
+    if not len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
         raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
@@ -101,8 +102,8 @@ def binify_even_bin(X, N=10, dm=None, maxlag=None, **kwargs):
 
     _X = list(X)  # TODO replace with array?
 
-    # check that all elements in the index have exactly a x and y coordinate
-    if len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+    # check that all elements in the index have exactly a x and y coordinate or are n dimensional
+    if not len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
         raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
