@@ -10,7 +10,7 @@ from scikit-gstat import skgstat             # then skgstat.func-name
 import numpy as np
 from scipy.spatial.distance import pdist as scipy_pdist, squareform
 # if numba is installed uncomment
-from numba import jit
+# from numba import jit
 
 
 def point_dist(X, metric='euclidean', **kwargs):
@@ -25,7 +25,7 @@ def point_dist(X, metric='euclidean', **kwargs):
     :return: distance matrix of the given coordinates
     """
     # check X
-    _X = list(X)  # TODO replace with np.array?
+    _X = list(X)
 
     # check that all elements in the index have exactly a x and y coordinate
     if any([not len(e) == 2 for e in _X]):
@@ -53,8 +53,8 @@ def nd_dist(X, metric='euclidean'):
         # check dimensionality of elements
         if all([len(e) == 2 for e in _X]):
             return np.matrix(squareform(_euclidean_dist2D(_X)))
-        # check if all coordinates have the same dimension and the dimension is not 0 or 1
-        elif len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+        # check if all coordinates have the same dimension
+        elif len(set([len(e) for e in _X])) == 1:
             # N-Dimensional
             return np.matrix(squareform(_euclidean_distND(_X)))
         else:
@@ -64,8 +64,9 @@ def nd_dist(X, metric='euclidean'):
     else:
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean']" % str(metric))
 
+
 # if numba is installed uncommment
-@jit
+#@jit
 def _euclidean_dist2D(X):
     """
     Returns the upper triangle of the distance matrix for an array of 2D coordinates.
@@ -98,8 +99,9 @@ def _d(p1, p2):
 
 pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
 
+
 # if numba is installed uncommment
-@jit
+#@jit
 def _euclidean_distND(X):
     """
     Returns the upper triangle of the distance matrix for an array of N-dimensional coordinates.

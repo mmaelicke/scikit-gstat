@@ -22,10 +22,10 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
     :return: distance matrix
     """
 
-    _X = list(X)  # TODO replace with numpy array?
+    _X = list(X)
     # check that all elements in the index have exactly a x and y coordinate or are n dimensional
 
-    if not len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+    if not len(set([len(e) for e in _X])) == 1:
         raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
@@ -50,15 +50,12 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
     if N is None:
         N = int(maxval / w)
 
-    # TODO if the user gives w only, it is ignored because the default value for N is 10
-
     # If N is given, calculate w from
     else:
         if w is not None:
             print('Warning! w = %d is ignored because N is already given' % w)
         w = maxval / N
 
-    # TODO replace with: binubound = np.linspace(w, N * w, N)
     binubound = np.cumsum(np.ones(N) * w)
 
     # set the last bound to the actual maxval
@@ -100,10 +97,10 @@ def binify_even_bin(X, N=10, dm=None, maxlag=None, **kwargs):
     :return:
     """
 
-    _X = list(X)  # TODO replace with array?
+    _X = list(X)
 
     # check that all elements in the index have exactly a x and y coordinate or are n dimensional
-    if not len(set([len(e) for e in _X])) and any(_ not in set([len(e) for e in _X]) for _ in (0, 1)):
+    if not len(set([len(e) for e in _X])) == 1:
         raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
@@ -187,7 +184,7 @@ def group_to_bin(values, bm=None, X=None, azimuth_deg=None, tolerance=22.5, maxl
         raise ValueError('The values are not of same length as the bm axes.')
 
     # result container
-    bin_grp = list([list() for _ in range(np.max(_bm) + 1)])  # TODO bin grp doesn't work with np.arrays
+    bin_grp = list([list() for _ in range(np.max(_bm) + 1)])
 
     if azimuth_deg is not None:
         dir_m = direction(X=X)
