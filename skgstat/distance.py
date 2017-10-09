@@ -11,6 +11,7 @@ import numpy as np
 from scipy.spatial.distance import pdist as scipy_pdist, squareform
 # if numba is installed uncomment
 # from numba import jit
+from scipy.stats import rankdata
 
 
 def point_dist(X, metric='euclidean', **kwargs):
@@ -27,20 +28,31 @@ def point_dist(X, metric='euclidean', **kwargs):
     # check X
     _X = list(X)
 
-    # check that all elements in the index have exactly a x and y coordinate
-    if any([not len(e) == 2 for e in _X]):
-        raise ValueError('The passed point data does not have a x and y coordinate for each point.')
+    # switch metric
+    if metric.lower() == 'euclidean':
+        # check that all elements in the index have exactly a x and y coordinate
+        if any([not len(e) == 2 for e in _X]):
+            raise ValueError('The passed point data does not have a x and y coordinate for each point.')
 
-    # data seems to be ok, return the distance matrix in squareform
-    return np.matrix(squareform(scipy_pdist(_X, metric=metric, **kwargs)))
+        # data seems to be ok, return the distance matrix in squareform
+        return np.matrix(squareform(scipy_pdist(_X, metric=metric, **kwargs)))
+
+    elif metric.lower() == 'rank':
+        return np.matrix(rankdata(point_dist(X, metric='euclidean')))
+
+    # this metric is not known
+    else:
+        raise ValueError("The metric '%s' is not known. Use one of: ['euclidean', 'rank']" % str(metric))
+
 
 
 def nd_dist(X, metric='euclidean'):
     """
-    Wrapper for the two euclidean matrix functions.
+    Wrapper for the different distance functions.
 
     The wrapper checks the dimensionality and chooses the correct matrix function.
-    As for now, only euclidean distances are implemented. Others will follow.
+    In case the metric is 'rank', the result of metric='euclidean' (either 2 or N dimensional) will be ranked using
+    scipy.stats.rankdata function.
 
     :param X: 1D array of x, y coordinates
     :return: distance matrix of the given coordinates
@@ -60,10 +72,12 @@ def nd_dist(X, metric='euclidean'):
         else:
             raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
+    elif metric.lower() == 'rank':
+        return np.matrix(rankdata(nd_dist(X, metric='euclidean')))
+
     # this metric is not known
     else:
-        raise ValueError("The metric '%s' is not known. Use one of: ['euclidean']" % str(metric))
-
+        raise ValueError("The metric '%s' is not known. Use one of: ['euclidean', 'rank']" % str(metric))
 
 # if numba is installed uncommment
 #@jit
@@ -98,7 +112,6 @@ def _d(p1, p2):
     return np.sqrt(s)
 
 pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
-
 
 # if numba is installed uncommment
 #@jit
