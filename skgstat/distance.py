@@ -45,7 +45,6 @@ def point_dist(X, metric='euclidean', **kwargs):
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean', 'rank']" % str(metric))
 
 
-
 def nd_dist(X, metric='euclidean'):
     """
     Wrapper for the different distance functions.
@@ -78,6 +77,7 @@ def nd_dist(X, metric='euclidean'):
     # this metric is not known
     else:
         raise ValueError("The metric '%s' is not known. Use one of: ['euclidean', 'rank']" % str(metric))
+
 
 # if numba is installed uncommment
 #@jit
@@ -112,6 +112,7 @@ def _d(p1, p2):
     return np.sqrt(s)
 
 pyd = lambda p1, p2: np.sqrt(np.sum([np.diff(tup)**2 for tup in zip(p1, p2)]))
+
 
 # if numba is installed uncommment
 #@jit
