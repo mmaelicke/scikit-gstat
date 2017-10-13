@@ -3,7 +3,7 @@ Common distance functions for calculating the distance between two geometries, o
 of geometries are collected here. Most functions wrap either scipy.spatial.distance or shapely funcitonality
 these functions accept numpy.matrix/numpy.ndarray objects and can be imported like:
 
-import skgstat.                              # then skgstat.func-name
+import skgstat                               # then skgstat.func-name
 from scikit-gstat import skgstat             # then skgstat.func-name
 
 """
@@ -64,8 +64,8 @@ def nd_dist(X, metric='euclidean'):
         # check dimensionality of elements
         if all([len(e) == 2 for e in _X]):
             return np.matrix(squareform(_euclidean_dist2D(_X)))
-        # check if all coordinates have the same dimension
-        elif len(set([len(e) for e in _X])) == 1:
+        # check if all coordinates have the same dimension and the array is not empty
+        elif len(set([len(e) for e in _X])) == 1 and len(_X[0]) != 0:
             # N-Dimensional
             return np.matrix(squareform(_euclidean_distND(_X)))
         else:

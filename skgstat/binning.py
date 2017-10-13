@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 from scipy.stats.mstats import mquantiles
-from .distance import nd_dist, point_dist
+from .distance import nd_dist
 
 
 def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
@@ -13,7 +13,7 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
     For the bins, either N or w has to be given. N specifies the number of bins and w their width.
     If both are given, N bins of width w will be specified, which might result in unexpected results.
 
-    :param X: 1D array of x, y coordinates.
+    :param X: np.array of x, y coordinates.
     :param N: int with the number of bins
     :param w: integer or float with width of the bins
     :param dm: numpy.ndarray with the distance matrix
@@ -23,9 +23,9 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
     """
 
     _X = list(X)
-    # check that all elements in the index have exactly a x and y coordinate or are n dimensional
 
-    if not len(set([len(e) for e in _X])) == 1:
+    # check that all coordinates in the list have the same dimension and are not empty
+    if not len(set([len(e) for e in _X])) == 1 or len(_X[0]) == 0:
         raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
@@ -56,7 +56,7 @@ def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
             print('Warning! w = %d is ignored because N is already given' % w)
         w = maxval / N
 
-    binubound = np.cumsum(np.ones(N) * w)
+    binubound = np.linspace(w, N * w, N)
 
     # set the last bound to the actual maxval
     binubound[-1] = np.max(_dm)
@@ -89,7 +89,7 @@ def binify_even_bin(X, N=10, dm=None, maxlag=None, **kwargs):
     For the bins, either N or w has to be given. N specifies the number of bins and w their width. If both are given,
     N bins of width w will be specified, which might result in unexpected results.
 
-    :param X: 1D array of x, y coordinates.
+    :param X: np.array of x, y coordinates.
     :param N: int with the number of bins
     :param dm: numpy.ndarray with the distance matrix
     :param maxlag: maximum lag for the binning
@@ -99,8 +99,8 @@ def binify_even_bin(X, N=10, dm=None, maxlag=None, **kwargs):
 
     _X = list(X)
 
-    # check that all elements in the index have exactly a x and y coordinate or are n dimensional
-    if not len(set([len(e) for e in _X])) == 1:
+    # check that all coordinates in the list have the same dimension and are not empty
+    if not len(set([len(e) for e in _X])) == 1 or len(_X[0]) == 0:
         raise ValueError("One or more Coordinates are missing.\nPlease provide the coordinates for all values ")
 
     # get the distance matrix
