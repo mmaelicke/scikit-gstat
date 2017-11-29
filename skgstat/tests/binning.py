@@ -612,6 +612,7 @@ class TestBinning(unittest.TestCase):
         """
 
         self.assertTrue(_in_bounds(50, 40, 10))
+        self.assertFalse(_in_bounds(50, 10, 40))
 
 
 

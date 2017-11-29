@@ -1,0 +1,10 @@
+Just a few thoughts, how I want to expand this module:
+
+The fitting has to be reworked / rewritten.
+I want a least square and a maximum likelihood optimization. Both need a variation, where the first bins
+(like the first 40%) get a higher weight. The weights can be set by the user. This should be possible by
+using only scipy.optimize and get rid of this 'pec' option nosense.
+
+The location_trend plots can be used to identfy trends in location. This could also be automated.
+A function would fit a regression to each coordinate dimension and if the errors drop under a specified threshold
+(the fitting is good enough), the regression parameter can be used to perform a trend removal. Just a idea.

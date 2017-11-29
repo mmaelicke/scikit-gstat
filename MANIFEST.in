@@ -3,3 +3,4 @@ include LICENSE
 include requirements.txt
 include VERSION
 include classifiers.txt
+include TODO

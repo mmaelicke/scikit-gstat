@@ -211,7 +211,8 @@ class Variogram(object):
 
     def set_dm(self, dm=None, **kwargs):
         """
-        calculates the distance matrix if needed and sets it as attribute self._dm
+        calculates the distance matrix if needed and sets it as a static attribute self._dm.
+
         """
         # update kwargs
         self._dm_kwargs.update(kwargs)
@@ -226,8 +227,12 @@ class Variogram(object):
     @property
     def dm(self):
         """
+        Return the distance matrix, this variogram instance is using.
+        In case a static distance matrix self._dm was set before, this will be returned.
+        Otherwise a distance matrix will be calculated using the function self.dm_func along with the
+        keyword arguments self._dm_kwargs.
 
-        :return:
+        :return: distance matrix, like returned by :func:`scipy.spatial.squareform`
         """
         if hasattr(self, '_dm'):
             return self._dm
@@ -237,6 +242,9 @@ class Variogram(object):
 
     def set_bm(self, bm=None, maxlag=None, **kwargs):
         """
+        Calculate a static binning matrix on the basis of the distance matrix self.dm. Will be set as
+        attribute self._bm.
+        Whenever a new binning matrix is set, the self.bin_widths attribute gets updated.
 
         :return:
         """
@@ -260,8 +268,14 @@ class Variogram(object):
     @property
     def bm(self):
         """
+        Return the binning matrix, this variogram instance is using.
+        In case a static binning matrix self._bm was set before, this will be returned.
+        Otherwise a binning matrix will be calculated using the function self.bm_func along with the
+        keyword arguments self._bm_kwargs.
+        The binning matrix will assign for each point pair the corresponding bin. By setting a custom
+        bin matrix unsing Variogram.set_bm, you can also implement non-regular bins.
 
-        :return:
+        :return: binning matrix in the style of :func:`scipy.spatial.squareform`
         """
         if hasattr(self, '_bm'):
             return self._bm
@@ -322,6 +336,8 @@ class Variogram(object):
         the theoretical function a, C0, b can be given as kwargs. If the Variogram uses a custom model, the parameters
         might have other names.
         The parameter set with best fit will be returned.
+
+        THIS STUFF NEEDS A COMPLETE REWORK
 
         :return:
         """
@@ -761,10 +777,47 @@ class Variogram(object):
 
         return fig
 
+    def location_trend(self, axes=None):
+        """
+        Plot the values over each dimension in the coordinates as a scatter plot.
+        These plots can be used to identify a correlation between the value of an observation
+        and its location. If this is the case, it would violate the fundamental geostatistical
+        assumption, that a oberservation is independed of its observation
+
+        :param axes: list of `matplotlib.AxesSubplots`. The len has to match the dimensionality
+                        of the coordiantes.
+
+        :return:
+        """
+        N = len(self._X[0])
+        if axes is None:
+            # derive the needed amount of col and row
+            nrow = int(round(np.sqrt(N)))
+            ncol = int(np.ceil(N / nrow))
+            fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 6 ,nrow * 6))
+        else:
+            if not len(axes) == N:
+                raise ValueError('The amount of passed axes does not fit the coordinate dimensionality of %d' % N)
+            fig = axes[0].get_figure()
+
+        for i in range(N):
+            axes.flatten()[i].plot([_[i] for _ in self._X], self.values, '.r')
+            axes.flatten()[i].set_xlabel('%d-dimension' % (i + 1))
+            axes.flatten()[i].set_ylabel('value')
+
+        # plot the figure and return it
+        plt.tight_layout()
+        fig.show()
+
+        return fig
+
+
+
 
     ## ----- implementing some Python functions ---- ##
     def __repr__(self):
         """
+        Textual representation of this Variogram instance.
 
         :return:
         """
@@ -777,6 +830,8 @@ class Variogram(object):
 
     def __str__(self):
         """
+        Descriptive respresentation of this Variogram instance that shall give the main variogram
+        parameters in a print statement.
 
         :return:
         """
