@@ -149,6 +149,25 @@ def minmax(X):
     return (np.nanmax(_X) - np.nanmin(_X)) / np.nanmean(_X)
 
 
+def percentile(X, p=50):
+    """
+    Returns the wanted percentile of sample X.
+
+    :param X: np.ndarray with the given sample to calculate the Semivariance from
+    :param p: float with the percentile of sample X
+    :return:
+    """
+    _X = np.asarray(X)
+
+    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
+        return [percentile(_) for _ in _X]
+
+    # check even
+    if len(_X) % 2 > 0:
+        raise ValueError('The sample does not have an even length: {}'.format(_X))
+
+    return np.percentile(_X, q=p)
+
 
 def entropy(X):
     """

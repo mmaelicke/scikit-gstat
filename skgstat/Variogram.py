@@ -40,7 +40,7 @@ class Variogram(object):
         :param dm_func: function which is used to calculate the distance matrix
         :param bm_func: function which is used to calculate the binning matrix
         :param estimator: estimator can be a function or a string identifying a standard estimator
-               Supported are 'matheron', 'cressie', 'dowd' or 'genton'
+               Supported are 'matheron', 'cressie', 'dowd' 'minmax' or 'genton'
         :param model: string or callable with the theoretical variogram function
         :param dm: numpy array with the distance matrix of the given sample
         :param bm: numpy array with the binning matrix of the given sample
