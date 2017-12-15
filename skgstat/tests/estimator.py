@@ -7,7 +7,7 @@ Test different Parameter Combinations
 import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from skgstat.estimator import matheron, cressie, dowd, genton, minmax, entropy
+from skgstat.estimator import matheron, cressie, dowd, genton, minmax, percentile, entropy
 
 # result arrays
 
@@ -25,6 +25,10 @@ result_genton = np.array([2.46198050e+02, 2.46198050e+02, 2.46198050e+04,
 
 result_minmax = [2.0, 0.0, 2.0, 2.0]
 
+result_minmax = [2.0, 0.0, 2.0, 2.0]
+
+result_percentile = [4.5, 5.0, 45.0, 450.0]
+
 result_entropy = np.array([0., 0., 0., 0.])
 
 
@@ -35,7 +39,7 @@ class TestEstimator(unittest.TestCase):
         """
 
         self.grouped = [list(np.arange(10)), [5] * 10, list(np.arange(0, 100, 10)),
-                                  list(np.arange(0, 1000, 100))]
+                        list(np.arange(0, 1000, 100))]
 
     def test_matheron(self):
         """
@@ -73,6 +77,12 @@ class TestEstimator(unittest.TestCase):
 
         assert_array_almost_equal(minmax(self.grouped), result_minmax)
 
+    def test_percentile(self):
+        """
+        Testing percentile estimator
+        """
+
+        assert_array_almost_equal(percentile(self.grouped), result_percentile)
 
     def test_entropy(self):
         """
