@@ -3,6 +3,3 @@ from .distance import nd_dist
 from .Variogram import Variogram
 from .optimize import VariogramFitter
 from .estimator import matheron, cressie, dowd, genton, minmax, percentile
-
-# from .DirectionalVariogram import DirectionalVariogram
-# from .OrdinaryKriging import OrdinaryKriging

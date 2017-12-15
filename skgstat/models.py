@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from scipy import special
-# from numba import jit
+
 
 class Variogram_Wrapper:
     """
@@ -42,10 +42,16 @@ class Variogram_Wrapper:
 
 
 @Variogram_Wrapper
+# if numba is installed uncommment
 # @jit
 def spherical(h, a, C0, b=0):
     """
     The Spherical variogram function.
+
+    For the function definition see:
+    Burgess, T. M., & Webster, R. (1980). Optimal interpolation and isarithmic mapping of soil properties. I.
+        The semi-variogram and punctual kriging. Journal of Soil and Science, 31(2), 315–331, 7 figs, 1 table, 27 refs.
+        http://doi.org/10.1111/j.1365-2389.1980.tb02084.x
 
     :param h:   the separation lag
     :param a:   the range parameter (not effective range!)
@@ -65,7 +71,6 @@ def spherical(h, a, C0, b=0):
 
 
 @Variogram_Wrapper
-# @jit
 def exponential(h, a, C0, b=0):
     """
     The Exponential variogram function.
@@ -87,6 +92,7 @@ def exponential(h, a, C0, b=0):
         return b + C0
 
 @Variogram_Wrapper
+# if numba is installed uncommment
 # @jit
 def gaussian(h, a, C0, b=0):
     """
@@ -107,6 +113,7 @@ def gaussian(h, a, C0, b=0):
 
 
 @Variogram_Wrapper
+# if numba is installed uncommment
 # @jit
 def cubic(h, a, C0, b=0):
     """
@@ -127,6 +134,7 @@ def cubic(h, a, C0, b=0):
 
 
 @Variogram_Wrapper
+# if numba is installed uncommment
 # @jit
 def stable(h, a, C0, s, b=0):
     """
@@ -136,6 +144,7 @@ def stable(h, a, C0, s, b=0):
     :param a:
     :param C0:
     :param s:
+    :param b:
     :return:
     """
     # prepare parameters
@@ -148,10 +157,15 @@ def stable(h, a, C0, s, b=0):
 
 
 @Variogram_Wrapper
+# if numba is installed uncommment
 # @jit
 def matern(h, a, C0, s, b=0):
     """
     The Matérn model.
+
+    For Matérn function see:
+    Minasny, B., & McBratney, A. B. (2005). The Matérn function as a general model for soil variograms.
+        Geoderma, 128(3–4 SPEC. ISS.), 192–207. http://doi.org/10.1016/j.geoderma.2005.04.003.
 
     :param h:   lag
     :param a:   range
