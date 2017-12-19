@@ -169,23 +169,41 @@ def percentile(X, p=50):
     return np.percentile(_X, q=p)
 
 
-def entropy(X):
+def entropy(X, bins=None):
     """
-    Use the Shannon Entropy H to describe the distribution of the given sample
+    Use the Shannon Entropy H to describe the distribution of the given sample.
+    For calculating the Shannon Entropy, the bin edges are needed and can be passed as pk.
+    If pk is None, these edges will be calculated using the numpy.histogram function with bins='fq'.
+    This uses Freedman Diacons Estimator and is fairly resilient to outliers.
+    If the input data X is 2D (Entropy for more than one bin needed), it will derive the histogram once and
+    use the same edges in all bins.
+    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.4
 
-    :param X:
+    :param X:  np.ndarray with the given sample to calculate the Shannon entropy from
+    :param bins: The bin edges for entropy calculation, or an amount of even spaced bins
     :return:
     """
     _X = np.array(X)
 
     if any([isinstance(_, (list, np.ndarray)) for _ in _X]):
-        return np.array([entropy(_) for _ in _X])
+        # if bins is not set, use the histogram over the full value range
+        if bins is None:
+            # could not fiugre out a better way here. I need the values before calculating the entropy
+            # in order to use the full value range in all bins
+            vals = [[np.abs(_[i] - _[i + 1]) for i in np.arange(0, len(_), 2)] for _ in _X]
+            bins = np.histogram(vals, bins=15)[1][1:]
+        return np.array([entropy(_, bins=bins) for _ in _X])
 
     # check even
     if len(_X) % 2 > 0:
         raise ValueError('The sample does not have an even length: {}'.format(_X))
 
-    # calculate
+    # calculate the values
     vals = [np.abs(_X[i] - _X[i + 1]) for i in np.arange(0, len(_X), 2)]
 
-    return scipy_entropy(pk=np.histogram(vals, bins='fd')[0])
+    # claculate the bins
+    if bins is None:
+        bins = 15
+    pk = np.histogram(vals, bins)[0]
+
+    return scipy_entropy(pk=pk)
