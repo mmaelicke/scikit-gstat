@@ -22,7 +22,7 @@ def classifiers():
 
 
 setup(name='scikit-gstat',
-      license=license(),
+      license='MIT License',
       version=version(),
       author='Mirko Maelicke',
       author_email='mirko.maelicke@kit.edu',
