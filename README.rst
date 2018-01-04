@@ -1,18 +1,21 @@
 Scikit-Gstat
 ============
 
-This module offers at the current state a scipy-styled `Variogram` class for performing geostatistical analysis.
-This class is can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
+Info: scikit-gstat needs Python >= 3.5!
+
+At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
+This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
 variogram functions. The module is planned to be hold in the manner of scikit modules and be based upon `numpy` and
 `scipy` whenever possible. There is also a distance matrix extension available, with a function for calculating
-n.dimensional distance matrices for the variogram.
+n-dimensional distance matrices for the variogram.
 The estimators include:
 
 - matheron
 - cressie
 - dowd
 - genton (still buggy)
-- entropy (not tested)
+- entropy
+- bin quantiles
 
 The models include:
 
@@ -28,7 +31,7 @@ therefore you can just download it and include the `@jit` decorator. This can sp
 data sets up to 100x. Nevertheless, this is not included in this sckit-gstat version as these functions might be
 re-implemented using Cython. This is still under evaluation.
 
-At the current stage, the package does not inlcude any kriging. This is planned for a future release.
+At the current stage, the package does not include any kriging. This is planned for a future release.
 
 
 Installation
