@@ -32,7 +32,7 @@ class Variogram(object):
     def __init__(self, coordinates=None, values=None, dm_func=nd_dist, bm_func=binify_even_width,
                  estimator=matheron, model=spherical, dm=None, bm=None, normalize=True, fit_method='lm',
                  pec_punish=1.0, is_directional=False, azimuth=0, tolerance=45.0, use_nugget=False, maxlag=None,
-                 N=None, verbose=False):
+                 N=None, verbose=False, harmonize=False):
         """
 
         :param coordinates: numpy array or list with the coordinates of the sample as tuples
@@ -56,6 +56,7 @@ class Variogram(object):
         :param maxlag:
         :param N: number of bins
         :param verbose:
+        :param harmonize: bool, if True, the experimental variogram will be harmonized.
         """
 
         # Set coordinates and values
@@ -92,6 +93,9 @@ class Variogram(object):
 
         # specify if the lag should be given absolute or relative to the maxlag
         self.normalized = normalize
+
+        # specify if the experimental variogram shall be harmonized
+        self.harmonize = harmonize
 
         # set the fitting method and model quality measure
         self.fit_method = fit_method
@@ -306,6 +310,20 @@ class Variogram(object):
     @property
     def experimental(self):
         """
+        Return the experimental variogram.
+        If :param harmonize: is True, it will return self.isotonic, instead of self.experimental.
+
+        :return: np.array, the isotonic or non-isotonic experimental varigram
+        """
+        if self.harmonize:
+            return self.isotonic
+        else:
+            return self._experimental
+
+
+    @property
+    def _experimental(self):
+        """
         :return: experimental variogram as a numpy.ndarray.
         """
         # group the values to bins and apply the estimator
@@ -313,6 +331,33 @@ class Variogram(object):
 
         # apply
         return np.array(self._estimator(_g))
+
+    @property
+    def isotonic(self):
+        """
+        Return the isotonic harmonized experimental variogram.
+        This means, the experimental variogram is monotonic after harmonization.
+
+        The harmonization is done using PAVA algorithm:
+
+        Barlow, R., D. Bartholomew, et al. (1972): Statistical Interference Under Order Restrictions.
+            John Wiley and Sons, New York.
+        Hiterding, A. (2003): Entwicklung hybrider Interpolationsverfahren für den automatisierten Betrieb am
+            Beispiel meteorologischer Größen. Dissertation, Institut für Geoinformatik, Westphälische
+            Wilhelms-Universität Münster, IfGIprints, Münster. ISBN: 3-936616-12-4
+
+        TODO: solve the import
+
+        :return: np.ndarray, monotonized experimental variogram
+        """
+        # TODO this is imported in the function as sklearn is not a dependency (and should not be for now)
+        try:
+            from sklearn.isotonic import IsotonicRegression
+            y = self._experimental
+            x = self.bins
+            return IsotonicRegression().fit_transform(x,y)
+        except ImportError:
+            raise NotImplementedError('scikit-learn is not installed, but the isotonic function without sklear dependency is not installed yet.')
 
     @property
     def grouped_pairs(self):
