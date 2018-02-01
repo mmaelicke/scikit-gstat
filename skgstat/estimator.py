@@ -131,8 +131,10 @@ def genton(X):
 
 def minmax(X):
     """
-    Returns the MinMax Semivariance of sample X.
+    Returns the MinMax Semivariance of sample X pairwise differences.
     X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h, ..., xn, xn+h.
+
+    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.5
 
     :param X:
     :return:
@@ -146,12 +148,20 @@ def minmax(X):
     if len(_X) % 2 > 0:
         raise ValueError('The sample does not have an even length: {}'.format(_X))
 
-    return (np.nanmax(_X) - np.nanmin(_X)) / np.nanmean(_X)
+    # calculate the point pair values
+    # helper function
+    ppairs = lambda x: [np.abs(x[i] - x[i+1]) for i in np.arange(0, len(x), 2)]
+    p = ppairs(_X)
+
+    return (np.nanmax(p) - np.nanmin(p)) / np.nanmean(p)
 
 
 def percentile(X, p=50):
     """
-    Returns the wanted percentile of sample X.
+    Returns the wanted percentile of sample X pairwise differences.
+    X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h, ..., xn, xn+h.
+
+    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.5
 
     :param X: np.ndarray with the given sample to calculate the Semivariance from
     :param p: float with the percentile of sample X
@@ -166,7 +176,12 @@ def percentile(X, p=50):
     if len(_X) % 2 > 0:
         raise ValueError('The sample does not have an even length: {}'.format(_X))
 
-    return np.percentile(_X, q=p)
+    # calculate the point pair values
+    # helper function
+    ppairs = lambda x: [np.abs(x[i] - x[i+1]) for i in np.arange(0, len(x), 2)]
+    pairs = ppairs(_X)
+
+    return np.percentile(pairs, q=p)
 
 
 def entropy(X, bins=None):
@@ -177,7 +192,9 @@ def entropy(X, bins=None):
     This uses Freedman Diacons Estimator and is fairly resilient to outliers.
     If the input data X is 2D (Entropy for more than one bin needed), it will derive the histogram once and
     use the same edges in all bins.
-    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.4
+    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.5
+
+    # TODO: handle the 0s in output of X
 
     :param X:  np.ndarray with the given sample to calculate the Shannon entropy from
     :param bins: The bin edges for entropy calculation, or an amount of even spaced bins
@@ -185,13 +202,18 @@ def entropy(X, bins=None):
     """
     _X = np.array(X)
 
+    # helper function
+    ppairs = lambda x: [np.abs(x[i] - x[i+1]) for i in np.arange(0, len(x), 2)]
+
     if any([isinstance(_, (list, np.ndarray)) for _ in _X]):
         # if bins is not set, use the histogram over the full value range
         if bins is None:
             # could not fiugre out a better way here. I need the values before calculating the entropy
             # in order to use the full value range in all bins
-            vals = [[np.abs(_[i] - _[i + 1]) for i in np.arange(0, len(_), 2)] for _ in _X]
-            bins = np.histogram(vals, bins=15)[1][1:]
+            allp = [ppairs(_) for _ in _X]
+            minv = np.min(list(map(np.min, allp)))
+            maxv = np.max(list(map(np.max, allp)))
+            bins = np.linspace(minv, maxv, 50).tolist() + [maxv] # have no better idea to include the end edge as well
         return np.array([entropy(_, bins=bins) for _ in _X])
 
     # check even
@@ -199,11 +221,19 @@ def entropy(X, bins=None):
         raise ValueError('The sample does not have an even length: {}'.format(_X))
 
     # calculate the values
-    vals = [np.abs(_X[i] - _X[i + 1]) for i in np.arange(0, len(_X), 2)]
+    vals = ppairs(_X)
 
     # claculate the bins
     if bins is None:
         bins = 15
-    pk = np.histogram(vals, bins)[0]
 
-    return scipy_entropy(pk=pk)
+    # get the amounts
+    amt = np.histogram(vals, bins=bins)[0]
+
+    # add a very small value to the p, otherwise the log2 will be -inf.
+    p = (amt / np.sum(amt)) + 1e-5
+    info = lambda p: -np.log2(p)
+
+    # map info to p and return the inner product
+    return np.fromiter(map(info, p), dtype=np.float).dot(p)
+
