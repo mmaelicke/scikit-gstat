@@ -34,167 +34,38 @@ result_binify_even_width_bw_n6 = np.array(
      0.70710678])
 
 binify_dm = np.array([0., 1.41421356, 2.82842712, 4.24264069, 0.,
-                       1.41421356, 2.82842712, 4.24264069, 0., 1.41421356,
-                       2.82842712, 4.24264069, 0., 1.41421356, 2.82842712,
-                       4.24264069, 0., 1.41421356, 2.82842712, 4.24264069])
+                      1.41421356, 2.82842712, 4.24264069, 0., 1.41421356,
+                      2.82842712, 4.24264069, 0., 1.41421356, 2.82842712,
+                      4.24264069, 0., 1.41421356, 2.82842712, 4.24264069])
 
-result_binify_even_width_bm_maxlag = np.array([0., 3., 7., 9., 0., 3., 7., 9., 0., 3., 7., 9., 0.,
-                                                3., 7., 9., 0., 3., 7., 9.])
+result_binify_even_width_bm_maxlag = np.array(
+    [0., 3., 7., 9., 0., 3., 7., 9., 0., 3., 7., 9., 0.,
+     3., 7., 9., 0., 3., 7., 9.])
 
-result_binify_even_width_bw_maxlag = np.array([0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4])
+result_binify_even_width_bw_maxlag = np.array(
+    [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4])
 
-result_binify_even_bin_bm = np.array([0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
-                                       2., 6., 8., 0., 2., 6., 8.])
+result_binify_even_bin_bm = np.array(
+    [0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
+     2., 6., 8., 0., 2., 6., 8.])
 
 result_binify_even_bin_bw = np.array([0., 0., 1.41421356, 0., 0.,
                                       0., 1.41421356, 0., 1.41421356, 0.])
 
-result_binify_even_bin_bm_n6 = np.array([0., 1., 3., 5., 0., 1., 3., 5., 0., 1., 3., 5., 0.,
-                                          1., 3., 5., 0., 1., 3., 5.])
+result_binify_even_bin_bm_n6 = np.array(
+    [0., 1., 3., 5., 0., 1., 3., 5., 0., 1., 3., 5., 0.,
+     1., 3., 5., 0., 1., 3., 5.])
 
 result_binify_even_bin_bw_n6 = np.array([0., 1.41421356, 0., 1.41421356, 0.,
                                          1.41421356])
 
-result_binify_even_bin_bm_maxlag = np.array([[0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
-                                              2., 6., 8., 0., 2., 6., 8.],
-                                             [2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6., 2.,
-                                              0., 2., 6., 2., 0., 2., 6.],
-                                             [6., 2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6.,
-                                              2., 0., 2., 6., 2., 0., 2.],
-                                             [8., 6., 2., 0., 8., 6., 2., 0., 8., 6., 2., 0., 8.,
-                                              6., 2., 0., 8., 6., 2., 0.],
-                                             [0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
-                                              2., 6., 8., 0., 2., 6., 8.],
-                                             [2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6., 2.,
-                                              0., 2., 6., 2., 0., 2., 6.],
-                                             [6., 2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6.,
-                                              2., 0., 2., 6., 2., 0., 2.],
-                                             [8., 6., 2., 0., 8., 6., 2., 0., 8., 6., 2., 0., 8.,
-                                              6., 2., 0., 8., 6., 2., 0.],
-                                             [0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
-                                              2., 6., 8., 0., 2., 6., 8.],
-                                             [2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6., 2.,
-                                              0., 2., 6., 2., 0., 2., 6.],
-                                             [6., 2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6.,
-                                              2., 0., 2., 6., 2., 0., 2.],
-                                             [8., 6., 2., 0., 8., 6., 2., 0., 8., 6., 2., 0., 8.,
-                                              6., 2., 0., 8., 6., 2., 0.],
-                                             [0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
-                                              2., 6., 8., 0., 2., 6., 8.],
-                                             [2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6., 2.,
-                                              0., 2., 6., 2., 0., 2., 6.],
-                                             [6., 2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6.,
-                                              2., 0., 2., 6., 2., 0., 2.],
-                                             [8., 6., 2., 0., 8., 6., 2., 0., 8., 6., 2., 0., 8.,
-                                              6., 2., 0., 8., 6., 2., 0.],
-                                             [0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
-                                              2., 6., 8., 0., 2., 6., 8.],
-                                             [2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6., 2.,
-                                              0., 2., 6., 2., 0., 2., 6.],
-                                             [6., 2., 0., 2., 6., 2., 0., 2., 6., 2., 0., 2., 6.,
-                                              2., 0., 2., 6., 2., 0., 2.],
-                                             [8., 6., 2., 0., 8., 6., 2., 0., 8., 6., 2., 0., 8.,
-                                              6., 2., 0., 8., 6., 2., 0.]])
+result_binify_even_bin_bm_maxlag = np.array(
+    [0., 2., 6., 8., 0., 2., 6., 8., 0., 2., 6., 8., 0.,
+     2., 6., 8., 0., 2., 6., 8.])
 
 result_binify_even_bin_bw_maxlag = np.array([0., 0., 1.41421356, 0., 0.,
-                                             0., 1.41421356, 0., 1.41421356, 0.])
-
-result_group_to_bin = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
-     3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
-     3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-     3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3,
-     3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-     3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-    [],
-    [],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3,
-     2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0,
-     1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2,
-     3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1,
-     2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
-     1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1,
-     2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2,
-     1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2],
-    [],
-    [],
-    [0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1, 3, 1, 3, 1, 3, 1,
-     3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1, 3, 1, 3, 1,
-     3, 1, 3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1, 3, 1,
-     3, 1, 3, 1, 3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1,
-     3, 1, 3, 1, 3, 1, 3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0,
-     3, 1, 3, 1, 3, 1, 3, 1, 3, 1],
-    [],
-    [],
-    [0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0,
-     3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0,
-     3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0]]
-
-group_to_bin_bm = np.array([[0., 3., 6., 9., 0., 3., 6., 9., 0., 3., 6., 9., 0.,
-                             3., 6., 9., 0., 3., 6., 9.],
-                            [3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6., 3.,
-                             0., 3., 6., 3., 0., 3., 6.],
-                            [6., 3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6.,
-                             3., 0., 3., 6., 3., 0., 3.],
-                            [9., 6., 3., 0., 9., 6., 3., 0., 9., 6., 3., 0., 9.,
-                             6., 3., 0., 9., 6., 3., 0.],
-                            [0., 3., 6., 9., 0., 3., 6., 9., 0., 3., 6., 9., 0.,
-                             3., 6., 9., 0., 3., 6., 9.],
-                            [3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6., 3.,
-                             0., 3., 6., 3., 0., 3., 6.],
-                            [6., 3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6.,
-                             3., 0., 3., 6., 3., 0., 3.],
-                            [9., 6., 3., 0., 9., 6., 3., 0., 9., 6., 3., 0., 9.,
-                             6., 3., 0., 9., 6., 3., 0.],
-                            [0., 3., 6., 9., 0., 3., 6., 9., 0., 3., 6., 9., 0.,
-                             3., 6., 9., 0., 3., 6., 9.],
-                            [3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6., 3.,
-                             0., 3., 6., 3., 0., 3., 6.],
-                            [6., 3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6.,
-                             3., 0., 3., 6., 3., 0., 3.],
-                            [9., 6., 3., 0., 9., 6., 3., 0., 9., 6., 3., 0., 9.,
-                             6., 3., 0., 9., 6., 3., 0.],
-                            [0., 3., 6., 9., 0., 3., 6., 9., 0., 3., 6., 9., 0.,
-                             3., 6., 9., 0., 3., 6., 9.],
-                            [3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6., 3.,
-                             0., 3., 6., 3., 0., 3., 6.],
-                            [6., 3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6.,
-                             3., 0., 3., 6., 3., 0., 3.],
-                            [9., 6., 3., 0., 9., 6., 3., 0., 9., 6., 3., 0., 9.,
-                             6., 3., 0., 9., 6., 3., 0.],
-                            [0., 3., 6., 9., 0., 3., 6., 9., 0., 3., 6., 9., 0.,
-                             3., 6., 9., 0., 3., 6., 9.],
-                            [3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6., 3.,
-                             0., 3., 6., 3., 0., 3., 6.],
-                            [6., 3., 0., 3., 6., 3., 0., 3., 6., 3., 0., 3., 6.,
-                             3., 0., 3., 6., 3., 0., 3.],
-                            [9., 6., 3., 0., 9., 6., 3., 0., 9., 6., 3., 0., 9.,
-                             6., 3., 0., 9., 6., 3., 0.]])
-
-result_group_to_bin_maxlag = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
-     3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
-     3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3,
-     3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3,
-     3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-     3, 3, 3, 3, 3, 3, 3, 3, 3, 3], [], [],
-    [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3,
-     2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0,
-     1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2,
-     3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1,
-     2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1,
-     1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1,
-     2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2,
-     1, 0, 1, 2, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2], [], [], [],
-    [0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1, 3, 1, 3, 1, 3, 1,
-     3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1, 3, 1, 3, 1,
-     3, 1, 3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1, 3, 1,
-     3, 1, 3, 1, 3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 1,
-     3, 1, 3, 1, 3, 1, 3, 1, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0,
-     3, 1, 3, 1, 3, 1, 3, 1, 3, 1], [],
-    [0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0,
-     3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0,
-     3, 0, 3, 0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 3, 0, 3, 0]]
+                                             0., 1.41421356, 0., 1.41421356,
+                                             0.])
 
 result_group_to_bin_azimuth_and_tolerance = [
     [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0,
@@ -281,9 +152,11 @@ class TestBinifyEvenWidth(unittest.TestCase):
         """
         Testing binning matrix of binify_even_width Function with a maxlag
         """
-
-        assert_array_almost_equal(np.asarray(binify_even_width(self.coordinates, maxlag=4)[1]),
-                                  result_binify_even_width_bw_maxlag)
+        res = np.asarray(binify_even_width(self.coordinates, maxlag=4)[1])
+        assert_array_almost_equal(
+            res,
+            result_binify_even_width_bw_maxlag
+        )
 
     def test_misshaped_coordinates(self):
         """
@@ -334,8 +207,10 @@ class TestBinifyEvenBin(unittest.TestCase):
         Testing binning width array of binify_even_bin Function
         """
 
-        assert_array_almost_equal(np.asarray(binify_even_bin(self.coordinates)[1]),
-                                  result_binify_even_bin_bw)
+        assert_array_almost_equal(
+            np.asarray(binify_even_bin(self.coordinates)[1]),
+            result_binify_even_bin_bw
+        )
 
     def test_bm_n6(self):
         """
@@ -352,24 +227,30 @@ class TestBinifyEvenBin(unittest.TestCase):
         Testing binning width array of binify_even_bin Function with 6 bins
         """
 
-        assert_array_almost_equal(np.asarray(binify_even_bin(self.coordinates, N=6)[1]),
-                                  result_binify_even_bin_bw_n6)
+        assert_array_almost_equal(
+            np.asarray(binify_even_bin(self.coordinates, N=6)[1]),
+            result_binify_even_bin_bw_n6
+        )
 
     def test_bm_maxlag(self):
         """
         Testing binning matrix of binify_even_bin Function with a maxlag
         """
+        res = np.asarray(binify_even_bin(self.coordinates, maxlag=4)[0])
 
-        assert_array_almost_equal(np.asarray(binify_even_bin(self.coordinates, maxlag=4)[0]),
-                                  result_binify_even_bin_bm_maxlag)
+        assert_array_almost_equal(res[0], result_binify_even_bin_bm_maxlag)
+        self.assertEqual(res.size, 400)
+        self.assertEqual(res.shape, (20, 20))
 
     def test_bw_maxlag(self):
         """
         Testing binning width array of binify_even_bin Function with a maxlag
         """
 
-        assert_array_almost_equal(np.asarray(binify_even_bin(self.coordinates, maxlag=4)[1]),
-                                  result_binify_even_bin_bw_maxlag)
+        assert_array_almost_equal(
+            np.asarray(binify_even_bin(self.coordinates, maxlag=4)[1]),
+            result_binify_even_bin_bw_maxlag
+        )
 
     def test_misshaped_coordinates(self):
         """
@@ -391,37 +272,100 @@ class TestGrouToBin(unittest.TestCase):
         """
         Testing group_to_bin function
         """
-
-        self.assertEqual(group_to_bin(self.values, X=self.coordinates), result_group_to_bin)
-
-    def test_with_bm(self):
-        """
-        Testing group_to_bin function
-        """
-
-        self.assertEqual(group_to_bin(self.values, bm=group_to_bin_bm), result_group_to_bin)
+        res = group_to_bin(self.values, X=self.coordinates)
+        self.assertEqual(len(res), 10)
+        self.assertEqual(
+            [len(_) for _ in res],
+            [200, 0, 0, 300, 0, 0, 200, 0, 0, 100]
+        )
 
     def test_with_bm(self):
         """
         Testing group_to_bin function
         """
 
-        self.assertEqual(group_to_bin(self.values, bm=group_to_bin_bm), result_group_to_bin)
+        self.assertEqual(
+            group_to_bin([[1, 2], [3, 4]], bm=np.array([[0, 1], [0, 1]])),
+            [[1, 1, 2, 2, 3, 1, 4, 2], [1, 3, 2, 4, 3, 3, 4, 4]]
+        )
+        self.assertEqual(
+            group_to_bin([[1, 1], [2, 2]], bm=np.array([[1, 1], [1, 0]])),
+            [[2, 2, 2, 2], [1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1]]
+        )
 
     def test_with_maxlag(self):
         """
         Testing group_to_bin function with maxlag
         """
-
-        self.assertEqual(group_to_bin(self.values, X=self.coordinates, maxlag=4), result_group_to_bin_maxlag)
+        res = group_to_bin(self.values, X=self.coordinates, maxlag=4)
+        self.assertEqual(len(res), 10)
+        self.assertEqual(
+            [len(_) for _ in res],
+            [200, 0, 0, 300, 0, 0, 0, 200, 0, 100]
+        )
 
     def test_with_azimuth_and_tolerance(self):
         """
         Testing group_to_bin function with azimuth and tolerance
         """
+        res_90 = group_to_bin(
+            self.values,
+            X=self.coordinates,
+            azimuth_deg=90,
+            tolerance=22.5
+        )
+        self.assertEqual(
+            [len(_) for _ in res_90],
+            [160, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        )
 
-        self.assertEqual(group_to_bin(self.values, X=self.coordinates, azimuth_deg=90, tolerance=22.5),
-                         result_group_to_bin_azimuth_and_tolerance)
+    def test_azimuth_tolerance_negative_overflow(self):
+        res_270 = group_to_bin(
+            self.values,
+            X=self.coordinates,
+            azimuth_deg=270,
+            tolerance=90
+        )
+        self.assertEqual(
+            [len(_) for _ in res_270],
+            [0, 0, 0, 150, 0, 0, 100, 0, 0, 50]
+        )
+
+    def test_azimuth_tolerance_positive_overflow(self):
+        res_15 = group_to_bin(
+            self.values,
+            X=self.coordinates,
+            azimuth_deg=15,
+            tolerance=45
+        )
+
+        self.assertEqual(
+            [len(_) for _ in res_15],
+            [0, 0, 0, 150, 0, 0, 100, 0, 0, 50]
+        )
+
+    def test_missing_coords_and_X(self):
+        """
+        Raise Attribute error if X and coordinates is None
+        """
+        with self.assertRaises(AttributeError):
+            group_to_bin(self.values)
+
+    def test_set_invalid_azimuth(self):
+        with self.assertRaises(ValueError):
+            group_to_bin(self.values, X=self.coordinates, azimuth_deg=-899)
+
+    def test_set_azimuth_without_coordinate(self):
+        with self.assertRaises(ValueError):
+            group_to_bin(self.values,
+                         bm=self.coordinates,
+                         X=None,
+                         azimuth_deg=45
+                         )
+
+    def test_dimension_check(self):
+        with self.assertRaises(ValueError):
+            group_to_bin([0, 1, 2], np.array([(0, 0), (1, 0)]))
 
 
 class TestInBounds(unittest.TestCase):
