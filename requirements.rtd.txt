@@ -1,0 +1,9 @@
+ipython>=6
+autoapi
+numpydoc
+sphinx_rtd_theme
+scipy
+numpy
+pandas
+nose
+matplotlib

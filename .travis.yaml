@@ -1,0 +1,17 @@
+sudo: required
+language: python
+python:
+  - "3.5"
+  - "3.6"
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+install:
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+  - pip install .
+  - pip install codecov
+script:
+  - nosetests --with-coverage --cover-package=hydrobox
+after_success:
+  - codecov
