@@ -102,3 +102,4 @@ ENV/
 
 # PyCharm
 .idea
+skgstat/tests/cover

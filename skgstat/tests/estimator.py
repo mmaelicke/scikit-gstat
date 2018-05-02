@@ -55,11 +55,38 @@ class TestEstimator(unittest.TestCase):
         """
         assert_array_almost_equal(matheron(self.grouped), result_matheron)
 
+    def test_matheron_uneven_input(self):
+        """
+        Raise the ValueError on uneven length input
+        """
+        with self.assertRaises(ValueError):
+            matheron([0, 1, 2])
+
+    def test_matheron_nan_on_zerodivision(self):
+        """
+        return nan on empty input
+        """
+        self.assertTrue(np.isnan(matheron([])))
+
     def test_cressie(self):
         """
         Testing cressie estimator
         """
-        assert_array_almost_equal(cressie(self.grouped), result_cressie, decimal=5)
+        assert_array_almost_equal(cressie(self.grouped), result_cressie,
+                                  decimal=5)
+
+    def test_cressie_uneven_input(self):
+        """
+        Raise the ValueError on uneven length input
+        """
+        with self.assertRaises(ValueError):
+            cressie([0, 1, 2])
+
+    def test_cressie_nan_on_zerodivision(self):
+        """
+        return nan on empty input
+        """
+        self.assertTrue(np.isnan(cressie([])))
 
     def test_dowd(self):
         """
@@ -67,13 +94,35 @@ class TestEstimator(unittest.TestCase):
         """
         assert_array_almost_equal(dowd(self.grouped), result_dowd)
 
-    def test_genton(self):
+    def test_dowd_uneven_input(self):
         """
-        Testing genton estimator
+        Raise the ValueError on uneven length input
+        """
+        with self.assertRaises(ValueError):
+            dowd([0, 1, 2])
 
-        This one is still buggy, so don't test it
+    def test_genton_single_value(self):
         """
-        return True
+        Testing genton estimator with a single value calculation
+
+        """
+        np.random.seed(42)
+        self.assertAlmostEqual(
+            genton(np.random.normal(4, 2, size=20)),
+            1.97039693,
+            places=8
+        )
+
+    def test_genton_large_dataset(self):
+        """
+        Testing genton on large dataset
+        """
+        np.random.seed(42)
+        self.assertAlmostEqual(
+            genton(np.random.normal(4,2, size=1000)),
+            0.0329977,
+            places=8
+        )
 
 
     def test_minmax(self):
@@ -82,11 +131,19 @@ class TestEstimator(unittest.TestCase):
         """
         assert_array_almost_equal(minmax(self.random_grouped), result_minmax)
 
+    def test_minmax_uneven_input(self):
+        """
+        Raise the ValueError on uneven length input
+        """
+        with self.assertRaises(ValueError):
+            minmax([0, 1, 2])
+
     def test_percentile_random(self):
         """
         Testing percentile estimator on randomized data
         """
-        assert_array_almost_equal(percentile(self.random_grouped), result_percentile_r)
+        assert_array_almost_equal(percentile(self.random_grouped),
+                                  result_percentile_r)
 
     def test_percentile_grouped(self):
         """
@@ -94,9 +151,18 @@ class TestEstimator(unittest.TestCase):
         """
         assert_array_almost_equal(percentile(self.grouped), result_percentile)
 
+    def test_percentile_uneven_input(self):
+        """
+        Raise the ValueError on uneven length input
+        """
+        with self.assertRaises(ValueError):
+            percentile([0, 1, 2])
+
     def test_entropy_uniform_default(self):
         """
-        Testing the entropy estimator on uniform distributions, with and without gaps
+        Testing the entropy estimator on uniform distributions,
+        with and without gaps
+
         """
         assert_array_almost_equal(entropy(self.grouped), result_uni_entropy)
 
@@ -104,13 +170,19 @@ class TestEstimator(unittest.TestCase):
         """
         Testing entropy estimator with string as bin on uniform distributions
         """
-        assert_array_almost_equal(np.asarray(entropy(self.grouped, bins='fd')), result_uni_entropy_fd)
+        assert_array_almost_equal(
+            np.asarray(entropy(self.grouped, bins='fd')),
+            result_uni_entropy_fd
+        )
 
     def test_entropy_uniform_integer(self):
         """
         Testing entropy estimator with integer as bin on uniform distributions
         """
-        assert_array_almost_equal(np.asarray(entropy(self.grouped, bins=5)), result_uni_entropy_5b)
+        assert_array_almost_equal(
+            np.asarray(entropy(self.grouped, bins=5)),
+            result_uni_entropy_5b
+        )
 
     def test_entropy_uniform_list(self):
         """
@@ -118,33 +190,69 @@ class TestEstimator(unittest.TestCase):
         """
         assert_array_almost_equal(
             np.asarray(entropy(self.grouped, bins=[0, 0.1, 5, 10, 20, 100])),
-            result_uni_entropy_ar)
+            result_uni_entropy_ar
+        )
 
     def test_entropy_default(self):
         """
         Testing entropy estimator with default settings
         """
-        assert_array_almost_equal(np.asarray(entropy(self.random_grouped)), result_entropy)
+        assert_array_almost_equal(
+            np.asarray(entropy(self.random_grouped)),
+            result_entropy
+        )
 
     def test_entropy_string(self):
         """
         Testing entropy estimator with string as bin
         """
-        assert_array_almost_equal(np.asarray(entropy(self.random_grouped, bins='fd')), result_entropy_fd)
+        assert_array_almost_equal(
+            np.asarray(entropy(self.random_grouped, bins='fd')),
+            result_entropy_fd
+        )
 
     def test_entropy_integer(self):
         """
         Testing entropy estimator with integer as bin
         """
-        assert_array_almost_equal(np.asarray(entropy(self.random_grouped, bins=5)), result_entropy_5b)
+        assert_array_almost_equal(
+            np.asarray(entropy(self.random_grouped, bins=5)),
+            result_entropy_5b
+        )
 
     def test_entropy_list(self):
         """
         Testing entropy estimator with list as bin
         """
         assert_array_almost_equal(
-            np.asarray(entropy(self.random_grouped, bins=[0, 0.1, 5, 10, 20, 100])),
-            result_entropy_ar)
+            np.asarray(
+                entropy(self.random_grouped, bins=[0, 0.1, 5, 10, 20, 100])
+            ),
+            result_entropy_ar
+        )
+
+    def test_entropy_uneven_input(self):
+        """
+        Raise the ValueError on uneven length input
+        """
+        with self.assertRaises(ValueError):
+            entropy([0, 1, 2])
+
+    def test_entropy_single_value(self):
+        """
+        Calculate a single value with bins=None.
+        """
+        np.random.seed(42)
+        self.assertAlmostEqual(
+            entropy(np.random.normal(4, 2, size=150)),
+            3.412321, places=6
+        )
+
+        np.random.seed(1337)
+        self.assertNotAlmostEqual(
+            entropy(np.random.normal(4, 2, size=150)),
+            3.412321, places=6
+        )
 
 
 if __name__ == '__main__':
