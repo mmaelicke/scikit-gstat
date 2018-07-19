@@ -95,6 +95,9 @@ class Variogram(object):
         # pairwise differences
         self._diff = None
 
+        # do the preprocessing upon initialization
+        self.preprocessing()
+
     @property
     def values(self):
         return self._values
@@ -104,7 +107,13 @@ class Variogram(object):
         self.set_values(values=values)
 
     def set_values(self, values):
+        assert len(values) == len(self._X)
+
+        # set new values
         self._values = np.asarray(values)
+
+        recalulate the pairwise differences
+        self._calc_diff()
 
     @property
     def bin_func(self):
@@ -223,6 +232,8 @@ class Variogram(object):
 
     @property
     def distances(self):
+        if self._dist is None:
+            self._calc_distances()
         return self._dist
 
     @distances.setter
@@ -242,6 +253,38 @@ class Variogram(object):
             self._maxlag = value * np.max(self.dm)
         else:
             self._maxlag = value
+
+    def preprocessing(self, force=False):
+        """Preprocessing function
+
+        Prepares all input data for the fit and transform functions. Namely,
+        the distances are calculated and the value differences. Then the
+        binning is set up and bin edges are calculated. If any of the listed
+        subsets are already prepared, their processing is skipped. This
+        behaviour can be changed by the force parameter. This will cause a
+        clean preprocessing.
+
+        Parameters
+        ----------
+        force : bool
+            If set to True, all preprocessing data sets will be deleted. Use
+            it in case you need a clean preprocessing.
+
+        Returns
+        -------
+        void
+
+        """
+        if force:
+            self._dist = None
+            self._diff = None
+            self._bins = None
+            self._groups = None
+
+        # call the _calc functions
+        self._calc_distances()
+        self._calc_diff()
+        self._calc_groups()
 
 
     def fit(self, x, y):
@@ -263,6 +306,49 @@ class Variogram(object):
 
         else:
             raise ValueError('The fit method {} is not understood. Use either \'lm\' (least squares) or \'pec\' (point exclusion cost).'.format(self.fit_method))
+
+    def _calc_distances(self):
+        self._dist = self._dist_func(self._X)
+
+    def _calc_diff(self):
+        """Calculates the pairwise differences
+
+        Returns
+        -------
+
+        """
+        v = self.values
+        l = len(v)
+        self._diff = np.zeros(int((l**2 - l) / 2))
+
+        for t,k in zip(self.__vdiff_indexer(), range(len(self._diff))):
+            self._diff[k] = np.abs(v[t[0]], v[t[1]])
+
+    def __vdiff_indexer(self):
+        """Pairwise indexer
+
+        Returns an iterator over the values or coordinates in squareform
+        coordinates. The iterable will be of type tuple.
+
+        Returns
+        -------
+        iterable
+
+        """
+        l = len(self.values)
+
+        for i in range(l):
+            for j in range(l):
+                if i > j:
+                    yield i,j
+
+    def _calc_groups(self):
+        """Calculate the lag class mask array
+
+        Returns
+        -------
+
+        """
 
     def clone(self):
         """
