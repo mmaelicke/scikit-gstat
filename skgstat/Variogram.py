@@ -144,7 +144,7 @@ class Variogram(object):
     @property
     def bins(self):
         if self._bins is None:
-            self._calc_groups()
+            self._bins = self.bin_func(self.distance, self.n_lags, self.maxlag)
 
         return self._bins
 
@@ -285,6 +285,10 @@ class Variogram(object):
         else:
             self._maxlag = value
 
+        # remove bins
+        self._bins = None
+        self._groups = None
+
     def lag_groups(self):
         """
 
@@ -296,6 +300,24 @@ class Variogram(object):
             self._calc_groups()
 
         return self._groups
+
+    def lag_classes(self):
+        """Iterate over the lag classes
+
+        Generates an iterator over all lag classes. Can be zipped with
+        Variogram.bins to identify the lag.
+
+        Returns
+        -------
+        iterable
+
+        """
+        # yield all groups
+        for i in np.unique(self._groups):
+            if i < 0:
+                continue
+            else:
+                yield self._diff[np.where(self._groups == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function

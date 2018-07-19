@@ -4,7 +4,7 @@ from scipy.stats.mstats import mquantiles
 from .distance import nd_dist
 
 
-def even_width_lags(distances, maxlag, lags):
+def even_width_lags(distances, N, maxlag):
     """Even lag edges
 
     Calculate the lag edges for a given amount of bins using the same lag
@@ -14,10 +14,10 @@ def even_width_lags(distances, maxlag, lags):
     ----------
     distances : numpy.array
         Flat numpy array representing the upper triangle of the distance matrix.
+    N: integer
+        Amount of lag classes to find
     maxlag : integer, float
         Limit the last lag class to this separating distance.
-    lags: integer
-        Amount of lag classes to find
 
     Returns
     -------
@@ -25,13 +25,13 @@ def even_width_lags(distances, maxlag, lags):
 
     """
     # maxlags larger than the maximum separating distance will be ignored
-    if maxlag > np.max(distances):
+    if maxlag is None or maxlag > np.max(distances):
         maxlag = np.max(distances)
 
-    return np.linspance(0, maxlag, lags + 1)[1:]
+    return np.linspace(0, maxlag, N + 1)[1:]
 
 
-def uniform_count_lags(distances, maxlag, lags):
+def uniform_count_lags(distances, N, maxlag):
     """Uniform lag counts
 
     Calculate the lag edges for a given amount of bins with the same amount
@@ -41,10 +41,10 @@ def uniform_count_lags(distances, maxlag, lags):
     ----------
     distances : numpy.array
         Flat numpy array representing the upper triangle of the distance matrix.
+    N: integer
+        Amount of lag classes to find
     maxlag : integer, float
         Limit the last lag class to this separating distance.
-    lags: integer
-        Amount of lag classes to find
 
     Returns
     -------
@@ -52,13 +52,13 @@ def uniform_count_lags(distances, maxlag, lags):
 
     """
     # maxlags larger than the maximum separating distance will be ignored
-    if maxlag > np.max(distances):
+    if maxlag is None or maxlag > np.max(distances):
         maxlag = np.max(distances)
 
     # filter for distances < maxlag
     d = distances[np.where(distances <= maxlag)]
 
-    return [np.percentile(d, (i / lags) * 100) for i in range(1, lags + 1)]
+    return [np.percentile(d, (i / N) * 100) for i in range(1, N + 1)]
 
 
 
