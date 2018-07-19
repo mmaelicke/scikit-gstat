@@ -4,6 +4,64 @@ from scipy.stats.mstats import mquantiles
 from .distance import nd_dist
 
 
+def even_width_lags(distances, maxlag, lags):
+    """Even lag edges
+
+    Calculate the lag edges for a given amount of bins using the same lag
+    step width for all bins.
+
+    Parameters
+    ----------
+    distances : numpy.array
+        Flat numpy array representing the upper triangle of the distance matrix.
+    maxlag : integer, float
+        Limit the last lag class to this separating distance.
+    lags: integer
+        Amount of lag classes to find
+
+    Returns
+    -------
+    numpy.array
+
+    """
+    # maxlags larger than the maximum separating distance will be ignored
+    if maxlag > np.max(distances):
+        maxlag = np.max(distances)
+
+    return np.linspance(0, maxlag, lags + 1)[1:]
+
+
+def uniform_count_lags(distances, maxlag, lags):
+    """Uniform lag counts
+
+    Calculate the lag edges for a given amount of bins with the same amount
+    of observations in each lag class. The lag step width will be variable.
+
+    Parameters
+    ----------
+    distances : numpy.array
+        Flat numpy array representing the upper triangle of the distance matrix.
+    maxlag : integer, float
+        Limit the last lag class to this separating distance.
+    lags: integer
+        Amount of lag classes to find
+
+    Returns
+    -------
+    numpy.array
+
+    """
+    # maxlags larger than the maximum separating distance will be ignored
+    if maxlag > np.max(distances):
+        maxlag = np.max(distances)
+
+    # filter for distances < maxlag
+    d = distances[np.where(distances <= maxlag)]
+
+    return [np.percentile(d, (i / lags) * 100) for i in range(1, lags + 1)]
+
+
+
 def binify_even_width(X, N=10, w=None, dm=None, maxlag=None, **kwargs):
     """
     Returns a distance matrix with all entries sorted into bin numbers, along with an array of bin widths.

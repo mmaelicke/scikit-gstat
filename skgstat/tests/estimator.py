@@ -7,7 +7,7 @@ Test different Parameter Combinations
 import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from skgstat.estimator import matheron, cressie, dowd, genton, minmax, percentile, entropy
+from skgstat.estimators import matheron, cressie, dowd, genton, minmax, percentile, entropy
 
 # result arrays
 

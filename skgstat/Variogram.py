@@ -1,15 +1,15 @@
 """
 Variogram
 """
+import copy
 
-from skgstat.distance import nd_dist
-from skgstat.estimator import matheron, cressie, dowd, genton, minmax, entropy
-from skgstat.models import spherical, exponential, gaussian, cubic, stable, matern
 import numpy as np
 from pandas import DataFrame
-import copy
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.spatial.distance import pdist, squareform
+
+from skgstat import estimators, models, binning
 
 
 class Variogram(object):
@@ -19,8 +19,8 @@ class Variogram(object):
     def __init__(self,
                  coordinates=None,
                  values=None,
-                 estimator=matheron,
-                 model=spherical,
+                 estimator=estimators.matheron,
+                 model=models.spherical,
                  dist_func='euclidean',
                  bin_func='even',
                  normalize=True,
@@ -30,7 +30,7 @@ class Variogram(object):
                  tolerance=45.0,
                  use_nugget=False,
                  maxlag=None,
-                 lags=10,
+                 n_lags=10,
                  verbose=False,
                  harmonize=False
                  ):
@@ -38,8 +38,13 @@ class Variogram(object):
 
 
         """
-        # Set coordinates and values
+        # Set coordinates
         self._X = np.asarray(coordinates)
+
+        # pairwise differences
+        self._diff = None
+
+        # set values
         self._values = None
         self.set_values(values=values)
 
@@ -47,8 +52,11 @@ class Variogram(object):
         self.verbose = verbose
 
         # lags and max lag
-        self.lags = lags
+        self.n_lags = n_lags
         self.maxlag = maxlag
+
+        # distance matrix
+        self._dist = None
 
         # set distance calculation function
         self._dist_func = None
@@ -56,17 +64,17 @@ class Variogram(object):
 
         # estimator can be a function or a string
         self._estimator = None
-        self.set_estimator(estimator=estimator)
+        self.set_estimator(estimator_name=estimator)
 
         # model can be a function or a string
         self._model = None
-        self.set_model(model=model)
+        self.set_model(model_name=model)
 
         # the binning settings
         self._bin_func = None
         self._groups = None
         self._bins = None
-        self.set_bin_func(bins=bin_func)
+        self.set_bin_func(bin_func=bin_func)
 
         # specify if the lag should be given absolute or relative to the maxlag
         self.normalized = normalize
@@ -89,12 +97,6 @@ class Variogram(object):
         self.cov = None
         self.cof = None
 
-        # distance matrix
-        self._dist = None
-
-        # pairwise differences
-        self._diff = None
-
         # do the preprocessing upon initialization
         self.preprocessing()
 
@@ -106,13 +108,17 @@ class Variogram(object):
     def values(self, values):
         self.set_values(values=values)
 
+    @property
+    def value_matrix(self):
+        return squareform(self._diff)
+
     def set_values(self, values):
         assert len(values) == len(self._X)
 
         # set new values
         self._values = np.asarray(values)
 
-        recalulate the pairwise differences
+        # recalculate the pairwise differences
         self._calc_diff()
 
     @property
@@ -129,11 +135,22 @@ class Variogram(object):
         self._bins = None
 
         if bin_func.lower() == 'even':
-            pass
+            self._bin_func = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
-            pass
+            self._bin_func = binning.uniform_count_lags
         else:
             raise ValueError('%s binning method is not known' % bin_func)
+
+    @property
+    def bins(self):
+        if self._bins is None:
+            self._calc_groups()
+
+        return self._bins
+
+    @bins.setter
+    def bins(self, bins):
+        self._bins = bins
 
     @property
     def estimator(self):
@@ -141,30 +158,30 @@ class Variogram(object):
 
     @estimator.setter
     def estimator(self, value):
-        self.set_estimator(estimator=value)
+        self.set_estimator(estimator_name=value)
 
-    def set_estimator(self, estimator):
+    def set_estimator(self, estimator_name):
         """
         Set estimator as the new variogram estimator.
 
         """
-        if isinstance(estimator, str):
-            if estimator.lower() == 'matheron':
-                self._estimator = matheron
-            elif estimator.lower() == 'cressie':
-                self._estimator = cressie
-            elif estimator.lower() == 'dowd':
-                self._estimator = dowd
-            elif estimator.lower() == 'genton':
-                self._estimator = genton
-            elif estimator.lower() == 'minmax':
-                self._estimator = minmax
-            elif estimator.lower() == 'entropy' or estimator.lower() == 'h':
-                self._estimator = entropy
+        if isinstance(estimator_name, str):
+            if estimator_name.lower() == 'matheron':
+                self._estimator = estimators.matheron
+            elif estimator_name.lower() == 'cressie':
+                self._estimator = estimators.cressie
+            elif estimator_name.lower() == 'dowd':
+                self._estimator = estimators.dowd
+            elif estimator_name.lower() == 'genton':
+                self._estimator = estimators.genton
+            elif estimator_name.lower() == 'minmax':
+                self._estimator = estimators.minmax
+            elif estimator_name.lower() == 'entropy':
+                self._estimator = estimators.entropy
             else:
-                raise ValueError('Variogram estimator %s is not understood, please provide the function.' % estimator)
+                raise ValueError('Variogram estimator %s is not understood, please provide the function.' % estimator_name)
         else:
-            self._estimator = estimator
+            self._estimator = estimator_name
 
     @property
     def model(self):
@@ -172,31 +189,31 @@ class Variogram(object):
 
     @model.setter
     def model(self, value):
-        self.set_model(model=value)
+        self.set_model(model_name=value)
 
-    def set_model(self, model):
+    def set_model(self, model_name):
         """
         Set model as the new theoretical variogram function.
 
         """
-        if isinstance(model, str):
-            if model.lower() == 'spherical':
-                self._model = spherical
-            elif model.lower() == 'exponential':
-                self._model = exponential
-            elif model.lower() == 'gaussian':
-                self._model = gaussian
-            elif model.lower() == 'cubic':
-                self._model = cubic
-            elif model.lower() == 'stable':
-                self._model = stable
-            elif model.lower() == 'matern':
-                self._model = matern
+        if isinstance(model_name, str):
+            if model_name.lower() == 'spherical':
+                self._model = models.spherical
+            elif model_name.lower() == 'exponential':
+                self._model = models.exponential
+            elif model_name.lower() == 'gaussian':
+                self._model = models.gaussian
+            elif model_name.lower() == 'cubic':
+                self._model = models.cubic
+            elif model_name.lower() == 'stable':
+                self._model = models.stable
+            elif model_name.lower() == 'matern':
+                self._model = models.matern
             else:
                 raise ValueError('The theoretical Variogram function %s is not understood, '
-                                 'please provide the function' % model)
+                                 'please provide the function' % model_name)
         else:
-            self._model = model
+            self._model = model_name
 
     @property
     def dist_function(self):
@@ -207,38 +224,52 @@ class Variogram(object):
         self.set_dist_function(func=func)
 
     def set_dist_function(self, func):
-        """
+        """Set distance function
+
+        Set the function used for distance calculation. func can either be a
+        callable or a string. The ranked distance function is not implemented
+        yet. strings will be forwarded to the scipy.spatial.distance.pdist
+        function as the metric argument.
+        If func is a callable, it has to return the upper triangle of the
+        distance matrix as a flat array (Like the pdist function).
 
         Parameters
         ----------
-        func
+        func : string, callable
 
         Returns
         -------
+        numpy.array
 
         """
         # reset the distances
         self._dist = None
 
         if isinstance(func, str):
-            if func.lower() == 'euclidean':
-                self._dist_func = nd_dist
+            if func.lower() == 'rank':
+                raise NotImplementedError
             else:
-                raise ValueError('%s is not a known distance function' % func)
+                # if not ranks, it has to be a scipy metric
+                self._dist_func = lambda x: pdist(X=x, metric=func)
+
         elif callable(func):
             self._dist_func = func
         else:
             raise ValueError('Input not supported. Pass a string or callable.')
 
     @property
-    def distances(self):
+    def distance(self):
         if self._dist is None:
             self._calc_distances()
         return self._dist
 
-    @distances.setter
-    def distances(self, dist_array):
+    @distance.setter
+    def distance(self, dist_array):
         self._dist = dist_array
+
+    @property
+    def distance_matrix(self):
+        return squareform(self.distance)
 
     @property
     def maxlag(self):
@@ -250,9 +281,21 @@ class Variogram(object):
         if value is None:
             self._maxlag = None
         elif value < 1:
-            self._maxlag = value * np.max(self.dm)
+            self._maxlag = value * np.max(self.distance)
         else:
             self._maxlag = value
+
+    def lag_groups(self):
+        """
+
+        Returns
+        -------
+
+        """
+        if self._groups is None:
+            self._calc_groups()
+
+        return self._groups
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -310,6 +353,7 @@ class Variogram(object):
     def _calc_distances(self):
         self._dist = self._dist_func(self._X)
 
+    # @jit
     def _calc_diff(self):
         """Calculates the pairwise differences
 
@@ -321,9 +365,11 @@ class Variogram(object):
         l = len(v)
         self._diff = np.zeros(int((l**2 - l) / 2))
 
-        for t,k in zip(self.__vdiff_indexer(), range(len(self._diff))):
-            self._diff[k] = np.abs(v[t[0]], v[t[1]])
+        # calculate the pairwise differences
+        for t, k in zip(self.__vdiff_indexer(), range(len(self._diff))):
+            self._diff[k] = np.abs(v[t[0]] - v[t[1]])
 
+    # @jit
     def __vdiff_indexer(self):
         """Pairwise indexer
 
@@ -349,6 +395,15 @@ class Variogram(object):
         -------
 
         """
+        # get the bin edges and distances
+        bin_edges = self.bins
+        d = self.distance
+
+        # -1 is the group fir distances outside maxlag
+        self._groups = np.ones(len(d), dtype=int) * -1
+
+        for i, bounds in enumerate(zip([0] + list(bin_edges), bin_edges)):
+            self._groups[np.where((d >= bounds[0]) & (d < bounds[1]))] = i
 
     def clone(self):
         """
