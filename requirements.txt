@@ -1,5 +1,6 @@
-scipy
-numpy
-pandas
+scipy>=1.0.0
+numpy>=1.12
+pandas>=0.19
 nose
 matplotlib
+numba>=0.37

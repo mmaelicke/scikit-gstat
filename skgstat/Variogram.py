@@ -8,6 +8,7 @@ from pandas import DataFrame
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.spatial.distance import pdist, squareform
+from numba import jit
 
 from skgstat import estimators, models, binning
 
@@ -485,7 +486,7 @@ class Variogram(object):
             return self._experimental
 
     @property
-    # @jit
+    @jit
     def _experimental(self):
         """
 

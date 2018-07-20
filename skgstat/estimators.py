@@ -6,35 +6,62 @@ submodule, or order the bins yourself
 """
 import numpy as np
 from scipy.special import binom
+from numba import jit
 
 
-def matheron(X, power=2):
+@jit
+def matheron(x):
+    r"""Matheron Semi-Variance
+
+    Calculates the Matheron Semi-Variance from an array of pairwise differences.
+    Returns the semi-variance for the whole array. In case a semi-variance is
+    needed for multiple groups, this function has to be mapped on each group.
+    That is the typical use case in geostatistics.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
+
+    Returns
+    -------
+    numpy.float64
+
+    Notes
+    -----
+
+    This implementation is done after the original publication [1]_ and the
+    notes on their application [2]_. Following [1]_, the semi-variance is
+    calculated as:
+
+    .. math ::
+        \gamma (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}(x)^2
+
+    with:
+
+    .. math ::
+        x = (Z(x_i) - Z(x_{i+1})
+
+     where x is exactly the input array x.
+
+    References
+    ----------
+
+    .. [1] Matheron, G. (1962): Traité de Géostatistique Appliqué, Tonne 1.
+       Memoires de Bureau de Recherches Géologiques et Miniéres, Paris.
+
+    .. [2] Matheron, G. (1965): Les variables regionalisées et leur estimation.
+       Editions Masson et Cie, 212 S., Paris.
+
     """
-    Return the Matheron Variogram of the given sample X.
-    X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h ...., xn, xn + h.
-    If X.ndim > 1, matheron will be called recursively and a list of Matheron Variances is returned.
-
-    Matheron, G. (1965): Les variables regionalisées et leur estimation. Editions Masson et Cie, 212 S., Paris.
-    Matheron, G. (1962): Traité de Géostatistique Appliqué, Tonne 1. Memoires de Bureau de Recherches Géologiques et Miniéres, Paris.
-
-    :param X:
-    :param power:
-    :return:
-    """
-    _X = np.array(X)
-
-    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
-        return np.array([matheron(_, power=power) for _ in _X])
-
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'.format(_X))
-
-    # calculate:
-    if len(_X) == 0:
-        # would give ZeroDivisionError
+    # prevent ZeroDivisionError
+    if x.size == 0:
         return np.nan
-    return (1 / len(_X)) * np.nansum([np.power(_X[i] - _X[i + 1], power) for i in np.arange(0, len(_X) - 1, 2)])
+
+    return (1. / (2 * x.size)) * np.sum(np.power(x, 2))
 
 
 def cressie(X):
