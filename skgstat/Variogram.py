@@ -84,7 +84,6 @@ class Variogram(object):
 
         # set the fitting method
         self.fit_method = fit_method
-
         # set directionality
         self.is_directional = is_directional
         self.azimuth = azimuth
@@ -96,6 +95,9 @@ class Variogram(object):
         # set attributes to be filled during calculation
         self.cov = None
         self.cof = None
+
+        # settings, not reachable by init (not yet)
+        self._cache_experimental = False
 
         # do the preprocessing upon initialization
         self.preprocessing()
@@ -351,15 +353,37 @@ class Variogram(object):
         self._calc_diff()
         self._calc_groups()
 
+    def fit(self, force=False):
+        """Fit the variogram
 
-    def fit(self, x, y):
-        """
-        REWRITE
+        The fit function will fit the theoretical variogram function to the
+        experimental. The preprocessed distance matrix, pairwise differences
+        and binning will not be recalculated, if already done. This could be
+        forced by setting the force parameter to true
+
+        Parameters
+        ----------
+        force : bool
+            If set to True, a clean preprocessing of the distance matrix,
+            pairwise differences and the binning will be forced. Default is
+            False.
+
+        Returns
+        -------
+        void
 
         """
-        # if last bin is set, delete it
-        if hasattr(self, 'last_bin'):
-            del self.last_bin
+        # delete the last cov and cof
+        self.cof = None
+        self.cov = None
+
+        # if force, force a clean preprocessing
+        if force:
+            self.preprocessing(force=True)
+
+        # load the data
+        x = self.bins
+        y = self.experimental
 
         # remove nans
         _x = x[~np.isnan(y)]
@@ -367,10 +391,24 @@ class Variogram(object):
 
         if self.fit_method == 'lm':
             bounds = (0, self.__get_fit_bounds(x, y))
-            return curve_fit(self._model, _x, _y, p0=bounds[1], bounds=bounds)
+            self.cof, self.cov = curve_fit(self._model, _x, _y,
+                                           p0=bounds[1], bounds=bounds)
 
         else:
-            raise ValueError('The fit method {} is not understood. Use either \'lm\' (least squares) or \'pec\' (point exclusion cost).'.format(self.fit_method))
+            raise ValueError('Only the lm function is supported at the moment.')
+
+    def transform(self, x):
+        """
+
+        Parameters
+        ----------
+        x
+
+        Returns
+        -------
+
+        """
+        pass
 
     def _calc_distances(self):
         self._dist = self._dist_func(self._X)
@@ -436,10 +474,10 @@ class Variogram(object):
     @property
     def experimental(self):
         """
-        Return the experimental variogram.
-        If :param harmonize: is True, it will return self.isotonic, instead of self.experimental.
 
-        :return: np.array, the isotonic or non-isotonic experimental varigram
+        Returns
+        -------
+
         """
         if self.harmonize:
             return self.isotonic
@@ -447,17 +485,22 @@ class Variogram(object):
             return self._experimental
 
     @property
+    # @jit
     def _experimental(self):
         """
-        :return: experimental variogram as a numpy.ndarray.
+
+        Returns
+        -------
 
         """
-        raise NotImplementedError
-        # group the values to bins and apply the estimator
-        _g = self.grouped_pairs
+        # prepare the result array
+        y = np.zeros(len(self.bins))
+
+        for i, lag_values in enumerate(self.lag_classes()):
+            y[i] = self._estimator(lag_values)
 
         # apply
-        return np.array(self._estimator(_g))
+        return y
 
     @property
     def isotonic(self):
@@ -493,7 +536,10 @@ class Variogram(object):
         Return the bounds for parameter space in fitting a variogram model. The bounds are depended on the Model
         that is used
 
-        :return:
+        Returns
+        -------
+        list
+
         """
         mname = self._model.__name__
 
