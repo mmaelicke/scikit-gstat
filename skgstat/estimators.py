@@ -57,6 +57,9 @@ def matheron(x):
        Editions Masson et Cie, 212 S., Paris.
 
     """
+    # convert
+    x = np.asarray(x)
+
     # prevent ZeroDivisionError
     if x.size == 0:
         return np.nan
