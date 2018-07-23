@@ -1,6 +1,8 @@
-import numpy as np
 import math
+
+import numpy as np
 from scipy import special
+from numba import jit
 
 
 class Variogram_Wrapper:
@@ -42,8 +44,7 @@ class Variogram_Wrapper:
 
 
 @Variogram_Wrapper
-# if numba is installed uncommment
-# @jit
+@jit
 def spherical(h, a, C0, b=0):
     """
     The Spherical variogram function.

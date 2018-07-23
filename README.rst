@@ -3,7 +3,7 @@ Scikit-Gstat
 
 Info: scikit-gstat needs Python >= 3.5!
 
-.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
+.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=dev
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
     :alt: Build Status
 
@@ -11,9 +11,23 @@ Info: scikit-gstat needs Python >= 3.5!
     :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/dev/graph/badge
+.svg
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
+
+
+New Version 0.2
+~~~~~~~~~~~~~~~
+
+Scikit-gstat is rewritten in major part at the moment. Most of the changes
+are internal, but the usage of the `Variogram` class will also change. Once
+merged into the master branch, a description of changes will follow. The last
+Version of the current master branch, 0.1.7, will be kept in a new branch,
+bu not any further developed in the future.
+
+Description
+~~~~~~~~~~~
 
 At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
 This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
@@ -24,10 +38,10 @@ The estimators include:
 
 - matheron
 - cressie
-- dowd
-- genton (still buggy)
-- entropy
-- bin quantiles
+- dowd (not re-implemented)
+- genton  (not re-implemented)
+- entropy  (not re-implemented)
+- bin quantiles  (not re-implemented)
 
 The models include:
 
@@ -39,10 +53,7 @@ The models include:
 - matérn
 
 with all of them in a nugget and no-nugget variation. All the estimator functions are written `numba` compatible,
-therefore you can just download it and include the `@jit` decorator. This can speed up the calculation for bigger
-data sets up to 100x. Nevertheless, this is not included in this sckit-gstat version as these functions might be
-re-implemented using Cython. This is still under evaluation.
-
+which will be a future dependency.
 At the current stage, the package does not include any kriging. This is planned for a future release.
 
 
