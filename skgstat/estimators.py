@@ -67,39 +67,72 @@ def matheron(x):
     return (1. / (2 * x.size)) * np.sum(np.power(x, 2))
 
 
-def cressie(X):
+@jit
+def cressie(x):
+    r""" Cressie-Hawkins Semi-Variance
+
+    Calculates the Cressie-Hawkins Semi-Variance from an array of pairwise
+    differences. Returns the semi-variance for the whole array. In case a
+    semi-variance is needed for multiple groups, this function has to be
+    mapped on each group. That is the typical use case in geostatistics.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
+
+    Returns
+    -------
+    numpy.float64
+
+    Notes
+    -----
+
+    This implementation is done after the publication by Cressie and Hawkins
+    from 1980 [1]_:
+
+    .. math ::
+        2\gamma (h) = \frac{(\frac{1}{N(h)} \sum_{i=1}^{N(h)} |x|^{0.5})^4}
+        {0.457 + \frac{0.494}{N(h)} + \frac{0.045}{N^2(h)}}
+
+    with:
+
+    .. math ::
+        x = (Z(x_i) - Z(x_{i+1})
+
+     where x is exactly the input array x.
+
+    References
+    ----------
+
+    .. [1] Cressie, N., and D. Hawkins (1980): Robust estimation of the
+       variogram. Math. Geol., 12, 115-125.
+
+
     """
-    Return the Cressie-Hawkins Variogram of the given sample X.
-    X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h ...., xn, xn + h.
-    If X.ndim > 1, cressie will be called recursively and a list of Cressie-Hawkins Variances is returned.
+    # convert
+    x = np.asarray(x)
 
-    Cressie, N., and D. Hawkins (1980): Robust estimation of the variogram. Math. Geol., 12, 115-125.
+    # get the length
+    n = x.size
 
-    :param X:
-    :return:
-    """
-    _X = np.array(X)
-
-    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
-        return np.array([cressie(_) for _ in _X])
-
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'.format(_X))
-
-    # calculate
-    N = 0.5 * len(_X)
-    if N == 0:
-        # would raise ZeroDivisonError
+    # prevent ZeroDivisionError
+    if n == 0:
         return np.nan
 
-    term1 = (1 / N) * np.nansum([ np.sqrt(np.abs(_X[i] - _X[i + 1])) for i in np.arange(0, len(_X) - 1, 2)])
-    term2 = 0.457 + (0.494 / N) + (0.045 / np.power(N, 2))
+    # Nominator
+    nominator = np.power((1 / n) * np.sum(np.power(x, 0.5)), 4)
 
-    return 0.5 * np.power(term1, 4) / term2
+    # Denominator
+    denominator = 0.457 + (0.494 / n) + (0.045 / n**2)
+
+    return nominator / (2 * denominator)
 
 
-def dowd(X):
+def dowd_depr(X):
     """
     Return the Dowd Variogram of the given sample X.
     X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h ...., xn, xn + h.
@@ -125,7 +158,7 @@ def dowd(X):
     return 0.5 * (2.198 * np.power(term1, 2))
 
 
-def genton(X):
+def genton_depr(X):
     r""" Genton robust semi-variance estimator
 
     Return the Genton Variogram of the given sample X. Genton is a highly
@@ -210,7 +243,7 @@ def genton(X):
         return np.nan
 
 
-def minmax(X):
+def minmax_depr(X):
     """
     Returns the MinMax Semivariance of sample X pairwise differences.
     X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h, ..., xn, xn+h.
@@ -237,7 +270,7 @@ def minmax(X):
     return (np.nanmax(p) - np.nanmin(p)) / np.nanmean(p)
 
 
-def percentile(X, p=50):
+def percentile_depr(X, p=50):
     """
     Returns the wanted percentile of sample X pairwise differences.
     X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h, ..., xn, xn+h.
@@ -265,7 +298,7 @@ def percentile(X, p=50):
     return np.percentile(pairs, q=p)
 
 
-def entropy(X, bins=None):
+def entropy_depr(X, bins=None):
     """
     Use the Shannon Entropy H to describe the distribution of the given sample.
     For calculating the Shannon Entropy, the bin edges are needed and can be passed as pk.
