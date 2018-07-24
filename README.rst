@@ -15,6 +15,27 @@ Info: scikit-gstat needs Python >= 3.5!
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
 
+
+Deprecation Warning
+-------------------
+This version of of scikit-gstat is deprecated. However,
+the current state of this module is, without this warning,
+conserved in the branch version-0.1.8 on GitHub, but will no
+longer be maintained.
+
+On the dev branch, the Variogram class is completely rewritten
+and will also change the used slightly. It will soon be merged
+into the master branch, as soon as it is stable. Sorry for any
+inconvenience.
+
+You can distable this Warning by setting the ignore_deprecation
+attribute to True:
+
+>>> V =Variogram(c, v, ignore_deprecation=True)
+
+
+Description
+-----------
 At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
 This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
 variogram functions. The module is planned to be hold in the manner of scikit modules and be based upon `numpy` and

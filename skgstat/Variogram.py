@@ -32,7 +32,8 @@ class Variogram(object):
     def __init__(self, coordinates=None, values=None, dm_func=nd_dist, bm_func=binify_even_width,
                  estimator=matheron, model=spherical, dm=None, bm=None, normalize=True, fit_method='lm',
                  pec_punish=1.0, is_directional=False, azimuth=0, tolerance=45.0, use_nugget=False, maxlag=None,
-                 N=None, verbose=False, harmonize=False):
+                 N=None, verbose=False, harmonize=False,
+                 ignore_deprecation=False):
         """
 
         :param coordinates: numpy array or list with the coordinates of the sample as tuples
@@ -58,6 +59,24 @@ class Variogram(object):
         :param verbose:
         :param harmonize: bool, if True, the experimental variogram will be harmonized.
         """
+        if not ignore_deprecation:
+            raise DeprecationWarning("""
+            Deprecation Warning
+            -------------------
+            This version of of scikit-gstat is deprecated. However, 
+            the current state of this module is, without this warning, 
+            conserved in the branch version-0.1.8 on GitHub, but will no 
+            longer be maintained.
+            
+            On the dev branch, the Variogram class is completely rewritten 
+            and will also change the used slightly. It will soon be merged 
+            into the master branch, as soon as it is stable. Sorry for any 
+            inconvenience.
+            
+            You can distable this Warning by setting the ignore_deprecation 
+            attribute to True:
+            >>> V =Variogram(c, v, ignore_deprecation=True)
+            """)
 
         # Set coordinates and values
         self._X = list(coordinates)
