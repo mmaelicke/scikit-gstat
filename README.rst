@@ -11,8 +11,7 @@ Info: scikit-gstat needs Python >= 3.5!
     :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/dev/graph/badge
-.svg
+.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/dev/graph/badge.svg
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
 
@@ -23,8 +22,8 @@ New Version 0.2
 Scikit-gstat is rewritten in major part at the moment. Most of the changes
 are internal, but the usage of the `Variogram` class will also change. Once
 merged into the master branch, a description of changes will follow. The last
-Version of the current master branch, 0.1.7, will be kept in a new branch,
-bu not any further developed in the future.
+Version of the current master branch, 0.1.8, is kept in the `version-0.1.8`
+branch on GitHub, but not developed any further.
 
 Description
 ~~~~~~~~~~~
