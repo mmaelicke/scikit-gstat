@@ -3,17 +3,30 @@ Scikit-Gstat
 
 Info: scikit-gstat needs Python >= 3.5!
 
-.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
+.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=version-0.1.8
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
     :alt: Build Status
 
-.. image:: https://readthedocs.org/projects/scikit-gstat/badge/?version=latest
-    :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
-    :alt: Documentation Status
-
-.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/version-0.1.8/graph/badge.svg
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
+
+Deprecation Warning
+-------------------
+
+This version (0.1.8) will no longer be maintained. On the dev branch, the 0.2
+version of scikit-gstat is developed and will as soon as it is stable be
+merged into the master branch. This merge will be indicated by a version
+number equal to or higher than 0.2 on the master branch.
+
+The new version will not be compatible with this version of scikit-gstat.
+Although most of the rewritten code affects internal data structures, some
+inputs and outputs will be different. This is necessary in order to improve
+the performance of scikit-gstat and keep it cleaner (in my opinion.)
+
+
+Description
+-----------
 
 At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
 This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
