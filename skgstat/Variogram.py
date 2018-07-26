@@ -48,11 +48,6 @@ class Variogram(object):
         # set verbosity
         self.verbose = verbose
 
-        # lags and max lag
-        self.n_lags = n_lags
-        self._maxlag = None
-        self.maxlag = maxlag
-
         # set values
         self._values = None
         self.set_values(values=values)
@@ -63,6 +58,11 @@ class Variogram(object):
         # set distance calculation function
         self._dist_func = None
         self.set_dist_function(func=dist_func)
+
+        # lags and max lag
+        self.n_lags = n_lags
+        self._maxlag = None
+        self.maxlag = maxlag
 
         # estimator can be a function or a string
         self._estimator = None
@@ -305,6 +305,11 @@ class Variogram(object):
         # set new maxlag
         if value is None:
             self._maxlag = None
+        elif isinstance(value, str):
+            if value == 'median':
+                self._maxlag = np.median(self.distance)
+            elif value == 'mean':
+                self._maxlag = np.mean(self.distance)
         elif value < 1:
             self._maxlag = value * np.max(self.distance)
         else:
@@ -506,7 +511,7 @@ class Variogram(object):
         for t, k in zip(self.__vdiff_indexer(), range(len(self._diff))):
             self._diff[k] = np.abs(v[t[0]] - v[t[1]])
 
-    @jit
+    #@jit
     def __vdiff_indexer(self):
         """Pairwise indexer
 
