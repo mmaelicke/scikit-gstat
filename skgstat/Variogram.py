@@ -36,7 +36,7 @@ class Variogram(object):
                  harmonize=False
                  ):
         """
-
+        TODO: The cof and cov has to be reset, when: values, maxlag, fit_method
 
         """
         # Set coordinates
@@ -120,12 +120,14 @@ class Variogram(object):
 
     def set_values(self, values):
         assert len(values) == len(self._X)
+        self.cof, self.cov = None, None
+        self._diff = None
 
         # set new values
         self._values = np.asarray(values)
 
         # recalculate the pairwise differences
-        self._calc_diff()
+        self._calc_diff(force=True)
 
     @property
     def bin_func(self):
@@ -139,6 +141,7 @@ class Variogram(object):
         # reset groups and bins
         self._groups = None
         self._bins = None
+        self.cof, self.cov = None, None
 
         if bin_func.lower() == 'even':
             self._bin_func = binning.even_width_lags
@@ -186,6 +189,9 @@ class Variogram(object):
         Set estimator as the new variogram estimator.
 
         """
+        # reset the fitting
+        self.cof, self.cov = None, None
+
         if isinstance(estimator_name, str):
             if estimator_name.lower() == 'matheron':
                 self._estimator = estimators.matheron
@@ -220,6 +226,9 @@ class Variogram(object):
         Set model as the new theoretical variogram function.
 
         """
+        # reset the fitting
+        self.cof, self.cov = None, None
+
         if isinstance(model_name, str):
             if model_name.lower() == 'spherical':
                 self._model = models.spherical
@@ -267,8 +276,9 @@ class Variogram(object):
         numpy.array
 
         """
-        # reset the distances
+        # reset the distances and fitting
         self._dist = None
+        self.cof, self.cov = None, None
 
         if isinstance(func, str):
             if func.lower() == 'rank':
@@ -302,6 +312,13 @@ class Variogram(object):
 
     @maxlag.setter
     def maxlag(self, value):
+        # reset fitting
+        self.cof, self.cov = None, None
+
+        # remove bins
+        self._bins = None
+        self._groups = None
+
         # set new maxlag
         if value is None:
             self._maxlag = None
@@ -314,10 +331,6 @@ class Variogram(object):
             self._maxlag = value * np.max(self.distance)
         else:
             self._maxlag = value
-
-        # remove bins
-        self._bins = None
-        self._groups = None
 
     def lag_groups(self):
         """Lag class groups
@@ -704,41 +717,81 @@ class Variogram(object):
 
     @property
     def residuals(self):
-        """
+        """Model residuals
 
-        :return:
+        Calculate the model residuals defined as the differences between the
+        experimental variogram and the theoretical model values at
+        corresponding lag values
+
+        Returns
+        -------
+        numpy.ndarray
+
         """
         # get the deviations
         experimental, model = self.model_deviations()
 
         # calculate the residuals
-        return np.fromiter(map(lambda x, y: x - y, model, experimental), np.float)
+        return np.fromiter(
+            map(lambda x, y: x - y, model, experimental),
+            np.float
+        )
 
     @property
     def mean_residual(self):
-        """
+        """Mean Model residuals
 
-        :return:
+        Calculates the mean, absoulte deviations between the experimental
+        variogram and theretical model values.
+
+        Returns
+        -------
+        float
         """
         return np.nanmean(np.fromiter(map(np.abs, self.residuals), np.float))
 
     @property
-    def RMSE(self):
+    def rmse(self):
+        r"""RMSE
+
+        Calculate the Root Mean squared error between the experimental
+        variogram and the theoretical model values at corresponding lags.
+        Can be used as a fitting quality measure.
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.residuals
+
+        Notes
+        -----
+        The RMSE is implemented like:
+
+        .. math::
+            RMSE = \sqrt{\frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}}
+
+        """
         # get the deviations
         experimental, model = self.model_deviations()
 
         # get the sum of squares
-        rsum = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), np.float))
+        rsum = np.nansum(np.fromiter(
+            map(lambda x, y: (x - y)**2, experimental, model),
+            np.float
+        ))
 
         return np.sqrt(rsum / len(model))
 
     @property
     def NRMSE(self):
-        return self.RMSE / np.nanmean(self.experimental)
+        return self.rmse / np.nanmean(self.experimental)
 
     @property
     def NRMSE_r(self):
-        return self.RMSE / (np.nanmax(self.experimental) - np.nanmean(self.experimental))
+        return self.rmse / (np.nanmax(self.experimental) - np.nanmean(self.experimental))
 
     @property
     def r(self):

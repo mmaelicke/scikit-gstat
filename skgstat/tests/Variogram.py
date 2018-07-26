@@ -1,19 +1,21 @@
 import unittest
 
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
 from skgstat import Variogram
 
 
 class TestVariogram(unittest.TestCase):
-    def test_standard_settings(self):
-        # check the parameters
+    def setUp(self):
+        # set up default values, whenever c and v are not important
         np.random.seed(42)
-        c = np.random.gamma(10, 4, (30, 2))
+        self.c = np.random.gamma(10, 4, (30, 2))
         np.random.seed(42)
-        v = np.random.normal(10, 4, 30)
+        self.v = np.random.normal(10, 4, 30)
 
-        V = Variogram(c, v)
+    def test_standard_settings(self):
+        V = Variogram(self.c, self.v)
 
         for x, y in zip(V.parameters, [439.405, 281.969, 0]):
             self.assertAlmostEqual(x, y, places=3)
@@ -29,6 +31,35 @@ class TestVariogram(unittest.TestCase):
 
         for x, y in zip(V.parameters, [1.914077, 0.002782, 0]):
             self.assertAlmostEqual(x, y, places=6)
+
+    def test_residuals(self):
+        V = Variogram(self.c, self.v)
+        assert_array_almost_equal(
+            V.residuals,
+            np.array([0.96, -1.19, -0.28, 2.61, -0.9,
+                      -0.43, -0.1, -2.32, -8.61, 10.61]),
+            decimal=2
+        )
+
+    def test_RMSE(self):
+        V = Variogram(self.c, self.v)
+
+        for model, rmse in zip(
+                ['spherical', 'gaussian', 'matern', 'stable'],
+                [4.4968, 4.4878, 4.4905, 4.4878]
+        ):
+            V.set_model(model)
+            self.assertAlmostEqual(V.rmse, rmse, places=4)
+
+    def test_mean_residual(self):
+        V = Variogram(self.c, self.v)
+
+        for model, mr in zip(
+            ['spherical', 'cubic', 'matern', 'stable'],
+            [2.8006, 2.711, 2.7433, 2.7315]
+        ):
+            V.set_model(model)
+            self.assertAlmostEqual(V.mean_residual, mr, places=4)
 
 
 if __name__ == '__main__':
