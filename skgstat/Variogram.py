@@ -25,7 +25,8 @@ class Variogram(object):
                  dist_func='euclidean',
                  bin_func='even',
                  normalize=True,
-                 fit_method='lm',
+                 fit_method='trf',
+                 fit_sigma=None,
                  is_directional=False,
                  azimuth=0,
                  tolerance=45.0,
@@ -36,7 +37,6 @@ class Variogram(object):
                  harmonize=False
                  ):
         """
-        TODO: The cof and cov has to be reset, when: values, maxlag, fit_method
 
         """
         # Set coordinates
@@ -84,8 +84,10 @@ class Variogram(object):
         # specify if the experimental variogram shall be harmonized
         self.harmonize = harmonize
 
-        # set the fitting method
+        # set the fitting method and sigma array
         self.fit_method = fit_method
+        self._fit_sigma = None
+        self.fit_sigma = fit_sigma
 
         # set directionality
         self.is_directional = is_directional
@@ -332,6 +334,77 @@ class Variogram(object):
         else:
             self._maxlag = value
 
+    @property
+    def fit_sigma(self):
+        r"""Fitting Uncertainty
+
+        Set or calculate an array of observation uncertainties aligned to the
+        Variogram.bins. These will be used to weight the observations in the
+        cost function, which divides the residuals by their uncertainty.
+
+        When setting fit_sigma, the array of uncertainties itself can be
+        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq']. The
+        parameters described below refer to the setter of this property.
+
+        Parameters
+        ----------
+        sigma : string, array
+
+
+        Returns
+        -------
+        void
+
+
+        Notes
+        -----
+        The cost function is defined as:
+
+        .. math::
+            chisq = \sum {\frac{r}{\sigma}}^2
+
+        where r are the residuals between the experimental variogram and the
+        modeled values for the same lag. Following this function,
+        small values will increase the influence of that residual, while a very
+        large sigma will cause the observation to be ignored.
+
+        See Also
+        --------
+        scipy.optimize.curve_fit
+
+        """
+        # unweighted
+        if self._fit_sigma is None:
+            return None
+
+        # discrete uncertainties
+        elif isinstance(self._fit_sigma, (list, tuple, np.ndarray)):
+            assert len(self._fit_sigma) == len(self.bins)
+            return self._fit_sigma
+
+        # linear function of distance
+        elif self.fit_sigma == 'linear':
+            return self.bins / np.max(self.bins)
+
+        # e function of distance
+        elif self.fit_sigma == 'exp':
+            return np.exp(1. / (self.bins / np.max(self.bins)))
+
+        # sqrt function of distance
+        elif self.fit_sigma == 'sqrt':
+            return np.sqrt(self.bins / np.max(self.bins))
+
+        # squared function of distance
+        elif self.fit_sigma == 'sq':
+            return (self.bins / np.max(self.bins)) ** 2
+        else:
+            raise ValueError("fit_sigma is not understood. It has to be an " +
+                             "array or one of ['linear', 'exp', 'sqrt', 'sq'].")
+
+    @fit_sigma.setter
+    def fit_sigma(self, sigma):
+        self._fit_sigma = sigma
+
     def lag_groups(self):
         """Lag class groups
 
@@ -403,13 +476,18 @@ class Variogram(object):
         self._calc_diff(force=force)
         self._calc_groups(force=force)
 
-    def fit(self, force=False):
+    def fit(self, force=False, method=None, sigma=None, **kwargs):
         """Fit the variogram
 
         The fit function will fit the theoretical variogram function to the
         experimental. The preprocessed distance matrix, pairwise differences
         and binning will not be recalculated, if already done. This could be
-        forced by setting the force parameter to true
+        forced by setting the force parameter to true.
+
+        In case you call fit function directly, with method or sigma,
+        the parameters set on Variogram object instantiation will get
+        overwritten. All other keyword arguments will be passed to
+        scipy.optimize.curve_fit function.
 
         Parameters
         ----------
@@ -417,12 +495,30 @@ class Variogram(object):
             If set to True, a clean preprocessing of the distance matrix,
             pairwise differences and the binning will be forced. Default is
             False.
+        method : string
+            A string identifying one of the implemented fitting procedures.
+            Can be one of ['lm'].
+              * lm: Levenberg-Marquardt algorithms implemented in
+              scipy.optimize.leastsq function.
+              * trf: Trust Region Reflective algorithm implemented in
+              scipy.optimize.least_squares(method='trf')
+        sigma : string, array
+            Uncertainty array for the bins. Has to have the same dimension as
+            self.bins. Refer to Variogram.fit_sigma for more information.
 
         Returns
         -------
         void
 
+        See Also
+        --------
+        scipy.optimize
+        scipy.optimize.curve_fit
+        scipy.optimize.leastsq
+        scipy.optimize.least_squares
+
         """
+        # TODO: the kwargs need to be preserved somehow
         # delete the last cov and cof
         self.cof = None
         self.cov = None
@@ -434,17 +530,47 @@ class Variogram(object):
         x = self.bins
         y = self.experimental
 
+        # overwrite fit setting if new params are given
+        if method is not None:
+            self.fit_method = method
+        if sigma is not None:
+            self.fit_sigma = sigma
+
         # remove nans
         _x = x[~np.isnan(y)]
         _y = y[~np.isnan(y)]
 
-        if self.fit_method == 'lm':
+        # the model function is re-defined. otherwise scipy cannot determine
+        # the number of parameters
+        # TODO: def f(n of par)
+
+        # Switch the method
+        # Trust Region Reflective
+        if self.fit_method == 'trf':
             bounds = (0, self.__get_fit_bounds(x, y))
-            self.cof, self.cov = curve_fit(self._model, _x, _y,
-                                           p0=bounds[1], bounds=bounds)
+            self.cof, self.cov = curve_fit(
+                self._model,
+                _x, _y,
+                method='trf',
+                sigma=self.fit_sigma,
+                p0=bounds[1],
+                bounds=bounds,
+                **kwargs
+            )
+
+        # Levenberg-Marquardt
+        elif self.fit_method == 'lm':
+            self.cof, self.cov = curve_fit(
+                self.model,
+                _x, _y,
+                method='lm',
+                sigma=self.fit_sigma,
+                **kwargs
+            )
 
         else:
-            raise ValueError('Only the lm function is supported at the moment.')
+            raise ValueError('Only the \'lm\' and \'trf\' algorithms are ' +
+                             'supported at the moment.')
 
     def transform(self, x):
         """Transform
