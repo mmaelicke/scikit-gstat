@@ -590,12 +590,6 @@ class Variogram(object):
         void
 
         """
-#        if force:
-#            self._dist = None
-#            self._diff = None
-#            self._bins = None
-#            self._groups = None
-
         # call the _calc functions
         self._calc_distances(force=force)
         self._calc_diff(force=force)
@@ -1042,12 +1036,65 @@ class Variogram(object):
         return np.sqrt(rsum / len(model))
 
     @property
-    def NRMSE(self):
+    def nrmse(self):
+        r"""NRMSE
+
+        Calculate the normalized root mean squared error between the
+        experimental variogram and the theoretical model values at
+        corresponding lags. Can be used as a fitting quality measure
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.residuals
+        Variogram.rmse
+
+        Notes
+        -----
+
+        The NRMSE is implemented as:
+
+        .. math::
+
+            NRMSE = \frac{RMSE}{mean(y)}
+
+        where RMSE is Variogram.rmse and y is Variogram.experimental
+
+
+        """
         return self.rmse / np.nanmean(self.experimental)
 
     @property
-    def NRMSE_r(self):
-        return self.rmse / (np.nanmax(self.experimental) - np.nanmean(self.experimental))
+    def nrmse_r(self):
+        r"""NRMSE
+
+        Alternative normalized root mean squared error between the
+        experimental variogram and the theoretical model values at
+        corresponding lags. Can be used as a fitting quality measure.
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.rmse
+        Variogram.nrmse
+
+        Notes
+        -----
+        Unlike Variogram.nrmse, nrmse_r is not normalized to the mean of y,
+        but the differece of the maximum y to its mean:
+
+        .. math::
+            NRMSE_r = \frac{RMSE}{max(y) - mean(y)}
+
+        """
+        _y = self.experimental
+        return self.rmse / (np.nanmax(_y) - np.nanmean(_y))
 
     @property
     def r(self):

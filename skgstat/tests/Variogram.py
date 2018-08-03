@@ -41,7 +41,7 @@ class TestVariogram(unittest.TestCase):
             decimal=2
         )
 
-    def test_RMSE(self):
+    def test_rmse(self):
         V = Variogram(self.c, self.v)
 
         for model, rmse in zip(
@@ -60,6 +60,21 @@ class TestVariogram(unittest.TestCase):
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.mean_residual, mr, places=4)
+
+    def test_nrmse(self):
+        V = Variogram(self.c, self.v, n_lags=15)
+
+        for model, nrmse in zip(
+            ['spherical', 'gaussian', 'stable', 'exponential'],
+            [0.4751, 0.4784, 0.4598, 0.4695]
+        ):
+            V.set_model(model)
+            self.assertAlmostEqual(V.nrmse, nrmse, places=4)
+
+    def test_nrmse_r(self):
+        V = Variogram(self.c, self.v, estimator='cressie')
+
+        self.assertAlmostEqual(V.nrmse_r, 0.40796, places=5)
 
 
 if __name__ == '__main__':
