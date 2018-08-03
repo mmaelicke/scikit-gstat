@@ -234,9 +234,20 @@ class Variogram(object):
         return squareform(self._diff)
 
     def set_values(self, values):
-        assert len(values) == len(self._X)
+        # check dimensions
+        if not len(values) == len(self._X):
+            raise ValueError('The length of the values array has to match' +
+                             'the length of coordinates')
+
+        # reset fitting parameter
         self.cof, self.cov = None, None
         self._diff = None
+
+        # use an array
+        _y = np.asarray(values)
+        if not _y.ndim == 1:
+            raise ValueError('The values shall be a 1-D array.' +
+                             'Multi-dimensional values not supported yet.')
 
         # set new values
         self._values = np.asarray(values)
