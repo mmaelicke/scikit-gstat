@@ -92,7 +92,7 @@ def cressie(x):
     -----
 
     This implementation is done after the publication by Cressie and Hawkins
-    from 1980 [1]_:
+    from 1980 [3]_:
 
     .. math ::
         2\gamma (h) = \frac{(\frac{1}{N(h)} \sum_{i=1}^{N(h)} |x|^{0.5})^4}
@@ -108,7 +108,7 @@ def cressie(x):
     References
     ----------
 
-    .. [1] Cressie, N., and D. Hawkins (1980): Robust estimation of the
+    .. [3] Cressie, N., and D. Hawkins (1980): Robust estimation of the
        variogram. Math. Geol., 12, 115-125.
 
 
@@ -132,30 +132,56 @@ def cressie(x):
     return nominator / (2 * denominator)
 
 
-def dowd_depr(X):
+def dowd(x):
+    r"""Dowd semi-variance
+
+    Calculates the Dowd semi-variance from an array of pairwise
+    differences. Returns the semi-variance for the whole array. In case a
+    semi-variance is needed for multiple groups, this function has to be
+    mapped on each group. That is the typical use case in geostatistics.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
+
+    Returns
+    -------
+    numpy.float64
+
+    Notes
+    -----
+    The Dowd estimator is based on the median of all pairwise differences in
+    each lag class and is therefore robust to exteme values at the cost of
+    variability.
+    This implementation is done after the publication _[4]:
+
+    .. math::
+
+        2\gamma (h) = 2.198 * {median(x)}^2
+
+    with:
+
+    .. math::
+        x = (Z(x_i) - Z(x_{i+1})
+
+    where x is exactly the input array x.
+
+    References
+    ----------
+
+    .. [4] Dowd, P. A., (1984): The variogram and kriging: Robust and resistant
+       estimators, in Geostatistics for Natural Resources Characterization.
+       Edited by G. Verly et al., pp. 91 - 106, D. Reidel, Dordrecht.
+
     """
-    Return the Dowd Variogram of the given sample X.
-    X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h ...., xn, xn + h.
-    If X.ndim > 1, dowd will be called recursively and a list of Cressie-Hawkins Variances is returned.
+    # convert
+    x = np.asarray(x)
 
-    Dowd, P. A., (1984): The variogram and kriging: Robust and resistant estimators, in Geostatistics for Natural
-        Resources Characterization. Edited by G. Verly et al., pp. 91 - 106, D. Reidel, Dordrecht.
-
-    :param X:
-    :return:
-    """
-    _X = np.array(X)
-
-    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
-        return np.array([dowd(_) for _ in _X])
-
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'.format(_X))
-
-    # calculate
-    term1 = np.nanmedian([np.abs(_X[i] - _X[i + 1]) for i in np.arange(0, len(_X) - 1, 2)])
-    return 0.5 * (2.198 * np.power(term1, 2))
+    return 2.198 * np.nanmedian(x)**2
 
 
 def genton_depr(X):
