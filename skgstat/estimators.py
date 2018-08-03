@@ -184,32 +184,31 @@ def dowd(x):
     return 2.198 * np.nanmedian(x)**2
 
 
-def genton_depr(X):
+@jit
+def genton(x):
     r""" Genton robust semi-variance estimator
 
-    Return the Genton Variogram of the given sample X. Genton is a highly
+    Return the Genton Variogram of the given sample x. Genton is a highly
     robust varigram estimator, that is designed to be location free and
-    robust on extreme values in X.
+    robust on extreme values in x.
     Genton is based on calculating kth order statistics and will for large
     data sets be close or equal to the 25% quartile of all ordered point pairs
     in X.
 
     Parameters
     ----------
-    X : list, numpy.ndarray
-        X has to be an even-length array of point pairs like:
-        x1, x1+h, x2, x2+h ...., xn, xn + h.
-        If X.ndim > 1, genton will be called recursively and a list of Genton
-        variances is returned.
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
 
     Returns
     -------
-    list
-    float
+    numpy.float64
 
     Notes
     -----
-
     The Genton estimator is described in great detail in the original
     publication [1]_ and befined as:
 
@@ -223,9 +222,9 @@ def genton_depr(X):
 
      .. math:: q = \binom{N_h}{2}
 
-     where k is the kth qunatile of all q point pairs. For large N (k/q) will be
+     where k is the kth quantile of all q point pairs. For large N (k/q) will be
      close to 0.25. For N >= 500, (k/q) is close to 0.25 by two decimals and
-     will therefore be set to 0.5 and the two binomial coeffiecents k,
+     will therefore be set to 0.5 and the two binomial coefficients k,
      q are not calculated.
 
     References
@@ -235,38 +234,37 @@ def genton_depr(X):
         Math. Geol., 30, 213 - 221.
 
     """
-    _X = np.array(X)
+    x = np.array(x)
 
-    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
-        return np.array([genton(_) for _ in _X])
+    # get length
+    n = x.size
 
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'
-                         .format(_X))
-    else:
-        N = len(_X) / 2
+    if n < 2:
+        return np.nan
+
+    # pre-populate y => we need (n*n -n) / 2
+    y = np.zeros(int((n*n - n) / 2))
 
     # calculate
-    try:
-        y = [np.abs((_X[i] - _X[i + 1]) - (_X[j]) - _X[j + 1])
-             for i in np.arange(0, len(_X), 2)
-             for j in np.arange(0, len(_X), 2) if i < j]
+    z = 0
+    for i in range(n):
+        for j in range(n):
+            if i < j:
+                y[z] = np.abs(x[i] - x[j])
+                z += 1
 
-        # if N > 500, (k/q) will be ~ 1/4 anyway
-        if N >= 500:
-            k, q, = 1, 4
-        else:
-            # get k  k is binom(N(x)/2+1, 2)
-            k = binom(N / 2 + 1, 2)
+    # if N > 500, (k/q) will be ~ 1/4 anyway
+    if n >= 500:
+        k, q, = 1, 4
+    else:
+        # get k  k is binom(N(x)/2+1, 2)
+        k = binom(n / 2 + 1, 2)
 
-            # get q. Genton needs the kth quantile of q
-            q = binom(N, 2)
+        # get q. Genton needs the kth quantile of q
+        q = binom(n, 2)
 
-        # return the kth percentile
-        return 0.5 * np.power(2.219 * np.percentile(y, (k / q)), 2)
-    except ZeroDivisionError:  # pragma: no cover
-        return np.nan
+    # return the kth percentile
+    return 0.5 * np.power(2.219 * np.percentile(y, (k / q)), 2)
 
 
 def minmax_depr(X):

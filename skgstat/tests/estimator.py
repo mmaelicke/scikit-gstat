@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 
-from skgstat.estimators import matheron, cressie, dowd
+from skgstat.estimators import matheron, cressie, dowd, genton
 
 
 class TestEstimator(unittest.TestCase):
@@ -42,6 +42,15 @@ class TestEstimator(unittest.TestCase):
         # test
         self.assertAlmostEqual(dowd(x1), 2.0873, places=4)
         self.assertAlmostEqual(dowd(x2), 3170.97, places=2)
+
+    def test_genton(self):
+        np.random.seed(42)
+        x1 = np.random.gamma(40, 2, 100)
+        np.random.seed(42)
+        x2 = np.random.gamma(30, 5, 1000)
+
+        self.assertAlmostEqual(genton(x1), 0.0089969, places=7)
+        self.assertAlmostEqual(genton(x2), 0.0364393, places=7)
 
 
 if __name__ == '__main__':

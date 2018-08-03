@@ -37,8 +37,8 @@ The estimators include:
 
 - matheron
 - cressie
-- dowd (not re-implemented)
-- genton  (not re-implemented)
+- dowd
+- genton
 - entropy  (not re-implemented)
 - bin quantiles  (not re-implemented)
 
