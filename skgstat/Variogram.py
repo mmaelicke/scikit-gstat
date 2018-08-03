@@ -279,7 +279,7 @@ class Variogram(object):
         if self._bins is None:
             self._bins = self.bin_func(self.distance, self.n_lags, self.maxlag)
 
-        return self._bins
+        return self._bins.copy()
 
     @bins.setter
     def bins(self, bins):
@@ -849,7 +849,7 @@ class Variogram(object):
             y[i] = self._estimator(lag_values)
 
         # apply
-        return y
+        return y.copy()
 
     @property
     def isotonic(self):
@@ -1174,7 +1174,7 @@ class Variogram(object):
         """
         # fit, if not already done
         if self.cof is None:
-            self.fit()
+            self.fit(force=True)
 
         # scale sill and range
         if self.normalized:
@@ -1224,16 +1224,6 @@ class Variogram(object):
         else:
             return list([d['range'], d['sill'], d['nugget']])
 
-    @property
-    def hist(self):
-        """
-        Return a histogram for the present bins in the Variogram. The bin matrix bm will be unstacked and counted.
-        Variogram.bins, Variogram.hist could be used to produce a properly labeled histogram.
-
-        :return:
-        """
-        raise NotImplementedError
-
     def to_DataFrame(self, n=100, force=False):
         """Variogram DataFrame
 
@@ -1267,75 +1257,116 @@ class Variogram(object):
             self._model.__name__: data}
         ).copy()
 
-    def plot(self, axes=None, grid=True, show=True, cof=None):
+    def plot(self, axes=None, grid=True, show=True, hist=True):
+        """Variogram Plot
+
+        Plot the experimental variogram, the fitted theoretical function and
+        an histogram for the lag classes. The axes attribute can be used to
+        pass a list of AxesSubplots or a single instance to the plot
+        function. Then these Subplots will be used. If only a single instance
+        is passed, the hist attribute will be ignored as only the variogram
+        will be plotted anyway.
+
+        Parameters
+        ----------
+        axes : list, tuple, array, AxesSubplot or None
+            If None, the plot function will create a new matplotlib figure.
+            Otherwise a single instance or a list of AxesSubplots can be
+            passed to be used. If a single instance is passed, the hist
+            attribute will be ignored.
+        grid : bool
+            Defaults to True. If True a custom grid will be drawn through
+            the lag class centers
+        show : bool
+            Defaults to True. If True, the show method of the passed or
+            created matplotlib Figure will be called before returning the
+            Figure. This should be set to False, when used in a Notebook,
+            as a returned Figure object will be plotted anyway.
+        hist : bool
+            Defaults to True. If False, the creation of a histogram for the
+            lag classes will be suppressed.
+
+        Returns
+        -------
+        matplotlib.Figure
+
         """
-        Plot the variogram, including the experimental and theoretical variogram. By default, the experimental data
-        will be represented by blue points and the theoretical model by a green line.
-
-        TODO: REWORK this
-
-        :return:
-        """
-        raise NotImplementedError
-        try:
-            _bin, _exp = self.bins, self.experimental
-            if cof is None:
-                x, data = self.data
-            else:
-                x = np.linspace(0, 1, 100) if self.normalized else np.linspace(0, np.nanmax(_bin), 100)
-                data = self._model(x, *cof)
-            _hist = self.hist
-        except Exception as e:
-            raise RuntimeError('A chart could not be drawn, as the input data is not complete. Please calculate the Variogram first.\nDetailed message: %s.' % str(e))
-
-        # handle the relative experimental variogram
-        if self.normalized:
-            _bin /= np.nanmax(_bin)
-            _exp /= np.nanmax(_exp)
+        # get the parameters
+        _bins = self.bins
+        _exp = self.experimental
+        x = np.linspace(0, np.nanmax(_bins), 100)  # make the 100 a param?
 
         # do the plotting
         if axes is None:
-            fig = plt.figure()
-            ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
-            ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
-            fig.subplots_adjust(hspace=0)
-        else:
+            if hist:
+                fig = plt.figure(figsize=(8, 5))
+                ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
+                ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
+                fig.subplots_adjust(hspace=0)
+            else:
+                fig, ax1 = plt.subplots(1, 1, figsize=(8, 4))
+                ax2 = None
+        elif isinstance(axes, (list, tuple, np.ndarray)):
             ax1, ax2 = axes
             fig = ax1.get_figure()
+        else:
+            ax1 = axes
+            ax2 = None
+            fig = ax1.get_figure()
 
-        # calc histgram bar width
-        # bar use 70% of the axis, w is the total width divided by amount of bins in the histogram
-        w = (np.max(_bin) * 0.7) / len(_hist)
+        # apply the model
+        y = self.transform(x)
 
+        # handle the relative experimental variogram
+        if self.normalized:
+            _bins /= np.nanmax(_bins)
+            y /= np.max(_exp)
+            _exp /= np.nanmax(_exp)
+            x /= np.nanmax(x)
+
+        # ------------------------
         # plot Variograms
-
-        # if last_bin is set, plot only considered bins in blue, excluded in red
-        ax1.plot(_bin, _exp, '.b')
-        ax1.plot(x, data, '-g')
-
-        if hasattr(self, 'last_bin'):
-            ax1.plot(_bin[self.last_bin:], _exp[self.last_bin:], '.r')
-
-
-        # plot histogram
-        ax2.bar(_bin, _hist, width=w, align='center')
-        # adjust
-        plt.setp(ax2.axes.get_xticklabels(), visible=False)
-        ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
+        ax1.plot(_bins, _exp, '.b')
+        ax1.plot(x, y, '-g')
 
         # ax limits
         if self.normalized:
             ax1.set_xlim([0, 1.05])
             ax1.set_ylim([0, 1.05])
-
         if grid:
-            ax1.vlines(_bin, *ax1.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
-            ax2.vlines(_bin, *ax2.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
-
+            ax1.grid('off')
+            ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85),
+                       linestyles='dashed')
         # annotation
         ax1.axes.set_ylabel('semivariance (%s)' % self._estimator.__name__)
         ax1.axes.set_xlabel('Lag (-)')
-        ax2.axes.set_ylabel('N')
+
+        # ------------------------
+        # plot histogram
+        if ax2 is not None and hist:
+            # calc the histogram
+            _count = np.fromiter(
+                (g.size for g in self.lag_classes()), dtype=int
+            )
+
+            # set the sum of hist bar widths to 70% of the x-axis space
+            w = (np.max(_bins) * 0.7) / len(_count)
+
+            # plot
+            ax2.bar(_bins, _count, width=w, align='center', color='red')
+
+            # adjust
+            plt.setp(ax2.axes.get_xticklabels(), visible=False)
+            ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
+
+            # need a grid?
+            if grid:
+                ax2.grid('off')
+                ax2.vlines(_bins, *ax2.axes.get_ybound(),
+                           colors=(.85, .85, .85), linestyles='dashed')
+
+            # anotate
+            ax2.axes.set_ylabel('N')
 
         # show the figure
         if show:
