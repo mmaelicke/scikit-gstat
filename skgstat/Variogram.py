@@ -332,7 +332,6 @@ class Variogram(object):
             elif estimator_name.lower() == 'percentile':
                 self._estimator = estimators.percentile
             elif estimator_name.lower() == 'entropy':
-                raise NotImplementedError
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
@@ -861,8 +860,22 @@ class Variogram(object):
         # prepare the result array
         y = np.zeros(len(self.bins))
 
-        for i, lag_values in enumerate(self.lag_classes()):
-            y[i] = self._estimator(lag_values)
+        # args, can set the bins for entropy
+        # and should set p of percentile, not properly implemented
+        if self._estimator.__name__ == 'entropy':
+            bins = np.linspace(
+                np.min(self.distance),
+                np.max(self.distance),
+                50
+            )
+            # apply
+            for i, lag_values in enumerate(self.lag_classes()):
+                y[i] = self._estimator(lag_values, bins=bins)
+
+        # default
+        else:
+            for i, lag_values in enumerate(self.lag_classes()):
+                y[i] = self._estimator(lag_values)
 
         # apply
         return y.copy()

@@ -39,7 +39,7 @@ The estimators include:
 - cressie
 - dowd
 - genton
-- entropy  (not re-implemented)
+- entropy
 - two experimental ones: quantiles, minmax
 
 The models include:

@@ -324,56 +324,53 @@ def percentile(x, p=50):
     return np.percentile(x, q=p)
 
 
-def entropy_depr(X, bins=None):
+def entropy(x, bins=None):
+    """Shannon Entropy estimator
+
+    Calculates the Shannon Entropy H as a variogram estimator. It is highly
+    recommended to calculate the bins and explicitly set them as a list.
+    In case this function is called for more than one lag class in a
+    variogram, setting bins to None would result in different bin edges in
+    each lag class. This would be very difficult to interpret.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
+    bins : int, list, str
+        list of the bin edges used to calculate the empirical distribution of x.
+        If bins is a list, these values are used directly. In case bins is a
+        integer, as many even width bins will be calculated between the
+        minimum and maximum value of x. In case bins is a string, it will be
+        passed as bins argument to numpy.histograms function.
+
+    Returns
+    -------
+    entropy : numpy.float64
+        Shannon entropy of the given pairwise differences.
+
+    Notes
+    -----
+
     """
-    Use the Shannon Entropy H to describe the distribution of the given sample.
-    For calculating the Shannon Entropy, the bin edges are needed and can be passed as pk.
-    If pk is None, these edges will be calculated using the numpy.histogram function with bins='fq'.
-    This uses Freedman Diacons Estimator and is fairly resilient to outliers.
-    If the input data X is 2D (Entropy for more than one bin needed), it will derive the histogram once and
-    use the same edges in all bins.
-    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.5
+    x = np.asarray(x)
 
-    # TODO: handle the 0s in output of X
-
-    :param X:  np.ndarray with the given sample to calculate the Shannon entropy from
-    :param bins: The bin edges for entropy calculation, or an amount of even spaced bins
-    :return:
-    """
-    _X = np.array(X)
-
-    # helper function
-    ppairs = lambda x: [np.abs(x[i] - x[i+1]) for i in np.arange(0, len(x), 2)]
-
-    if any([isinstance(_, (list, np.ndarray)) for _ in _X]):
-        # if bins is not set, use the histogram over the full value range
-        if bins is None:
-            # could not fiugre out a better way here. I need the values before calculating the entropy
-            # in order to use the full value range in all bins
-            allp = [ppairs(_) for _ in _X]
-            minv = np.min(list(map(np.min, allp)))
-            maxv = np.max(list(map(np.max, allp)))
-            bins = np.linspace(minv, maxv, 50).tolist() + [maxv] # have no better idea to include the end edge as well
-        return np.array([entropy(_, bins=bins) for _ in _X])
-
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'.format(_X))
-
-    # calculate the values
-    vals = ppairs(_X)
-
-    # claculate the bins
     if bins is None:
         bins = 15
 
-    # get the amounts
-    amt = np.histogram(vals, bins=bins)[0]
+    # calculate the histogram
+    count = np.histogram(x, bins=bins)[0]
 
-    # add a very small value to the p, otherwise the log2 will be -inf.
-    p = (amt / np.sum(amt)) + 1e-5
-    info = lambda p: -np.log2(p)
+    # get the probability and add 1e-5 to prevent log2 of -inf
+    p = (count / np.sum(count)) + 1e-5
 
     # map info to p and return the inner product
     return np.fromiter(map(info, p), dtype=np.float).dot(p)
 
+
+@jit
+def info(p):
+    return - np.log2(p)
