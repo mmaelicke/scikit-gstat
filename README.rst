@@ -40,16 +40,16 @@ The estimators include:
 - dowd
 - genton
 - entropy  (not re-implemented)
-- bin quantiles  (not re-implemented)
+- two experimental ones: quantiles, minmax
 
 The models include:
 
 - sperical
 - exponential
-- gaussian
-- cubic
-- stable
-- matérn
+- gaussian      (unittests missing)
+- cubic         (unittests missing)
+- stable        (unittests missing)
+- matérn        (unittests missing)
 
 with all of them in a nugget and no-nugget variation. All the estimator functions are written `numba` compatible,
 which will be a future dependency.
@@ -59,13 +59,9 @@ At the current stage, the package does not include any kriging. This is planned 
 Installation
 ~~~~~~~~~~~~
 
-You can either install scikit-gstat using pip or you download the latest version from github.
-
-PyPI:
-
-.. code-block:: bash
-
-  pip install scikit-gstat
+While version 0.2 is developed on the dev branch, it will not be uploaded to
+PyPI. Once stable, this branch will be merged into the master branch and
+therefore be available on PyPI again.
 
 GIT:
 

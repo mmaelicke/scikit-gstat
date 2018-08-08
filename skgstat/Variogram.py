@@ -1207,7 +1207,7 @@ class Variogram(object):
         rdict = dict(
             name=self._model.__name__,
             estimator=self._estimator.__name__,
-            range=cof[0] * maxlag,
+            effective_range=cof[0] * maxlag,
             sill=cof[1] * maxvar,
             nugget=cof[-1] * maxvar if self.use_nugget else 0
         )
@@ -1232,13 +1232,27 @@ class Variogram(object):
         if 'error' in d:
             return [None, None, None]
         elif self._model.__name__ == 'matern':
-            return list([d['range'], d['sill'], d['smoothness'], d['nugget']])
+            return list([
+                d['effective_range'],
+                d['sill'],
+                d['smoothness'],
+                d['nugget']
+            ])
         elif self._model.__name__ == 'stable':
-            return list([d['range'], d['sill'], d['shape'], d['nugget']])
+            return list([
+                d['effective_range'],
+                d['sill'],
+                d['shape'],
+                d['nugget']
+            ])
         elif self._model.__name__ == 'nugget':
             return list([d['nugget']])
         else:
-            return list([d['range'], d['sill'], d['nugget']])
+            return list([
+                d['effective_range'],
+                d['sill'],
+                d['nugget']
+            ])
 
     def to_DataFrame(self, n=100, force=False):
         """Variogram DataFrame
