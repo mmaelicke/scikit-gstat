@@ -188,7 +188,7 @@ def dowd(x):
 def genton(x):
     r""" Genton robust semi-variance estimator
 
-    Return the Genton Variogram of the given sample x. Genton is a highly
+    Return the Genton semi-variance of the given sample x. Genton is a highly
     robust varigram estimator, that is designed to be location free and
     robust on extreme values in x.
     Genton is based on calculating kth order statistics and will for large
@@ -267,59 +267,61 @@ def genton(x):
     return 0.5 * np.power(2.219 * np.percentile(y, (k / q)), 2)
 
 
-def minmax_depr(X):
+def minmax(x):
+    """Minimum - Maximum Estimator
+
+    Returns a custom value. This estimator is the difference of maximum and
+    minimum pairwise differences, normalized by the mean. MinMax will be very
+    sensitive to extreme values.
+
+    Do only use this estimator, in case you know what you are doing. It is
+    experimental and might change its behaviour in a future version.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
+
+    Returns
+    -------
+    numpy.float64
+
     """
-    Returns the MinMax Semivariance of sample X pairwise differences.
-    X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h, ..., xn, xn+h.
+    x = np.asarray(x)
 
-    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.5
+    return (np.nanmax(x) - np.nanmin(x)) / np.nanmean(x)
 
-    :param X:
-    :return:
+
+def percentile(x, p=50):
+    """Percentile estimator
+
+    Returns a given percentile as semi-variance. Do only use this estimator,
+    in case you know what you are doing.
+
+    Do only use this estimator, in case you know what you are doing. It is
+    experimental and might change its behaviour in a future version.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of pairwise differences. These values should be the distances
+        between pairwise observations in value space. If xi and x[i+h] fall
+        into the h separating distance class, x should contain abs(xi - x[i+h])
+        as an element.
+    p : int
+        Desired percentile. Should be given as whole numbers 0 < p < 100.
+
+    Returns
+    -------
+    np.float64
+
     """
-    _X = np.asarray(X)
+    x = np.asarray(x)
 
-    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
-        return [minmax(_) for _ in _X]
-
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'.format(_X))
-
-    # calculate the point pair values
-    # helper function
-    ppairs = lambda x: [np.abs(x[i] - x[i+1]) for i in np.arange(0, len(x), 2)]
-    p = ppairs(_X)
-
-    return (np.nanmax(p) - np.nanmin(p)) / np.nanmean(p)
-
-
-def percentile_depr(X, p=50):
-    """
-    Returns the wanted percentile of sample X pairwise differences.
-    X has to be an even-length array of point pairs like: x1, x1+h, x2, x2+h, ..., xn, xn+h.
-
-    CAUTION: this is actually an changed behaviour to scikit-gstat<=0.1.5
-
-    :param X: np.ndarray with the given sample to calculate the Semivariance from
-    :param p: float with the percentile of sample X
-    :return:
-    """
-    _X = np.asarray(X)
-
-    if any([isinstance(_, list) or isinstance(_, np.ndarray) for _ in _X]):
-        return [percentile(_) for _ in _X]
-
-    # check even
-    if len(_X) % 2 > 0:
-        raise ValueError('The sample does not have an even length: {}'.format(_X))
-
-    # calculate the point pair values
-    # helper function
-    ppairs = lambda x: [np.abs(x[i] - x[i+1]) for i in np.arange(0, len(x), 2)]
-    pairs = ppairs(_X)
-
-    return np.percentile(pairs, q=p)
+    return np.percentile(x, q=p)
 
 
 def entropy_depr(X, bins=None):

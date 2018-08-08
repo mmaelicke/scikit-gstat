@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 
 from skgstat.estimators import matheron, cressie, dowd, genton
+from skgstat.estimators import minmax, percentile
 
 
 class TestEstimator(unittest.TestCase):
@@ -51,6 +52,29 @@ class TestEstimator(unittest.TestCase):
 
         self.assertAlmostEqual(genton(x1), 0.0089969, places=7)
         self.assertAlmostEqual(genton(x2), 0.0364393, places=7)
+
+    def test_genton_nan(self):
+        # genton cannot be solved for only one element
+        self.assertTrue(np.isnan(genton([0.1])))
+
+    def test_minmax_skew(self):
+        # heavily skewed gamma
+        np.random.seed(1306)
+        x = np.random.gamma(15, 20, 100)
+        self.assertAlmostEqual(minmax(x), 1.5932, places=4)
+
+    def test_minmax_pow(self):
+        # L-stable pareto
+        np.random.seed(2409)
+        x = np.random.pareto(2, 10)
+        self.assertAlmostEqual(minmax(x), 2.5, places=2)
+
+    def test_percentile(self):
+        np.random.seed(42)
+        x = np.abs(np.random.normal(0, 1, 100000))
+
+        self.assertAlmostEqual(percentile(x), 0.67588, places=5)
+        self.assertAlmostEqual(percentile(x, 20), 0.25277, places=5)
 
 
 if __name__ == '__main__':

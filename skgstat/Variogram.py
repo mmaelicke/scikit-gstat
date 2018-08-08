@@ -329,15 +329,20 @@ class Variogram(object):
                 self._estimator = estimators.genton
             elif estimator_name.lower() == 'minmax':
                 self._estimator = estimators.minmax
+            elif estimator_name.lower() == 'percentile':
+                self._estimator = estimators.percentile
             elif estimator_name.lower() == 'entropy':
+                raise NotImplementedError
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
                     'Variogram estimator %s is not understood, please' +
                     'provide the function.' % estimator_name
                 )
-        else:
+        elif callable(estimator_name):
             self._estimator = estimator_name
+        else:
+            raise ValueError('The estimator has to be a string or callable.')
 
     @property
     def model(self):
