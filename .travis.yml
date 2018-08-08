@@ -30,5 +30,6 @@ install:
   - pip install codecov
 script:
   - nosetests --with-coverage --cover-package=skgstat
+  - nosetests --with-coverage --cover-package=skgstat
 after_success:
   - codecov
