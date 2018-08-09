@@ -107,6 +107,52 @@ class TestModels(unittest.TestCase):
         for r, m in zip(result, model):
             self.assertAlmostEqual(r, m, places=2)
 
+    def test_stable_default(self):
+        # extract the actual function
+        f = stable.py_func
+
+        result = [9.05, 23.53, 75.2, 95.02, 99.98]
+        model = list(map(f, self.h, [50]*5, [100]*5, [1.5]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_stable_nugget(self):
+        # extract the actual function
+        f = stable.py_func
+
+        result = [8.77, 10.8, 12.75, 13.91, 14.99]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [20] * 5, [10] * 5, [0.5] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_matern_default(self):
+        # extract the actual function
+        f = matern.py_func
+
+        result = [24.64, 43.2, 81.68, 94.09, 99.65]
+        model = list(map(f, self.h, [50]*5, [100]*5, [0.5]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_matern_nugget(self):
+        # extract the actual function
+        f = matern.py_func
+
+        result = [3.44, 8.52, 12.99, 14., 15.]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [20] * 5, [10] * 5, [8] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
 
 class TestVariogram(unittest.TestCase):
     def test_scalar(self):

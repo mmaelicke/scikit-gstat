@@ -96,9 +96,9 @@ def exponential(h, r, c0, b=0):
     r : float
         The effective range. Note this is not the range parameter! For the
         exponential variogram function the range parameter a is defined to be
-        :math:`a=\frac{r}{3}`. The effetive range is the lag where 95% of the
+        :math:`a=\frac{r}{3}`. The effective range is the lag where 95% of the
         sill are exceeded. This is needed as the sill is only approached
-        asymtotically by an exponential function.
+        asymptotically by an exponential function.
     c0 : float
         The sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
@@ -156,7 +156,7 @@ def gaussian(h, r, c0, b=0):
         exponential variogram function the range parameter a is defined to be
         :math:`a=\frac{r}{3}`. The effetive range is the lag where 95% of the
         sill are exceeded. This is needed as the sill is only approached
-        asymtotically by an exponential function.
+        asymptotically by an exponential function.
     c0 : float
         The sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
@@ -255,19 +255,114 @@ def cubic(h, r, c0, b=0):
 
 @variogram
 @jit
-def stable(h, a, C0, s, b=0):
+def stable(h, r, c0, s, b=0):
+    r"""Stable Variogram function
+
+    Implementation of the stable variogram function. Calculates the
+    dependent variable for a given lag (h). The nugget (b) defaults to be 0.
+
+    Parameters
+    ----------
+    h : float
+        Specifies the lag of separating distances that the dependent variable
+        shall be calculated for. It has to be a positive real number.
+    r : float
+        The effective range. Note this is not the range parameter! For the
+        stable variogram function the range parameter a is defined to be
+        :math:`a = \frac{r}{3^{\frac{1}{s}}}`. The effective range is the lag
+        where 95% of the sill are exceeded. This is needed as the sill is
+        only approached asymptotically by the e-function part of the stable
+        model.
+    c0 : float
+        The sill of the variogram, where it will flatten out. The function
+        will not return a value higher than C0 + b.
+    s : float
+        Shape parameter. For s <= 2 the model will be shaped more like a
+        exponential or spherical model, for s > 2 it will be shaped most like
+        a Gaussian function.
+    b : float
+        The nugget of the variogram. This is the value of independent
+        variable at the distance of zero. This is usually attributed to
+        non-spatial variance.
+
+    Returns
+    -------
+    gamma : numpy.float64
+        Unlike in most variogram function formulas, which define the function
+        for :math:`2*\gamma`, this function will return :math:`\gamma` only.
+
+    Notes
+    -----
+    The implementation is:
+
+    .. math::
+        \gamma = b + C_0 * \left({1. - e^{- {\frac{h}{a}}^s}}\right)
+
+    a is the range parameter and is calculated from the effective range r as:
+
+    .. math::
+        a = \frac{r}{3^{\frac{1}{s}}}
+
+    """
     # prepare parameters
-    r = a * math.pow(3, 1 / s)
+    a = r / np.power(3, 1 / s)
 
 #    if s > 2:
 #        s = 2
-    return b + C0 * (1. - math.exp(- math.pow(h / r, s)))
+    return b + c0 * (1. - math.exp(- math.pow(h / a, s)))
 
 
 @variogram
-# @jit
-def matern(h, a, C0, s, b=0):
-    # prepare parameters
-    r = a
+@jit
+def matern(h, r, c0, s, b=0):
+    r"""Matérn Variogram function
 
-    return b + C0 * (1 - ( (1 / (np.power(2, s - 1) * special.gamma(s))) * np.power(h / r, s) * special.kv(s, h / r) ))
+    Implementation of the Matérn variogram function. Calculates the
+    dependent variable for a given lag (h). The nugget (b) defaults to be 0.
+
+    Parameters
+    ----------
+    h : float
+        Specifies the lag of separating distances that the dependent variable
+        shall be calculated for. It has to be a positive real number.
+    r : float
+        The effective range. Note this is not the range parameter! For the
+        Matérn variogram function the range parameter a is defined to be
+        :math:`a = \frac{r}{2}`. The effective range is the lag
+        where 95% of the sill are exceeded. This is needed as the sill is
+        only approached asymptotically by Matérn model.
+    c0 : float
+        The sill of the variogram, where it will flatten out. The function
+        will not return a value higher than C0 + b.
+    s : float
+        Smoothness parameter. The smoothness parameter can shape a smooth or
+        rough variogram function. A value of 0.5 will yield the exponential
+        function, while a smoothness of +inf is exactly the Gaussian model.
+        Typically a value of 10 is close enough to Gaussian shape to simulate
+        its behaviour. Low values are considered to be 'smooth', while larger
+        values are considered to describe a 'rough' random field.
+    b : float
+        The nugget of the variogram. This is the value of independent
+        variable at the distance of zero. This is usually attributed to
+        non-spatial variance.
+
+    Returns
+    -------
+    gamma : numpy.float64
+        Unlike in most variogram function formulas, which define the function
+        for :math:`2*\gamma`, this function will return :math:`\gamma` only.
+
+    Notes
+    -----
+    The formula and references will follow.
+
+    """
+    # prepare parameters
+    # TODO: depend a on s, for 0.5 should be 3, above 10 should be 3
+    a = r / 2.
+
+    # calculate
+    return b + c0 * (1. - (2 / special.gamma(s)) *
+                     np.power((h * np.sqrt(s)) / a, s) *
+                     special.kv(s, 2 * ((h * np.sqrt(s)) / a))
+                     )
