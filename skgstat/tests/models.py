@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 
 from skgstat.models import spherical, exponential
-#from skgstat.models import gaussian, cubic, stable, matern
+from skgstat.models import gaussian, cubic, stable, matern
 from skgstat.models import variogram
 
 
@@ -57,6 +57,52 @@ class TestModels(unittest.TestCase):
         # calculate
         nuggets = [1, 2, 3, 4, 5]
         model = list(map(f, self.h, [60] * 5, [30] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_gaussian_default(self):
+        # extract the actual function
+        f = gaussian.py_func
+
+        result = [0.96,  3.58, 16.62, 19.86, 20.]
+        model = list(map(f, self.h, [45]*5, [20]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_gaussian_nugget(self):
+        # extract the actual function
+        f = gaussian.py_func
+
+        result = [1.82,  5.15, 21.96, 32.13, 35.]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [60] * 5, [30] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_cubic_default(self):
+        # extract the actual function
+        f = cubic.py_func
+
+        result = [6.13,  21.11,  88.12, 100., 100.]
+        model = list(map(f, self.h, [50]*5, [100]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_cubic_nugget(self):
+        # extract the actual function
+        f = cubic.py_func
+
+        result = [11.81, 34.74, 73., 74., 75.]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [30] * 5, [70] * 5, nuggets))
 
         for r, m in zip(result, model):
             self.assertAlmostEqual(r, m, places=2)

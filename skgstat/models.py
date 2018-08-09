@@ -23,7 +23,7 @@ def variogram(func):
 def spherical(h, r, c0, b=0):
     r"""Spherical Variogram function
 
-    Implementation of the spherical variogram function. Will calculate the
+    Implementation of the spherical variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
 
     Parameters
@@ -85,7 +85,7 @@ def spherical(h, r, c0, b=0):
 def exponential(h, r, c0, b=0):
     r"""Exponential Variogram function
 
-    Implementation of the spherical variogram function. Will calculate the
+    Implementation of the exponential variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
 
     Parameters
@@ -139,21 +139,118 @@ def exponential(h, r, c0, b=0):
 
 
 @variogram
-# @jit
-def gaussian(h, a, C0, b=0):
-    # prepare parameters
-    r = a / 2.
+@jit
+def gaussian(h, r, c0, b=0):
+    """ Gaussian Variogram function
 
-    return b + C0 * (1. - math.exp(- (h ** 2 / r ** 2)))
+    Implementation of the Gaussian variogram function. Calculates the
+    dependent variable for a given lag (h). The nugget (b) defaults to be 0.
+
+    Parameters
+    ----------
+    h : float
+        Specifies the lag of separating distances that the dependent variable
+        shall be calculated for. It has to be a positive real number.
+    r : float
+        The effective range. Note this is not the range parameter! For the
+        exponential variogram function the range parameter a is defined to be
+        :math:`a=\frac{r}{3}`. The effetive range is the lag where 95% of the
+        sill are exceeded. This is needed as the sill is only approached
+        asymtotically by an exponential function.
+    c0 : float
+        The sill of the variogram, where it will flatten out. The function
+        will not return a value higher than C0 + b.
+    b : float
+        The nugget of the variogram. This is the value of independent
+        variable at the distance of zero. This is usually attributed to
+        non-spatial variance.
+
+    Returns
+    -------
+    gamma : numpy.float64
+        Unlike in most variogram function formulas, which define the function
+        for :math:`2*\gamma`, this function will return :math:`\gamma` only.
+
+    Notes
+    -----
+
+    This implementation follows _[12]:
+    .. math::
+        \gamma = b + c_0 * \left({1 - e^{-\frac{h^2}{a^2}}}\right)
+
+    a is the range parameter, that can be calculated from the
+    effective range r as: :math:`a = \frac{r}{2}`.
+
+    References
+    ----------
+
+    .. [12]: Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+       Uncertainty. Wiley Interscience.
+
+    """
+    # prepare parameters
+    a = r / 2.
+
+    return b + c0 * (1. - math.exp(- (h ** 2 / a ** 2)))
 
 
 @variogram
-# @jit
-def cubic(h, a, C0, b=0):
-    if h <= a:
-        return b + C0 * ( (7*(h**2 / a**2)) - ((35/4)*(h**3/a**3)) + ((7/2)*(h**5/a**5)) - ((3/4)*(h**7/a**7)) )
+@jit
+def cubic(h, r, c0, b=0):
+    """Cubic Variogram function
+
+    Implementation of the Cubic variogram function. Calculates the
+    dependent variable for a given lag (h). The nugget (b) defaults to be 0.
+
+    Parameters
+    ----------
+    h : float
+        Specifies the lag of separating distances that the dependent variable
+        shall be calculated for. It has to be a positive real number.
+    r : float
+        The effective range. Note this is not the range parameter! However,
+        for the cubic variogram the range and effective range are the same.
+    c0 : float
+        The sill of the variogram, where it will flatten out. The function
+        will not return a value higher than C0 + b.
+    b : float
+        The nugget of the variogram. This is the value of independent
+        variable at the distance of zero. This is usually attributed to
+        non-spatial variance.
+
+    Returns
+    -------
+    gamma : numpy.float64
+        Unlike in most variogram function formulas, which define the function
+        for :math:`2*\gamma`, this function will return :math:`\gamma` only.
+
+    Notes
+    -----
+
+    This implementation is like:
+    .. math::
+
+        \gamma = b + c_0 *  \left[{
+                    7    * \left(\frac{h^2}{a^2}\right) -
+            \frac{35}{4} * \left(\frac{h^3}{a^3}\right) +
+            \frac{7}{2}  * \left(\frac{h^5}{a^5}\right) -
+            \frac{3}{4}  * \left(\frac{h^7}{a^7}\right)
+            ]\right]
+
+    a is the range parameter. For the cubic function, the effective range and
+    range parameter are the same.
+
+    """
+    # prepare parameters
+    a = r / 1.
+
+    if h <= r:
+        return b + c0 * ((7 * (h ** 2 / a ** 2)) -
+                         ((35 / 4) * (h ** 3 / a ** 3)) +
+                         ((7 / 2) * (h ** 5 / a ** 5)) -
+                         ((3 / 4) * (h ** 7 / a ** 7)))
     else:
-        return b + C0
+        return b + c0
 
 
 @variogram
