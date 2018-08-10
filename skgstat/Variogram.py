@@ -1417,41 +1417,36 @@ class Variogram(object):
 
         return fig
 
-    def scattergram(self, ax=None, plot=True):
-        """
-        Plot a scattergram, which is a scatter plot of
+    def scattergram(self, ax=None):
 
-        :return:
-        """
-        raise NotImplementedError
-        # calculate population mean
-        _mean = np.mean(self.values1D)
-
-        # group the values to bins
-        gbm = self.grouped_pairs
-
-        # create the tail and head arrays
-        tail, head = list(), list()
-
-        # order the point pairs to tail and head
-        for grp in gbm:
-            # the even values are z(x) and odd values are z(x+h)
-            for i in range(0, len(grp) - 1, 2):
-                tail.append(_mean - grp[i])
-                head.append(_mean - grp[i + 1])
-
-        # if no plot is questioned, return tail and head arrays
-        if not plot:
-            return tail, head
-
-        # else plot in either given Ax object or create a new one
+        # create a new plot or use the given
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         else:
             fig = ax.get_figure()
 
+        tail = np.empty(0)
+        head = tail.copy()
+
+        for h in np.unique(self.lag_groups()):
+            # get the head and tail
+            x, y = np.where(squareform(self.lag_groups()) == h)
+
+            # concatenate
+            tail = np.concatenate((tail, self.values[x]))
+            head = np.concatenate((head, self.values[y]))
+
+        # plot the mean on tail and head
+        ax.vlines(np.mean(tail), np.min(tail), np.max(tail), linestyles='--',
+                  color='red', lw=2)
+        ax.hlines(np.mean(head), np.min(head), np.max(head), linestyles='--',
+                  color='red', lw=2)
         # plot
-        ax.plot(tail, head, '.k')
+        ax.scatter(tail, head, 10, marker='o', color='orange')
+
+        # annotate
+        ax.set_ylabel('head')
+        ax.set_xlabel('tail')
 
         # show the figure
         fig.show()
@@ -1459,16 +1454,27 @@ class Variogram(object):
         return fig
 
     def location_trend(self, axes=None):
-        """
-        Plot the values over each dimension in the coordinates as a scatter plot.
-        These plots can be used to identify a correlation between the value of an observation
-        and its location. If this is the case, it would violate the fundamental geostatistical
-        assumption, that a oberservation is independed of its observation
+        """Location Trend plot
 
-        :param axes: list of `matplotlib.AxesSubplots`. The len has to match the dimensionality
-                        of the coordiantes.
+        Plots the values over each dimension of the coordinates in a scatter
+        plot. This will visually show correlations between the values and any
+        of the coordinate dimension. If there is a value dependence on the
+        location, this would violate the intrinsic hypothesis. This is a
+        weaker form of stationarity of second order.
 
-        :return:
+        Parameters
+        ----------
+        axes : list
+            Can be None (default) or a list of matplotlib.AxesSubplots. If a
+            list is passed, the location trend plots will be plotted on the
+            given instances. Note that then length of the list has to match
+            the dimeonsionality of the coordinates array. In case 3D
+            coordinates are used, three subplots have to be given.
+
+        Returns
+        -------
+        matplotlib.Figure
+
         """
         N = len(self._X[0])
         if axes is None:
@@ -1478,7 +1484,9 @@ class Variogram(object):
             fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 6 ,nrow * 6))
         else:
             if not len(axes) == N:
-                raise ValueError('The amount of passed axes does not fit the coordinate dimensionality of %d' % N)
+                raise ValueError(
+                    'The amount of passed axes does not fit the coordinate' +
+                    ' dimensionality of %d' % N)
             fig = axes[0].get_figure()
 
         for i in range(N):
