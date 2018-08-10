@@ -27,7 +27,6 @@ branch on GitHub, but not developed any further.
 
 Description
 ~~~~~~~~~~~
-
 At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
 This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
 variogram functions. The module is planned to be hold in the manner of scikit modules and be based upon `numpy` and
@@ -46,10 +45,10 @@ The models include:
 
 - sperical
 - exponential
-- gaussian      (unittests missing)
-- cubic         (unittests missing)
-- stable        (unittests missing)
-- matérn        (unittests missing)
+- gaussian
+- cubic
+- stable
+- matérn
 
 with all of them in a nugget and no-nugget variation. All the estimator functions are written `numba` compatible,
 which will be a future dependency.
@@ -59,9 +58,11 @@ At the current stage, the package does not include any kriging. This is planned 
 Installation
 ~~~~~~~~~~~~
 
-While version 0.2 is developed on the dev branch, it will not be uploaded to
-PyPI. Once stable, this branch will be merged into the master branch and
-therefore be available on PyPI again.
+PyPI:
+
+.. code-block:: bash
+
+  pip install scikit-gstat
 
 GIT:
 
