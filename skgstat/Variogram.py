@@ -1,136 +1,306 @@
 """
-Variogram Klasse
+Variogram class
 """
+import copy
 
-from skgstat.distance import nd_dist
-from skgstat.binning import binify_even_width, binify_even_bin, group_to_bin
-from skgstat.estimator import matheron, cressie, dowd, genton, minmax, entropy
-from skgstat.models import spherical, exponential, gaussian, cubic, stable, matern
 import numpy as np
 from pandas import DataFrame
-import copy
 import matplotlib.pyplot as plt
-from matplotlib.axes import SubplotBase
 from scipy.optimize import curve_fit
+from scipy.spatial.distance import pdist, squareform
+from numba import jit
+
+from skgstat import estimators, models, binning
 
 
 class Variogram(object):
-    """
-    Variogram repesentation.
+    """Variogram Class
 
-    This class can generate a Semivariogram from a given sample.
-    By default, the sample point pairs are ordered into even-width bin,
-    separated by the euclidean distance of the point pairs.
-    The Semivariance in the bin is calculated by the Matheron estimator
-    and a spherical Varigram function is fitted by least squares to the experimental Variogram.
-
-    The distance matrix, bin matrix, semi-variance estimator and theoretical variogram function can all be changed on
-    instantiation. The Variogram class can be used to return the result data, plot the Variogram, estimate the
-    kriging weights and create a Kriging instance.
+    Calculates a variogram of the separating distances in the given
+    coordinates and relates them to one of the semi-variance measures of
+    the given dependent values.
 
     """
-    def __init__(self, coordinates=None, values=None, dm_func=nd_dist, bm_func=binify_even_width,
-                 estimator=matheron, model=spherical, dm=None, bm=None, normalize=True, fit_method='lm',
-                 pec_punish=1.0, is_directional=False, azimuth=0, tolerance=45.0, use_nugget=False, maxlag=None,
-                 N=None, verbose=False, harmonize=False,
-                 ignore_deprecation=False):
-        """
+    def __init__(self,
+                 coordinates=None,
+                 values=None,
+                 estimator=estimators.matheron,
+                 model=models.spherical,
+                 dist_func='euclidean',
+                 bin_func='even',
+                 normalize=True,
+                 fit_method='trf',
+                 fit_sigma=None,
+                 is_directional=False,
+                 azimuth=0,
+                 tolerance=45.0,
+                 use_nugget=False,
+                 maxlag=None,
+                 n_lags=10,
+                 verbose=False,
+                 harmonize=False
+                 ):
+        r"""Variogram Class
 
-        :param coordinates: numpy array or list with the coordinates of the sample as tuples
-        :param values: numpy array or list with the Values of the sample. If ndim > 1 an aggregator is used
-        :param dm_func: function which is used to calculate the distance matrix
-        :param bm_func: function which is used to calculate the binning matrix
-        :param estimator: estimator can be a function or a string identifying a standard estimator
-               Supported are 'matheron', 'cressie', 'dowd' 'minmax', 'percentile' or 'genton'
-        :param model: string or callable with the theoretical variogram function
-        :param dm: numpy array with the distance matrix of the given sample
-        :param bm: numpy array with the binning matrix of the given sample
-        :param normalize: boolean, specify if the lag should be given absolute or relative to the maxlag
-        :param fit_method: The method for fitting the theoretical model.
-               Either 'lm' for least squares or 'pec' for point exclusion cost'
-        :param pec_punish: If 'pec' is the fit_method, give the power of punishing the point exclusion.
-               1 is full punish; 0 non-punish.
-        :param is_directional:
-        :param azimuth
-        :param tolerance:
-        :param use_nugget: boolean, set if nugget effect shall be used
-        :param maxlag:
-        :param N: number of bins
-        :param verbose:
-        :param harmonize: bool, if True, the experimental variogram will be harmonized.
-        """
-        if not ignore_deprecation:
-            raise DeprecationWarning("""
-            Deprecation Warning
-            -------------------
-            This version of of scikit-gstat is deprecated. However, 
-            the current state of this module is, without this warning, 
-            conserved in the branch version-0.1.8 on GitHub, but will no 
-            longer be maintained.
-            
-            On the dev branch, the Variogram class is completely rewritten 
-            and will also change the used slightly. It will soon be merged 
-            into the master branch, as soon as it is stable. Sorry for any 
-            inconvenience.
-            
-            You can distable this Warning by setting the ignore_deprecation 
-            attribute to True:
-            >>> V =Variogram(c, v, ignore_deprecation=True)
-            """)
+        Note: The directional variogram estimation is not re-implemented yet.
+        Therefore the parameters is-directional, azimuth and tolerance will
+        be ignored at the moment and can be subject to changes.
 
-        # Set coordinates and values
-        self._X = list(coordinates)
-        self.values = list(values)
+        Parameters
+        ----------
+        coordinates : array
+            Array of shape (m, n). Will be used as m observation points of
+            n-dimensions. This variogram can be calculated on 1 - n
+            dimensional coordinates. In case a 1-dimensional array is passed,
+            a second array of same length containing only zeros will be
+            stacked to the passed one.
+        values : array
+            Array of values observed at the given coordinates. The length of
+            the values array has to match the m dimension of the coordinates
+            array. Will be used to calculate the dependent variable of the
+            variogram.
+        estimator : str, callable
+            String identifying the semi-variance estimator to be used.
+            Defaults to the Matheron estimator. Possible values are:
+              * matheron        [Matheron, default]
+              * cressie         [Cressie-Hawkins]
+              * dowd            [Dowd-Estimator]
+              * genton          [Genton]
+              * minmax          [MinMax Scaler]
+              * entropy         [Shannon Entropy]
+            If a callable is passed, it has to accept an array of absoulte
+            differences, aligned to the 1D distance matrix (flattened upper
+            triangle) and return a scalar, that converges towards small
+            values for similarity (high covariance).
+        model : str
+            String identifying the theoretical variogram function to be used
+            to describe the experimental variogram. Can be one of:
+              * spherical       [Spherical, default]
+              * exponential     [Exponential]
+              * gaussian        [Gaussian]
+              * cubic           [Cubic]
+              * stable          [Stable model]
+              * matern          [Matérn model]
+              * nugget          [nugget effect variogram]
+        dist_func : str
+            String identifying the distance function. Defaults to
+            'euclidean'. Can be any metric accepted by
+            scipy.spatial.distance.pdist. Additional parameters are not (yet)
+            passed through to pdist. These are accepted by pdist for some of
+            the metrics. In these cases the default values are used.
+        bin_func : str
+            String identifying the binning function used to find lag class
+            edges. At the moment there are two possible values: 'even'
+            (default) or 'uniform'. Even will find n_lags bins of same width
+            in the interval [0,maxlag[. 'uniform' will identfy n_lags bins on
+            the same interval, but with varying edges so that all bins count
+            the same amount of observations.
+        normalize : boolean
+            Defaults to False. If True, the independent and dependent
+            variable will be normalized to the range [0,1].
+        fit_method : str
+            String identifying the method to be used for fitting the
+            theoretical variogram function to the experimental. More info is
+            given in the Variogram.fit docs. Can be one of:
+                * 'lm': Levenberg-Marquardt algorithm for unconstrained
+                problems. This is the faster algorithm, yet is the fitting of
+                a variogram not unconstrianed.
+                *'trf': Trust Region Reflective function for non-linear
+                constrained problems. The class will set the boundaries
+                itself. This is the default function.
+        fit_sigma : array, str
+            Defaults to None. The sigma is used as measure of uncertainty
+            during variogram fit. If fit_sigma is an array, it has to hold
+            n_lags elements, giving the uncertainty for all lags classes. If
+            fit_sigma is None (default), it will give no weight to any lag.
+            Higher values indicate higher uncertainty and will lower the
+            influcence of the corresponding lag class for the fit.
+            If fit_sigma is a string, a pre-defined function of separating
+            distance will be used to fill the array. Can be one of:
+                * 'linear': Linear loss with distance. Small bins will have
+                higher impact.
+                * 'exp': The weights decrease by a e-function of distance
+                * 'sqrt': The weights decrease by the squareroot of distance
+                * 'sq': The weights decrease by the squared distance.
+            More info is given in the Variogram.fit_sigma documentation.
+        is_directional : boolean
+            Not Implemented yet, will be ignored.
+        azimuth : float
+             Not Implemented yet, will be ignored.
+        tolerance : float
+             Not Implemented yet, will be ignored.
+        use_nugget : boolean
+            Defaults to False. If True, a nugget effet will be added to all
+            Variogram.models as a third (or fourth) fitting parameter. A
+            nugget is essentially the y-axis interception of the theoretical
+            variogram function.
+        maxlag : float, str
+            Can specify the maximum lag distance directly by giving a value
+            larger than 1. The binning function will not find any lag class
+            with an edge larger than maxlag. If 0 < maxlag < 1, then maxlag
+            is relative and maxlag * max(Variogram.distance) will be used.
+            In case maxlag is a string it has to be one of 'median', 'mean'.
+            Then the median or mean of all Variogram.distance will be used.
+            Note maxlag=0.5 will use half the maximum separating distance,
+            this is not the same as 'median', which is the median of all
+            separating distances
+        n_lags : int
+            Specify the number of lag classes to be defined by the binning
+            function.
+        verbose : boolean
+            Set the Verbosity of the class. Not Implemented yet.
+        harmonize : boolean
+            this kind of works so far, but will be rewritten (and documented)
+        """
+        # Set coordinates
+        self._X = np.asarray(coordinates)
+
+        # pairwise differences
+        self._diff = None
 
         # set verbosity
         self.verbose = verbose
 
-        # if values is given with ndim > 1, set an aggregator
-        self.agg = np.nanmean
+        # set values
+        self._values = None
+        self.set_values(values=values)
 
-        # bm properites
+        # distance matrix
+        self._dist = None
+
+        # set distance calculation function
+        self._dist_func = None
+        self.set_dist_function(func=dist_func)
+
+        # lags and max lag
+        self.n_lags = n_lags
+        self._maxlag = None
         self.maxlag = maxlag
-        self._bm_kwargs = {}
-        self._dm_kwargs = {}
 
-        # save the functions, if the matrixes are not given
-        if dm is None:
-            self.dm_func = dm_func
-        else:
-            self._dm = dm
+        # estimator can be a function or a string
+        self._estimator = None
+        self.set_estimator(estimator_name=estimator)
 
-        if bm is None:
-            self.bm_func = bm_func
-        else:
-            self._bm = bm
+        # model can be a function or a string
+        self._model = None
+        self.set_model(model_name=model)
 
-        # estimator can be a function or a string identifying a standard estimator
-        self.set_estimator(estimator=estimator)
-
-        # model can be a function or a string identifying a standard variogram function
-        self.set_model(model=model)
+        # the binning settings
+        self._bin_func = None
+        self._groups = None
+        self._bins = None
+        self.set_bin_func(bin_func=bin_func)
 
         # specify if the lag should be given absolute or relative to the maxlag
-        self.normalized = normalize
+        self._normalized = normalize
 
         # specify if the experimental variogram shall be harmonized
         self.harmonize = harmonize
 
-        # set the fitting method and model quality measure
+        # set the fitting method and sigma array
         self.fit_method = fit_method
-        self.pec_punish = pec_punish
+        self._fit_sigma = None
+        self.fit_sigma = fit_sigma
 
         # set directionality
         self.is_directional = is_directional
-        self.azimuth = azimuth  # Set is_directional as True if azimuth is given?
+        self.azimuth = azimuth
         self.tolerance = tolerance
 
         # set if nugget effect shall be used
         self.use_nugget = use_nugget
 
-        # set binning matrix if N was given
-        if N is not None:
-            self.set_bm(N=N)
+        # set attributes to be filled during calculation
+        self.cov = None
+        self.cof = None
+
+        # settings, not reachable by init (not yet)
+        self._cache_experimental = False
+
+        # do the preprocessing and fitting upon initialization
+        self.preprocessing(force=True)
+        self.fit(force=True)
+
+    @property
+    def values(self):
+        return self._values
+
+    @values.setter
+    def values(self, values):
+        self.set_values(values=values)
+
+    @property
+    def value_matrix(self):
+        return squareform(self._diff)
+
+    def set_values(self, values):
+        # check dimensions
+        if not len(values) == len(self._X):
+            raise ValueError('The length of the values array has to match' +
+                             'the length of coordinates')
+
+        # reset fitting parameter
+        self.cof, self.cov = None, None
+        self._diff = None
+
+        # use an array
+        _y = np.asarray(values)
+        if not _y.ndim == 1:
+            raise ValueError('The values shall be a 1-D array.' +
+                             'Multi-dimensional values not supported yet.')
+
+        # set new values
+        self._values = np.asarray(values)
+
+        # recalculate the pairwise differences
+        self._calc_diff(force=True)
+
+    @property
+    def bin_func(self):
+        return self._bin_func
+
+    @bin_func.setter
+    def bin_func(self, bin_func):
+        self.set_bin_func(bin_func=bin_func)
+
+    def set_bin_func(self, bin_func):
+        # reset groups and bins
+        self._groups = None
+        self._bins = None
+        self.cof, self.cov = None, None
+
+        if bin_func.lower() == 'even':
+            self._bin_func = binning.even_width_lags
+        elif bin_func.lower() == 'uniform':
+            self._bin_func = binning.uniform_count_lags
+        else:
+            raise ValueError('%s binning method is not known' % bin_func)
+
+    @property
+    def normalized(self):
+        return self._normalized
+
+    @normalized.setter
+    def normalized(self, status):
+        # set the new value
+        self._normalized = status
+
+    @property
+    def bins(self):
+        if self._bins is None:
+            self._bins = self.bin_func(self.distance, self.n_lags, self.maxlag)
+
+        return self._bins.copy()
+
+    @bins.setter
+    def bins(self, bins):
+        # set the new bins
+        self._bins = bins
+
+        # clean the groups as they are not valid anymore
+        self._groups = None
+        self.cov = None
+        self.cof = None
 
     @property
     def estimator(self):
@@ -138,31 +308,40 @@ class Variogram(object):
 
     @estimator.setter
     def estimator(self, value):
-        self.set_estimator(estimator=value)
+        self.set_estimator(estimator_name=value)
 
-    def set_estimator(self, estimator):
+    def set_estimator(self, estimator_name):
         """
-        Set estimator as the new Variogram estimator. Either a function returning a single or a list of semivariance
-        values is needed, or a string identifiying a default one.
-        Supported are 'matheron', 'cressie', 'dowd' or 'genton'.
+        Set estimator as the new variogram estimator.
+
         """
-        if isinstance(estimator, str):
-            if estimator.lower() == 'matheron':
-                self._estimator = matheron
-            elif estimator.lower() == 'cressie':
-                self._estimator = cressie
-            elif estimator.lower() == 'dowd':
-                self._estimator = dowd
-            elif estimator.lower() == 'genton':
-                self._estimator = genton
-            elif estimator.lower() == 'minmax':
-                self._estimator = minmax
-            elif estimator.lower() == 'entropy' or estimator.lower() == 'h':
-                self._estimator = entropy
+        # reset the fitting
+        self.cof, self.cov = None, None
+
+        if isinstance(estimator_name, str):
+            if estimator_name.lower() == 'matheron':
+                self._estimator = estimators.matheron
+            elif estimator_name.lower() == 'cressie':
+                self._estimator = estimators.cressie
+            elif estimator_name.lower() == 'dowd':
+                self._estimator = estimators.dowd
+            elif estimator_name.lower() == 'genton':
+                self._estimator = estimators.genton
+            elif estimator_name.lower() == 'minmax':
+                self._estimator = estimators.minmax
+            elif estimator_name.lower() == 'percentile':
+                self._estimator = estimators.percentile
+            elif estimator_name.lower() == 'entropy':
+                self._estimator = estimators.entropy
             else:
-                raise ValueError('Variogram estimator %s is not understood, please provide the function.' % estimator)
+                raise ValueError(
+                    'Variogram estimator %s is not understood, please' +
+                    'provide the function.' % estimator_name
+                )
+        elif callable(estimator_name):
+            self._estimator = estimator_name
         else:
-            self._estimator = estimator
+            raise ValueError('The estimator has to be a string or callable.')
 
     @property
     def model(self):
@@ -170,141 +349,92 @@ class Variogram(object):
 
     @model.setter
     def model(self, value):
-        self.set_model(model=value)
+        self.set_model(model_name=value)
 
-    def set_model(self, model):
+    def set_model(self, model_name):
         """
-        Set model as the new theoretical variogram function. Either a function returning the semivariance at a given lag
-        for given parameters is needed, or a string identifying a default one. Supported are 'spherical', 'exponential'
-        or 'gaussian'.
+        Set model as the new theoretical variogram function.
 
-        :param model:
-        :return:
         """
-        if isinstance(model, str):
-            if model.lower() == 'spherical':
-                self._model = spherical
-            elif model.lower() == 'exponential':
-                self._model = exponential
-            elif model.lower() == 'gaussian':
-                self._model = gaussian
-            elif model.lower() == 'cubic':
-                self._model = cubic
-            elif model.lower() == 'stable':
-                self._model = stable
-            elif model.lower() == 'matern':
-                self._model = matern
+        # reset the fitting
+        self.cof, self.cov = None, None
+
+        if isinstance(model_name, str):
+            if model_name.lower() == 'spherical':
+                self._model = models.spherical
+            elif model_name.lower() == 'exponential':
+                self._model = models.exponential
+            elif model_name.lower() == 'gaussian':
+                self._model = models.gaussian
+            elif model_name.lower() == 'cubic':
+                self._model = models.cubic
+            elif model_name.lower() == 'stable':
+                self._model = models.stable
+            elif model_name.lower() == 'matern':
+                self._model = models.matern
             else:
-                raise ValueError('The theoretical Variogram function %s is not understood, '
-                                 'please provide the function' % model)
+                raise ValueError(
+                    'The theoretical Variogram function %s is not' +
+                    'understood, please provide the function' % model_name)
         else:
-            self._model = model
-
-    def binify_like(self, how='even width'):
-        """
-        Specify, how the bins for the Variogram shall be drawn. how can identify one of the prepared binning algorithms.
-        Use 'even_width' or 'even width' for the binify_even_width function and 'even bin' or 'even_bin' for the
-        binity_even_bins function. If how is callable, it will be used as bm_func.
-        It will be called by the bm property with N, the number of bins and the bm_kwargs as arguments and has to return
-        the bm matrix and an array of bin widths.
-
-        :param how:
-        :return:
-        """
-        # remove the _bm if necessary
-        if hasattr(self, '_bm'):
-            delattr(self, '_bm')
-        if hasattr(self, 'bin_widths'):
-            delattr(self, 'bin_widths')
-
-        if callable(how):
-            self.bm_func = how
-        elif how.lower().replace('_', ' ') == 'even width':
-            self.bm_func = binify_even_width
-        elif how.lower().replace('_', ' ') == 'even bin':
-            self.bm_func = binify_even_bin
-        else:
-            raise ValueError("how has to be a callable or one of ['even width', 'even bin']")
-
-    def clone(self):
-        """
-        Wrapper for copy.deepcopy function of self.
-        """
-        return copy.deepcopy(self)
-
-    def set_dm(self, dm=None, **kwargs):
-        """
-        calculates the distance matrix if needed and sets it as a static attribute self._dm.
-
-        """
-        # update kwargs
-        self._dm_kwargs.update(kwargs)
-
-        if dm is None:
-            self._dm = self.dm_func(self._X, **self._dm_kwargs)
-            if hasattr(self, '_bm'):
-                self.set_bm()
-        else:
-            self._dm = dm
+            self._model = model_name
 
     @property
-    def dm(self):
-        """
-        Return the distance matrix, this variogram instance is using.
-        In case a static distance matrix self._dm was set before, this will be returned.
-        Otherwise a distance matrix will be calculated using the function self.dm_func along with the
-        keyword arguments self._dm_kwargs.
+    def dist_function(self):
+        return self._dist_func
 
-        :return: distance matrix, like returned by :func:`scipy.spatial.squareform`
-        """
-        if hasattr(self, '_dm'):
-            return self._dm
-        else:
-            return self.dm_func(self._X, **self._dm_kwargs)
+    @dist_function.setter
+    def dist_function(self, func):
+        self.set_dist_function(func=func)
 
+    def set_dist_function(self, func):
+        """Set distance function
 
-    def set_bm(self, bm=None, maxlag=None, **kwargs):
-        """
-        Calculate a static binning matrix on the basis of the distance matrix self.dm. Will be set as
-        attribute self._bm.
-        Whenever a new binning matrix is set, the self.bin_widths attribute gets updated.
+        Set the function used for distance calculation. func can either be a
+        callable or a string. The ranked distance function is not implemented
+        yet. strings will be forwarded to the scipy.spatial.distance.pdist
+        function as the metric argument.
+        If func is a callable, it has to return the upper triangle of the
+        distance matrix as a flat array (Like the pdist function).
 
-        :return:
+        Parameters
+        ----------
+        func : string, callable
+
+        Returns
+        -------
+        numpy.array
+
         """
-        # overwrite maxlag
-        if maxlag is not None:
-            if maxlag < 1:
-                self.__maxlag = maxlag * np.max(self.dm)
+        # reset the distances and fitting
+        self._dist = None
+        self.cof, self.cov = None, None
+
+        if isinstance(func, str):
+            if func.lower() == 'rank':
+                raise NotImplementedError
             else:
-                self._maxlag = maxlag
+                # if not ranks, it has to be a scipy metric
+                self._dist_func = lambda x: pdist(X=x, metric=func)
 
-        # store the bm_kwargs
-        self._bm_kwargs.update(kwargs)
-
-        if bm is None:
-            self._bm, self.bin_widths = self.bm_func(X=self._X, dm=self.dm, maxlag=self.maxlag, **self._bm_kwargs)
+        elif callable(func):
+            self._dist_func = func
         else:
-            if hasattr(self, 'bin_widths'):
-                delattr(self, 'bin_widths')
-            self._bm = bm
+            raise ValueError('Input not supported. Pass a string or callable.')
 
     @property
-    def bm(self):
-        """
-        Return the binning matrix, this variogram instance is using.
-        In case a static binning matrix self._bm was set before, this will be returned.
-        Otherwise a binning matrix will be calculated using the function self.bm_func along with the
-        keyword arguments self._bm_kwargs.
-        The binning matrix will assign for each point pair the corresponding bin. By setting a custom
-        bin matrix unsing Variogram.set_bm, you can also implement non-regular bins.
+    def distance(self):
+        if self._dist is None:
+            self._calc_distances()
+        return self._dist
 
-        :return: binning matrix in the style of :func:`scipy.spatial.squareform`
-        """
-        if hasattr(self, '_bm'):
-            return self._bm
-        else:
-            _bm, self.bin_widths = self.bm_func(X=self._X, dm=self.dm, maxlag=self.maxlag, **self._bm_kwargs)
-            return _bm
+    @distance.setter
+    def distance(self, dist_array):
+        self._dist = dist_array
+
+    @property
+    def distance_matrix(self):
+        return squareform(self.distance)
 
     @property
     def maxlag(self):
@@ -312,44 +442,443 @@ class Variogram(object):
 
     @maxlag.setter
     def maxlag(self, value):
-        # a maxlag was set, therefore the _bm and bin_widths attributes have to be cleared
-        if hasattr(self, '_bm'):
-            delattr(self, '_bm')
-        if hasattr(self, 'bin_widths'):
-            delattr(self, 'bin_widths')
+        # reset fitting
+        self.cof, self.cov = None, None
+
+        # remove bins
+        self._bins = None
+        self._groups = None
 
         # set new maxlag
         if value is None:
             self._maxlag = None
+        elif isinstance(value, str):
+            if value == 'median':
+                self._maxlag = np.median(self.distance)
+            elif value == 'mean':
+                self._maxlag = np.mean(self.distance)
         elif value < 1:
-            self._maxlag = value * np.max(self.dm)
+            self._maxlag = value * np.max(self.distance)
         else:
             self._maxlag = value
 
     @property
+    def fit_sigma(self):
+        r"""Fitting Uncertainty
+
+        Set or calculate an array of observation uncertainties aligned to the
+        Variogram.bins. These will be used to weight the observations in the
+        cost function, which divides the residuals by their uncertainty.
+
+        When setting fit_sigma, the array of uncertainties itself can be
+        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq']. The
+        parameters described below refer to the setter of this property.
+
+        Parameters
+        ----------
+        sigma : string, array
+            Sigma can either be an array of discrete uncertainty values,
+            which have to align to the Variogram.bins, or of type string.
+            Then, the weights for fitting are calculated as a function of
+            (lag) distance.
+
+              * sigma='linear': The residuals get weighted by the lag
+              distance normalized to the maximum lag distance, denoted as w_n
+              * sigma='exp': The residuals get weighted by the function:
+              w = e^{1 / w_n}
+              * sigma='sqrt': The residuals get weighted by the function:
+              w = sqrt(w_n)
+              * sigma='sq': The residuals get weighted by the function:
+              w = w_n ** 2
+
+        Returns
+        -------
+        void
+
+
+        Notes
+        -----
+        The cost function is defined as:
+
+        .. math::
+            chisq = \sum {\frac{r}{\sigma}}^2
+
+        where r are the residuals between the experimental variogram and the
+        modeled values for the same lag. Following this function,
+        small values will increase the influence of that residual, while a very
+        large sigma will cause the observation to be ignored.
+
+        See Also
+        --------
+        scipy.optimize.curve_fit
+
+        """
+        # unweighted
+        if self._fit_sigma is None:
+            return None
+
+        # discrete uncertainties
+        elif isinstance(self._fit_sigma, (list, tuple, np.ndarray)):
+            assert len(self._fit_sigma) == len(self.bins)
+            return self._fit_sigma
+
+        # linear function of distance
+        elif self.fit_sigma == 'linear':
+            return self.bins / np.max(self.bins)
+
+        # e function of distance
+        elif self.fit_sigma == 'exp':
+            return np.exp(1. / (self.bins / np.max(self.bins)))
+
+        # sqrt function of distance
+        elif self.fit_sigma == 'sqrt':
+            return np.sqrt(self.bins / np.max(self.bins))
+
+        # squared function of distance
+        elif self.fit_sigma == 'sq':
+            return (self.bins / np.max(self.bins)) ** 2
+        else:
+            raise ValueError("fit_sigma is not understood. It has to be an " +
+                             "array or one of ['linear', 'exp', 'sqrt', 'sq'].")
+
+    @fit_sigma.setter
+    def fit_sigma(self, sigma):
+        self._fit_sigma = sigma
+
+    def lag_groups(self):
+        """Lag class groups
+
+        Retuns a mask array with as many elements as self._diff has,
+        identifying the lag class group for each pairwise difference. Can be
+        used to extract all pairwise values within the same lag bin.
+
+        Returns
+        -------
+        numpy.array
+
+        See Also
+        --------
+        Variogram.lag_classes
+
+        """
+        if self._groups is None:
+            self._calc_groups()
+
+        return self._groups
+
+    def lag_classes(self):
+        """Iterate over the lag classes
+
+        Generates an iterator over all lag classes. Can be zipped with
+        Variogram.bins to identify the lag.
+
+        Returns
+        -------
+        iterable
+
+        """
+        # yield all groups
+        for i in np.unique(self._groups):
+            if i < 0:
+                continue
+            else:
+                yield self._diff[np.where(self._groups == i)]
+
+    def preprocessing(self, force=False):
+        """Preprocessing function
+
+        Prepares all input data for the fit and transform functions. Namely,
+        the distances are calculated and the value differences. Then the
+        binning is set up and bin edges are calculated. If any of the listed
+        subsets are already prepared, their processing is skipped. This
+        behaviour can be changed by the force parameter. This will cause a
+        clean preprocessing.
+
+        Parameters
+        ----------
+        force : bool
+            If set to True, all preprocessing data sets will be deleted. Use
+            it in case you need a clean preprocessing.
+
+        Returns
+        -------
+        void
+
+        """
+        # call the _calc functions
+        self._calc_distances(force=force)
+        self._calc_diff(force=force)
+        self._calc_groups(force=force)
+
+    def fit(self, force=False, method=None, sigma=None, **kwargs):
+        """Fit the variogram
+
+        The fit function will fit the theoretical variogram function to the
+        experimental. The preprocessed distance matrix, pairwise differences
+        and binning will not be recalculated, if already done. This could be
+        forced by setting the force parameter to true.
+
+        In case you call fit function directly, with method or sigma,
+        the parameters set on Variogram object instantiation will get
+        overwritten. All other keyword arguments will be passed to
+        scipy.optimize.curve_fit function.
+
+        Parameters
+        ----------
+        force : bool
+            If set to True, a clean preprocessing of the distance matrix,
+            pairwise differences and the binning will be forced. Default is
+            False.
+        method : string
+            A string identifying one of the implemented fitting procedures.
+            Can be one of ['lm', 'trf'].
+              * lm: Levenberg-Marquardt algorithms implemented in
+              scipy.optimize.leastsq function.
+              * trf: Trust Region Reflective algorithm implemented in
+              scipy.optimize.least_squares(method='trf')
+        sigma : string, array
+            Uncertainty array for the bins. Has to have the same dimension as
+            self.bins. Refer to Variogram.fit_sigma for more information.
+
+        Returns
+        -------
+        void
+
+        See Also
+        --------
+        scipy.optimize
+        scipy.optimize.curve_fit
+        scipy.optimize.leastsq
+        scipy.optimize.least_squares
+
+        """
+        # TODO: the kwargs need to be preserved somehow
+        # delete the last cov and cof
+        self.cof = None
+        self.cov = None
+
+        # if force, force a clean preprocessing
+        self.preprocessing(force=force)
+
+        # load the data
+        x = self.bins
+        y = self.experimental
+
+        # overwrite fit setting if new params are given
+        if method is not None:
+            self.fit_method = method
+        if sigma is not None:
+            self.fit_sigma = sigma
+
+        # remove nans
+        _x = x[~np.isnan(y)]
+        _y = y[~np.isnan(y)]
+
+        # the model function is re-defined. otherwise scipy cannot determine
+        # the number of parameters
+        # TODO: def f(n of par)
+
+        # Switch the method
+        # Trust Region Reflective
+        if self.fit_method == 'trf':
+            bounds = (0, self.__get_fit_bounds(x, y))
+            self.cof, self.cov = curve_fit(
+                self._model,
+                _x, _y,
+                method='trf',
+                sigma=self.fit_sigma,
+                p0=bounds[1],
+                bounds=bounds,
+                **kwargs
+            )
+
+        # Levenberg-Marquardt
+        elif self.fit_method == 'lm':
+            self.cof, self.cov = curve_fit(
+                self.model,
+                _x, _y,
+                method='lm',
+                sigma=self.fit_sigma,
+                **kwargs
+            )
+
+        else:
+            raise ValueError('Only the \'lm\' and \'trf\' algorithms are ' +
+                             'supported at the moment.')
+
+    def transform(self, x):
+        """Transform
+
+        Transform a given set of lag values to the theoretical variogram
+        function using the actual fitting and preprocessing parameters in
+        this Variogram instance
+
+        Parameters
+        ----------
+        x : numpy.array
+            Array of lag values to be used as model input for the fitted
+            theoretical variogram model
+
+        Returns
+        -------
+        numpy.array
+
+        """
+        self.preprocessing()
+
+        # if instance is not fitted, fit it
+        if self.cof is None:
+            self.fit(force=True)
+
+        return np.fromiter(map(self.compiled_model, x), dtype=float)
+
+    @property
+    def compiled_model(self):
+        """Compiled theoretical variogram model
+
+        Compile the model using the actual fitting parameters to return a
+        function implementing them.
+
+        Returns
+        -------
+        callable
+
+        """
+        if self.cof is None:
+            self.fit(force=True)
+
+        # get the function
+        func = self._model
+
+        # define the wrapper
+        def model(x):
+            return func(x, *self.cof)
+
+        # return
+        return model
+
+    def _calc_distances(self, force=False):
+        if self._dist is not None and not force:
+            return
+
+        # if self._X is of just one dimension, concat zeros.
+        if self._X.ndim == 1:
+            _x = np.vstack(zip(self._X, np.zeros(len(self._X))))
+        else:
+            _x = self._X
+        # else calculate the distances
+        self._dist = self._dist_func(_x)
+
+    def _calc_diff(self, force=False):
+        """Calculates the pairwise differences
+
+        Returns
+        -------
+        void
+
+        """
+        # already calculated
+        if self._diff is not None and not force:
+            return
+
+        v = self.values
+        l = len(v)
+        self._diff = np.zeros(int((l**2 - l) / 2))
+
+        # calculate the pairwise differences
+        for t, k in zip(self.__vdiff_indexer(), range(len(self._diff))):
+            self._diff[k] = np.abs(v[t[0]] - v[t[1]])
+
+    #@jit
+    def __vdiff_indexer(self):
+        """Pairwise indexer
+
+        Returns an iterator over the values or coordinates in squareform
+        coordinates. The iterable will be of type tuple.
+
+        Returns
+        -------
+        iterable
+
+        """
+        l = len(self.values)
+
+        for i in range(l):
+            for j in range(l):
+                if i > j:
+                    yield i, j
+
+    def _calc_groups(self, force=False):
+        """Calculate the lag class mask array
+
+        Returns
+        -------
+
+        """
+        # already calculated
+        if self._groups is not None and not force:
+            return
+
+        # get the bin edges and distances
+        bin_edges = self.bins
+        d = self.distance
+
+        # -1 is the group fir distances outside maxlag
+        self._groups = np.ones(len(d), dtype=int) * -1
+
+        for i, bounds in enumerate(zip([0] + list(bin_edges), bin_edges)):
+            self._groups[np.where((d >= bounds[0]) & (d < bounds[1]))] = i
+
+    def clone(self):
+        """
+        Wrapper for copy.deepcopy function of self.
+        """
+        return copy.deepcopy(self)
+
+    @property
     def experimental(self):
         """
-        Return the experimental variogram.
-        If :param harmonize: is True, it will return self.isotonic, instead of self.experimental.
 
-        :return: np.array, the isotonic or non-isotonic experimental varigram
+        Returns
+        -------
+
         """
         if self.harmonize:
             return self.isotonic
         else:
             return self._experimental
 
-
     @property
+    @jit
     def _experimental(self):
         """
-        :return: experimental variogram as a numpy.ndarray.
+
+        Returns
+        -------
+
         """
-        # group the values to bins and apply the estimator
-        _g = self.grouped_pairs
+        # prepare the result array
+        y = np.zeros(len(self.bins))
+
+        # args, can set the bins for entropy
+        # and should set p of percentile, not properly implemented
+        if self._estimator.__name__ == 'entropy':
+            bins = np.linspace(
+                np.min(self.distance),
+                np.max(self.distance),
+                50
+            )
+            # apply
+            for i, lag_values in enumerate(self.lag_classes()):
+                y[i] = self._estimator(lag_values, bins=bins)
+
+        # default
+        else:
+            for i, lag_values in enumerate(self.lag_classes()):
+                y[i] = self._estimator(lag_values)
 
         # apply
-        return np.array(self._estimator(_g))
+        return y.copy()
 
     @property
     def isotonic(self):
@@ -370,6 +899,8 @@ class Variogram(object):
         :return: np.ndarray, monotonized experimental variogram
         """
         # TODO this is imported in the function as sklearn is not a dependency (and should not be for now)
+        raise NotImplementedError
+
         try:
             from sklearn.isotonic import IsotonicRegression
             y = self._experimental
@@ -378,83 +909,15 @@ class Variogram(object):
         except ImportError:
             raise NotImplementedError('scikit-learn is not installed, but the isotonic function without sklear dependency is not installed yet.')
 
-    @property
-    def grouped_pairs(self):
-        """
-        Result of the group_to_bin function. This property will be used for wrapping the function, in case there are
-        alternative grouping functions implemented one day.
-
-        :return:
-        """
-        if self.is_directional:
-            return group_to_bin(self.values, self.bm, X=self._X, azimuth_deg=self.azimuth, tolerance=self.tolerance,
-                                maxlag=self.maxlag)
-        else:
-            return group_to_bin(self.values, self.bm, maxlag=self.maxlag)
-
-
-    def fit(self, x, y):
-        """
-        Fit the theoretical variogram function to the experimental values. The function will be fitted using the least
-        square method, with a maximum of maxiter iteration, defaults to 1000. For fitting the starting parameters of
-        the theoretical function a, C0, b can be given as kwargs. If the Variogram uses a custom model, the parameters
-        might have other names.
-        The parameter set with best fit will be returned.
-
-        THIS STUFF NEEDS A COMPLETE REWORK
-
-        :return:
-        """
-        # if last bin is set, delete it
-        if hasattr(self, 'last_bin'):
-            del self.last_bin
-
-        # remove nans
-        _x = x[~np.isnan(y)]
-        _y = y[~np.isnan(y)]
-
-        if self.fit_method == 'lm':
-#            bounds = (0, [np.nanmax(x), np.nanmax(y)])
-            bounds = (0, self.__get_fit_bounds(x, y))
-            return curve_fit(self._model, _x, _y, p0=bounds[1], bounds=bounds)
-
-        elif self.fit_method == 'pec':
-            # Run the fitting with each point excluded
-            rmse, cof, cov, punish = list(), list(), list(), list()
-            # get the histogram counts (the cumsum of bin sizes, summed from right to left)
-            _h = self.hist[~np.isnan(y)]
-            h = np.flipud(np.cumsum(np.flipud(_h)))
-
-            for i in range(1, len(_x) - 2):
-#                bnd = (0, [np.max(_x[:-i]), np.max(_y[:-i])])
-                bnd = (0, self.__get_fit_bounds(x[:-i], y[:-i]))
-                cf, cv = curve_fit(self._model, _x[:-i], _y[:-i], p0=bnd[1], bounds=bnd)
-                cof.append(cf)
-                cov.append(cov)
-                p = ((h[0] + 1) / ((h[0] + 1) - h[-i]))**self.pec_punish
-                rmse.append(p * (np.sqrt(np.sum((self._model(_x[:-i], *cf) - _x[:-i]) ** 2) / len(_x[:-i]))))
-                punish.append(p)
-
-            if self.verbose:
-                print('Punish Weights: ', ['%.3f' % _ for _ in punish])
-                print('RMSE: ', ['%.2f' % _ for _ in rmse])
-            # here rmse is the error for the cf set in cof
-            # find the optimum of excluded points to rmse error improvement
-            best_rmse = rmse.index(np.nanmin(rmse))
-            self.last_bin = len(x) - (best_rmse + 1)
-
-            return cof[best_rmse], cov[best_rmse]
-
-        else:
-            raise ValueError('The fit method {} is not understood. Use either \'lm\' (least squares) or \'pec\' (point exclusion cost).'.format(self.fit_method))
-
-
     def __get_fit_bounds(self, x, y):
         """
-        Return the bounds for parameter space in fitting a variogram model. The bounds are depended on the Model
-        that is used
+        Return the bounds for parameter space in fitting a variogram model.
+        The bounds are depended on the Model that is used
 
-        :return:
+        Returns
+        -------
+        list
+
         """
         mname = self._model.__name__
 
@@ -484,20 +947,36 @@ class Variogram(object):
 
         return bounds
 
-    @property
-    def data(self):
-        """
-        Calculates the experimental Variogram. As the bins are only indexed by a integer, the lag array is caculated
-        by cummulative summarizing the bin_widths array. If this bin_widths was not returned by the bm_func, even bin
-        widths are created matching the number of bins at the maximum entry in the distance matrix. This will lead to
-        calculation errors, in case the bin widths are not even.
-        The theoretical variogram function is fitted to the experimental values at given lags
-        and the theoretical function is calculated for all increments and returned.
+    def data(self, n=100, force=False):
+        """Theoretical variogram function
 
-        :return:
+        Calculate the experimental variogram and apply the binning. On
+        success, the variogram model will be fitted and applied to n lag
+        values. Returns the lags and the calculated semi-variance values.
+        If force is True, a clean preprocessing and fitting run will be
+        executed.
+
+        Parameters
+        ----------
+        n : integer
+            length of the lags array to be used for fitting. Defaults to 100,
+            which will be fine for most plots
+        force: boolean
+            If True, the preprocessing and fitting will be executed as a
+            clean run. This will force all intermediate results to be
+            recalculated. Defaults to False
+
+        Returns
+        -------
+        variogram : tuple
+            first element is the created lags array
+            second element are the calculated semi-variance values
+
         """
+        # force a clean preprocessing if needed
+        self.preprocessing(force=force)
+
         # calculate the experimental variogram
-        # this might raise an exception if the bm is not present yet
         _exp = self.experimental
         _bin = self.bins
 
@@ -505,53 +984,146 @@ class Variogram(object):
         if self.normalized:
             _bin /= np.nanmax(_bin)     # normalize X
             _exp /= np.nanmax(_exp)     # normalize Y
-            x = np.linspace(0, 1, 100)  # use 100 increments
+            x = np.linspace(0, 1, n)    # use n increments
         else:
-#            x = np.arange(0, np.float64(np.max(_bin)), 1)
-            x = np.linspace(0, np.float64(np.nanmax(_bin)), 100)
+            x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
 
-        # fit
-        self.cof, self.cov = self.fit(_bin, _exp)
+        # fit if needed
+        if self.cof is None:
+            self.fit(force=force)
 
         return x, self._model(x, *self.cof)
 
     @property
     def residuals(self):
-        """
+        """Model residuals
 
-        :return:
+        Calculate the model residuals defined as the differences between the
+        experimental variogram and the theoretical model values at
+        corresponding lag values
+
+        Returns
+        -------
+        numpy.ndarray
+
         """
         # get the deviations
-        experimental, model = self.__model_deviations()
+        experimental, model = self.model_deviations()
 
         # calculate the residuals
-        return np.fromiter(map(lambda x, y: x - y, model, experimental), np.float)
+        return np.fromiter(
+            map(lambda x, y: x - y, model, experimental),
+            np.float
+        )
 
     @property
     def mean_residual(self):
-        """
+        """Mean Model residuals
 
-        :return:
+        Calculates the mean, absoulte deviations between the experimental
+        variogram and theretical model values.
+
+        Returns
+        -------
+        float
         """
         return np.nanmean(np.fromiter(map(np.abs, self.residuals), np.float))
 
     @property
-    def RMSE(self):
+    def rmse(self):
+        r"""RMSE
+
+        Calculate the Root Mean squared error between the experimental
+        variogram and the theoretical model values at corresponding lags.
+        Can be used as a fitting quality measure.
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.residuals
+
+        Notes
+        -----
+        The RMSE is implemented like:
+
+        .. math::
+            RMSE = \sqrt{\frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}}
+
+        """
         # get the deviations
-        experimental, model = self.__model_deviations()
+        experimental, model = self.model_deviations()
 
         # get the sum of squares
-        rsum = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), np.float))
+        rsum = np.nansum(np.fromiter(
+            map(lambda x, y: (x - y)**2, experimental, model),
+            np.float
+        ))
 
         return np.sqrt(rsum / len(model))
 
     @property
-    def NRMSE(self):
-        return self.RMSE / np.nanmean(self.experimental)
+    def nrmse(self):
+        r"""NRMSE
+
+        Calculate the normalized root mean squared error between the
+        experimental variogram and the theoretical model values at
+        corresponding lags. Can be used as a fitting quality measure
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.residuals
+        Variogram.rmse
+
+        Notes
+        -----
+
+        The NRMSE is implemented as:
+
+        .. math::
+
+            NRMSE = \frac{RMSE}{mean(y)}
+
+        where RMSE is Variogram.rmse and y is Variogram.experimental
+
+
+        """
+        return self.rmse / np.nanmean(self.experimental)
 
     @property
-    def NRMSE_r(self):
-        return self.RMSE / (np.nanmax(self.experimental) - np.nanmean(self.experimental))
+    def nrmse_r(self):
+        r"""NRMSE
+
+        Alternative normalized root mean squared error between the
+        experimental variogram and the theoretical model values at
+        corresponding lags. Can be used as a fitting quality measure.
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.rmse
+        Variogram.nrmse
+
+        Notes
+        -----
+        Unlike Variogram.nrmse, nrmse_r is not normalized to the mean of y,
+        but the differece of the maximum y to its mean:
+
+        .. math::
+            NRMSE_r = \frac{RMSE}{max(y) - mean(y)}
+
+        """
+        _y = self.experimental
+        return self.rmse / (np.nanmax(_y) - np.nanmean(_y))
 
     @property
     def r(self):
@@ -561,7 +1133,7 @@ class Variogram(object):
         :return:
         """
         # get the experimental and theoretical variogram and cacluate means
-        experimental, model = self.__model_deviations()
+        experimental, model = self.model_deviations()
         mx = np.nanmean(experimental)
         my = np.nanmean(model)
 
@@ -580,7 +1152,7 @@ class Variogram(object):
 
         :return:
         """
-        experimental, model = self.__model_deviations()
+        experimental, model = self.model_deviations()
         mx = np.nanmean(experimental)
 
         # calculate the single nash-sutcliffe terms
@@ -589,10 +1161,21 @@ class Variogram(object):
 
         return 1 - (term1 / term2)
 
-    def __model_deviations(self):
-        """
-        These model deviations can be used to calculate different model quality parameters like residuals, RMSE.
-        :return:
+    def model_deviations(self):
+        """Model Deviations
+
+        Calculate the deviations between the experimental variogram and the
+        recalculated values for the same bins using the fitted theoretical
+        variogram function. Can be utilized to calculate a quality measure
+        for the variogram fit.
+
+        Returns
+        -------
+        deviations : tuple
+            first element is the experimental variogram
+            second element are the corresponding values of the theoretical
+            model.
+
         """
         # get the experimental values and their bin bounds
         _exp = self.experimental
@@ -601,44 +1184,54 @@ class Variogram(object):
         # get the model parameters
         param = self.describe()
         if 'error' in param:
-            raise RuntimeError('The Variogram cannot be applied properly. First, calculate the variogram.')
+            raise RuntimeError('The variogram cannot be calculated.')
 
         # calculate the model values at bin bounds
-        _model = self._model(_bin, *self.cof)
+        _model = self.transform(_bin)
 
         return _exp, _model
 
     def describe(self):
-        """
-        Return a dictionary of the Variogram parameters
+        """Variogram parameters
 
-        :return:
+        Return a dictionary of the variogram parameters.
+
+        Returns
+        -------
+        dict
+
         """
-        try:
-            if self.normalized:
-                maxlag = np.nanmax(self.bins)
-                maxvar = np.nanmax(self.experimental)
-            else:
-                maxlag = 1
-                maxvar = 1
-            index, data = self.data
-            cof = self.cof
-        except:
-            return dict(name=self._model.__name__, estimator = self._estimator.__name__, error='Variogram not calculated.')
+        # fit, if not already done
+        if self.cof is None:
+            self.fit(force=True)
+
+        # scale sill and range
+        if self.normalized:
+            maxlag = np.nanmax(self.bins)
+            maxvar = np.nanmax(self.experimental)
+        else:
+            maxlag = 1.
+            maxvar = 1.
+
+        # get the fitting coefficents
+        cof = self.cof
+
+        # build the dict
         rdict = dict(
             name=self._model.__name__,
             estimator=self._estimator.__name__,
-            range=cof[0] * maxlag,
+            effective_range=cof[0] * maxlag,
             sill=cof[1] * maxvar,
             nugget=cof[-1] * maxvar if self.use_nugget else 0
         )
 
-        # handle s parameters
+        # handle s parameters for matern and stable model
         if self._model.__name__ == 'matern':
             rdict['smoothness'] = cof[2]
         elif self._model.__name__ == 'stable':
             rdict['shape'] = cof[2]
 
+        # return
         return rdict
 
     @property
@@ -652,147 +1245,171 @@ class Variogram(object):
         if 'error' in d:
             return [None, None, None]
         elif self._model.__name__ == 'matern':
-            return list([d['range'], d['sill'], d['smoothness'], d['nugget']])
+            return list([
+                d['effective_range'],
+                d['sill'],
+                d['smoothness'],
+                d['nugget']
+            ])
         elif self._model.__name__ == 'stable':
-            return list([d['range'], d['sill'], d['shape'], d['nugget']])
+            return list([
+                d['effective_range'],
+                d['sill'],
+                d['shape'],
+                d['nugget']
+            ])
         elif self._model.__name__ == 'nugget':
             return list([d['nugget']])
         else:
-            return list([d['range'], d['sill'], d['nugget']])
+            return list([
+                d['effective_range'],
+                d['sill'],
+                d['nugget']
+            ])
 
-    @property
-    def bins(self):
+    def to_DataFrame(self, n=100, force=False):
+        """Variogram DataFrame
+
+        Returns the fitted theoretical variogram as a pandas.DataFrame
+        instance. The n and force parameter control the calaculation,
+        refer to the data funciton for more info.
+
+        Parameters
+        ----------
+        n : integer
+            length of the lags array to be used for fitting. Defaults to 100,
+            which will be fine for most plots
+        force: boolean
+            If True, the preprocessing and fitting will be executed as a
+            clean run. This will force all intermediate results to be
+            recalculated. Defaults to False
+
+        Returns
+        -------
+        pandas.DataFrame
+
+        See Also
+        --------
+        Variogram.data
+
         """
-        Return the upper bin bounds of the experimental Variogram.
-        If no self.bin_widths is set, even width bins are assumed and will be calculated from the distance matrix,
-        as the maximum distance divided by the amount of bins.
+        lags, data = self.data(n=n, force=force)
 
-        This will cause errors if the bins are not evenly distributed.
+        return DataFrame({
+            'lags': lags,
+            self._model.__name__: data}
+        ).copy()
 
-        :return:
+    def plot(self, axes=None, grid=True, show=True, hist=True):
+        """Variogram Plot
+
+        Plot the experimental variogram, the fitted theoretical function and
+        an histogram for the lag classes. The axes attribute can be used to
+        pass a list of AxesSubplots or a single instance to the plot
+        function. Then these Subplots will be used. If only a single instance
+        is passed, the hist attribute will be ignored as only the variogram
+        will be plotted anyway.
+
+        Parameters
+        ----------
+        axes : list, tuple, array, AxesSubplot or None
+            If None, the plot function will create a new matplotlib figure.
+            Otherwise a single instance or a list of AxesSubplots can be
+            passed to be used. If a single instance is passed, the hist
+            attribute will be ignored.
+        grid : bool
+            Defaults to True. If True a custom grid will be drawn through
+            the lag class centers
+        show : bool
+            Defaults to True. If True, the show method of the passed or
+            created matplotlib Figure will be called before returning the
+            Figure. This should be set to False, when used in a Notebook,
+            as a returned Figure object will be plotted anyway.
+        hist : bool
+            Defaults to True. If False, the creation of a histogram for the
+            lag classes will be suppressed.
+
+        Returns
+        -------
+        matplotlib.Figure
+
         """
-        # do a dummy bm calculation to set actual bin widths
-        # TODO: this is just a ugly workaround.
-        _bm = self.bm
-
-        if hasattr(self, 'bin_widths'):
-            _bin = np.cumsum(self.bin_widths)
-        else:
-            print('Warning: Bin edges were calcuated on the fly.')
-            n = int(np.max(self.bm) + 1)
-            _bin = np.cumsum(np.ones(n) * np.max(self.dm) /  n)
-
-        return _bin
-
-    @property
-    def hist(self):
-        """
-        Return a histogram for the present bins in the Variogram. The bin matrix bm will be unstacked and counted.
-        Variogram.bins, Variogram.hist could be used to produce a properly labeled histogram.
-
-        :return:
-        """
-        # get the upper triangle from the bin matrix
-#        _bm = self.bm
-#        ut = [_bm[i, j] for i in range(len(_bm)) for j in range(len(_bm)) if j > i]
-#        return np.bincount(ut)
-
-        # get the grouped pairs
-        _g = self.grouped_pairs
-        return np.array([len(_) / 2 for _ in _g])
-
-    @property
-    def values1D(self):
-        """
-        If the values were given with ndim > 1, the value1D property will return the aggreagtes
-        using the self.agg function.
-
-        :return:
-        """
-        return [self.agg(_) for _ in self.values]
-
-    def to_DataFrame(self):
-        """
-        Return the result of the theoretical Variogram as a pandas.DataFrame. The lag will index the semivariance
-        values.
-
-        :return:
-        """
-        index, data = self.data
-
-        # translate the normalized lag to real lag
-        maxlag = np.nanmax(self.bins)
-        maxvar = np.nanmax(self.experimental)
-
-        return DataFrame({'lag': index * maxlag, self._model.__name__: data * maxvar}).copy()
-
-
-    def plot(self, axes=None, grid=True, show=True, cof=None):
-        """
-        Plot the variogram, including the experimental and theoretical variogram. By default, the experimental data
-        will be represented by blue points and the theoretical model by a green line.
-
-        :return:
-        """
-        try:
-            _bin, _exp = self.bins, self.experimental
-            if cof is None:
-                x, data = self.data
-            else:
-                x = np.linspace(0, 1, 100) if self.normalized else np.linspace(0, np.nanmax(_bin), 100)
-                data = self._model(x, *cof)
-            _hist = self.hist
-        except Exception as e:
-            raise RuntimeError('A chart could not be drawn, as the input data is not complete. Please calculate the Variogram first.\nDetailed message: %s.' % str(e))
-
-        # handle the relative experimental variogram
-        if self.normalized:
-            _bin /= np.nanmax(_bin)
-            _exp /= np.nanmax(_exp)
+        # get the parameters
+        _bins = self.bins
+        _exp = self.experimental
+        x = np.linspace(0, np.nanmax(_bins), 100)  # make the 100 a param?
 
         # do the plotting
         if axes is None:
-            fig = plt.figure()
-            ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
-            ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
-            fig.subplots_adjust(hspace=0)
-        else:
+            if hist:
+                fig = plt.figure(figsize=(8, 5))
+                ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
+                ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
+                fig.subplots_adjust(hspace=0)
+            else:
+                fig, ax1 = plt.subplots(1, 1, figsize=(8, 4))
+                ax2 = None
+        elif isinstance(axes, (list, tuple, np.ndarray)):
             ax1, ax2 = axes
             fig = ax1.get_figure()
+        else:
+            ax1 = axes
+            ax2 = None
+            fig = ax1.get_figure()
 
-        # calc histgram bar width
-        # bar use 70% of the axis, w is the total width divided by amount of bins in the histogram
-        w = (np.max(_bin) * 0.7) / len(_hist)
+        # apply the model
+        y = self.transform(x)
 
+        # handle the relative experimental variogram
+        if self.normalized:
+            _bins /= np.nanmax(_bins)
+            y /= np.max(_exp)
+            _exp /= np.nanmax(_exp)
+            x /= np.nanmax(x)
+
+        # ------------------------
         # plot Variograms
-
-        # if last_bin is set, plot only considered bins in blue, excluded in red
-        ax1.plot(_bin, _exp, '.b')
-        ax1.plot(x, data, '-g')
-
-        if hasattr(self, 'last_bin'):
-            ax1.plot(_bin[self.last_bin:], _exp[self.last_bin:], '.r')
-
-
-        # plot histogram
-        ax2.bar(_bin, _hist, width=w, align='center')
-        # adjust
-        plt.setp(ax2.axes.get_xticklabels(), visible=False)
-        ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
+        ax1.plot(_bins, _exp, '.b')
+        ax1.plot(x, y, '-g')
 
         # ax limits
         if self.normalized:
             ax1.set_xlim([0, 1.05])
             ax1.set_ylim([0, 1.05])
-
         if grid:
-            ax1.vlines(_bin, *ax1.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
-            ax2.vlines(_bin, *ax2.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
-
+            ax1.grid('off')
+            ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85),
+                       linestyles='dashed')
         # annotation
         ax1.axes.set_ylabel('semivariance (%s)' % self._estimator.__name__)
         ax1.axes.set_xlabel('Lag (-)')
-        ax2.axes.set_ylabel('N')
+
+        # ------------------------
+        # plot histogram
+        if ax2 is not None and hist:
+            # calc the histogram
+            _count = np.fromiter(
+                (g.size for g in self.lag_classes()), dtype=int
+            )
+
+            # set the sum of hist bar widths to 70% of the x-axis space
+            w = (np.max(_bins) * 0.7) / len(_count)
+
+            # plot
+            ax2.bar(_bins, _count, width=w, align='center', color='red')
+
+            # adjust
+            plt.setp(ax2.axes.get_xticklabels(), visible=False)
+            ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
+
+            # need a grid?
+            if grid:
+                ax2.grid('off')
+                ax2.vlines(_bins, *ax2.axes.get_ybound(),
+                           colors=(.85, .85, .85), linestyles='dashed')
+
+            # anotate
+            ax2.axes.set_ylabel('N')
 
         # show the figure
         if show:
@@ -800,41 +1417,36 @@ class Variogram(object):
 
         return fig
 
+    def scattergram(self, ax=None):
 
-    def scattergram(self, ax=None, plot=True):
-        """
-        Plot a scattergram, which is a scatter plot of
-
-        :return:
-        """
-        # calculate population mean
-        _mean = np.mean(self.values1D)
-
-        # group the values to bins
-        gbm = self.grouped_pairs
-
-        # create the tail and head arrays
-        tail, head = list(), list()
-
-        # order the point pairs to tail and head
-        for grp in gbm:
-            # the even values are z(x) and odd values are z(x+h)
-            for i in range(0, len(grp) - 1, 2):
-                tail.append(_mean - grp[i])
-                head.append(_mean - grp[i + 1])
-
-        # if no plot is questioned, return tail and head arrays
-        if not plot:
-            return tail, head
-
-        # else plot in either given Ax object or create a new one
+        # create a new plot or use the given
         if ax is None:
             fig, ax = plt.subplots(1, 1)
         else:
             fig = ax.get_figure()
 
+        tail = np.empty(0)
+        head = tail.copy()
+
+        for h in np.unique(self.lag_groups()):
+            # get the head and tail
+            x, y = np.where(squareform(self.lag_groups()) == h)
+
+            # concatenate
+            tail = np.concatenate((tail, self.values[x]))
+            head = np.concatenate((head, self.values[y]))
+
+        # plot the mean on tail and head
+        ax.vlines(np.mean(tail), np.min(tail), np.max(tail), linestyles='--',
+                  color='red', lw=2)
+        ax.hlines(np.mean(head), np.min(head), np.max(head), linestyles='--',
+                  color='red', lw=2)
         # plot
-        ax.plot(tail, head, '.k')
+        ax.scatter(tail, head, 10, marker='o', color='orange')
+
+        # annotate
+        ax.set_ylabel('head')
+        ax.set_xlabel('tail')
 
         # show the figure
         fig.show()
@@ -842,16 +1454,27 @@ class Variogram(object):
         return fig
 
     def location_trend(self, axes=None):
-        """
-        Plot the values over each dimension in the coordinates as a scatter plot.
-        These plots can be used to identify a correlation between the value of an observation
-        and its location. If this is the case, it would violate the fundamental geostatistical
-        assumption, that a oberservation is independed of its observation
+        """Location Trend plot
 
-        :param axes: list of `matplotlib.AxesSubplots`. The len has to match the dimensionality
-                        of the coordiantes.
+        Plots the values over each dimension of the coordinates in a scatter
+        plot. This will visually show correlations between the values and any
+        of the coordinate dimension. If there is a value dependence on the
+        location, this would violate the intrinsic hypothesis. This is a
+        weaker form of stationarity of second order.
 
-        :return:
+        Parameters
+        ----------
+        axes : list
+            Can be None (default) or a list of matplotlib.AxesSubplots. If a
+            list is passed, the location trend plots will be plotted on the
+            given instances. Note that then length of the list has to match
+            the dimeonsionality of the coordinates array. In case 3D
+            coordinates are used, three subplots have to be given.
+
+        Returns
+        -------
+        matplotlib.Figure
+
         """
         N = len(self._X[0])
         if axes is None:
@@ -861,7 +1484,9 @@ class Variogram(object):
             fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 6 ,nrow * 6))
         else:
             if not len(axes) == N:
-                raise ValueError('The amount of passed axes does not fit the coordinate dimensionality of %d' % N)
+                raise ValueError(
+                    'The amount of passed axes does not fit the coordinate' +
+                    ' dimensionality of %d' % N)
             fig = axes[0].get_figure()
 
         for i in range(N):
@@ -875,10 +1500,6 @@ class Variogram(object):
 
         return fig
 
-
-
-
-    ## ----- implementing some Python functions ---- ##
     def __repr__(self):
         """
         Textual representation of this Variogram instance.

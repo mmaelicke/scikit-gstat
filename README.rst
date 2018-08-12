@@ -1,7 +1,7 @@
 Scikit-Gstat
 ============
 
-Info: scikit-gstat needs Python >= 3.5!
+Info: scikit-gstat needs Python >= 3.4!
 
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
@@ -16,26 +16,19 @@ Info: scikit-gstat needs Python >= 3.5!
     :alt: Codecov
 
 
-Deprecation Warning
--------------------
-This version of of scikit-gstat is deprecated. However,
-the current state of this module is, without this warning,
-conserved in the branch version-0.1.8 on GitHub, but will no
-longer be maintained.
+New Version 0.2
+~~~~~~~~~~~~~~~
 
-On the dev branch, the Variogram class is completely rewritten
-and will also change the used slightly. It will soon be merged
-into the master branch, as soon as it is stable. Sorry for any
-inconvenience.
-
-You can distable this Warning by setting the ignore_deprecation
-attribute to True:
-
->>> V =Variogram(c, v, ignore_deprecation=True)
-
+Scikit-gstat was rewritten in major parts. Most of the changes are internal,
+but the attributes and behaviour of the `Variogram` has also changed
+substantially.
+A detailed description of of the new versions usage will follow. The last
+version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
+branch on GitHub, but not developed any further. Those two versions are not
+compatible.
 
 Description
------------
+~~~~~~~~~~~
 At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
 This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
 variogram functions. The module is planned to be hold in the manner of scikit modules and be based upon `numpy` and
@@ -46,9 +39,9 @@ The estimators include:
 - matheron
 - cressie
 - dowd
-- genton (still buggy)
+- genton
 - entropy
-- bin quantiles
+- two experimental ones: quantiles, minmax
 
 The models include:
 
@@ -59,18 +52,14 @@ The models include:
 - stable
 - matérn
 
-with all of them in a nugget and no-nugget variation. All the estimator functions are written `numba` compatible,
-therefore you can just download it and include the `@jit` decorator. This can speed up the calculation for bigger
-data sets up to 100x. Nevertheless, this is not included in this sckit-gstat version as these functions might be
-re-implemented using Cython. This is still under evaluation.
-
+with all of them in a nugget and no-nugget variation. All the estimator are
+implemented using numba's jit decorator. The usage of numba might be subject
+to change in future versions.
 At the current stage, the package does not include any kriging. This is planned for a future release.
 
 
 Installation
 ~~~~~~~~~~~~
-
-You can either install scikit-gstat using pip or you download the latest version from github.
 
 PyPI:
 

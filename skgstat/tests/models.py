@@ -1,68 +1,174 @@
 """
-TODO
 
-test Variogram_Wrapper and debug_spherical
 """
 import unittest
-from skgstat.models import spherical, exponential, gaussian, cubic, stable, matern
+
+import numpy as np
+
+from skgstat.models import spherical, exponential
+from skgstat.models import gaussian, cubic, stable, matern
+from skgstat.models import variogram
 
 
 class TestModels(unittest.TestCase):
     def setUp(self):
-        """
-        Setting up the values
+        self.h = np.array([5, 10, 30, 50, 100])
 
-        :param h:   the separation lag
-        :param a:   the range parameter (not effective range!)
-        :param C0:  the Variogram sill
-        :param b:   the Variogram nugget
-        """
+    def test_spherical_default(self):
+        # extract the actual function
+        f = spherical.py_func
 
-        self.h = 1
-        self.a = 2
-        self.c0 = 3
-        self.b = 4
-        self.s = 5
+        result = [13.75, 20.0, 20.0, 20.0, 20.0]
 
-    def test_spherical(self):
-        """
-        Testing spherical model
-        """
+        model = list(map(f, self.h, [10]*5, [20]*5))
 
-        self.assertAlmostEqual(spherical(self.h, self.a, self.c0, self.b), 3.3125)
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
 
-    def test_exponential(self):
-        """
-        Testing exponential model
-        """
+    def test_spherical_nugget(self):
+        # extract the actual function
+        f = spherical.py_func
 
-        self.assertAlmostEqual(exponential(self.h, self.a, self.c0, self.b), 6.330609519554711)
+        result = [15.44, 27.56, 33.0, 34.0, 35.0]
 
-    def test_gaussian(self):
-        """
-        Testing gaussian model
-        """
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [15] * 5, [30] * 5, nuggets))
 
-        self.assertAlmostEqual(gaussian(self.h, self.a, self.c0, self.b), 3.472366552741015)
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
 
-    def test_cubic(self):
-        """
-        Testing cubic model
-        """
+    def test_exponential_default(self):
+        # extract the actual function
+        f = exponential.py_func
 
-        self.assertAlmostEqual(cubic(self.h, self.a, self.c0, self.b), 3.240234375)
+        result = [5.18, 9.02, 16.69, 19., 19.95]
+        model = list(map(f, self.h, [50]*5, [20]*5))
 
-    def test_stable(self):
-        """
-        Testing stable model
-        """
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
 
-        self.assertAlmostEqual(stable(self.h, self.a, self.c0, self.s, self.b), 3.8512082197805455)
+    def test_exponential_nugget(self):
+        # extract the actual function
+        f = exponential.py_func
 
-    def test_matern(self):
-        """
-        Testing matern model
-        """
+        result = [7.64, 13.8, 26.31, 31.54, 34.8]
 
-        self.assertAlmostEqual(matern(self.h, self.a, self.c0, self.s, self.b), 3.984536090177115)
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [60] * 5, [30] * 5, nuggets))
 
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_gaussian_default(self):
+        # extract the actual function
+        f = gaussian.py_func
+
+        result = [0.96,  3.58, 16.62, 19.86, 20.]
+        model = list(map(f, self.h, [45]*5, [20]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_gaussian_nugget(self):
+        # extract the actual function
+        f = gaussian.py_func
+
+        result = [1.82,  5.15, 21.96, 32.13, 35.]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [60] * 5, [30] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_cubic_default(self):
+        # extract the actual function
+        f = cubic.py_func
+
+        result = [6.13,  21.11,  88.12, 100., 100.]
+        model = list(map(f, self.h, [50]*5, [100]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_cubic_nugget(self):
+        # extract the actual function
+        f = cubic.py_func
+
+        result = [11.81, 34.74, 73., 74., 75.]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [30] * 5, [70] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_stable_default(self):
+        # extract the actual function
+        f = stable.py_func
+
+        result = [9.05, 23.53, 75.2, 95.02, 99.98]
+        model = list(map(f, self.h, [50]*5, [100]*5, [1.5]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_stable_nugget(self):
+        # extract the actual function
+        f = stable.py_func
+
+        result = [8.77, 10.8, 12.75, 13.91, 14.99]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [20] * 5, [10] * 5, [0.5] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_matern_default(self):
+        # extract the actual function
+        f = matern.py_func
+
+        result = [24.64, 43.2, 81.68, 94.09, 99.65]
+        model = list(map(f, self.h, [50]*5, [100]*5, [0.5]*5))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+    def test_matern_nugget(self):
+        # extract the actual function
+        f = matern.py_func
+
+        result = [3.44, 8.52, 12.99, 14., 15.]
+
+        # calculate
+        nuggets = [1, 2, 3, 4, 5]
+        model = list(map(f, self.h, [20] * 5, [10] * 5, [8] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+
+
+class TestVariogram(unittest.TestCase):
+    def test_scalar(self):
+        @variogram
+        def scalar_function(a, b):
+            return a, b
+
+        a, b = 1, 4
+        self.assertEqual(scalar_function(1, 4), (a, b))
+
+    def test_list(self):
+        @variogram
+        def adder(l, a):
+            return l + a
+
+        res = [5, 8, 12]
+
+        for r, c in zip(res, adder([1, 4, 8], 4)):
+            self.assertEqual(r, c)
