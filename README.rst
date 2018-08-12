@@ -1,9 +1,9 @@
 Scikit-Gstat
 ============
 
-Info: scikit-gstat needs Python >= 3.5!
+Info: scikit-gstat needs Python >= 3.4!
 
-.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=dev
+.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
     :alt: Build Status
 
@@ -11,7 +11,7 @@ Info: scikit-gstat needs Python >= 3.5!
     :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/dev/graph/badge.svg
+.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
 
@@ -19,11 +19,13 @@ Info: scikit-gstat needs Python >= 3.5!
 New Version 0.2
 ~~~~~~~~~~~~~~~
 
-Scikit-gstat is rewritten in major part at the moment. Most of the changes
-are internal, but the usage of the `Variogram` class will also change. Once
-merged into the master branch, a description of changes will follow. The last
-Version of the current master branch, 0.1.8, is kept in the `version-0.1.8`
-branch on GitHub, but not developed any further.
+Scikit-gstat was rewritten in major parts. Most of the changes are internal,
+but the attributes and behaviour of the `Variogram` has also changed
+substantially.
+A detailed description of of the new versions usage will follow. The last
+version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
+branch on GitHub, but not developed any further. Those two versions are not
+compatible.
 
 Description
 ~~~~~~~~~~~
@@ -50,8 +52,9 @@ The models include:
 - stable
 - matérn
 
-with all of them in a nugget and no-nugget variation. All the estimator functions are written `numba` compatible,
-which will be a future dependency.
+with all of them in a nugget and no-nugget variation. All the estimator are
+implemented using numba's jit decorator. The usage of numba might be subject
+to change in future versions.
 At the current stage, the package does not include any kriging. This is planned for a future release.
 
 
