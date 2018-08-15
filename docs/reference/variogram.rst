@@ -1,13 +1,12 @@
-=========
-Variogram
-=========
+===============
+Variogram Class
+===============
 
 .. toctree::
     :maxdepth: 3
     :caption: Contents:
 
-Variogram class
-~~~~~~~~~~~~~~~
+
 
 .. autoclass:: skgstat.Variogram
     :members:

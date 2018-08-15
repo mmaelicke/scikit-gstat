@@ -2,11 +2,6 @@
 Installation
 ============
 
-.. toctree::
-    :maxdepth: 3
-    :caption: Contents:
-
-
 
 The package can be installed directly from the Python Package Index or GitHub.
 The version on GitHub might be more recent, as only stable versions are

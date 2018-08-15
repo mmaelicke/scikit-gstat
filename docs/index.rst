@@ -32,5 +32,6 @@ n-dimensional distance matrices for the variogram.
     :caption: Contents:
 
     install
+    getting_started
     reference/reference
 

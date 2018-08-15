@@ -7,3 +7,4 @@ Code Reference
     :caption: Contents:
 
     variogram
+    estimator
