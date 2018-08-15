@@ -578,11 +578,11 @@ class Variogram(object):
 
         """
         # yield all groups
-        for i in np.unique(self._groups):
+        for i in np.unique(self.lag_groups()):
             if i < 0:
                 continue
             else:
-                yield self._diff[np.where(self._groups == i)]
+                yield self._diff[np.where(self.lag_groups() == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -1514,20 +1514,30 @@ class Variogram(object):
         return "< %s Semivariogram fitted to %d bins >" % (_name, _b)
 
     def __str__(self):
-        """
-        Descriptive respresentation of this Variogram instance that shall give the main variogram
-        parameters in a print statement.
+        """String Representation
 
-        :return:
+        Descriptive respresentation of this Variogram instance that shall give
+        the main variogram parameters in a print statement.
+
+        Returns
+        -------
+        description : str
+            String description of the variogram instance. Described by the
+            Variogram parameters.
+
         """
         par = self.describe()
 
         _sill = np.NaN if 'error' in par else par['sill']
-        _range = np.NaN if 'error' in par else par['range']
+        _range = np.NaN if 'error' in par else par['effective_range']
         _nugget = np.NaN if 'error' in par else par['nugget']
 
         s = "{0} Variogram\n".format(par['name'])
         s+= "-" * (len(s) - 1) + "\n"
-        s+= "Estimator:  {0}\nRange:      {1:.2f}\nSill:       {2:.2f}\nNugget:     {3:.2f}\n".format(par['estimator'], _range, _sill, _nugget)
+        s+="""Estimator:         %s
+        \rEffective Range:   %.2f
+        \rSill:              %.2f
+        \rNugget:            %.2f
+        """ % (par['estimator'], _range, _sill, _nugget)
 
         return s

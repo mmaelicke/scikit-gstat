@@ -37,15 +37,15 @@ def matheron(x):
     notes on their application [2]_. Following [1]_, the semi-variance is
     calculated as:
 
-    .. math ::
+    .. math::
         \gamma (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}(x)^2
 
     with:
 
-    .. math ::
-        x = (Z(x_i) - Z(x_{i+1})
+    .. math::
+        x = Z(x_i) - Z(x_{i+h})
 
-     where x is exactly the input array x.
+    where x is exactly the input array x.
 
     References
     ----------
@@ -94,16 +94,16 @@ def cressie(x):
     This implementation is done after the publication by Cressie and Hawkins
     from 1980 [3]_:
 
-    .. math ::
+    .. math::
         2\gamma (h) = \frac{(\frac{1}{N(h)} \sum_{i=1}^{N(h)} |x|^{0.5})^4}
         {0.457 + \frac{0.494}{N(h)} + \frac{0.045}{N^2(h)}}
 
     with:
 
-    .. math ::
-        x = (Z(x_i) - Z(x_{i+1})
+    .. math::
+        x = Z(x_i) - Z(x_{i+h})
 
-     where x is exactly the input array x.
+    where x is exactly the input array x.
 
     References
     ----------
@@ -166,7 +166,7 @@ def dowd(x):
     with:
 
     .. math::
-        x = (Z(x_i) - Z(x_{i+1})
+        x = Z(x_i) - Z(x_{i+h})
 
     where x is exactly the input array x.
 
