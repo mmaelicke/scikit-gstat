@@ -8,3 +8,4 @@ Code Reference
 
     variogram
     estimator
+    models

@@ -48,13 +48,13 @@ class Variogram(object):
 
         Parameters
         ----------
-        coordinates : array
+        coordinates : numpy.ndarray
             Array of shape (m, n). Will be used as m observation points of
             n-dimensions. This variogram can be calculated on 1 - n
             dimensional coordinates. In case a 1-dimensional array is passed,
             a second array of same length containing only zeros will be
             stacked to the passed one.
-        values : array
+        values : numpy.ndarray
             Array of values observed at the given coordinates. The length of
             the values array has to match the m dimension of the coordinates
             array. Will be used to calculate the dependent variable of the
@@ -62,12 +62,14 @@ class Variogram(object):
         estimator : str, callable
             String identifying the semi-variance estimator to be used.
             Defaults to the Matheron estimator. Possible values are:
+
               * matheron        [Matheron, default]
               * cressie         [Cressie-Hawkins]
               * dowd            [Dowd-Estimator]
               * genton          [Genton]
               * minmax          [MinMax Scaler]
               * entropy         [Shannon Entropy]
+
             If a callable is passed, it has to accept an array of absoulte
             differences, aligned to the 1D distance matrix (flattened upper
             triangle) and return a scalar, that converges towards small
@@ -75,6 +77,7 @@ class Variogram(object):
         model : str
             String identifying the theoretical variogram function to be used
             to describe the experimental variogram. Can be one of:
+
               * spherical       [Spherical, default]
               * exponential     [Exponential]
               * gaussian        [Gaussian]
@@ -82,6 +85,7 @@ class Variogram(object):
               * stable          [Stable model]
               * matern          [Matérn model]
               * nugget          [nugget effect variogram]
+
         dist_func : str
             String identifying the distance function. Defaults to
             'euclidean'. Can be any metric accepted by
@@ -95,20 +99,22 @@ class Variogram(object):
             in the interval [0,maxlag[. 'uniform' will identfy n_lags bins on
             the same interval, but with varying edges so that all bins count
             the same amount of observations.
-        normalize : boolean
+        normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
         fit_method : str
             String identifying the method to be used for fitting the
             theoretical variogram function to the experimental. More info is
             given in the Variogram.fit docs. Can be one of:
+
                 * 'lm': Levenberg-Marquardt algorithm for unconstrained
-                problems. This is the faster algorithm, yet is the fitting of
-                a variogram not unconstrianed.
-                *'trf': Trust Region Reflective function for non-linear
-                constrained problems. The class will set the boundaries
-                itself. This is the default function.
-        fit_sigma : array, str
+                  problems. This is the faster algorithm, yet is the fitting of
+                  a variogram not unconstrianed.
+                * 'trf': Trust Region Reflective function for non-linear
+                  constrained problems. The class will set the boundaries
+                  itself. This is the default function.
+
+        fit_sigma : numpy.ndarray, str
             Defaults to None. The sigma is used as measure of uncertainty
             during variogram fit. If fit_sigma is an array, it has to hold
             n_lags elements, giving the uncertainty for all lags classes. If
@@ -117,19 +123,21 @@ class Variogram(object):
             influcence of the corresponding lag class for the fit.
             If fit_sigma is a string, a pre-defined function of separating
             distance will be used to fill the array. Can be one of:
+
                 * 'linear': Linear loss with distance. Small bins will have
-                higher impact.
+                  higher impact.
                 * 'exp': The weights decrease by a e-function of distance
                 * 'sqrt': The weights decrease by the squareroot of distance
                 * 'sq': The weights decrease by the squared distance.
+
             More info is given in the Variogram.fit_sigma documentation.
-        is_directional : boolean
+        is_directional : bool
             Not Implemented yet, will be ignored.
         azimuth : float
              Not Implemented yet, will be ignored.
         tolerance : float
              Not Implemented yet, will be ignored.
-        use_nugget : boolean
+        use_nugget : bool
             Defaults to False. If True, a nugget effet will be added to all
             Variogram.models as a third (or fourth) fitting parameter. A
             nugget is essentially the y-axis interception of the theoretical
@@ -147,9 +155,9 @@ class Variogram(object):
         n_lags : int
             Specify the number of lag classes to be defined by the binning
             function.
-        verbose : boolean
+        verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
-        harmonize : boolean
+        harmonize : bool
             this kind of works so far, but will be rewritten (and documented)
         """
         # Set coordinates
@@ -483,13 +491,13 @@ class Variogram(object):
             (lag) distance.
 
               * sigma='linear': The residuals get weighted by the lag
-              distance normalized to the maximum lag distance, denoted as w_n
+                distance normalized to the maximum lag distance, denoted as w_n
               * sigma='exp': The residuals get weighted by the function:
-              w = e^{1 / w_n}
+                w = e^{1 / w_n}
               * sigma='sqrt': The residuals get weighted by the function:
-              w = sqrt(w_n)
+                w = sqrt(w_n)
               * sigma='sq': The residuals get weighted by the function:
-              w = w_n ** 2
+                w = w_n ** 2
 
         Returns
         -------
@@ -554,7 +562,7 @@ class Variogram(object):
 
         Returns
         -------
-        numpy.array
+        numpy.ndarray
 
         See Also
         --------
@@ -631,11 +639,13 @@ class Variogram(object):
             False.
         method : string
             A string identifying one of the implemented fitting procedures.
-            Can be one of ['lm', 'trf'].
+            Can be one of ['lm', 'trf']:
+
               * lm: Levenberg-Marquardt algorithms implemented in
-              scipy.optimize.leastsq function.
+                scipy.optimize.leastsq function.
               * trf: Trust Region Reflective algorithm implemented in
-              scipy.optimize.least_squares(method='trf')
+                scipy.optimize.least_squares(method='trf')
+
         sigma : string, array
             Uncertainty array for the bins. Has to have the same dimension as
             self.bins. Refer to Variogram.fit_sigma for more information.

@@ -7,8 +7,8 @@ Load the class and data
 -----------------------
 
 The main class of scikit-gstat is the Variogram. It can directly be imported
-from the module, called skgstat. The main functionality can easily be
-demonstrated on random data.
+from the module, called skgstat. The main class can easily be demonstrated on
+random data.
 
 .. ipython:: python
 

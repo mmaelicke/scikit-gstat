@@ -50,10 +50,11 @@ def spherical(h, r, c0, b=0):
 
     Notes
     -----
-    The implementation follows _[10]:
+
+    The implementation follows [1]_:
 
     .. math::
-        \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*{\frac{h}{r]^3}\right)
+        \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
 
     if :math:`h < r`, and
 
@@ -65,7 +66,8 @@ def spherical(h, r, c0, b=0):
 
     References
     ----------
-    .. [10]: Burgess, T. M., & Webster, R. (1980). Optimal interpolation
+
+    .. [1] Burgess, T. M., & Webster, R. (1980). Optimal interpolation
        and isarithmic mapping of soil properties. I.The semi-variogram and
        punctual kriging. Journal of Soil and Science, 31(2), 315–331,
        http://doi.org/10.1111/j.1365-2389.1980.tb02084.x
@@ -115,7 +117,8 @@ def exponential(h, r, c0, b=0):
 
     Notes
     -----
-    The implementation following _[11] and _[12] is as:
+    The implementation following [2]_ and [3]_ is as:
+
     .. math::
         \gamma = b + C_0 * \left({1 - e^{-\frac{h}{a}}}\right)
 
@@ -125,10 +128,10 @@ def exponential(h, r, c0, b=0):
     References
     ----------
 
-    .. [11]: Cressie, N. (1993): Statistics for spatial data.
+    .. [2] Cressie, N. (1993): Statistics for spatial data.
        Wiley Interscience.
 
-    .. [12]: Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+    .. [3] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
 
     """
@@ -141,7 +144,7 @@ def exponential(h, r, c0, b=0):
 @variogram
 @jit
 def gaussian(h, r, c0, b=0):
-    """ Gaussian Variogram function
+    r""" Gaussian Variogram function
 
     Implementation of the Gaussian variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
@@ -174,17 +177,24 @@ def gaussian(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation follows _[12]:
+    This implementation follows [4]_:
+
     .. math::
+
         \gamma = b + c_0 * \left({1 - e^{-\frac{h^2}{a^2}}}\right)
 
+
     a is the range parameter, that can be calculated from the
-    effective range r as: :math:`a = \frac{r}{2}`.
+    effective range r as:
+
+    .. math::
+        a = \frac{r}{2}
+
 
     References
     ----------
 
-    .. [12]: Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+    .. [4] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
 
     """
@@ -197,7 +207,7 @@ def gaussian(h, r, c0, b=0):
 @variogram
 @jit
 def cubic(h, r, c0, b=0):
-    """Cubic Variogram function
+    r"""Cubic Variogram function
 
     Implementation of the Cubic variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
@@ -228,14 +238,13 @@ def cubic(h, r, c0, b=0):
     -----
 
     This implementation is like:
+
     .. math::
 
-        \gamma = b + c_0 *  \left[{
-                    7    * \left(\frac{h^2}{a^2}\right) -
-            \frac{35}{4} * \left(\frac{h^3}{a^3}\right) +
-            \frac{7}{2}  * \left(\frac{h^5}{a^5}\right) -
-            \frac{3}{4}  * \left(\frac{h^7}{a^7}\right)
-            ]\right]
+        \gamma = b + c_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -
+        \frac{35}{4} * \left(\frac{h^3}{a^3}\right) +
+        \frac{7}{2} * \left(\frac{h^5}{a^5}\right) -
+        \frac{3}{4} * \left(\frac{h^7}{a^7}\right)}\right]
 
     a is the range parameter. For the cubic function, the effective range and
     range parameter are the same.

@@ -10,10 +10,12 @@ Welcome to SciKit GStat's documentation!
 ========================================
 
 
-At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
-This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
-variogram functions. The module is planned to be hold in the manner of scikit modules and be based upon `numpy` and
-`scipy` whenever possible. There is also a distance matrix extension available, with a function for calculating
+At current state, this module offers a scipy-styled `Variogram` class for
+performing geostatistical analysis. This class can be used to derive
+variograms. Key benefits are a number of semivariance estimators and theoretical
+variogram functions. The module is planned to be hold in the manner of scikit
+ modules and be based upon `numpy` and `scipy` whenever possible. There is
+ also a distance matrix extension available, with a function for calculating
 n-dimensional distance matrices for the variogram.
 
 .. note::
