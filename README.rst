@@ -11,6 +11,9 @@ Info: scikit-gstat needs Python >= 3.5!
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1345585.svg
+   :target: https://doi.org/10.5281/zenodo.1345585
+
 Deprecation Warning
 -------------------
 
