@@ -32,6 +32,24 @@ class TestVariogram(unittest.TestCase):
         for x, y in zip(V.parameters, [1.914077, 0.002782, 0]):
             self.assertAlmostEqual(x, y, places=6)
 
+    def test_binning_method_setting(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        # lags
+        even = [10.58, 21.15, 31.73, 42.3]
+        uniform = [10.25, 16.21, 22.71, 42.3]
+
+        # test even
+        assert_array_almost_equal(even, V.bins, decimal=2)
+
+        # set to uniform
+        V.set_bin_func('uniform')
+        assert_array_almost_equal(uniform, V.bins, decimal=2)
+
+        # restore even
+        V.bin_func = 'even'
+        assert_array_almost_equal(even, V.bins, decimal=2)
+
     def test_residuals(self):
         V = Variogram(self.c, self.v)
         assert_array_almost_equal(
@@ -66,7 +84,7 @@ class TestVariogram(unittest.TestCase):
 
         for model, nrmse in zip(
             ['spherical', 'gaussian', 'stable', 'exponential'],
-            [0.4751, 0.4784, 0.4598, 0.4695]
+            [0.4751, 0.4784, 0.4621, 0.4695]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.nrmse, nrmse, places=4)

@@ -154,7 +154,7 @@ class TestModels(unittest.TestCase):
             self.assertAlmostEqual(r, m, places=2)
 
 
-class TestVariogram(unittest.TestCase):
+class TestVariogramDecorator(unittest.TestCase):
     def test_scalar(self):
         @variogram
         def scalar_function(a, b):
