@@ -1629,6 +1629,64 @@ class Variogram(object):
 
         return fig
 
+    def distance_difference_plot(self, ax=None, plot_bins=True, show=True):
+        """Raw distance plot
+
+        Plots all absoulte value differences of all point pair combinations
+        over their separating distance, without sorting them into a lag.
+
+        Parameters
+        ----------
+        ax : None, AxesSubplot
+            If None, a new matplotlib.Figure will be created. In case a
+            Figure was already created, pass the Subplot to use as ax argument.
+        plot_bins : bool
+            If True (default) the bin edges will be included into the plot.
+        show : bool
+            If True (default), the show method of the Figure will be called
+            before returning the Figure. Can be set to False, to avoid
+            doubled figure rendering in Jupyter notebooks.
+
+        Returns
+        -------
+        matplotlib.pyplot.Figure
+
+        """
+        # get all distances
+        _dist = self.distance
+
+        # get all differences
+        if self._diff is None:
+            self._calc_diff()
+        _diff = self._diff
+
+        # create the plot
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+        else:
+            fig = ax.get_figure()
+
+        # plot the bins
+        if plot_bins:
+            _bins = self.bins
+            ax.vlines(_bins, 0, np.max(_diff), linestyle='--', lw=1, color='r')
+
+        # plot
+        ax.scatter(_dist, _diff, 8, color='b', marker='o', alpha=0.5)
+
+        # set limits
+        ax.set_ylim((0, np.max(_diff)))
+        ax.set_xlim((0, np.max(_dist)))
+        ax.set_xlabel('separating distance')
+        ax.set_ylabel('pairwise difference')
+        ax.set_title('Pairwise distance ~ difference')
+
+        # show the plot
+        if show:
+            fig.show()
+
+        return fig
+
     def __repr__(self):
         """
         Textual representation of this Variogram instance.
