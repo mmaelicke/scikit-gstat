@@ -419,10 +419,6 @@ class Variogram(object):
         self.set_estimator(estimator_name=value)
 
     def set_estimator(self, estimator_name):
-        """
-        Set estimator as the new variogram estimator.
-
-        """
         # reset the fitting
         self.cof, self.cov = None, None
 
@@ -443,8 +439,8 @@ class Variogram(object):
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
-                    'Variogram estimator %s is not understood, please' +
-                    'provide the function.' % estimator_name
+                    ('Variogram estimator %s is not understood, please' +
+                    'provide the function.') % estimator_name
                 )
         elif callable(estimator_name):
             self._estimator = estimator_name

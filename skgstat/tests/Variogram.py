@@ -4,9 +4,10 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 from skgstat import Variogram
+from skgstat import estimators
 
 
-class TestVariogram(unittest.TestCase):
+class TestVariogramInstatiation(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
         np.random.seed(42)
@@ -49,6 +50,52 @@ class TestVariogram(unittest.TestCase):
         # restore even
         V.bin_func = 'even'
         assert_array_almost_equal(even, V.bins, decimal=2)
+
+    def test_estimator_method_setting(self):
+        """
+        Only test if the estimator functions are correctly set. The
+        estimator functions themselves are tested in a unittest of their own.
+        """
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        estimator_list = ('cressie', 'matheron', 'dowd', 'genton', 'minmax',
+                      'percentile', 'entropy')
+
+        for estimator in estimator_list:
+            # set the estimator
+            V.estimator = estimator
+            imported_estimator = getattr(estimators, estimator)
+            self.assertEqual(imported_estimator, V.estimator)
+
+    def test_set_estimator_wrong_type(self):
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(ValueError) as e:
+            V.set_estimator(45)
+            self.assertEqual(
+                str(e),
+                'The estimator has to be a string or callable.'
+            )
+
+    def test_set_unknown_estimator(self):
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(ValueError) as e:
+            V.set_estimator('notaestimator')
+            self.assertEqual(
+                str(e),
+                'Variogram estimator notaestimator is not understood, please ' +
+                'provide the function.'
+            )
+
+
+class TestVariogramQaulityMeasures(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (30, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 30)
 
     def test_residuals(self):
         V = Variogram(self.c, self.v)
