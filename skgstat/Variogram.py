@@ -526,6 +526,9 @@ class Variogram(object):
         else:
             raise ValueError('Input not supported. Pass a string or callable.')
 
+        # re-calculate distances
+        self._calc_distances()
+
     @property
     def distance(self):
         if self._dist is None:

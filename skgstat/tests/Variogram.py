@@ -28,10 +28,19 @@ class TestVariogramInstatiation(unittest.TestCase):
         np.random.seed(1312)
         v = np.random.weibull(5, 50)
 
-        V = Variogram(c, v, maxlag='median')
+        V = Variogram(c, v, maxlag='median', n_lags=4)
+        bins = [0.88, 1.77, 2.65, 3.53]
 
-        for x, y in zip(V.parameters, [1.914077, 0.002782, 0]):
-            self.assertAlmostEqual(x, y, places=6)
+        for b, e in zip(bins, V.bins):
+            self.assertAlmostEqual(b, e, places=2)
+
+    def test_pass_mean_maxlag_on_instantiation(self):
+        V = Variogram(self.c, self.v, maxlag='mean', n_lags=4)
+
+        bins = [4.23, 8.46, 12.69, 16.91]
+
+        for b, e in zip(bins, V.bins):
+            self.assertAlmostEqual(b, e, places=2)
 
     def test_binning_method_setting(self):
         V = Variogram(self.c, self.v, n_lags=4)
@@ -87,6 +96,54 @@ class TestVariogramInstatiation(unittest.TestCase):
                 'Variogram estimator notaestimator is not understood, please ' +
                 'provide the function.'
             )
+
+    def test_set_dist_func(self):
+        V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
+
+        # use Manhattan distance
+        V.set_dist_function('cityblock')
+        for d, v in zip([5., 2., 3.], V.distance):
+            self.assertEqual(d, v)
+
+    def test_unknown_dist_func(self):
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(ValueError) as e:
+            V.set_dist_function('notadistance')
+            self.assertEqual(
+                str(e),
+                'Unknown Distance Metri: notadistance'
+            )
+
+    def test_wrong_dist_func_input(self):
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(ValueError) as e:
+            V.set_dist_function(55)
+            self.assertEqual(
+                str(e),
+                'Input not supported. Pass a string or callable.'
+            )
+
+    def test_callable_dist_function(self):
+        V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
+
+        def dfunc(x):
+            return np.ones((len(x), len(x)))
+
+        V.set_dist_function(dfunc)
+
+        # test
+        self.assertEqual(V.dist_function, dfunc)
+        self.assertTrue((V.distance==1).all())
+        self.assertEqual(V.distance.shape, (3, 3))
+
+    def test_direct_dist_setting(self):
+        V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
+
+        V.distance = np.array([0, 0, 100])
+
+        assert_array_almost_equal(V.distance, [0, 0, 100], decimal=0)
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
