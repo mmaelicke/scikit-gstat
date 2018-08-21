@@ -231,6 +231,21 @@ class Variogram(object):
 
     @property
     def values(self):
+        """Values property
+
+        Array of observations, the variogram is build for. The setter of this
+        property utilizes the Variogram.set_values function for setting new
+        arrays.
+
+        Returns
+        -------
+        values : numpy.ndarray
+
+        See Also
+        --------
+        Variogram.set_values
+
+        """
         return self._values
 
     @values.setter
@@ -239,9 +254,47 @@ class Variogram(object):
 
     @property
     def value_matrix(self):
+        """Value matrix
+
+        Returns a matrix of pairwise differences in absolute values. The
+        matrix will have the shape (m, m) with m = len(Variogram.values).
+        Note that Variogram.values holds the values themselves, while the
+        value_matrix consists of their pairwise differences.
+
+        Returns
+        -------
+        values : numpy.matrix
+            Matrix of pairwise absolute differences of the values.
+
+        See Also
+        --------
+        Variogram._diff
+
+        """
         return squareform(self._diff)
 
     def set_values(self, values):
+        """Set new values
+
+        Will set the passed array as new value array. This array has to be of
+        same length as the first axis of the coordinates array. The Variogram
+        class does only accept one dimensional arrays.
+        On success all fitting parameters are deleted and the pairwise
+        differences are recalculated.
+
+        Parameters
+        ----------
+        values : numpy.ndarray
+
+        Returns
+        -------
+        void
+
+        See Also
+        --------
+        Variogram.values
+
+        """
         # check dimensions
         if not len(values) == len(self._X):
             raise ValueError('The length of the values array has to match' +
@@ -265,6 +318,24 @@ class Variogram(object):
 
     @property
     def bin_func(self):
+        """Binning function
+
+        Returns an instance of the function used for binning the separating
+        distances into the given amount of bins. Both functions use the same
+        signature of func(distances, n, maxlag).
+
+        The setter of this property utilizes the Variogram.set_bin_func to
+        set a new function.
+
+        Returns
+        -------
+        binning_function : function
+
+        See Also
+        --------
+        Variogram.set_bin_func
+
+        """
         return self._bin_func
 
     @bin_func.setter
@@ -272,17 +343,46 @@ class Variogram(object):
         self.set_bin_func(bin_func=bin_func)
 
     def set_bin_func(self, bin_func):
-        # reset groups and bins
-        self._groups = None
-        self._bins = None
-        self.cof, self.cov = None, None
+        """Set binning function
 
+        Sets a new binning function to be used. The new binning method is set
+        by a string identifying the new function to be used. Can be one of:
+        ['even', 'uniform'].
+
+        Parameters
+        ----------
+        bin_func : str
+            Can be one of:
+
+            * **'even'**: Use skgstat.binning.even_width_lags for using
+              n_lags lags of equal width up to maxlag.
+            * **'uniform'**: Use skgstat.binning.uniform_count_lags for using
+              n_lags lags up to maxlag in which the pairwise differences
+              follow a uniform distribution.
+
+        Returns
+        -------
+        void
+
+        See Also
+        --------
+        Variogram.bin_func
+        skgstat.binning.uniform_count_lags
+        skgstat.binning.even_width_lags
+
+        """
+        # switch the input
         if bin_func.lower() == 'even':
             self._bin_func = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
         else:
             raise ValueError('%s binning method is not known' % bin_func)
+
+        # reset groups and bins
+        self._groups = None
+        self._bins = None
+        self.cof, self.cov = None, None
 
     @property
     def normalized(self):
@@ -840,17 +940,37 @@ class Variogram(object):
             self._groups[np.where((d >= bounds[0]) & (d < bounds[1]))] = i
 
     def clone(self):
-        """
-        Wrapper for copy.deepcopy function of self.
+        """Deep copy of self
+
+        Return a deep copy of self.
+
+        Returns
+        -------
+        Variogram
+
         """
         return copy.deepcopy(self)
 
     @property
     def experimental(self):
-        """
+        """Experimental Variogram
+
+        Array of experimental (empirical) semivariance values. The array
+        length will be aligned to Variogram.bins. The current
+        Variogram.estimator has been used to calculate the values. Depending
+        on the setting of Variogram.harmonize (True | False), either
+        Variogram._experimental or Variogram.isotonic will be returned.
 
         Returns
         -------
+        vario : numpy.ndarray
+            Array of the experimental semi-variance values aligned to
+            Variogram.bins.
+
+        See Also
+        --------
+        Variogram._experimental
+        Variogram.isotonic
 
         """
         if self.harmonize:
