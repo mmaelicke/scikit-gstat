@@ -15,6 +15,9 @@ Info: scikit-gstat needs Python >= 3.4!
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
 
+.. image:: https://zenodo.org/badge/98853365.svg
+   :target: https://zenodo.org/badge/latestdoi/98853365
+
 
 New Version 0.2
 ~~~~~~~~~~~~~~~

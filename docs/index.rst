@@ -9,6 +9,20 @@ Home
 Welcome to SciKit GStat's documentation!
 ========================================
 
+.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
+    :target: https://travis-ci.org/mmaelicke/scikit-gstat
+    :alt: Build Status
+
+.. image:: https://readthedocs.org/projects/scikit-gstat/badge/?version=latest
+    :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
+    :alt: Documentation Status
+
+.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/mmaelicke/scikit-gstat
+    :alt: Codecov
+
+.. image:: https://zenodo.org/badge/98853365.svg
+   :target: https://zenodo.org/badge/latestdoi/98853365
 
 At current state, this module offers a scipy-styled `Variogram` class for
 performing geostatistical analysis. This class can be used to derive
