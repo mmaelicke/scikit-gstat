@@ -230,7 +230,7 @@ def genton(x):
     References
     ----------
 
-    ..  [1] Genton, M. G., (1998): Highly robust variogram estimation,
+    ..  [5] Genton, M. G., (1998): Highly robust variogram estimation,
         Math. Geol., 30, 213 - 221.
 
     """

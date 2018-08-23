@@ -51,7 +51,7 @@ def spherical(h, r, c0, b=0):
     Notes
     -----
 
-    The implementation follows [1]_:
+    The implementation follows [6]_:
 
     .. math::
         \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
@@ -67,7 +67,7 @@ def spherical(h, r, c0, b=0):
     References
     ----------
 
-    .. [1] Burgess, T. M., & Webster, R. (1980). Optimal interpolation
+    .. [6] Burgess, T. M., & Webster, R. (1980). Optimal interpolation
        and isarithmic mapping of soil properties. I.The semi-variogram and
        punctual kriging. Journal of Soil and Science, 31(2), 315–331,
        http://doi.org/10.1111/j.1365-2389.1980.tb02084.x
@@ -117,7 +117,7 @@ def exponential(h, r, c0, b=0):
 
     Notes
     -----
-    The implementation following [2]_ and [3]_ is as:
+    The implementation following [7]_ and [8]_ is as:
 
     .. math::
         \gamma = b + C_0 * \left({1 - e^{-\frac{h}{a}}}\right)
@@ -128,10 +128,10 @@ def exponential(h, r, c0, b=0):
     References
     ----------
 
-    .. [2] Cressie, N. (1993): Statistics for spatial data.
+    .. [7] Cressie, N. (1993): Statistics for spatial data.
        Wiley Interscience.
 
-    .. [3] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+    .. [8] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
 
     """
@@ -177,7 +177,7 @@ def gaussian(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation follows [4]_:
+    This implementation follows [9]_:
 
     .. math::
 
@@ -194,7 +194,7 @@ def gaussian(h, r, c0, b=0):
     References
     ----------
 
-    .. [4] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+    .. [9] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
 
     """

@@ -199,5 +199,56 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         self.assertAlmostEqual(V.nrmse_r, 0.40796, places=5)
 
 
+class TestVariogramPlots(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (150, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 150)
+
+    def test_main_plot(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # build the figure
+        fig = V.plot(show=False)
+        ax1, ax2 = fig.axes
+
+        # test experimental
+        assert_array_almost_equal(
+            [0.71, 0.7, 0.81, 1., 0.86],
+            ax1.get_children()[1].get_data()[1],
+            decimal=2
+        )
+
+        #  test theoretical at some locations
+        assert_array_almost_equal(
+            [0.17, 0.58, 0.84, 0.84],
+            ax1.get_children()[2].get_data()[1][[4, 15, 30, 50]],
+            decimal=2
+        )
+
+    def test_main_plot_histogram(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # build the figure
+        fig = V.plot(show=False)
+        childs = fig.axes[1].get_children()
+
+        # test histogram
+        for i, h in zip(range(1, 6), [5262, 4674, 1047, 142, 49]):
+            self.assertEqual(childs[i].get_height(), h)
+
+    def test_main_plot_no_histogram(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # two axes
+        fig = V.plot(show=False)
+        self.assertEqual(len(fig.axes), 2)
+
+        fig = V.plot(hist=False, show=False)
+        self.assertEqual(len(fig.axes), 1)
+
+
 if __name__ == '__main__':
     unittest.main()
