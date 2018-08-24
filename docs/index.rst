@@ -37,10 +37,10 @@ n-dimensional distance matrices for the variogram.
     Scikit-gstat was rewritten in major parts. Most of the changes are internal,
     but the attributes and behaviour of the `Variogram` has also changed
     substantially.
-    A detailed description of of the new versions usage will follow. The last
+    A detailed description of the new versions usage will follow. The last
     version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
-    branch on GitHub, but not developed any further. Those two versions are not
-    compatible.
+    branch on GitHub, but not developed any further. It is not compatible to
+    the current version.
 
 
 .. toctree::
@@ -49,5 +49,6 @@ n-dimensional distance matrices for the variogram.
 
     install
     getting_started
+    technical/technical
     reference/reference
 
