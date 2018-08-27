@@ -589,14 +589,15 @@ class Variogram(object):
             Then, the weights for fitting are calculated as a function of
             (lag) distance.
 
-              * sigma='linear': The residuals get weighted by the lag
-                distance normalized to the maximum lag distance, denoted as w_n
-              * sigma='exp': The residuals get weighted by the function:
-                w = e^{1 / w_n}
-              * sigma='sqrt': The residuals get weighted by the function:
-                w = sqrt(w_n)
-              * sigma='sq': The residuals get weighted by the function:
-                w = w_n ** 2
+              * **sigma='linear'**: The residuals get weighted by the lag
+                distance normalized to the maximum lag distance, denoted as
+                :math:`w_n`
+              * **sigma='exp'**: The residuals get weighted by the function:
+                :math:`w = e^{1 / w_n}`
+              * **sigma='sqrt'**: The residuals get weighted by the function:
+                :math:`w = \sqrt(w_n)`
+              * **sigma='sq'**: The residuals get weighted by the function:
+                :math:`w = w_n^2`
 
         Returns
         -------

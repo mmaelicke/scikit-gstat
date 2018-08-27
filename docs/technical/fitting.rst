@@ -118,12 +118,114 @@ The last note about fitting a theoretical function, is that both methods
 assume all lag classes to be equally important for the fit. In the specific
 case of a variogram this is not true.
 
-Distance wieghted fit
+Distance weighted fit
 =====================
 
 While the standard Levenberg-Marquardt and Trust Region Reflective algorithms
-are both based on the idea of least squares, they assume all obersvations to
+are both based on the idea of least squares, they assume all observations to
 be equally important. In the specific case of a theoretical variogram
 function, this is not the case.
+The variogram describes a dependency of covariance in value on the separation
+distances of the observations. This model already implies that the dependency
+is stronger on small distances. Considering a kriging interpolation as the
+main application of the variogram model, points on close distances will get
+higher weights for the interpolated value of an unobserved location. The
+weight on large distances will be neglected anyway. Hence, a good fit on
+small separating distances is way more important.
+The :func:`curve_fit <scipy.optimize.curve_fit>` function does not have an
+option for weighting the squares of specific observations. At least it does
+not call it 'weights'. In terms of scipy, you can define a 'sigma', which is
+the uncertainty of the respective point.
+The uncertainty :math:`\sigma` influences the least squares calculation as
+described by the equation:
 
-*to be continued*
+.. math::
+
+    \chi_{sq} = \sum {\left(\frac{r}{\sigma}\right)}^2
+
+That means, the larger :math:`\sigma` is, the *less* weight it will receive.
+That also means, we can almost ignore points, by assigning a ridiculous high
+:math:`\sigma` to them. The following example should illustrate the effect.
+This time, the first 7 points will be weighted by a weight
+:math:`\sigma = [0.1, 0.2, \ldots 0.9]` and the remaining points will receive a
+:math:`\sigma = 1`. In the case of :math:`\sigma=0.1`, this would change the
+least squares cost function to:
+
+.. math::
+
+    \chi_{sq;x_{1:7}} = \sum (10r)^2
+
+.. ipython:: python
+
+    cm = plt.get_cmap('autumn_r')
+    sigma = np.ones(len(x))
+
+    fig, ax = plt.subplots(1, 1, figsize=(7, 5))
+    ax.plot(x, y, 'rD')
+
+    for w in np.arange(0.1, 1., 0.1):
+        s = sigma.copy()
+        s[:6] *= w
+        cof, cov = curve_fit(f, x, y, sigma=s)
+        yi = list(map(lambda x: spherical(x, *cof), xi))
+        ax.plot(xi, yi, linestyle='-', color=cm(w + 0.1), label='w = %.1f' % w)
+
+    @savefig fit3.png width=7in
+    ax.legend(loc='lower right')
+
+In the figure above, you can see how the last points get more and more
+ignored by the fitting. A smaller w value means more weight on the first 7
+points. The more yellow lines have a smaller sill and range.
+
+The :class:`Variogram <skgstat.Variogram>` class accepts lists like sigma
+from the code example above as
+:func:`Variogram.fit_sigma <skgstat.Variogram.fit_sigma>` property. This way,
+the example from above could be implemented.
+However, :func:`Variogram.fit_sigma <skgstat.Variogram.fit_sigma>` can also
+apply a function of distance to the lag classes to derive the :math:`\sigma`
+values. There are several predefined functions.
+These are:
+
+    * sigma='linear': The residuals get weighted by the lag
+      distance normalized to the maximum lag distance, denoted as
+      :math:`w_n`
+    * sigma='exp': The residuals get weighted by the function:
+      :math:`w = e^{1 / w_n}`
+    * sigma='sqrt': The residuals get weighted by the function:
+      :math:`w = \sqrt(w_n)`
+    * sigma='sq': The residuals get weighted by the function:
+      :math:`w = w_n^2`
+
+The example below illustrates their effect on the sample experimental
+variograms used so far.
+
+.. ipython:: python
+
+    cm = plt.get_cmap('gist_earth')
+
+    # increase the distance by one, to aviod zeros
+    X = np.asarray([(_ + 1) for _ in x])
+
+    s1 = X / np.max(X)
+    s2 = np.exp(1. / X)
+    s3 = np.sqrt(s1)
+    s4 = np.power(s1, 2)
+    s = (s1, s2, s3, s4)
+    labels = ('linear', 'exp', 'sqrt', 'sq')
+
+.. ipython:: python
+
+    plt.plot(x, y, 'rD', label='experimental')
+    for i in range(4):
+        cof, cov = curve_fit(f, x, y, sigma=s[i], p0=(6.,14.), bounds=(0,(14,14)))
+        yi = list(map(lambda x: spherical(x, *cof), xi))
+        plt.plot(xi, yi, linestyle='-', color=cm((i/6)), label=labels[i])
+    @savefig fit4.png width=7in
+    plt.legend(loc='lower right')
+
+
+
+That's it.
+
+
+
