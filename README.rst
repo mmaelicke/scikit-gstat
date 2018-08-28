@@ -3,6 +3,12 @@ Scikit-Gstat
 
 Info: scikit-gstat needs Python >= 3.4!
 
+.. image:: https://badge.fury.io/py/scikit-gstat.svg
+    :target: https://badge.fury.io/py/scikit-gstat
+
+.. image:: https://badge.fury.io/gh/mmaelicke%2Fscikit-gstat.svg
+    :target: https://badge.fury.io/gh/mmaelicke%2Fscikit-gstat
+
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
     :alt: Build Status
