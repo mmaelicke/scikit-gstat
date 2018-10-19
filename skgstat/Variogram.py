@@ -31,9 +31,6 @@ class Variogram(object):
                  normalize=True,
                  fit_method='trf',
                  fit_sigma=None,
-                 is_directional=False,
-                 azimuth=0,
-                 tolerance=45.0,
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
@@ -131,12 +128,6 @@ class Variogram(object):
                 * 'sq': The weights decrease by the squared distance.
 
             More info is given in the Variogram.fit_sigma documentation.
-        is_directional : bool
-            Not Implemented yet, will be ignored.
-        azimuth : float
-             Not Implemented yet, will be ignored.
-        tolerance : float
-             Not Implemented yet, will be ignored.
         use_nugget : bool
             Defaults to False. If True, a nugget effet will be added to all
             Variogram.models as a third (or fourth) fitting parameter. A
@@ -159,6 +150,7 @@ class Variogram(object):
             Set the Verbosity of the class. Not Implemented yet.
         harmonize : bool
             this kind of works so far, but will be rewritten (and documented)
+
         """
         # Set coordinates
         self._X = np.asarray(coordinates)
@@ -209,11 +201,6 @@ class Variogram(object):
         self.fit_method = fit_method
         self._fit_sigma = None
         self.fit_sigma = fit_sigma
-
-        # set directionality
-        self.is_directional = is_directional
-        self.azimuth = azimuth
-        self.tolerance = tolerance
 
         # set if nugget effect shall be used
         self.use_nugget = use_nugget
