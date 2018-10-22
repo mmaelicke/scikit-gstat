@@ -1,41 +1,16 @@
 ====
 Home
 ====
-.. SciKit GStat documentation master file, created by
-   sphinx-quickstart on Mon Apr 30 14:57:02 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 Welcome to SciKit GStat's documentation!
 ========================================
-
-.. image:: https://badge.fury.io/py/scikit-gstat.svg
-    :target: https://badge.fury.io/py/scikit-gstat
-
-.. image:: https://badge.fury.io/gh/mmaelicke%2Fscikit-gstat.svg
-    :target: https://badge.fury.io/gh/mmaelicke%2Fscikit-gstat
-
-.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
-    :target: https://travis-ci.org/mmaelicke/scikit-gstat
-    :alt: Build Status
-
-.. image:: https://readthedocs.org/projects/scikit-gstat/badge/?version=latest
-    :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
-    :alt: Documentation Status
-
-.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/mmaelicke/scikit-gstat
-    :alt: Codecov
-
-.. image:: https://zenodo.org/badge/98853365.svg
-   :target: https://zenodo.org/badge/latestdoi/98853365
 
 At current state, this module offers a scipy-styled `Variogram` class for
 performing geostatistical analysis. This class can be used to derive
 variograms. Key benefits are a number of semivariance estimators and theoretical
 variogram functions. The module is planned to be hold in the manner of scikit
- modules and be based upon `numpy` and `scipy` whenever possible. There is
- also a distance matrix extension available, with a function for calculating
+modules and be based upon `numpy` and `scipy` whenever possible. There is
+also a distance matrix extension available, with a function for calculating
 n-dimensional distance matrices for the variogram.
 
 .. note::
@@ -47,6 +22,17 @@ n-dimensional distance matrices for the variogram.
     version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
     branch on GitHub, but not developed any further. It is not compatible to
     the current version.
+
+How to cite
+===========
+
+In case you use SciKit-GStat in other software or scientific publications,
+please reference this module. It is published and has a DOI. It can be cited
+as:
+
+  Mälicke, Mirko, & Schneider, Helge David. (2018). mmaelicke/scikit-gstat:
+  Geostatistical variogram toolbox (Version v0.2.2). Zenodo.
+  http://doi.org/10.5281/zenodo.1345584
 
 
 .. toctree::

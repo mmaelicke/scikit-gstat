@@ -7,5 +7,6 @@ Code Reference
     :caption: Contents:
 
     variogram
+    directionalvariogram
     estimator
     models
