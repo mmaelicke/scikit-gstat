@@ -4,10 +4,16 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-install:
+
+stages:
+  - test
+  - docs
+  - deploy_docs
+
 install:
   - sudo apt-get update
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -28,8 +34,41 @@ install:
   # install codecov
   - pip install --upgrade pip
   - pip install codecov
-script:
-  - nosetests --with-coverage --cover-package=skgstat
-  - nosetests --with-coverage --cover-package=skgstat
-after_success:
-  - codecov
+
+jobs:
+  include:
+    - stage: test
+      script:
+        - nosetests --with-coverage --cover-package=skgstat
+      after_success:
+        - codecov
+
+    - stage: docs
+      install:
+        - sudo apt-get update
+        - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
+        - pip install sphinx
+        - pip install -r requirements.rtd.txt
+
+      script:
+        - cd docs
+        - make html
+      script:
+        - cd docs
+        - make latex
+        - cd _build/latex
+        - pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
+        - cd ../..
+        - cp _build/latex/SciKitGStat.pdf _build/html/SciKitGStat.pdf
+        - cd ~
+
+    - stage: deploy_docs
+      scropt: skip
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_TOKEN
+        keep_history: true
+        on:
+          branch: master
+        local_dir: docs/_build/html
