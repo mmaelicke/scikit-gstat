@@ -2,7 +2,9 @@
 Directional Variogram
 """
 import numpy as np
-from shapely.geometry import Polygon
+from numba import jit
+from shapely.geometry import Polygon, Point
+from itertools import chain
 
 from .Variogram import Variogram
 
@@ -40,9 +42,8 @@ class DirectionalVariogram(Variogram):
                  ):
         r"""Variogram Class
 
-        Note: The directional variogram estimation is not re-implemented yet.
-        At current stage it is just a skeleton for implementing the functions
-        in the next step.
+        Directional Variogram. The calculation is not performant and not
+        tested yet.
 
         Parameters
         ----------
@@ -155,14 +156,14 @@ class DirectionalVariogram(Variogram):
             are given in the documentation.
         azimuth : float
             The azimuth of the directional dependence for this Variogram,
-            given as an angle in **degree**. The North of the coordinate
-            plane is set to be at 0° and is counted clockwise to 360°
-            (which is North again). Only Points lying in the azimuth of a
+            given as an angle in **degree**. The East of the coordinate
+            plane is set to be at 0° and is counted clockwise to 180° and
+            counter-clockwise to -180°. Only Points lying in the azimuth of a
             specific point will be used for forming point pairs.
         tolerance : float
             The tolerance is given as an angle in **degree**- Points being
             dislocated from the exact azimuth by half the tolerance will be
-            accepted as well. It's half the tolerance as the pointmay be
+            accepted as well. It's half the tolerance as the point may be
             dislocated in the positive and negative direction from the azimuth.
         bandwidth : float
             Maximum tolerance acceptable in **coordinate units**, which is
@@ -283,8 +284,8 @@ class DirectionalVariogram(Variogram):
         """Direction azimuth
 
         Main direction for te selection of points in the formation of point
-        pairs. North of the coordinate plane is defined to be 0° and then the
-        azimuth is set clockwise up to 360°, which is North again.
+        pairs. East of the coordinate plane is defined to be 0° and then the
+        azimuth is set clockwise up to 180°and count-clockwise to -180°.
 
         Parameters
         ----------
@@ -293,14 +294,17 @@ class DirectionalVariogram(Variogram):
 
         Raises
         ------
-        ValueError : in case angle < 0 or angle > 360
+        ValueError : in case angle < -180° or angle > 180
 
         """
-        if angle < 0 or angle > 360:
+        if angle < -180 or angle > 1800:
             raise ValueError('The azimuth is an angle in degree and has to '
-                             'meet 0 <= angle <= 360')
+                             'meet -180 <= angle <= 180')
         else:
             self._azimuth = angle
+
+        # reset groups on azimuth change
+        self._groups = None
 
     @property
     def tolerance(self):
@@ -329,6 +333,9 @@ class DirectionalVariogram(Variogram):
                              'meet 0 <= angle <= 360')
         else:
             self._tolerance = angle
+
+        # reset groups on tolerance change
+        self._groups = None
 
     @property
     def bandwidth(self):
@@ -363,6 +370,9 @@ class DirectionalVariogram(Variogram):
                   'distance. Thus it will have no effect.')
         else:
             self._bandwidth = width
+
+        # reset groups on bandwidth change
+        self._groups = None
 
     def set_directional_model(self, model_name):
         """Set new directional model
@@ -401,7 +411,7 @@ class DirectionalVariogram(Variogram):
             if model_name.lower() == 'compass':
                 raise NotImplementedError
             elif model_name.lower() == 'triangle':
-                pass
+                self._directional_model = self._triangle
             elif model_name.lower() == 'circle':
                 raise NotImplementedError
             else:
@@ -414,6 +424,128 @@ class DirectionalVariogram(Variogram):
             raise ValueError('The directional model has to be identified by a '
                              'model name, or it has to be the search area '
                              'itself')
+
+        # reset the groups as the directional model changed
+        self._groups = None
+
+#    @jit
+    def local_reference_system(self, poi):
+        """Calculate local coordinate system
+
+        The coordinates will be transformed into a local reference system
+        that will simplify the directional dependence selection. The point of
+        interest (poi) of the current iteration will be used as origin of the
+        local reference system and the x-axis will be rotated onto the azimuth.
+
+        Parameters
+        ----------
+        poi : tuple
+            First two coordinate dimensions of the point of interest. will be
+            used as the new origin
+
+        Returns
+        -------
+        local_ref : numpy.array
+            Array of dimension (m, 2) where m is the length of the
+            coordinates array. Transformed coordinates in the same order as
+            the original coordinates.
+
+        """
+        # define a point-wise transform function
+        def _transform(p1, p2, a):
+            p = p1 - p2
+            x = p[0] * np.cos(a) - p[1] * np.sin(a)
+            y = p[0] * np.sin(a) + p[1] * np.cos(a)
+            return np.array([x, y])
+
+        # get the azimuth in radians
+        gamma = np.radians(self.azimuth)
+
+        # transform
+        _X = np.fromiter(chain.from_iterable(
+            map(lambda p: _transform(p, poi, gamma), self._X)
+        ), dtype=self._X.dtype).reshape(self._X.shape)
+
+        # return
+        return _X
+
+    @property
+    def bins(self):
+        if self._bins is None:
+            # get the distances
+            d = self.distance.copy()
+            d[np.where(~self._direction_mask())] = np.nan
+
+            self._bins = self.bin_func(d, self.n_lags, self.maxlag)
+
+        return self._bins.copy()
+
+    def _calc_groups(self, force=False):
+        super(DirectionalVariogram, self)._calc_groups(force=force)
+
+        # set to outside maxlag group
+        self._groups[np.where(~self._direction_mask())] = -1
+
+#    @jit
+    def _direction_mask(self):
+        """Directional Mask
+
+        Array aligned to self.distance masking all point pairs which shall be
+        ignored for binning and grouping. The one dimensional array contains
+        all row-wise point pair combinations from the upper or lower triangle
+        of the distance matrix in case either of both is directional.
+
+        TODO: This array is not cached. it is used twice, for binning and
+        grouping.
+
+        Returns
+        -------
+        mask : numpy.array
+            Array aligned to self.distance giving for each point pair
+            combination a boolean value whether the point are directional or
+            not.
+
+        """
+        # build the full coordinate matrix
+        n = len(self._X)
+        _mask = np.zeros((n, n), dtype=bool)
+
+        # build the masking
+        for i in range(n):
+            loc = self.local_reference_system(poi=self._X[i])
+
+            # apply the search radius
+            sr = self._directional_model(local_ref=loc)
+
+            _m = np.fromiter(
+                (Point(p).within(sr) or Point(p).touches(sr) for p in loc),
+                dtype=bool)
+            _mask[:, i] = _m
+
+        # combine lower and upper triangle
+        def _indexer():
+            for i in range(n):
+                for j in range(n):
+                    if i < j:
+                        yield _mask[i, j] or _mask[j, i]
+
+        return np.fromiter(_indexer(), dtype=bool)
+
+    def search_area(self, poi=0):
+        """Plot Search Area
+
+        Parameters
+        ----------
+        poi : integer
+            Point of interest. Index of the coordinate that shall be used to
+            visualize the search area.
+
+        Returns
+        -------
+        plot
+
+        """
+        pass
 
     def _triangle(self, local_ref):
         r"""Triangular Search Area
