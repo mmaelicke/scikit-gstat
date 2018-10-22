@@ -1,4 +1,4 @@
-Scikit-Gstat
+SciKit-GStat
 ============
 
 Info: scikit-gstat needs Python >= 3.4!
@@ -24,9 +24,25 @@ Info: scikit-gstat needs Python >= 3.4!
 .. image:: https://zenodo.org/badge/98853365.svg
    :target: https://zenodo.org/badge/latestdoi/98853365
 
+How to cite
+-----------
+
+In case you use SciKit-GStat in other software or scientific publications,
+please reference this module. It is published and has a DOI. It can be cited
+as:
+
+  Mälicke, Mirko, & Schneider, Helge David. (2018). mmaelicke/scikit-gstat:
+  Geostatistical variogram toolbox (Version v0.2.2). Zenodo.
+  http://doi.org/10.5281/zenodo.1345584
+
+Full Documentation
+------------------
+
+The full documentation can be found at: https://mmaelicke.github.io/scikit-gstat
+
 
 New Version 0.2
-~~~~~~~~~~~~~~~
+---------------
 
 Scikit-gstat was rewritten in major parts. Most of the changes are internal,
 but the attributes and behaviour of the `Variogram` has also changed
@@ -37,7 +53,8 @@ branch on GitHub, but not developed any further. Those two versions are not
 compatible.
 
 Description
-~~~~~~~~~~~
+-----------
+
 At current state, this module offers a scipy-styled `Variogram` class for performing geostatistical analysis.
 This class can be used to derive variograms. Key benefits are a number of semivariance estimators and theoretical
 variogram functions. The module is planned to be hold in the manner of scikit modules and be based upon `numpy` and
