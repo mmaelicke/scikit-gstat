@@ -71,11 +71,15 @@ jobs:
       name: "LaTeX docs"
       install:
       # update and install texlive
-      - source activate travis
       - sudo apt-get update
       - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
       - pip install sphinx
       - pip install -r requirements.rtd.txt
+
+      # install skgstat at this stage as well
+      - pip install -r requirements.txt
+      - pip install .
+
 
 
     - stage: deploy_docs
