@@ -6,10 +6,10 @@ submodule, or order the bins yourself
 """
 import numpy as np
 from scipy.special import binom
-from numba import jit
+from numba import jit, njit
 
 
-@jit
+@njit
 def matheron(x):
     r"""Matheron Semi-Variance
 
@@ -58,7 +58,7 @@ def matheron(x):
 
     """
     # convert
-    x = np.asarray(x)
+#    x = np.asarray(x)
 
     # prevent ZeroDivisionError
     if x.size == 0:
@@ -114,7 +114,7 @@ def cressie(x):
 
     """
     # convert
-    x = np.asarray(x)
+#    x = np.asarray(x)
 
     # get the length
     n = x.size
@@ -179,7 +179,7 @@ def dowd(x):
 
     """
     # convert
-    x = np.asarray(x)
+#    x = np.asarray(x)
 
     return 2.198 * np.nanmedian(x)**2
 
@@ -234,7 +234,7 @@ def genton(x):
         Math. Geol., 30, 213 - 221.
 
     """
-    x = np.array(x)
+#    x = np.array(x)
 
     # get length
     n = x.size
@@ -290,7 +290,7 @@ def minmax(x):
     numpy.float64
 
     """
-    x = np.asarray(x)
+#    x = np.asarray(x)
 
     return (np.nanmax(x) - np.nanmin(x)) / np.nanmean(x)
 
@@ -319,7 +319,7 @@ def percentile(x, p=50):
     np.float64
 
     """
-    x = np.asarray(x)
+#    x = np.asarray(x)
 
     return np.percentile(x, q=p)
 
@@ -356,7 +356,7 @@ def entropy(x, bins=None):
     -----
 
     """
-    x = np.asarray(x)
+#    x = np.asarray(x)
 
     if bins is None:
         bins = 15

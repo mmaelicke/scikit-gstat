@@ -966,7 +966,7 @@ class Variogram(object):
             return self._experimental
 
     @property
-    @jit
+#    @jit
     def _experimental(self):
         """
 
@@ -975,7 +975,7 @@ class Variogram(object):
 
         """
         # prepare the result array
-        y = np.zeros(len(self.bins))
+        y = np.zeros(len(self.bins), dtype=np.float64)
 
         # args, can set the bins for entropy
         # and should set p of percentile, not properly implemented
