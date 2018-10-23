@@ -47,6 +47,8 @@ jobs:
       python: 3.6
       install:
         # update and install texlive
+        - sudo apt-get update
+        - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
         - pip install sphinx
         - pip install -r requirements.rtd.txt
 
@@ -56,32 +58,19 @@ jobs:
 
       script:
         - cd docs
-        - make html
-      name: "HTML docs"
         
-    - script:
-        - cd docs
+        # make html and pdf docs
+        - make html
         - make latex
+        
+        # compile the latex to pdf
         - cd _build/latex
         - pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
         - cd ../..
         - sudo cp _build/latex/SciKitGStat.pdf _build/html/SciKitGStat.pdf
-        - cd ~
-      python: 3.6
-      name: "LaTeX docs"
-      install:
-      # update and install texlive
-      - sudo apt-get update
-      - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
-      - pip install sphinx
-      - pip install -r requirements.rtd.txt
-
-      # install skgstat at this stage as well
-      - pip install -r requirements.txt
-      - pip install .
-
-
-
+        - cd ~      
+      name: "Build docs"
+        
     - stage: deploy_docs
       script: skip
       deploy:
