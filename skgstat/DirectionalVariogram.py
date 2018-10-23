@@ -297,7 +297,7 @@ class DirectionalVariogram(Variogram):
         ValueError : in case angle < -180° or angle > 180
 
         """
-        if angle < -180 or angle > 1800:
+        if angle < -180 or angle > 180:
             raise ValueError('The azimuth is an angle in degree and has to '
                              'meet -180 <= angle <= 180')
         else:
