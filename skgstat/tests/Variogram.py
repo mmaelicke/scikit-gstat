@@ -138,7 +138,8 @@ class TestVariogramInstatiation(unittest.TestCase):
         self.assertTrue((V.distance==1).all())
         self.assertEqual(V.distance.shape, (3, 3))
 
-    def test_direct_dist_setting(self):
+    @staticmethod
+    def test_direct_dist_setting():
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
         V.distance = np.array([0, 0, 100])

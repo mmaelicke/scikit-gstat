@@ -7,14 +7,16 @@ from skgstat.binning import even_width_lags, uniform_count_lags
 
 
 class TestEvenWidth(unittest.TestCase):
-    def test_normal(self):
+    @staticmethod
+    def test_normal():
         np.random.seed(42)
         assert_array_almost_equal(
             even_width_lags(np.random.normal(5, 1, 1000), 4, None),
             np.array([2.21318287, 4.42636575, 6.63954862, 8.85273149])
         )
 
-    def test_more_bins(self):
+    @staticmethod
+    def test_more_bins():
         np.random.seed(42)
         assert_array_almost_equal(
             even_width_lags(np.random.normal(5, 1, 1000), 10, None),
@@ -22,21 +24,24 @@ class TestEvenWidth(unittest.TestCase):
                       5.3116388, 6.19691204, 7.08218519, 7.96745834, 8.8527314])
         )
 
-    def test_maxlag(self):
+    @staticmethod
+    def test_maxlag():
         np.random.seed(42)
         assert_array_almost_equal(
             even_width_lags(np.random.normal(5, 1, 1000), 4, 4.4),
             np.array([1.1, 2.2, 3.3, 4.4])
         )
 
-    def test_too_large_maxlag(self):
+    @staticmethod
+    def test_too_large_maxlag():
         np.random.seed(42)
         assert_array_almost_equal(
             even_width_lags(np.random.normal(5, 1, 1000), 4, 400),
             np.array([2.21318287, 4.42636575, 6.63954862, 8.85273149])
         )
 
-    def test_median_split(self):
+    @staticmethod
+    def test_median_split():
         np.random.seed(42)
         assert_array_almost_equal(
             even_width_lags(np.random.normal(5, 1, 1000), 2, None),

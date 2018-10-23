@@ -37,6 +37,7 @@ Plot
 The Variogram class has its own plotting method.
 
 .. ipython:: python
+    :okwarning:
 
     @savefig default_variogram.png width=7in
     V.plot()
@@ -46,6 +47,7 @@ useful, when the binning method for the lag classes is changed from `'even'`
 step classes to `'uniform'` distribution in the lag classes.
 
 .. ipython:: python
+    :okwarning:
 
     V.set_bin_func('uniform')
     @savefig variogram_uniform.png width=7in
