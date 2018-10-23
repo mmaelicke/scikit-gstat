@@ -46,7 +46,7 @@ class TestEstimator(unittest.TestCase):
         # extract actual estimator
         e = cressie.py_func
 
-        self.assertTrue(np.isnan(e([])))
+        self.assertTrue(np.isnan(e(np.array([]))))
 
     def test_dowd(self):
         np.random.seed(1306)
@@ -75,7 +75,7 @@ class TestEstimator(unittest.TestCase):
         e = genton.py_func
 
         # genton cannot be solved for only one element
-        self.assertTrue(np.isnan(e([0.1])))
+        self.assertTrue(np.isnan(e(np.array([0.1]))))
 
     def test_minmax_skew(self):
         # heavily skewed gamma

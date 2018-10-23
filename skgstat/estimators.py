@@ -6,7 +6,7 @@ submodule, or order the bins yourself
 """
 import numpy as np
 from scipy.special import binom
-from numba import jit, njit
+from numba import njit
 
 
 @njit
@@ -67,7 +67,7 @@ def matheron(x):
     return (1. / (2 * x.size)) * np.sum(np.power(x, 2))
 
 
-@jit
+@njit
 def cressie(x):
     r""" Cressie-Hawkins Semi-Variance
 
@@ -184,7 +184,7 @@ def dowd(x):
     return 2.198 * np.nanmedian(x)**2
 
 
-@jit
+@njit
 def genton(x):
     r""" Genton robust semi-variance estimator
 
@@ -371,6 +371,6 @@ def entropy(x, bins=None):
     return np.fromiter(map(info, p), dtype=np.float).dot(p)
 
 
-@jit
+@njit
 def info(p):
     return - np.log2(p)
