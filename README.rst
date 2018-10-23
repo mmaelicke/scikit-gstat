@@ -1,10 +1,6 @@
 SciKit-GStat
 ============
 
-.. image:: https://api.codacy.com/project/badge/Grade/34022fb8b795435b8eeb5431159fa7c6
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/mmaelicke/scikit-gstat?utm_source=github.com&utm_medium=referral&utm_content=mmaelicke/scikit-gstat&utm_campaign=Badge_Grade_Dashboard
-
 Info: scikit-gstat needs Python >= 3.4!
 
 .. image:: https://badge.fury.io/py/scikit-gstat.svg
@@ -16,6 +12,10 @@ Info: scikit-gstat needs Python >= 3.4!
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
     :alt: Build Status
+
+.. image:: https://api.codacy.com/project/badge/Grade/34022fb8b795435b8eeb5431159fa7c6
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/mmaelicke/scikit-gstat?utm_source=github.com&utm_medium=referral&utm_content=mmaelicke/scikit-gstat&utm_campaign=Badge_Grade_Dashboard
 
 .. image:: https://readthedocs.org/projects/scikit-gstat/badge/?version=latest
     :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest

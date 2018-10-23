@@ -33,7 +33,7 @@ class DirectionalVariogram(Variogram):
                  directional_model='triangle',
                  azimuth=0,
                  tolerance=45.0,
-                 bandwidth=None,
+                 bandwidth='q33',
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
@@ -363,7 +363,12 @@ class DirectionalVariogram(Variogram):
         ValueError : in case width is negative
 
         """
-        if width < 0:
+        # check if quantiles is given
+        if isinstance(width, str):
+            # TODO document and handle more exceptions
+            q = int(width[1:])
+            self._bandwidth = np.percentile(self.distance, q)
+        elif width < 0:
             raise ValueError('The bandwidth cannot be negative.')
         elif width > np.max(self.distance):
             print('The bandwidth is larger than the maximum separating '
