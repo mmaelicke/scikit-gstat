@@ -22,7 +22,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_azimuth(self):
         DV = DirectionalVariogram(self.c, self.v, azimuth=-45)
 
-        for x,y in zip(DV.parameters, [469.571, 195.996, 0]):
+        for x, y in zip(DV.parameters, [469.571, 195.996, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_invalid_azimuth(self):
@@ -32,6 +32,21 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
                 str(e),
                 'The azimuth is an angle in degree and has '
                 'to meet -180 <= angle <= 180'
+            )
+
+    def test_tolerance(self):
+        DV = DirectionalVariogram(self.c, self.v, tolerance=15)
+
+        for x, y in zip(DV.parameters, [964.45, 953.375, 0]):
+            self.assertAlmostEqual(x, y, places=3)
+
+    def test_invalid_tolerance(self):
+        with self.assertRaises(ValueError) as e:
+            DV = DirectionalVariogram(self.c, self.v, tolerance=-1)
+            self.assertEqual(
+                str(e),
+                'The tolerance is an angle in degree and has to '
+                'meet 0 <= angle <= 360'
             )
 
 
