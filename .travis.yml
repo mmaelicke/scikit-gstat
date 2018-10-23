@@ -1,9 +1,9 @@
 sudo: required
 language: python
-python:
-  - "3.4"
-  - "3.5"
-  - "3.6"
+#python:
+#  - "3.4"
+#  - "3.5"
+#  - "3.6"
 
 before_install:
   - "export DISPLAY=:99.0"
@@ -38,12 +38,17 @@ install:
 jobs:
   include:
     - stage: test
+      python:
+        - "3.4"
+        - "3.5"
+        - "3.6"
       script:
         - nosetests --with-coverage --cover-package=skgstat
       after_success:
         - codecov
 
     - stage: docs
+      python: "3.6"
       install:
         - sudo apt-get update
         - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
@@ -63,7 +68,7 @@ jobs:
         - cd ~
 
     - stage: deploy_docs
-      scropt: skip
+      script: skip
       deploy:
         provider: pages
         skip_cleanup: true
