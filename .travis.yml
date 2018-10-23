@@ -67,7 +67,7 @@ jobs:
         - cd _build/latex
         - pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
         - cd ../..
-        - sudo cp _build/latex/SciKitGStat.pdf _build/html/SciKitGStat.pdf
+        - sudo cp _build/latex/SciKitGStat.pdf _build/html/
         - cd ~      
       name: "Build docs"
         
