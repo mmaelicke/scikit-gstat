@@ -1,9 +1,9 @@
 sudo: required
 language: python
-#python:
-#  - "3.4"
-#  - "3.5"
-#  - "3.6"
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
 
 before_install:
   - "export DISPLAY=:99.0"
@@ -35,31 +35,31 @@ install:
   - pip install --upgrade pip
   - pip install codecov
 
+script:
+  - nosetests --with-coverage --cover-package=skgstat
+after_success:
+  - codecov
+
 jobs:
   include:
-    - stage: test
-      python:
-        - "3.4"
-        - "3.5"
-        - "3.6"
-      script:
-        - nosetests --with-coverage --cover-package=skgstat
-      after_success:
-        - codecov
-
     - stage: docs
-      python: "3.6"
+      python: 3.6
       install:
+        # update and install texlive
         - sudo apt-get update
         - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
         - pip install sphinx
         - pip install -r requirements.rtd.txt
 
+        # install skgstat at this stage as well
+        - pip install -r requirements.txt
+        - pip install .
+
       script:
         - cd docs
         - make html
         
-      script:
+    -  script:
         - cd docs
         - make latex
         - cd _build/latex
