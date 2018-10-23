@@ -62,10 +62,10 @@ jobs:
     - script:
         - cd docs
         - make latex
-        - cd build/latex
+        - cd _build/latex
         - pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
         - cd ../..
-        - cp build/latex/SciKitGStat.pdf build/html/SciKitGStat.pdf
+        - cp _build/latex/SciKitGStat.pdf _build/html/SciKitGStat.pdf
         - cd ~
       python: 3.6
       name: "LaTeX docs"
