@@ -12,7 +12,6 @@ before_install:
 stages:
   - test
   - docs
-  - deploy_docs
 
 install:
   - sudo apt-get update
@@ -45,6 +44,7 @@ jobs:
   include:
     - stage: docs
       python: 3.6
+      skip_cleanup: true
       install:
         # update and install texlive
         - sudo apt-get update
