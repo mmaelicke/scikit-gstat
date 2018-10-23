@@ -58,6 +58,7 @@ jobs:
       script:
         - cd docs
         - make html
+        
       script:
         - cd docs
         - make latex
