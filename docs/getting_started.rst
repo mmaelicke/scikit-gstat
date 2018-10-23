@@ -11,6 +11,7 @@ from the module, called skgstat. The main class can easily be demonstrated on
 random data.
 
 .. ipython:: python
+    :okwarning:
 
     from skgstat import Variogram
     import numpy as np
