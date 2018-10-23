@@ -16,6 +16,7 @@ stages:
 
 install:
   - sudo apt-get update
+  - sudo apt-get install build-essential
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
@@ -58,8 +59,9 @@ jobs:
       script:
         - cd docs
         - make html
+      name: "HTML docs"
         
-    -  script:
+    - script:
         - cd docs
         - make latex
         - cd _build/latex
@@ -67,6 +69,8 @@ jobs:
         - cd ../..
         - cp _build/latex/SciKitGStat.pdf _build/html/SciKitGStat.pdf
         - cd ~
+      python: 3.6
+      name: "LaTeX docs"
 
     - stage: deploy_docs
       script: skip
