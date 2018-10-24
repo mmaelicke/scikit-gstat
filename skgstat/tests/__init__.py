@@ -6,4 +6,5 @@ from skgstat.tests.Variogram import TestVariogramQaulityMeasures
 from skgstat.tests.Variogram import TestVariogramPlots
 from skgstat.tests.DirectionalVariogram import (
     TestDirectionalVariogramInstantiation,
+    TestDirectionalVariogramMethods,
 )

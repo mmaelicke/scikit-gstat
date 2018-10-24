@@ -422,8 +422,8 @@ class DirectionalVariogram(Variogram):
             else:
                 raise ValueError('%s is not a valid model.' % model_name)
 
-        # handle Polygons
-        elif isinstance(model_name, Polygon):
+        # handle callable
+        elif callable(model_name):
             self._directional_model = model_name
         else:
             raise ValueError('The directional model has to be identified by a '
