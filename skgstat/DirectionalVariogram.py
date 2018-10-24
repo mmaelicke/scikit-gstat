@@ -5,6 +5,7 @@ import numpy as np
 from numba import jit
 from shapely.geometry import Polygon, Point
 from itertools import chain
+import matplotlib.pyplot as plt
 
 from .Variogram import Variogram
 
@@ -414,11 +415,11 @@ class DirectionalVariogram(Variogram):
         # handle predefined models
         if isinstance(model_name, str):
             if model_name.lower() == 'compass':
-                raise NotImplementedError
+                self._directional_model = self._compass
             elif model_name.lower() == 'triangle':
                 self._directional_model = self._triangle
             elif model_name.lower() == 'circle':
-                raise NotImplementedError
+                self._directional_model = self._circle
             else:
                 raise ValueError('%s is not a valid model.' % model_name)
 
@@ -536,7 +537,7 @@ class DirectionalVariogram(Variogram):
 
         return np.fromiter(_indexer(), dtype=bool)
 
-    def search_area(self, poi=0):
+    def search_area(self, poi=0, ax=None):
         """Plot Search Area
 
         Parameters
@@ -544,13 +545,39 @@ class DirectionalVariogram(Variogram):
         poi : integer
             Point of interest. Index of the coordinate that shall be used to
             visualize the search area.
+        ax : None, matplotlib.AxesSubplot
+            If not None, the Search Area will be plotted into the given
+            Subplot object. If None, a new matplotlib Figure will be created
+            and returned
 
         Returns
         -------
         plot
 
         """
-        pass
+        # get the poi
+        p = self._X[poi]
+
+        # create the local coordinate system for POI
+        loc = self.local_reference_system(poi=p)
+
+        # create the search area based on current directional model
+        sa = self._directional_model(loc)
+
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(8, 8))
+        else:
+            fig = ax.get_figure()
+
+        # plot all coordinate
+        ax.plot(loc[:,0], loc[:,1], '.r')
+
+        # plot the search area
+        x, y = sa.exterior.xy
+        ax.plot(x, y, color='#00a562', alpha=0.7, linewidth=2,
+                solid_capstyle='round')
+
+        return fig
 
     def _triangle(self, local_ref):
         r"""Triangular Search Area
@@ -590,6 +617,11 @@ class DirectionalVariogram(Variogram):
         .. math::
             a = \frac{c}{2 * sin\left(\frac{\gamma}{2}\right)}
 
+        See Also
+        --------
+        DirectionalVariogram._compass
+        DirectionalVariogram._circle
+
         """
         # y coordinate is easy
         c = self.bandwidth
@@ -613,3 +645,114 @@ class DirectionalVariogram(Variogram):
         ])
 
         return poly
+
+    def _circle(self, local_ref):
+        r"""Circular Search Area
+
+        Construct a half-circled bounded search area for building directional
+        dependent point pairs. The Search Area will be located onto the
+        current point of interest and the local x-axis is rotated onto the
+        azimuth angle.
+        The radius of the half-circle is set to half the bandwidth.
+
+        Parameters
+        ----------
+        local_ref : numpy.array
+            Array of all coordinates transformed into a local representation
+            with the current point of interest being the origin and the
+            azimuth angle aligned onto the x-axis.
+
+        Returns
+        -------
+        search_area : Polygon
+            Search Area of half-circular shape bounded by the current bandwidth.
+
+        Raises
+        ------
+        ValueError : In case the DirectionalVariogram.bandwidth is None or 0.
+
+        See Also
+        --------
+        DirectionalVariogram._triangle
+        DirectionalVariogram._compass
+
+        """
+        if self.bandwidth is None or self.bandwidth == 0:
+            raise ValueError('Circular Search Area cannot be used without '
+                             'bandwidth.')
+
+        # radius is half bandwidth
+        r = self.bandwidth / 2.
+
+        # build the half circle
+        circle = Point((r, 0)).buffer(r)
+        half_circle = [_ for _ in circle.boundary.coords if _[0] <= r]
+
+        # get the maximum x coordinate
+        xmax = np.max(local_ref[:, 0])
+
+        # add the bandwidth coordinates
+        half_circle.extend([(xmax, r), (xmax, -r)])
+
+        # return the figure
+        return Polygon(half_circle)
+
+    def _compass(self, local_ref):
+        """Compass direction Search Area
+
+        Construct a search area for building directional dependent point
+        pairs. The compass search area will **not** be bounded by the
+        bandwidth. It will include all point pairs at the azimuth direction
+        with a given tolerance. The Search Area will be located onto the
+        current point of interest and the local x-axis is rotated onto the
+        azimuth angle.
+
+        Parameters
+        ----------
+        local_ref : numpy.array
+            Array of all coordinates transformed into a local representation
+            with the current point of interest being the origin and the
+            azimuth angle aligned onto the x-axis.
+
+        Returns
+        -------
+        search_area : Polygon
+            Search Area of the given compass direction.
+
+        Notes
+        -----
+        The necessary figure is build by searching for the intersection of a
+        half-tolerance angled line with a vertical line at the maximum x-value.
+        Using polar coordinates, these points (positive and negative
+        half-tolerance angle) are the edges of the search area in the local
+        coordinate system. The radius of a polar coordinate can be calculated
+        as:
+
+        .. math::
+            r = \frac{x}{cos (\alpha / 2)}
+
+        The two bounding points P1 nad P2 (in local coordinates) are then
+        (xmax, y) and (xmax, -y), with xmax being the maximum local
+        x-coordinate representation and y:
+
+        .. math::
+            y = r * sin \left( \frac{\alpha}{2} \right)
+
+        See Also
+        --------
+        DirectionalVariogram._triangle
+        DirectionalVariogram._circle
+
+        """
+        # get the half tolerance angle
+        a = np.radians(self.tolerance / 2)
+
+        # get the maximum x coordinate
+        xmax = np.max(local_ref[:,0])
+
+        # calculate the radius and y coordinates
+        r = xmax / a
+        y = r * np.sin(a)
+
+        # build and return the figure
+        return Polygon([(0, 0), (xmax, y), (xmax, -y)])

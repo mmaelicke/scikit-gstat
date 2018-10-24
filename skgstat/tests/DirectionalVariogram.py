@@ -118,7 +118,7 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
         DV = DirectionalVariogram(self.c, self.v, n_lags=4)
         V = Variogram(self.c, self.v, n_lags=4)
 
-        for x,y in zip (DV.bins, V.bins):
+        for x, y in zip (DV.bins, V.bins):
             self.assertNotEqual(x, y)
 
         assert_array_almost_equal(
