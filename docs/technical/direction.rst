@@ -71,6 +71,7 @@ The method is called
 Using random coordinates, the search area shapes are presented below.
 
 .. ipython:: python
+    :okwarning:
 
     from skgstat import DirectionalVariogram
     import numpy as np
@@ -94,6 +95,7 @@ The model can easily be changed, using the
 function:
 
 .. ipython:: python
+    :okwarning:
 
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
 
@@ -142,6 +144,7 @@ The following example will illustrate the rotation of the local reference
 system.
 
 .. ipython:: python
+    :okwarning:
 
     from matplotlib.patches import FancyArrowPatch as arrow
     np.random.seed(42)
@@ -172,6 +175,7 @@ After moving and shifting, any type of Geometry could be generated and passed
 as the search area.
 
 .. ipython:: python
+    :okwarning:
 
     from shapely.geometry import Polygon
 

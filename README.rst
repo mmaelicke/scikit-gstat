@@ -3,11 +3,11 @@ SciKit-GStat
 
 Info: scikit-gstat needs Python >= 3.4!
 
-.. image:: https://badge.fury.io/py/scikit-gstat.svg
-    :target: https://badge.fury.io/py/scikit-gstat
+.. image:: https://img.shields.io/badge/pypi%20package-0.2.2-green.svg
+    :target: https://pypi.org/project/scikit-gstat/0.2.2/
 
-.. image:: https://badge.fury.io/gh/mmaelicke%2Fscikit-gstat.svg
-    :target: https://badge.fury.io/gh/mmaelicke%2Fscikit-gstat
+.. image:: https://img.shields.io/badge/version-0.2.2-green.svg
+    :target: https://github.com/mmaelicke/scikit-gstat
 
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
     :target: https://travis-ci.org/mmaelicke/scikit-gstat
