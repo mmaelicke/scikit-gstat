@@ -278,10 +278,6 @@ class DirectionalVariogram(Variogram):
 
     @property
     def azimuth(self):
-        return self._azimuth
-
-    @azimuth.setter
-    def azimuth(self, angle):
         """Direction azimuth
 
         Main direction for te selection of points in the formation of point
@@ -298,6 +294,10 @@ class DirectionalVariogram(Variogram):
         ValueError : in case angle < -180° or angle > 180
 
         """
+        return self._azimuth
+
+    @azimuth.setter
+    def azimuth(self, angle):
         if angle < -180 or angle > 180:
             raise ValueError('The azimuth is an angle in degree and has to '
                              'meet -180 <= angle <= 180')
@@ -309,26 +309,26 @@ class DirectionalVariogram(Variogram):
 
     @property
     def tolerance(self):
+        """Azimuth tolerance
+
+         Tolerance angle of how far a point can be off the azimuth for being
+         still counted as directional. A tolerance angle will be applied to
+         the azimuth angle symmetrically.
+
+         Parameters
+         ----------
+         angle : float
+             New tolerance angle in **degree**. Has to meet 0 <= angle <= 360.
+
+         Raises
+         ------
+         ValueError : in case angle < 0 or angle > 360
+
+         """
         return self._tolerance
 
     @tolerance.setter
     def tolerance(self, angle):
-        """Azimuth tolerance
-
-        Tolerance angle of how far a point can be off the azimuth for being
-        still counted as directional. A tolerance angle will be applied to
-        the azimuth angle symmetrically.
-
-        Parameters
-        ----------
-        angle : float
-            New tolerance angle in **degree**. Has to meet 0 <= angle <= 360.
-
-        Raises
-        ------
-        ValueError : in case angle < 0 or angle > 360
-
-        """
         if angle < 0 or angle > 360:
             raise ValueError('The tolerance is an angle in degree and has to '
                              'meet 0 <= angle <= 360')
@@ -340,13 +340,6 @@ class DirectionalVariogram(Variogram):
 
     @property
     def bandwidth(self):
-        if self._bandwidth is None:
-            return 0
-        else:
-            return self._bandwidth
-
-    @bandwidth.setter
-    def bandwidth(self, width):
         """Tolerance bandwidth
 
         New bandwidth parameter. As the tolerance from azimuth is given as an
@@ -364,6 +357,13 @@ class DirectionalVariogram(Variogram):
         ValueError : in case width is negative
 
         """
+        if self._bandwidth is None:
+            return 0
+        else:
+            return self._bandwidth
+
+    @bandwidth.setter
+    def bandwidth(self, width):
         # check if quantiles is given
         if isinstance(width, str):
             # TODO document and handle more exceptions
@@ -601,11 +601,14 @@ class DirectionalVariogram(Variogram):
 
         Notes
         -----
-               C
-              /|\
-           a / | \ a
-            /__|h_\
-           A   c   B
+
+        .. code-block:: text
+
+                 C
+                /|\
+             a / | \ a
+              /__|h_\
+             A   c   B
 
         The point of interest is C and c is the bandwidth. The angle at C
         (gamma) is the tolerance. From this, a and then h can be calculated.
@@ -698,7 +701,7 @@ class DirectionalVariogram(Variogram):
         return Polygon(half_circle)
 
     def _compass(self, local_ref):
-        """Compass direction Search Area
+        r"""Compass direction Search Area
 
         Construct a search area for building directional dependent point
         pairs. The compass search area will **not** be bounded by the

@@ -1,0 +1,34 @@
+{
+    "description": "SciKit-Gstat is a scipy-styled analysis module for geostatistics. It includes, two base classes Variogram and DirectionalVariogram. Both have a very similar interface and can compute experimental variograms and model variograms. The module makes use of a rich selection of semi-variance estimators and variogram model functions, while being extensible at the same time.",
+    "license": "MIT",
+    "title": "mmaelicke/scikit-gstat: Geostatistical variogram toolbox",
+    "version": "v.0.2.2",
+    "upload_type": "software",
+    "keywords": [
+        "geostatistics"
+    ],
+    "publication_date": "2018-08-15",
+    "creators": [
+        {
+            "orcid": "0000-0002-0424-2651",
+            "affiliation": "Institute for Water and River Basin Management, Karlsruhe Institute of Technology (KIT), Germany",
+            "name": "M\u00e4licke, Mirko"
+        },
+        {
+            "name": "Schneider, Helge David"
+        }
+    ],
+    "access_right": "open",
+    "related_identifiers": [
+        {
+            "scheme": "url",
+            "identifier": "https://github.com/mmaelicke/scikit-gstat/tree/v.0.1.8",
+            "relation": "isSupplementTo"
+        },
+        {
+            "scheme": "doi",
+            "identifier": "10.5281/zenodo.1345584",
+            "relation": "isVersionOf"
+        }
+    ]
+}
