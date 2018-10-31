@@ -902,7 +902,7 @@ class Variogram(object):
 
         for i in range(l):
             for j in range(l):
-                if i > j:
+                if i < j:
                     yield i, j
 
     def _calc_groups(self, force=False):

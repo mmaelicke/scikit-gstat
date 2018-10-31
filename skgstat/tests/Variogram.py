@@ -18,7 +18,7 @@ class TestVariogramInstatiation(unittest.TestCase):
     def test_standard_settings(self):
         V = Variogram(self.c, self.v)
 
-        for x, y in zip(V.parameters, [439.405, 281.969, 0]):
+        for x, y in zip(V.parameters, [301.266, 291.284, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_pass_median_maxlag_on_instantiation(self):
@@ -159,8 +159,9 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
         assert_array_almost_equal(
             V.residuals,
-            np.array([0.96, -1.19, -0.28, 2.61, -0.9,
-                      -0.43, -0.1, -2.32, -8.61, 10.61]),
+            np.array(
+                [-3.43e-08, -1.33e-01, 2.11e+00, 4.89e+00, 1.37e+00, 1.50e+00,
+                 -3.83e+00, -6.89e+00, 3.54e+00, -2.55e+00]),
             decimal=2
         )
 
@@ -169,7 +170,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
 
         for model, rmse in zip(
                 ['spherical', 'gaussian', 'matern', 'stable'],
-                [4.4968, 4.4878, 4.4905, 4.4878]
+                [3.3705, 3.3707, 3.1548, 3.193]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.rmse, rmse, places=4)
@@ -179,7 +180,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
 
         for model, mr in zip(
             ['spherical', 'cubic', 'matern', 'stable'],
-            [2.8006, 2.711, 2.7433, 2.7315]
+            [2.6803, 2.6803, 2.637, 2.6966]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.mean_residual, mr, places=4)
@@ -189,7 +190,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
 
         for model, nrmse in zip(
             ['spherical', 'gaussian', 'stable', 'exponential'],
-            [0.4751, 0.4784, 0.4621, 0.4695]
+            [0.3536, 0.3535, 0.3361, 0.3499]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.nrmse, nrmse, places=4)
@@ -197,7 +198,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
     def test_nrmse_r(self):
         V = Variogram(self.c, self.v, estimator='cressie')
 
-        self.assertAlmostEqual(V.nrmse_r, 0.40796, places=5)
+        self.assertAlmostEqual(V.nrmse_r, 0.63543, places=5)
 
 
 class TestVariogramPlots(unittest.TestCase):
@@ -217,14 +218,14 @@ class TestVariogramPlots(unittest.TestCase):
 
         # test experimental
         assert_array_almost_equal(
-            [0.71, 0.7, 0.81, 1., 0.86],
+            [0.71, 0.83, 1., 0.88, 0.86],
             ax1.get_children()[1].get_data()[1],
             decimal=2
         )
 
         #  test theoretical at some locations
         assert_array_almost_equal(
-            [0.17, 0.58, 0.84, 0.84],
+            [0.16, 0.57, 0.88, 0.89],
             ax1.get_children()[2].get_data()[1][[4, 15, 30, 50]],
             decimal=2
         )
