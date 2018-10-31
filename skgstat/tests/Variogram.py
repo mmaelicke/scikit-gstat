@@ -42,6 +42,15 @@ class TestVariogramInstatiation(unittest.TestCase):
         for b, e in zip(bins, V.bins):
             self.assertAlmostEqual(b, e, places=2)
 
+
+class TestVariogramArguments(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (30, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 30)
+
     def test_binning_method_setting(self):
         V = Variogram(self.c, self.v, n_lags=4)
 
@@ -59,6 +68,20 @@ class TestVariogramInstatiation(unittest.TestCase):
         # restore even
         V.bin_func = 'even'
         assert_array_almost_equal(even, V.bins, decimal=2)
+
+    def test_set_bins_directly(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # set bins by hand
+        bins = np.array([4., 20., 21., 25., 40.])
+        V.bins = bins
+
+        # test setting
+        assert_array_almost_equal(bins, V.bins, decimal=8)
+
+        # test cov settings
+        self.assertIsNone(V.cov)
+        self.assertIsNone(V.cof)
 
     def test_estimator_method_setting(self):
         """
@@ -145,6 +168,15 @@ class TestVariogramInstatiation(unittest.TestCase):
         V.distance = np.array([0, 0, 100])
 
         assert_array_almost_equal(V.distance, [0, 0, 100], decimal=0)
+
+    def test_maxlag_setting_as_max_ratio(self):
+        V = Variogram(self.c, self.v)
+
+        # set maxlag to 60% of maximum distance
+        V.maxlag = 0.6
+        self.assertEqual(V.maxlag, np.max(V.distance) * 0.6)
+        self.assertAlmostEqual(V.maxlag, 25.38, places=2)
+
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
