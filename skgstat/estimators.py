@@ -33,9 +33,9 @@ def matheron(x):
     Notes
     -----
 
-    This implementation is done after the original publication [1]_ and the
-    notes on their application [2]_. Following [1]_, the semi-variance is
-    calculated as:
+    This implementation follows the original publication [1]_ and the
+    notes on their application [2]_. Following the 1962 publication [1]_,
+    the semi-variance is calculated as:
 
     .. math::
         \gamma (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}(x)^2
@@ -157,7 +157,7 @@ def dowd(x):
     The Dowd estimator is based on the median of all pairwise differences in
     each lag class and is therefore robust to exteme values at the cost of
     variability.
-    This implementation is done after the publication _[4]:
+    This implementation follows Dowd's publication [4]_:
 
     .. math::
 
@@ -210,7 +210,7 @@ def genton(x):
     Notes
     -----
     The Genton estimator is described in great detail in the original
-    publication [1]_ and befined as:
+    publication [5]_ and is defined as:
 
     .. math:: Q_{N_h} = 2.2191\{|V_i(h) - V_j(h)|; i < j\}_{(k)}
 
