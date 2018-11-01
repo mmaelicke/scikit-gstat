@@ -197,13 +197,14 @@ class Variogram(object):
         # specify if the experimental variogram shall be harmonized
         self.harmonize = harmonize
 
+        # set if nugget effect shall be used
+        self.use_nugget = use_nugget
+
         # set the fitting method and sigma array
         self.fit_method = fit_method
         self._fit_sigma = None
         self.fit_sigma = fit_sigma
 
-        # set if nugget effect shall be used
-        self.use_nugget = use_nugget
 
         # set attributes to be filled during calculation
         self.cov = None
@@ -614,23 +615,25 @@ class Variogram(object):
 
         # discrete uncertainties
         elif isinstance(self._fit_sigma, (list, tuple, np.ndarray)):
-            assert len(self._fit_sigma) == len(self.bins)
-            return self._fit_sigma
+            if len(self._fit_sigma) == len(self._bins):
+                return self._fit_sigma
+            else:
+                raise AttributeError('fit_sigma and bins need the same length.')
 
         # linear function of distance
-        elif self.fit_sigma == 'linear':
+        elif self._fit_sigma == 'linear':
             return self.bins / np.max(self.bins)
 
         # e function of distance
-        elif self.fit_sigma == 'exp':
-            return np.exp(1. / (self.bins / np.max(self.bins)))
+        elif self._fit_sigma == 'exp':
+            return 1. / np.exp(1. / (self.bins / np.max(self.bins)))
 
         # sqrt function of distance
-        elif self.fit_sigma == 'sqrt':
+        elif self._fit_sigma == 'sqrt':
             return np.sqrt(self.bins / np.max(self.bins))
 
         # squared function of distance
-        elif self.fit_sigma == 'sq':
+        elif self._fit_sigma == 'sq':
             return (self.bins / np.max(self.bins)) ** 2
         else:
             raise ValueError("fit_sigma is not understood. It has to be an " +
@@ -639,6 +642,10 @@ class Variogram(object):
     @fit_sigma.setter
     def fit_sigma(self, sigma):
         self._fit_sigma = sigma
+
+        # remove fitting parameters
+        self.cof = None
+        self.cov = None
 
     def lag_groups(self):
         """Lag class groups

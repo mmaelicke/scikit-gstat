@@ -178,6 +178,109 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertAlmostEqual(V.maxlag, 25.38, places=2)
 
 
+class TestVariogramFittingProcedure(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(1337)
+        self.c = np.random.gamma(10, 8, (50, 3))
+        np.random.seed(1337)
+        self.v = np.random.normal(10, 4, 50)
+
+        # build a standard variogram to be used
+        self.V = Variogram(self.c, self.v, n_lags=5, use_nugget=True)
+
+    def test_fit_sigma_is_None(self):
+        self.V.fit_sigma = None
+
+        self.assertIsNone(self.V.fit_sigma)
+
+    def test_fit_sigma_explicit(self):
+        sigs = [.8, .5, 2., 2., 5.]
+        self.V.fit_sigma = sigs
+
+        for x, y in zip(sigs, self.V.fit_sigma):
+            self.assertEqual(x, y)
+
+        # test parameter estimated
+        self.V.fit()
+        assert_array_almost_equal(
+            self.V.parameters,
+            [3035.357, 318.608, 18.464], decimal=3
+        )
+
+    def test_fit_sigma_raises_AttributeError(self):
+        self.V.fit_sigma = (0, 1, 2)
+
+        with self.assertRaises(AttributeError) as e:
+            self.V.fit_sigma
+            self.assertEqual(
+                str(e),
+                'fit_sigma and bins need the same length.'
+            )
+
+    def test_fit_sigma_raises_ValueError(self):
+        self.V.fit_sigma = 'notAnFunction'
+
+        with self.assertRaises(ValueError) as e:
+            self.V.fit_sigma
+            self.assertEqual(
+                str(e),
+                "fit_sigma is not understood. It has to be an array or" +
+                "one of ['linear', 'exp', 'sqrt', 'sq']."
+            )
+
+    def test_fit_sigma_linear(self):
+        self.V.fit_sigma = 'linear'
+
+        # test the sigmas
+        sigma = self.V.fit_sigma
+        for s, _s in zip(sigma, [.2, .4, .6, .8, 1.]):
+            self.assertAlmostEqual(s, _s, places=8)
+
+        # test parameters:
+        self.V.fit()
+        assert_array_almost_equal(
+            self.V.parameters, [3170.532, 324.385, 17.247], decimal=3
+        )
+
+    def test_fit_sigma_exp(self):
+        self.V.fit_sigma = 'exp'
+
+        # test the sigmas
+        sigma = self.V.fit_sigma
+        for s, _s in zip(sigma, [0.0067, 0.0821, 0.1889, 0.2865, 0.3679]):
+            self.assertAlmostEqual(s, _s, places=4)
+
+        # test parameters
+        assert_array_almost_equal(
+            self.V.parameters, [3195.6, 329.8, 17.9], decimal=1
+        )
+
+    def test_fit_sigma_sqrt(self):
+        self.V.fit_sigma = 'sqrt'
+
+        # test the sigmas
+        assert_array_almost_equal(
+            self.V.fit_sigma, [0.447, 0.632, 0.775, 0.894, 1.], decimal=3
+        )
+
+        # test the parameters
+        assert_array_almost_equal(
+            self.V.parameters, [2902.1, 315.2, 18.3], decimal=1
+        )
+
+    def test_fit_sigma_sq(self):
+        self.V.fit_sigma = 'sq'
+
+        # test the sigmas
+        assert_array_almost_equal(
+            self.V.fit_sigma, [0.04, 0.16, 0.36, 0.64, 1.], decimal=2
+        )
+
+        # test the parameters
+        assert_array_almost_equal(
+            self.V.parameters, [3195., 328.9, 17.8], decimal=1
+        )
+
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
     def setUp(self):
