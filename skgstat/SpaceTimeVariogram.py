@@ -82,6 +82,21 @@ class SpaceTimeVariogram:
 
     @property
     def values(self):
+        """Values
+
+        The SpaceTimeVariogram stores (and needs) the observations as a two
+        dimensional array. The first axis (rows) need to match the coordinate
+        array, but instead of containing one value for each location,
+        the values shall contain a time series per location.
+
+        Returns
+        -------
+        values : numpy.array
+            Returns a two dimensional array of all observations. The first
+            dimension (rows) matches the coordinate array and the second axis
+            contains the time series for each observation point.
+
+        """
         return self._values
 
     def set_values(self, values):
@@ -350,6 +365,18 @@ class SpaceTimeVariogram:
 
     @property
     def xbins(self):
+        """Spatial binning
+
+        Returns the bin edges over the spatial axis. These can be used to
+        align the spatial lag class grouping to actual distance lags. The
+        length of the array matches the number of spatial lag classes.
+
+        Returns
+        -------
+        bins : numpy.array
+            Returns the edges of the current spatial binning.
+
+        """
         # check if cached
         if self._xbins is None:
             self._xbins = self._xbin_func(self.xdistance,
@@ -374,6 +401,18 @@ class SpaceTimeVariogram:
 
     @property
     def tbins(self):
+        """Temporal binning
+
+        Returns the bin edges over the temporal axis. These can be used to
+        align the temporal lag class grouping to actual time lags. The length of
+        the array matches the number of temporal lag classes.
+
+        Returns
+        -------
+        bins : numpy.array
+            Returns the edges of the current temporal binning.
+
+        """
         if self._tbins is None:
             self._tbins = self._tbin_func(self.tdistance, self.t_lags, None)
 
@@ -490,7 +529,7 @@ class SpaceTimeVariogram:
         """
         # are differences already calculated
         if self._diff is None:
-            self.__calc_diff(force=False)
+            self._calc_diff(force=False)
 
         # get the group masking arrays
         xgrp = self.lag_groups(axis='space')
@@ -502,7 +541,7 @@ class SpaceTimeVariogram:
         # iterate
         for x in range(self.x_lags):
             for t in range(self.t_lags):
-                yield diff_select(x,t).flatten()
+                yield diff_select(x, t).flatten()
 
     def _get_experimental(self):
         # TODO: fix this
@@ -519,6 +558,20 @@ class SpaceTimeVariogram:
 
     @property
     def experimental(self):
+        """Experimental Variogram
+
+        Returns an experimental variogram for the given data. The
+        semivariances are arranged over the spatial binning as defined in
+        SpaceTimeVariogram.xbins and temporal binning defined in
+        SpaceTimeVariogram.tbins.
+
+        Returns
+        -------
+        variogram : numpy.ndarray
+            Returns an two dimensional array of semivariances over space on
+            the first axis and time over the second axis.
+
+        """
         return self._get_experimental()
 
     def __calc_xdist(self, force=False):
@@ -526,7 +579,7 @@ class SpaceTimeVariogram:
 
         Use :func:`xdist_func <skgstat.SpaceTimeVariogram.xdist_func>` to
         calculate the pairwise space distance matrix. The calculation will be
-        cached and not recalculated. The recalculation can be foreced setting
+        cached and not recalculated. The recalculation can be forced setting
         ``force=True``.
 
         Parameters
@@ -540,6 +593,20 @@ class SpaceTimeVariogram:
             self._xdist = self.xdist_func(self._X)
 
     def __calc_tdist(self, force=False):
+        """Calculate distance in time
+
+        Use :func:`tdist_func <skgstat.SpaceTimeVariogram.tdist_func>` to
+        calculate the pairwise time distance matrix. The calculation will be
+        cached and not recalculated. The recalculation can be forced setting
+        ``force=True``.
+
+        Parameters
+        ----------
+        force : bool
+            If True, an eventually cached version of the distance matrix
+            will be deleted.
+
+        """
         if self._tdist is None or force:
             # extract the timestamps
             t = np.stack((
@@ -548,7 +615,32 @@ class SpaceTimeVariogram:
             ), axis=1)
             self._tdist = self.tdist_func(t)
 
-    def __calc_diff(self, force=False):
+    def _calc_diff(self, force=False):
+        """Calculate pairwise differences
+
+        Calculate the the pairwise differences for all space lag and
+        time lag class combinations. The result is stored in the
+        SpaceTimeVariogram._diff matrix, which has the form (m, n) with m
+        the size of the space distance array and n the size of the time
+        distance array.
+
+
+        Parameters
+        ----------
+        force : bool
+            If True, any calculated and cached result will be deleted and a
+            clean calculation will be performed.
+
+        Notes
+        -----
+        This is a Python only implementation that can get quite slow as any
+        added obervation on the space or time axis will increase the matrix
+        dimension by one. It is also slow as 4 loops are needed to loop the
+        matrix. I am evaluating at the moment if the function performs better
+        using numpys vectorizations or by implementing a Cython, Fortran,
+        Rust lib that can do the heavy stuff.
+
+        """
         # check the force
         if not force and self._diff is not None:
             return
@@ -577,6 +669,29 @@ class SpaceTimeVariogram:
                     xidx += 1
 
     def _calc_group(self, axis, force=False):
+        """Calculate lag class grouping
+
+        Calculate a lag class grouping mask array for the given axis. The
+        axis can be either 'space' or 'time'. The result will be cached
+        either in the _sgroups (space) or _tgroups (time) array will match
+        the respective distance matrix. The group value indicates the lag
+        class index for the matching point pair.
+        If force is False (default) and the groups have been calculated,
+        no new calculation will be started.
+
+        Parameters
+        ----------
+        axis : str
+            Can be either 'space' for the space lag grouping or 'time' for
+            the temporal lag grouping.
+        force : bool
+            If True, any present cached grouping array will be overwritten.
+
+        Returns
+        -------
+        void
+
+        """
         # switch the axis
         if axis.lower() == 'space' or axis.lower() == 's':
             grp = self._xgroups
@@ -600,25 +715,29 @@ class SpaceTimeVariogram:
 
         # go for the classification
         for i, bounds in enumerate(zip([0] + list(bins), bins)):
-            grp[np.where((d >= bounds[0]) & (d < bounds[1]))] = i
+            grp[np.where((d > bounds[0]) & (d <= bounds[1]))] = i
 
         # save
         setattr(self, '_%sgroups' % fmt, grp)
 
     def preprocessing(self, force=False):
-        """
+        """Preprocessing
+
+        Start all necessary calculation jobs needed to derive an experimental
+        variogram. This hasto be present before the model fitting can be done.
+        The force parameter will make all calculation functions to delete all
+        cached intermediate results and make a clean calculation.
 
         Parameters
         ----------
-        force
-
-        Returns
-        -------
+        force : bool
+            If True, all cached intermediate results will be deleted and a
+            clean calculation will be done.
 
         """
         # recalculate distances
         self.__calc_xdist(force=force)
         self.__calc_tdist(force=force)
-        self.__calc_diff(force=force)
+        self._calc_diff(force=force)
         self._calc_group(axis='space', force=force)
         self._calc_group(axis='time', force=force)
