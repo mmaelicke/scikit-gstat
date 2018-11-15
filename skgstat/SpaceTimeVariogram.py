@@ -3,6 +3,7 @@
 """
 import numpy as np
 from scipy.spatial.distance import pdist
+import matplotlib.pyplot as plt
 
 from skgstat import binning, estimators
 
@@ -269,13 +270,20 @@ class SpaceTimeVariogram:
     def x_lags(self, lags):
         if not isinstance(lags, int):
             raise ValueError('Only integers are supported as lag counts.')
+
+        # set new value
         self._x_lags = lags
+
+        # reset bins and groups
+        self._xbins = None
+        self._xgroups = None
+
 
     @property
     def t_lags(self):
         if isinstance(self._t_lags, str):
             if self._t_lags.lower() == 'max':
-                return self.values.shape[1]
+                return self.values.shape[1] - 1
             else:
                 raise ValueError("Only 'max' supported as string argument.")
         else:
@@ -283,7 +291,12 @@ class SpaceTimeVariogram:
 
     @t_lags.setter
     def t_lags(self, lags):
+        # set new value
         self._t_lags = lags
+
+        # reset bins
+        self._tbins = None
+        self._tgroups = None
 
     @property
     def maxlag(self):
@@ -719,6 +732,95 @@ class SpaceTimeVariogram:
 
         # save
         setattr(self, '_%sgroups' % fmt, grp)
+
+    def get_marginal(self, axis, lag=0):
+        """Marginal Variogram
+
+        Returns the marginal experimental variogram of axis for the given lag
+        on the other axis. Axis can either be 'space' or 'time'. The parameter
+        lag specifies the index of the desired lag class on the other axis.
+
+        Parameters
+        ----------
+        axis : str
+            The axis a marginal variogram shall be calculated for. Can either
+            be ' space' or 'time'.
+        lag : int
+            Index of the lag class group on the other axis to be used. In case
+            this is 0, this is often considered to be *the* marginal variogram
+            of the axis.
+
+        Returns
+        -------
+        variogram : numpy.array
+            Marginal variogram of the given axis
+
+        """
+        # check the axis
+        if not isinstance(axis, str):
+            raise AttributeError('axis has to be of type string.')
+
+        if axis.lower() == 'space' or axis.lower() == 's':
+            return np.fromiter(
+                (self.estimator(self._get_member(i, lag)) for i in range(self.x_lags)),
+                dtype=float
+            )
+        elif axis.lower() == 'time' or axis.lower() == 't':
+            return np.fromiter(
+                (self.estimator(self._get_member(lag, j)) for j in range(self.t_lags)),
+                dtype=float
+            )
+        else:
+            raise ValueError("axis can either be 'space' or 'time'.")
+
+    def _get_member(self, xlag, tlag):
+        x_idxs = self._xgroups == xlag
+        t_idxs = self._tgroups == tlag
+        return self._diff[np.where(x_idxs)[0]][:, np.where(t_idxs)[0]].flatten()
+
+    def marginals(self, plot=True, axes=None, sharey=True):
+        # get the marginal space variogram
+        vx = self.get_marginal(axis='space', lag=0)
+        vy = self.get_marginal(axis='time', lag=0)
+
+        # if no plot is desired, return the experimental variograms
+        if not plot:
+            return vx, vy
+
+        # check if an ax needs to be created
+        if axes is None:
+            fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=sharey)
+        else:
+            if len(axes) != 2:
+                raise ValueError('axes needs to an array of two AxesSubplot '
+                                 'objects')
+            fig = axes[0].get_figure()
+
+        # plot
+        ax = axes[0]
+        ax2 = axes[1]
+        ax3 = ax2.twinx()
+        ax3.get_shared_y_axes().join(ax3, ax)
+        ax.plot(self.xbins, vx, '-ob')
+        ax3.plot(self.tbins, vy, '-og')
+
+        # set labels
+        ax.set_xlabel('distance [spatial]')
+        ax.set_ylabel('semivariance [%s]' % self.estimator.__name__)
+        ax2.set_xlabel('distance [temporal]')
+        if not sharey:
+            ax3.set_ylabel('semivariance [%s]' % self.estimator.__name__)
+
+        # set title and grid
+        ax.set_title('spatial marginal variogram')
+        ax2.set_title('temporal marginal variogram')
+
+        ax.grid(which='major')
+        ax2.grid(which='major')
+        plt.tight_layout()
+
+        # return
+        return fig
 
     def preprocessing(self, force=False):
         """Preprocessing
