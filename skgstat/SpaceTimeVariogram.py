@@ -4,6 +4,8 @@
 import numpy as np
 from scipy.spatial.distance import pdist
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.mlab import griddata
 
 from skgstat import binning, estimators
 
@@ -81,6 +83,9 @@ class SpaceTimeVariogram:
         # do one preprocessing run
         self.preprocessing(force=True)
 
+    # ------------------------------------------------------------------------ #
+    #                        ATTRIBUTE SETTING                                 #
+    # ------------------------------------------------------------------------ #
     @property
     def values(self):
         """Values
@@ -488,6 +493,9 @@ class SpaceTimeVariogram:
         else:
             raise ValueError('The estimator has to be a string or callable.')
 
+    # ------------------------------------------------------------------------ #
+    #                         PRE-PROCESSING                                   #
+    # ------------------------------------------------------------------------ #
     def lag_groups(self, axis):
         """Lag class group mask array
 
@@ -733,6 +741,35 @@ class SpaceTimeVariogram:
         # save
         setattr(self, '_%sgroups' % fmt, grp)
 
+    def preprocessing(self, force=False):
+        """Preprocessing
+
+        Start all necessary calculation jobs needed to derive an experimental
+        variogram. This hasto be present before the model fitting can be done.
+        The force parameter will make all calculation functions to delete all
+        cached intermediate results and make a clean calculation.
+
+        Parameters
+        ----------
+        force : bool
+            If True, all cached intermediate results will be deleted and a
+            clean calculation will be done.
+
+        """
+        # recalculate distances
+        self.__calc_xdist(force=force)
+        self.__calc_tdist(force=force)
+        self._calc_diff(force=force)
+        self._calc_group(axis='space', force=force)
+        self._calc_group(axis='time', force=force)
+
+    # ------------------------------------------------------------------------ #
+    #                              FITTING                                     #
+    # ------------------------------------------------------------------------ #
+
+    # ------------------------------------------------------------------------ #
+    #                              RESULTS                                     #
+    # ------------------------------------------------------------------------ #
     def get_marginal(self, axis, lag=0):
         """Marginal Variogram
 
@@ -778,7 +815,261 @@ class SpaceTimeVariogram:
         t_idxs = self._tgroups == tlag
         return self._diff[np.where(x_idxs)[0]][:, np.where(t_idxs)[0]].flatten()
 
-    def marginals(self, plot=True, axes=None, sharey=True):
+    # ------------------------------------------------------------------------ #
+    #                             PLOTTING                                     #
+    # ------------------------------------------------------------------------ #
+    def plot(self, kind='scatter', ax=None, **kwargs):
+        """Plot the experimental variogram
+
+        At the current version the SpaceTimeVariogram class is not capable of
+        modeling a spe-time variogram function, therefore all plots will only
+        show the experimental variogram.
+        As the experimental space-time semivariance is depending on a space
+        and a time lag, one would basically need a 3D scatter plot, which is
+        the default plot. However, 3D plots can be, especially for scientific
+        usage, a bit problematic. Therefore the plot function can plot a
+        variety of 3D and 2D plots.
+
+        Parameters
+        ----------
+        kind : str
+            Has to be one of:
+
+            * **scatter**
+            * **surface**
+            * **contour**
+            * **contourf**
+            * **matrix**
+            * **marginals**
+
+        ax : matplotlib.AxesSubplot, mpl_toolkits.mplot3d.Axes3D, None
+            If None, the function will create a new figure and suitable Axes.
+            Else, the Axes object can be passed to plot the variogram into an
+            existing figure. In this case, one has to pass the correct type
+            of Axes, whether it's a 3D or 2D kind of a plot.
+        kwargs : dict
+            All keyword arguments are passed down to the actual plotting
+            function. Refer to their documentation for a more detailed
+            description.
+
+        Returns
+        -------
+        fig : matplotlib.Figure
+
+        See Also
+        --------
+        SpaceTimeVariogram.scatter
+        SpaceTimeVariogram.surface
+        SpaceTimeVariogram.marginals
+
+        """
+        # switch the plot kind
+        if not isinstance(kind, str):
+            raise ValueError('kind has to be of type string.')
+
+        if kind.lower() == 'scatter':
+            return self.scatter(ax=ax, **kwargs)
+        elif kind.lower() == 'surf' or kind.lower() == 'surface':
+            return self.surface(ax=ax, **kwargs)
+        elif kind.lower() == 'contour':
+            raise NotImplementedError
+        elif kind.lower() == 'contourf':
+            raise NotImplementedError
+        elif kind.lower() == 'matrix' or kind.lower() == 'mat':
+            raise NotImplementedError
+        elif kind.lower() == 'marginals':
+            return self.marginals(plot=True, axes=ax, **kwargs)
+        else:
+            raise ValueError('kind %s is not a valid value.')
+
+    def scatter(self, ax=None, elev=30, azim=220, c='g',
+                depthshade=True, **kwargs):
+        """3D Scatter Variogram
+
+        Plot the experimental variogram into a 3D matplotlib.Figure. The two
+        variogram axis (space, time) will span a meshgrid over the x and y axis
+        and the semivariance will be plotted as z value over the respective
+        space and time lag coordinate.
+
+        Parameters
+        ----------
+        ax : mpl_toolkits.mplot3d.Axes3D, None
+            If ax is None (default), a new Figure and Axes instance will be
+            created. If ax is given, this instance will be used for the plot.
+        elev : int
+            The elevation of the 3D plot, which is a rotation over the xy-plane.
+        azim : int
+            The azimuth of the 3D plot, which is a rotation over the z-axis.
+        c : str
+            Color of the scatter points, will be passed to the matplotlib
+            ``c`` argument. The function also accepts ``color`` as an alias.
+        depthshade : bool
+            If True, the scatter points will change their color according to
+            the distance from the viewport for illustration reasons.
+        kwargs : dict
+            Other kwargs accepted are only ``color`` as an alias for ``c``
+            and ``figsize``, if ax is None. Anything else will be ignored.
+
+        Returns
+        -------
+        fig : matplotlib.Figure
+
+        Examples
+        --------
+        In case an ax shall be passed to the function, note that this plot
+        requires an AxesSubplot, that is capable of creating a 3D plot. This
+        can be done like:
+
+        .. code-block:: python
+
+            from mpl_toolkits.mplot3d import Axes3D
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+
+            # STV is an instance of SpaceTimeVariogram
+            STV.scatter(ax=ax)
+
+        See Also
+        --------
+        SpaceTimeVariogram.surface
+
+        """
+        return self._plot3d(kind='scatter', ax=ax, elev=elev, azim=azim,
+                            c=c, depthshade=depthshade, **kwargs)
+
+    def surface(self, ax=None, elev=30, azim=220, color='g',
+                alpha=0.5, **kwargs):
+        """3D Scatter Variogram
+
+        Plot the experimental variogram into a 3D matplotlib.Figure. The two
+        variogram axis (space, time) will span a meshgrid over the x and y axis
+        and the semivariance will be plotted as z value over the respective
+        space and time lag coordinate. Unlike
+        :func:`scatter <skgstat.SpaceTimeVariogram.scatter>` the semivariance
+        will not be scattered as points but rather as a surface plot. The
+        surface is approximated by (Delauney) triangulation of the z-axis.
+
+        Parameters
+        ----------
+        ax : mpl_toolkits.mplot3d.Axes3D, None
+            If ax is None (default), a new Figure and Axes instance will be
+            created. If ax is given, this instance will be used for the plot.
+        elev : int
+            The elevation of the 3D plot, which is a rotation over the xy-plane.
+        azim : int
+            The azimuth of the 3D plot, which is a rotation over the z-axis.
+        color : str
+            Color of the scatter points, will be passed to the matplotlib
+            ``color`` argument. The function also accepts ``c`` as an alias.
+        alpha : float
+            Sets the transparency of the surface as 0 <= alpha <= 1, with 0
+            being completely transparent.
+        kwargs : dict
+            Other kwargs accepted are only ``color`` as an alias for ``c``
+            and ``figsize``, if ax is None. Anything else will be ignored.
+
+        Returns
+        -------
+        fig : matplotlib.Figure
+
+        Notes
+        -----
+        In case an ax shall be passed to the function, note that this plot
+        requires an AxesSubplot, that is capable of creating a 3D plot. This
+        can be done like:
+
+        .. code-block:: python
+
+            from mpl_toolkits.mplot3d import Axes3D
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+
+            # STV is an instance of SpaceTimeVariogram
+            STV.surface(ax=ax)
+
+        See Also
+        --------
+        SpaceTimeVariogram.scatter
+
+        """
+        return self._plot3d(kind='surf', ax=ax, elev=elev, azim=azim,
+                            color=color, alpha=alpha, **kwargs)
+
+    def _plot3d(self, kind='scatter', ax=None, elev=30, azim=220, **kwargs):
+        # Create or check the Figure and Axes
+        if ax is not None:
+            if not isinstance(ax, Axes3D):
+                raise ValueError('The passed ax object is not an instance '
+                                 'of mpl_toolkis.mplot3d.Axes3D.')
+            fig = ax.get_figure()
+        else:
+            fig = plt.figure(figsize=kwargs.get('figsize', (10, 10)))
+            ax = fig.add_subplot(111, projection='3d')
+
+        # get the data, spanned over a bin meshgrid
+        xx, yy = self.meshbins
+        z = self.experimental
+        x = xx.flatten()
+        y = yy.flatten()
+
+        # plot
+        c = kwargs.get('color', 'g') if 'color' in kwargs else kwargs.get('c', 'g')
+
+        ax.view_init(elev=elev, azim=azim)
+        if kind == 'surf':
+            ax.plot_trisurf(x, y, z, color=c, alpha=kwargs.get('alpha', 0.8))
+        elif kind == 'scatter':
+            ax.scatter(x, y, z, c=c, depthshade=kwargs.get('depthshade', False))
+        else:
+            raise ValueError('%s is not a valid 3D plot')
+
+        # set the labels
+        ax.set_xlabel('space')
+        ax.set_ylabel('time')
+        ax.set_zlabel('semivariance [%s]' % self.estimator.__name__)
+
+        # return
+        return fig
+
+    def marginals(self, plot=True, axes=None, sharey=True, **kwargs):
+        """Plot marginal variograms
+
+        Plots the two marginal variograms into a new or existing figure. The
+        space marginal variogram is defined to be the variogram of temporal
+        lag class 0, while the time marginal variogram uses only spatial lag
+        class 0. In case the expected variability is not of same magnitude,
+        the sharey parameter should be set to ``False`` in order to use
+        separated y-axes.
+
+        Parameters
+        ----------
+        plot : bool
+            If set to False, no matplotlib.Figure will be returned. Instead a
+            tuple of the two marginal experimental variogram values is
+            returned.
+        axes : list
+            Is either ``None`` to create a new matplotlib.Figure. Otherwise
+            it has to be a list of two matplotlib.AxesSubplot instances,
+            which will then be used for plotting.
+        sharey : bool
+            If True (default), the two marginal variograms will share their
+            y-axis to increase comparability. Should be set to False in the
+            variances are of different magnitude.
+        kwargs : dict
+            Only kwargs accepted is  ``figsize``, if ax is None.
+            Anything else will be ignored.
+
+        Returns
+        -------
+        variograms : tuple
+            If plot is False, a tuple of numpy.arrays are returned. These are
+            the two experimental marginal variograms.
+        plots : matplotlib.Figure
+            If plot is True, the matplotlib.Figure will be returned.
+
+        """
         # get the marginal space variogram
         vx = self.get_marginal(axis='space', lag=0)
         vy = self.get_marginal(axis='time', lag=0)
@@ -789,7 +1080,10 @@ class SpaceTimeVariogram:
 
         # check if an ax needs to be created
         if axes is None:
-            fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=sharey)
+            fig, axes = plt.subplots(1, 2,
+                                     figsize=kwargs.get('figsize', (12, 6)),
+                                     sharey=sharey
+                                     )
         else:
             if len(axes) != 2:
                 raise ValueError('axes needs to an array of two AxesSubplot '
@@ -821,25 +1115,3 @@ class SpaceTimeVariogram:
 
         # return
         return fig
-
-    def preprocessing(self, force=False):
-        """Preprocessing
-
-        Start all necessary calculation jobs needed to derive an experimental
-        variogram. This hasto be present before the model fitting can be done.
-        The force parameter will make all calculation functions to delete all
-        cached intermediate results and make a clean calculation.
-
-        Parameters
-        ----------
-        force : bool
-            If True, all cached intermediate results will be deleted and a
-            clean calculation will be done.
-
-        """
-        # recalculate distances
-        self.__calc_xdist(force=force)
-        self.__calc_tdist(force=force)
-        self._calc_diff(force=force)
-        self._calc_group(axis='space', force=force)
-        self._calc_group(axis='time', force=force)
