@@ -205,7 +205,6 @@ class Variogram(object):
         self._fit_sigma = None
         self.fit_sigma = fit_sigma
 
-
         # set attributes to be filled during calculation
         self.cov = None
         self.cof = None

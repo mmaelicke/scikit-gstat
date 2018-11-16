@@ -13,6 +13,11 @@ variograms. The module makes use of a rich selection of semi-variance
 estimators and variogram model functions, while being extensible at the same
 time.
 
+With version 0.2.4, the class
+:class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` has been added. It
+computes space-time experimental variogram. However, space-time modeling is
+not implemented yet.
+
 .. note::
 
     Scikit-gstat was rewritten in major parts. Most of the changes are internal,
@@ -41,6 +46,7 @@ as:
 
     install
     getting_started
+    userguide/userguide
     technical/technical
     reference/reference
     changelog

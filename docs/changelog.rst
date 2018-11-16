@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.2.4
+=============
+
+- added :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` for
+  calculating dispersion functions depending on a space and a time lag.
+
 Version 0.2.3
 =============
 

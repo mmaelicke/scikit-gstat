@@ -8,5 +8,6 @@ Code Reference
 
     variogram
     directionalvariogram
+    spacetimevariogram
     estimator
     models
