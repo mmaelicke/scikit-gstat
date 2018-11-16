@@ -121,12 +121,17 @@ class SpaceTimeVariogram:
         values = np.asarray(values)
 
         # check dtype
-        if not isinstance(values, np.ndarray):
+        if not isinstance(values, np.ndarray) or \
+                (values.dtype is not np.dtype(float) and
+                 values.dtype is not np.dtype(int)):
             raise AttributeError('values cannot be converted to a proper '
                                  '(m,n) shaped array.')
         # check shape
-        m, n = values.shape
-        if m != self._X.shape[0]:
+        try:
+            m, n = values.shape
+            if m != self._X.shape[0]:
+                raise ValueError
+        except ValueError:
             raise ValueError('The values shape do not match coordinates.')
 
         if n <= 1:
