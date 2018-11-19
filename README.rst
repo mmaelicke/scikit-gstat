@@ -6,7 +6,7 @@ Info: scikit-gstat needs Python >= 3.4!
 .. image:: https://img.shields.io/badge/pypi%20package-0.2.3-green.svg
     :target: https://pypi.org/project/scikit-gstat/0.2.3/
 
-.. image:: https://img.shields.io/badge/version-0.2.3-green.svg
+.. image:: https://img.shields.io/badge/version-0.2.4a-green.svg
     :target: https://github.com/mmaelicke/scikit-gstat
 
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
@@ -60,8 +60,7 @@ Description
 -----------
 
 SciKit-Gstat is a scipy-styled analysis module for geostatistics. It includes
-two base classes :class:`Variogram <skgstat.Variogram>` and
-:class:`DirectionalVariogram <skgstat.DirectionalVariogram>`. Both have a
+two base classes ``Variogram`` and ``DirectionalVariogram``. Both have a
 very similar interface and can compute experimental variograms and model
 variograms. The module makes use of a rich selection of semi-variance
 estimators and variogram model functions, while being extensible at the same
@@ -87,7 +86,8 @@ The models include:
 with all of them in a nugget and no-nugget variation. All the estimator are
 implemented using numba's jit decorator. The usage of numba might be subject
 to change in future versions.
-At the current stage, the package does not include any kriging. This is planned for a future release.
+At the current stage, the package does not include any kriging.
+This is planned for a future release.
 
 
 Installation
@@ -111,7 +111,8 @@ GIT:
 Usage
 ~~~~~
 
-The `Variogram` class needs at least a list of coordiantes and values. All other attributes are set by default.
+The `Variogram` class needs at least a list of coordiantes and values.
+All other attributes are set by default.
 You can easily set up an example by generating some random data:
 
 .. code-block:: python
