@@ -877,9 +877,9 @@ class SpaceTimeVariogram:
         elif kind.lower() == 'surf' or kind.lower() == 'surface':
             return self.surface(ax=ax, **kwargs)
         elif kind.lower() == 'contour':
-            raise NotImplementedError
+            return self.contour(ax=ax)
         elif kind.lower() == 'contourf':
-            raise NotImplementedError
+            return self.contourf(ax=ax)
         elif kind.lower() == 'matrix' or kind.lower() == 'mat':
             raise NotImplementedError
         elif kind.lower() == 'marginals':
@@ -1028,7 +1028,7 @@ class SpaceTimeVariogram:
         elif kind == 'scatter':
             ax.scatter(x, y, z, c=c, depthshade=kwargs.get('depthshade', False))
         else:
-            raise ValueError('%s is not a valid 3D plot')
+            raise ValueError('%s is not a valid 3D plot' % kind)
 
         # set the labels
         ax.set_xlabel('space')
@@ -1037,6 +1037,155 @@ class SpaceTimeVariogram:
 
         # return
         return fig
+
+    def contour(self, ax=None, resolution=(50, 50), levels=10,
+                colors='k', linewidths=0.3, **kwargs):
+        """Variogram 2D contour plot
+
+        Plot a 2D contour plot of the experimental variogram. The
+        experimental semi-variance values are spanned over a space - time lag
+        meshgrid. This grid is (linear) interpolated onto the given
+        resolution for visual reasons. Then, contour lines are caluclated
+        from the denser grid. Their number can be specified by *levels*.
+
+        Parameters
+        ----------
+        ax : matplotlib.AxesSubplot, None
+            If None a new matplotlib.Figure will be created, otherwise the
+            plot will be rendered into the given subplot.
+        resolution : tuple
+            The experimental variogram will be interpolated onto a regular
+            grid for visual reasons. The density of this plot can be set by
+            resolution as a tuple: (space_dim, time_dim). High resolutions
+            result in smoother contours, but are expansive in calculation time.
+        levels : int
+            Number of levels to be formed for finding contour lines. More
+            levels result in more detailed plots, but are expansive in terms
+            of calculation time.
+        colors : str, list
+            Will be passed down to matplotlib.pyplot.contour as *c* parameter.
+        linewidths : float, list
+            Will be passed down to matplotlib.pyplot.contour as *linewidths*
+            parameter.
+        kwargs : dict
+            Other arguments that can be specific to *contour* or *contourf*
+            type. Accepts *xlabel*, *ylabel*, *xlim* and *ylim* as of this
+            writing.
+
+        Returns
+        -------
+        fig : matplotlib.Figure
+            The Figure object used for rendering the contour plot.
+
+        See Also
+        --------
+        SpaceTimeVariogram.contourf
+
+        """
+        return self._plot2d(kind='contour', ax=ax, resolution=resolution,
+                            levels=levels, colors=colors,
+                            linewidths=linewidths, **kwargs)
+
+    def contourf(self, ax=None, resolution=(50, 50), levels=10,
+                 cmap='RdYlBu_r', **kwargs):
+        """Variogram 2D filled contour plot
+
+        Plot a 2D filled contour plot of the experimental variogram. The
+        experimental semi-variance values are spanned over a space - time lag
+        meshgrid. This grid is (linear) interpolated onto the given
+        resolution for visual reasons. Then, contour lines are caluclated
+        from the denser grid. Their number can be specified by *levels*.
+        Finally, each contour region is filled with a color supplied by the
+        specified *cmap*.
+
+        Parameters
+        ----------
+        ax : matplotlib.AxesSubplot, None
+            If None a new matplotlib.Figure will be created, otherwise the
+            plot will be rendered into the given subplot.
+        resolution : tuple
+            The experimental variogram will be interpolated onto a regular
+            grid for visual reasons. The density of this plot can be set by
+            resolution as a tuple: (space_dim, time_dim). High resolutions
+            result in smoother contours, but are expansive in calculation time.
+        levels : int
+            Number of levels to be formed for finding contour lines. More
+            levels result in more detailed plots, but are expansive in terms
+            of calculation time.
+        cmap : str
+            Will be passed down to matplotlib.pyplot.contourf as *cmap*
+            parameter. Can be any valid color range supported by matplotlib.
+        kwargs : dict
+            Other arguments that can be specific to *contour* or *contourf*
+            type. Accepts *xlabel*, *ylabel*, *xlim* and *ylim* as of this
+            writing.
+
+        Returns
+        -------
+        fig : matplotlib.Figure
+            The Figure object used for rendering the contour plot.
+
+        See Also
+        --------
+        SpaceTimeVariogram.contour
+
+        """
+        return self._plot2d(kind='contourf', ax=ax, resolution=resolution,
+                            levels=levels, cmap=cmap, **kwargs)
+
+    def _plot2d(self, kind='contour', ax=None, resolution=(50, 50),
+                levels=10, **kwargs):
+        # get or create the figure
+        if ax is not None:
+            fig = ax.get_figure()
+        else:
+            fig, ax = plt.subplots(1, 1, figsize=kwargs.get('figsize', (8, 8)))
+
+        # prepare the meshgrid
+        xx, yy = self.meshbins
+        z = self.experimental
+        x = xx.flatten()
+        y = yy.flatten()
+
+        # interpolate the lag-meshgrid into a finer grid (of resolution)
+        res_x = resolution[0] * 1j
+        res_y = resolution[1] * 1j
+        xxi, yyi = np.mgrid[0:self.x_lags:res_x, 0:self.t_lags:res_y]
+        # linear interpolation
+        zi = griddata(x, y, z, xxi.flatten(), yyi.flatten(), interp='linear')
+
+        # get the bounds
+        zmin = np.nanmin(z)
+        zmax = np.nanmax(z)
+
+        # get the plotting parameters
+        lev = np.linspace(0, zmax, levels)
+        c = kwargs.get('color') if 'color' in kwargs else kwargs.get('c', 'k')
+        cmap = kwargs.get('cmap', 'RdYlBu_r')
+
+        # plot
+        if kind.lower() == 'contour':
+            ax.contour(xxi.flatten(), yyi.flatten(), zi, colors=c,
+                       levels=lev, vmin=zmin * 1.1, vmax=zmax * 0.9,
+                       linewidths=kwargs.get('linewidths', 0.3))
+        elif kind.lower() == 'contourf':
+            C = ax.contourf(xxi.flatten(), yyi.flatten(), zi, cmap=cmap,
+                           levels=lev, vmin=zmin * 1.1, vmax=zmax * 0.9)
+            if kwargs.get('colorbar', False):
+                ax.colorbar(C, ax=ax)
+        else:
+            raise ValueError("%s is not a valid 2D plot" % kind)
+
+        # some labels
+        ax.set_xlabel(kwargs.get('xlabel', 'space'))
+        ax.set_ylabel(kwargs.get('ylabel', 'time'))
+        ax.set_xlim(kwargs.get('xlim', (0, self.x_lags)))
+        ax.set_ylim(kwargs.get('ylim', (0, self.t_lags)))
+
+        return fig
+
+
+
 
     def marginals(self, plot=True, axes=None, sharey=True, **kwargs):
         """Plot marginal variograms
