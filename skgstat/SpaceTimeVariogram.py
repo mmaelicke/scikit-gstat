@@ -3,9 +3,10 @@
 """
 import numpy as np
 from scipy.spatial.distance import pdist
+from scipy.ndimage.interpolation import zoom
+from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.mlab import griddata
 
 from skgstat import binning, estimators
 
@@ -1038,8 +1039,8 @@ class SpaceTimeVariogram:
         # return
         return fig
 
-    def contour(self, ax=None, resolution=(50, 50), levels=10,
-                colors='k', linewidths=0.3, **kwargs):
+    def contour(self, ax=None, zoom_factor=100., levels=10, colors='k',
+                linewidths=0.3, method="fast", **kwargs):
         """Variogram 2D contour plot
 
         Plot a 2D contour plot of the experimental variogram. The
@@ -1082,12 +1083,12 @@ class SpaceTimeVariogram:
         SpaceTimeVariogram.contourf
 
         """
-        return self._plot2d(kind='contour', ax=ax, resolution=resolution,
-                            levels=levels, colors=colors,
+        return self._plot2d(kind='contour', ax=ax, zoom_factor=zoom_factor,
+                            levels=levels, colors=colors, method=method,
                             linewidths=linewidths, **kwargs)
 
-    def contourf(self, ax=None, resolution=(50, 50), levels=10,
-                 cmap='RdYlBu_r', **kwargs):
+    def contourf(self, ax=None, zoom_factor=100., levels=10,
+                 cmap='RdYlBu_r', method="fast", **kwargs):
         """Variogram 2D filled contour plot
 
         Plot a 2D filled contour plot of the experimental variogram. The
@@ -1130,11 +1131,11 @@ class SpaceTimeVariogram:
         SpaceTimeVariogram.contour
 
         """
-        return self._plot2d(kind='contourf', ax=ax, resolution=resolution,
-                            levels=levels, cmap=cmap, **kwargs)
+        return self._plot2d(kind='contourf', ax=ax, zoom_factor=zoom_factor,
+                            levels=levels, cmap=cmap, method=method, **kwargs)
 
-    def _plot2d(self, kind='contour', ax=None, resolution=(50, 50),
-                levels=10, **kwargs):
+    def _plot2d(self, kind='contour', ax=None, zoom_factor=100.,
+                levels=10, method="fast", **kwargs):
         # get or create the figure
         if ax is not None:
             fig = ax.get_figure()
@@ -1147,16 +1148,23 @@ class SpaceTimeVariogram:
         x = xx.flatten()
         y = yy.flatten()
 
-        # interpolate the lag-meshgrid into a finer grid (of resolution)
-        res_x = resolution[0] * 1j
-        res_y = resolution[1] * 1j
-        xxi, yyi = np.mgrid[0:self.x_lags:res_x, 0:self.t_lags:res_y]
-        # linear interpolation
-        zi = griddata(x, y, z, xxi.flatten(), yyi.flatten(), interp='linear')
+        # interpolation, either fast or precise
+        if method.lower() == "fast":
+            zi = zoom(z.reshape((self.x_lags, self.t_lags)), zoom_factor,
+                      order=1, prefilter=False)
+        elif method.lower() == "precise":
+            # zoom the meshgrid by linear interpolation
+            xxi = zoom(xx, zoom_factor, order=1)
+            yyi = zoom(yy, zoom_factor, order=1)
+
+            # interpolate the semivariance
+            zi = griddata((x, y), z, (xxi, yyi), method='linear')
+        else:
+            raise ValueError("method has to be one of ['fast', 'precise']")
 
         # get the bounds
-        zmin = np.nanmin(z)
-        zmax = np.nanmax(z)
+        zmin = np.nanmin(zi)
+        zmax = np.nanmax(zi)
 
         # get the plotting parameters
         lev = np.linspace(0, zmax, levels)
@@ -1165,27 +1173,33 @@ class SpaceTimeVariogram:
 
         # plot
         if kind.lower() == 'contour':
-            ax.contour(xxi.flatten(), yyi.flatten(), zi, colors=c,
-                       levels=lev, vmin=zmin * 1.1, vmax=zmax * 0.9,
-                       linewidths=kwargs.get('linewidths', 0.3))
+            ax.contour(zi.T, colors=c, levels=lev, vmin=zmin * 1.1,
+                       vmax=zmax * 0.9, linewidths=kwargs.get('linewidths', 0.3)
+                       )
         elif kind.lower() == 'contourf':
-            C = ax.contourf(xxi.flatten(), yyi.flatten(), zi, cmap=cmap,
-                           levels=lev, vmin=zmin * 1.1, vmax=zmax * 0.9)
-            if kwargs.get('colorbar', False):
+            C = ax.contourf(zi.T, cmap=cmap, levels=lev, vmin=zmin * 1.1,
+                            vmax=zmax * 0.9)
+            if kwargs.get('colorbar', True):
                 ax.colorbar(C, ax=ax)
         else:
             raise ValueError("%s is not a valid 2D plot" % kind)
 
+        # the grid is interpolated, set the bins as ticks
+        ax.set_xticks(self.xbins)
+        ax.set_xticklabels(
+            [kwargs.get('xfmt', '%.1f') % b for b in self.xbins])
+        ax.set_yticks(self.tbins)
+        ax.set_yticklabels(
+            [kwargs.get('yfmt', '%.1f') % b for b in self.tbins]
+        )
+
         # some labels
         ax.set_xlabel(kwargs.get('xlabel', 'space'))
         ax.set_ylabel(kwargs.get('ylabel', 'time'))
-        ax.set_xlim(kwargs.get('xlim', (0, self.x_lags)))
-        ax.set_ylim(kwargs.get('ylim', (0, self.t_lags)))
+        ax.set_xlim(kwargs.get('xlim', (0, zi.shape[0])))
+        ax.set_ylim(kwargs.get('ylim', (0, zi.shape[1])))
 
         return fig
-
-
-
 
     def marginals(self, plot=True, axes=None, sharey=True, **kwargs):
         """Plot marginal variograms
