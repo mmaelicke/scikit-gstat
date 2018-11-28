@@ -1054,11 +1054,12 @@ class SpaceTimeVariogram:
         ax : matplotlib.AxesSubplot, None
             If None a new matplotlib.Figure will be created, otherwise the
             plot will be rendered into the given subplot.
-        resolution : tuple
+        zoom_factor : float
             The experimental variogram will be interpolated onto a regular
             grid for visual reasons. The density of this plot can be set by
-            resolution as a tuple: (space_dim, time_dim). High resolutions
-            result in smoother contours, but are expansive in calculation time.
+            zoom_factor. A factor of 10 will enlarge each of the axes by 10.
+            Higher zoom_factors result in smoother contours, but are
+            expansive in calculation time.
         levels : int
             Number of levels to be formed for finding contour lines. More
             levels result in more detailed plots, but are expansive in terms
@@ -1068,6 +1069,14 @@ class SpaceTimeVariogram:
         linewidths : float, list
             Will be passed down to matplotlib.pyplot.contour as *linewidths*
             parameter.
+        method : str
+            The method used for densifying the meshgrid. Can be one of
+            'fast' or 'precise'. Fast will use the scipy.ndimage.zoom method
+            to incresae the node density. This is fast, but cannot
+            interpolate *behind* any NaN occurance. 'Precise' performs an
+            actual linear interpolation between the nodes using
+            scipy.interpolate.griddata. This takes more time, but the result
+            is less smoothed out.
         kwargs : dict
             Other arguments that can be specific to *contour* or *contourf*
             type. Accepts *xlabel*, *ylabel*, *xlim* and *ylim* as of this
@@ -1104,11 +1113,12 @@ class SpaceTimeVariogram:
         ax : matplotlib.AxesSubplot, None
             If None a new matplotlib.Figure will be created, otherwise the
             plot will be rendered into the given subplot.
-        resolution : tuple
+        zoom_factor : float
             The experimental variogram will be interpolated onto a regular
             grid for visual reasons. The density of this plot can be set by
-            resolution as a tuple: (space_dim, time_dim). High resolutions
-            result in smoother contours, but are expansive in calculation time.
+            zoom_factor. A factor of 10 will enlarge each of the axes by 10.
+            Higher zoom_factors result in smoother contours, but are
+            expansive in calculation time.
         levels : int
             Number of levels to be formed for finding contour lines. More
             levels result in more detailed plots, but are expansive in terms
@@ -1116,6 +1126,14 @@ class SpaceTimeVariogram:
         cmap : str
             Will be passed down to matplotlib.pyplot.contourf as *cmap*
             parameter. Can be any valid color range supported by matplotlib.
+        method : str
+            The method used for densifying the meshgrid. Can be one of
+            'fast' or 'precise'. Fast will use the scipy.ndimage.zoom method
+            to incresae the node density. This is fast, but cannot
+            interpolate *behind* any NaN occurance. 'Precise' performs an
+            actual linear interpolation between the nodes using
+            scipy.interpolate.griddata. This takes more time, but the result
+            is less smoothed out.
         kwargs : dict
             Other arguments that can be specific to *contour* or *contourf*
             type. Accepts *xlabel*, *ylabel*, *xlim* and *ylim* as of this
