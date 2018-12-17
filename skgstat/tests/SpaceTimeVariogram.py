@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import matplotlib.pyplot as plt
 
 from skgstat import SpaceTimeVariogram
 
@@ -150,6 +151,27 @@ class TestSpaceTimeVariogramArgumets(unittest.TestCase):
 
             self.assertEqual(
                 str(e), "Only 'max' supported as string argument."
+            )
+
+
+class TestSpaceTimeVariogramPlots(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(42)
+        self.c = np.random.gamma(14, 8, (50,3))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 5, (50, 7))
+
+    def test_plot3d_scatter_default(self):
+        pass
+
+    def test_plot3d_wrong_axis(self):
+        with self.assertRaises(ValueError) as e:
+            SpaceTimeVariogram(self.c, self.v)._plot3d(ax=[plt.figure(), 55])
+
+            self.assertEqual(
+                str(e),
+                'The passed ax object is not an instance '
+                'of mpl_toolkis.mplot3d.Axes3D.'
             )
 
 

@@ -15,4 +15,5 @@ from skgstat.tests.DirectionalVariogram import (
 from skgstat.tests.SpaceTimeVariogram import (
     TestSpaceTimeVariogramInitialization,
     TestSpaceTimeVariogramArgumets,
+    TestSpaceTimeVariogramPlots,
 )

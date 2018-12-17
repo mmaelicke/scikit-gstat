@@ -8,7 +8,7 @@ from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from skgstat import binning, estimators
+from skgstat import binning, estimators, Variogram
 
 
 class SpaceTimeVariogram:
@@ -26,6 +26,7 @@ class SpaceTimeVariogram:
                  xbins='even',
                  tbins='even',
                  estimator='matheron',
+                 use_nugget=False,
 
                  verbose=False
                  ):
@@ -41,6 +42,8 @@ class SpaceTimeVariogram:
         # set attributes to be fulled during calculation
         self.cov = None
         self.cof = None
+        self.XMarginal = None
+        self.TMarginal = None
 
         # set values
         self._values = None
@@ -50,7 +53,7 @@ class SpaceTimeVariogram:
         self._xdist = None
         self._tdist = None
 
-        # set distance caluclation functions
+        # set distance calculation functions
         self._xdist_func = None
         self._tdist_func = None
         self.set_xdist_func(func_name=xdist_func)
@@ -71,15 +74,28 @@ class SpaceTimeVariogram:
         # initialize binning arrays
         # space
         self._xbin_func = None
+        self._xbin_func_name = None
         self._xgroups = None
         self._xbins = None
         self.set_bin_func(bin_func=xbins, axis='space')
 
         # time
         self._tbin_func = None
+        self._tbin_func_name = None
         self._tgroups = None
         self._tbins = None
         self.set_bin_func(bin_func=tbins, axis='time')
+
+        # set nugget
+        self._use_nugget = None
+        self.use_nugget = use_nugget
+
+        # _x and values are set, build the marginal Variogram objects
+        # marginal space variogram
+        self.create_XMarginal()
+
+        # marginal time variogram
+        self.create_TMarginal()
 
         # do one preprocessing run
         self.preprocessing(force=True)
@@ -145,6 +161,13 @@ class SpaceTimeVariogram:
         # dismiss the pairwise differences, and lags
         self._diff = None
 
+        # recreate the space marginal variogram
+        if self.XMarginal is not None:
+            self.create_XMarginal()
+        if self.TMarginal is not None:
+            self.create_TMarginal()
+
+
     @values.setter
     def values(self, new_values):
         self.set_values(values=new_values)
@@ -184,6 +207,9 @@ class SpaceTimeVariogram:
         # reset the distances
         self._xdist = None
 
+        # update marignal
+        self._set_xmarg_params()
+
     @property
     def tdist_func(self):
         return self._tdist_func
@@ -218,6 +244,9 @@ class SpaceTimeVariogram:
 
         # reset the distances
         self._tdist = None
+
+        # update marignal
+        self._set_tmarg_params()
 
     @property
     def distance(self):
@@ -289,6 +318,8 @@ class SpaceTimeVariogram:
         self._xbins = None
         self._xgroups = None
 
+        # update marignal
+        self._set_xmarg_params()
 
     @property
     def t_lags(self):
@@ -308,6 +339,9 @@ class SpaceTimeVariogram:
         # reset bins
         self._tbins = None
         self._tgroups = None
+
+        # update marignal
+        self._set_tmarg_params()
 
     @property
     def maxlag(self):
@@ -334,6 +368,9 @@ class SpaceTimeVariogram:
             self._maxlag = value * np.max(self.xdistance)
         else:
             self._maxlag = value
+
+        # update marignal
+        self._set_xmarg_params()
 
     def set_bin_func(self, bin_func, axis):
         """Set binning function
@@ -363,7 +400,7 @@ class SpaceTimeVariogram:
         # switch the function
         if bin_func.lower() == 'even':
             f = binning.even_width_lags
-        elif bin_func.lower == 'uniform':
+        elif bin_func.lower() == 'uniform':
             f = binning.uniform_count_lags
         else:
             raise ValueError('%s binning method is not known' % bin_func)
@@ -371,12 +408,20 @@ class SpaceTimeVariogram:
         # switch the axis
         if axis.lower() == 'space' or axis.lower() == 's':
             self._xbin_func = f
+            self._xbin_func_name = bin_func
+
+            # update marginal
+            self._set_xmarg_params()
 
             # reset
             self._xgroups = None
             self._xbins = None
         elif axis.lower() == 'time' or axis.lower() == 't':
             self._tbin_func = f
+            self._tbin_func_name = bin_func
+
+            # update marignal
+            self._set_tmarg_params()
 
             # reset
             self._tgroups = None
@@ -423,6 +468,9 @@ class SpaceTimeVariogram:
         # reset the groups
         self._xgroups = None
 
+        # update marignal
+        self._set_xmarg_params()
+
     @property
     def tbins(self):
         """Temporal binning
@@ -458,9 +506,27 @@ class SpaceTimeVariogram:
         # reset the groups
         self._tgroups = None
 
+        # update marignal
+        self._set_tmarg_params()
+
     @property
     def meshbins(self):
         return np.meshgrid(self.xbins, self.tbins)
+
+    @property
+    def use_nugget(self):
+        return self._use_nugget
+
+    @use_nugget.setter
+    def use_nugget(self, nugget):
+        if not isinstance(nugget, bool):
+            raise ValueError('use_nugget has to be a boolean value.')
+
+        self._use_nugget = nugget
+
+        # update marginals
+        self._set_xmarg_params()
+        self._set_tmarg_params()
 
     @property
     def estimator(self):
@@ -498,6 +564,87 @@ class SpaceTimeVariogram:
             self._estimator = estimator_name
         else:
             raise ValueError('The estimator has to be a string or callable.')
+
+        # update marignal
+        self._set_xmarg_params()
+        self._set_tmarg_params()
+
+    def create_XMarginal(self):
+        """
+        Create an instance of skgstat.Variogram for the space marginal variogram
+        by arranging the coordinates and values and infer parameters from
+        this SpaceTimeVariogram instance.
+
+        """
+        self.XMarginal = Variogram(
+            np.vstack([self._X] * self._values.shape[1]),
+            self._values.T.flatten()
+        )
+        self._set_xmarg_params()
+
+    def create_TMarginal(self):
+        """
+        Create an instance of skgstat.Variogram for the time marginal variogram
+        by arranging the coordinates and values and infer parameters from
+        this SpaceTimeVariogram instance.
+
+        """
+        coords = np.stack((
+            np.arange(self._values.shape[1]),
+            [0] * self._values.shape[1]
+        ), axis=1)
+        self.TMarginal = Variogram(
+            np.vstack([coords] * self._values.shape[0]),
+            self._values.flatten()
+        )
+        self._set_tmarg_params()
+
+    def _set_xmarg_params(self):
+        """
+        Update the parameters for the space marginal variogram with any
+        parameter that can be inferred from the current SpaceTimeVariogram
+        instance.
+
+        """
+        # if not marginal variogram is set, return
+        if self.XMarginal is None:
+            return
+
+        # distance
+        self.XMarginal.dist_function = self.xdist_func
+        self.XMarginal.n_lags = self.x_lags
+
+        # binning
+        self.XMarginal.bin_func = self._xbin_func_name
+        self.XMarginal.maxlag = self.maxlag
+
+        # nugget
+        self.XMarginal.use_nugget = self.use_nugget
+        # estimator
+        self.XMarginal.estimator = self.estimator.__name__
+
+    def _set_tmarg_params(self):
+        """
+        Update the parameters for the time marginal variogram with any
+        parameter that can be inferred from the current SpaceTimeVariogram
+        instance.
+
+        """
+        # if no marginal variogram is set, return
+        if self.TMarginal is None:
+            return
+
+        # distance
+        self.TMarginal.dist_function = self.tdist_func
+        self.TMarginal.n_lags = self.t_lags
+
+        # binning
+        self.TMarginal.bin_func = self._tbin_func_name
+
+        # nugget
+        self.TMarginal.use_nugget = self.use_nugget
+        # estimator
+        self.TMarginal.estimator = self.estimator.__name__
 
     # ------------------------------------------------------------------------ #
     #                         PRE-PROCESSING                                   #
@@ -691,7 +838,7 @@ class SpaceTimeVariogram:
                     for ti in range(inner):
                         for tj in range(inner):
                             if ti < tj:
-                                self._diff[xidx][tidx] = v[xi, ti] - v[xj, tj]
+                                self._diff[xidx][tidx] = np.abs(v[xi, ti] - v[xj, tj])
                                 tidx += 1
                     xidx += 1
 
@@ -820,6 +967,19 @@ class SpaceTimeVariogram:
         x_idxs = self._xgroups == xlag
         t_idxs = self._tgroups == tlag
         return self._diff[np.where(x_idxs)[0]][:, np.where(t_idxs)[0]].flatten()
+
+    def build_marginal_variograms(self):
+        """build marginal Variogram classes
+
+        The two marginal variograms for space and time axis will be
+        initialized and added to this instance. Both are an instance of
+        skgstat.Variogram in order to model them properly. Use these classes
+        to well working valid models to the marginal Variograms before
+        modeling the space-time model.
+        The two objects will be available as SpaceTimeVariogram.XMarginal and
+        SpaceTimeVariogram.TMarginal.
+
+        """
 
     # ------------------------------------------------------------------------ #
     #                             PLOTTING                                     #
@@ -1166,14 +1326,15 @@ class SpaceTimeVariogram:
         x = xx.flatten()
         y = yy.flatten()
 
+        xxi = zoom(xx, zoom_factor, order=1)
+        yyi = zoom(yy, zoom_factor, order=1)
+
         # interpolation, either fast or precise
         if method.lower() == "fast":
-            zi = zoom(z.reshape((self.x_lags, self.t_lags)), zoom_factor,
+            zi = zoom(z.reshape((self.t_lags, self.x_lags)), zoom_factor,
                       order=1, prefilter=False)
         elif method.lower() == "precise":
             # zoom the meshgrid by linear interpolation
-            xxi = zoom(xx, zoom_factor, order=1)
-            yyi = zoom(yy, zoom_factor, order=1)
 
             # interpolate the semivariance
             zi = griddata((x, y), z, (xxi, yyi), method='linear')
@@ -1191,31 +1352,23 @@ class SpaceTimeVariogram:
 
         # plot
         if kind.lower() == 'contour':
-            ax.contour(zi.T, colors=c, levels=lev, vmin=zmin * 1.1,
+            ax.contour(xxi, yyi, zi, colors=c, levels=lev, vmin=zmin * 1.1,
                        vmax=zmax * 0.9, linewidths=kwargs.get('linewidths', 0.3)
                        )
         elif kind.lower() == 'contourf':
-            C = ax.contourf(zi.T, cmap=cmap, levels=lev, vmin=zmin * 1.1,
+            C = ax.contourf(xxi, yyi, zi, cmap=cmap, levels=lev, vmin=zmin *
+                                                                      1.1,
                             vmax=zmax * 0.9)
             if kwargs.get('colorbar', True):
-                ax.colorbar(C, ax=ax)
+                plt.colorbar(C, ax=ax)
         else:
             raise ValueError("%s is not a valid 2D plot" % kind)
-
-        # the grid is interpolated, set the bins as ticks
-        ax.set_xticks(self.xbins)
-        ax.set_xticklabels(
-            [kwargs.get('xfmt', '%.1f') % b for b in self.xbins])
-        ax.set_yticks(self.tbins)
-        ax.set_yticklabels(
-            [kwargs.get('yfmt', '%.1f') % b for b in self.tbins]
-        )
 
         # some labels
         ax.set_xlabel(kwargs.get('xlabel', 'space'))
         ax.set_ylabel(kwargs.get('ylabel', 'time'))
-        ax.set_xlim(kwargs.get('xlim', (0, zi.shape[0])))
-        ax.set_ylim(kwargs.get('ylim', (0, zi.shape[1])))
+        ax.set_xlim(kwargs.get('xlim', (0, self.xbins[-1])))
+        ax.set_ylim(kwargs.get('ylim', (0, self.tbins[-1])))
 
         return fig
 
