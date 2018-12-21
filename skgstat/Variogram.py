@@ -198,6 +198,7 @@ class Variogram(object):
         self.harmonize = harmonize
 
         # set if nugget effect shall be used
+        self._use_nugget = None
         self.use_nugget = use_nugget
 
         # set the fitting method and sigma array
@@ -469,6 +470,18 @@ class Variogram(object):
                     'understood, please provide the function' % model_name)
         else:
             self._model = model_name
+
+    @property
+    def use_nugget(self):
+        return self._use_nugget
+
+    @use_nugget.setter
+    def use_nugget(self, nugget):
+        if not isinstance(nugget, bool):
+            raise ValueError('use_nugget has to be of type bool.')
+
+        # set new value
+        self._use_nugget = nugget
 
     @property
     def dist_function(self):

@@ -177,6 +177,27 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertEqual(V.maxlag, np.max(V.distance) * 0.6)
         self.assertAlmostEqual(V.maxlag, 25.38, places=2)
 
+    def test_use_nugget_setting(self):
+        V = Variogram(self.c, self.v)
+
+        # test the property and setter
+        self.assertEqual(V.use_nugget, False)
+        self.assertEqual(V.describe()['nugget'], 0)
+
+        # set the nugget
+        V.use_nugget = True
+        self.assertEqual(V.use_nugget, True)
+        self.assertEqual(V._use_nugget, True)
+        self.assertAlmostEqual(V.describe()['nugget'], 291.28, places=2)
+
+    def test_use_nugget_exception(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, use_nugget=42)
+            self.assertEqual(
+                str(e),
+                'use_nugget has to be of type bool.'
+            )
+
 
 class TestVariogramFittingProcedure(unittest.TestCase):
     def setUp(self):
