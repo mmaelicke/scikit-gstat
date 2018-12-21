@@ -198,6 +198,26 @@ class TestVariogramArguments(unittest.TestCase):
                 'use_nugget has to be of type bool.'
             )
 
+    def test_n_lags_change(self):
+        V = Variogram(self.c, self.v, n_lags=10)
+
+        self.assertEqual(len(V.bins), 10)
+        V.n_lags = 5
+        self.assertEqual(len(V.bins), 5)
+
+    def test_n_lags_exception(self):
+        for arg in [15.5, -5]:
+            with self.assertRaises(ValueError) as e:
+                Variogram(self.c, self.v, n_lags=arg)
+                self.assertEqual(
+                    str(e),
+                    'n_lags has to be a positive integer'
+                )
+
+    def test_n_lags_not_implemented(self):
+        with self.assertRaises(NotImplementedError):
+            Variogram(self.c, self.v, n_lags='auto')
+
 
 class TestVariogramFittingProcedure(unittest.TestCase):
     def setUp(self):

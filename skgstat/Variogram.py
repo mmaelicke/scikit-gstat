@@ -173,6 +173,7 @@ class Variogram(object):
         self.set_dist_function(func=dist_func)
 
         # lags and max lag
+        self._n_lags = None
         self.n_lags = n_lags
         self._maxlag = None
         self.maxlag = maxlag
@@ -397,6 +398,24 @@ class Variogram(object):
         self._groups = None
         self.cov = None
         self.cof = None
+
+    @property
+    def n_lags(self):
+        return self._n_lags
+
+    @n_lags.setter
+    def n_lags(self, n):
+        # TODO: here accept strings and implement some optimum methods
+        if isinstance(n, str):
+            raise NotImplementedError('n_lags string values not implemented')
+        if not isinstance(n, int) or n < 1:
+            raise ValueError('n_lags has to be a positive integer')
+        self._n_lags = n
+
+        # reset the bins and fitting
+        self._bins = None
+        self.cof = None
+        self.cov = None
 
     @property
     def estimator(self):
