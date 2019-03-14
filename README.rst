@@ -1,7 +1,7 @@
 SciKit-GStat
 ============
 
-Info: scikit-gstat needs Python >= 3.4!
+Info: scikit-gstat needs Python >= 3.5!
 
 .. image:: https://img.shields.io/badge/pypi%20package-0.2.5-green.svg
     :target: https://pypi.org/project/scikit-gstat/0.2.5/
@@ -60,9 +60,10 @@ Description
 -----------
 
 SciKit-Gstat is a scipy-styled analysis module for geostatistics. It includes
-two base classes ``Variogram`` and ``DirectionalVariogram``. Both have a
-very similar interface and can compute experimental variograms and model
-variograms. The module makes use of a rich selection of semi-variance
+two base classes ``Variogram`` and ``OrdinaryKriging``. Additionally, various
+variogram classes inheriting from ``Variogram`` are available for solving
+directional or space-time related tasks.
+ The module makes use of a rich selection of semi-variance
 estimators and variogram model functions, while being extensible at the same
 time.
 The estimators include:

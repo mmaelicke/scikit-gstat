@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.2.5
+=============
+- added :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` for using a
+  :class:`Variogram <skgstat.Variogram>` to perform an interpolation.
+
 Version 0.2.4
 =============
 

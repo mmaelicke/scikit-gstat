@@ -1,9 +1,9 @@
 sudo: required
 language: python
 python:
-  - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
 
 before_install:
   - "export DISPLAY=:99.0"
