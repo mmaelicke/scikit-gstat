@@ -11,3 +11,4 @@ Code Reference
     spacetimevariogram
     estimator
     models
+    kriging

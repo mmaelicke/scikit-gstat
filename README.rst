@@ -3,10 +3,10 @@ SciKit-GStat
 
 Info: scikit-gstat needs Python >= 3.4!
 
-.. image:: https://img.shields.io/badge/pypi%20package-0.2.3-green.svg
-    :target: https://pypi.org/project/scikit-gstat/0.2.3/
+.. image:: https://img.shields.io/badge/pypi%20package-0.2.5-green.svg
+    :target: https://pypi.org/project/scikit-gstat/0.2.5/
 
-.. image:: https://img.shields.io/badge/version-0.2.4a-green.svg
+.. image:: https://img.shields.io/badge/version-0.2.5-green.svg
     :target: https://github.com/mmaelicke/scikit-gstat
 
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master

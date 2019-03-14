@@ -18,6 +18,11 @@ With version 0.2.4, the class
 computes space-time experimental variogram. However, space-time modeling is
 not implemented yet.
 
+With version 0.25, the class :class:`OrdinaryKriging <skgstat
+.OridnaryKrigin>` has been added. It is working and can be used. However, it
+is not documented, the arguments might still change, multiprocessing is not
+implemented and the krige algorithm is not yet very efficient.
+
 .. note::
 
     Scikit-gstat was rewritten in major parts. Most of the changes are internal,
