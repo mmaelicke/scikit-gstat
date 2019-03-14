@@ -219,6 +219,21 @@ class Variogram(object):
         self.fit(force=True)
 
     @property
+    def coordinates(self):
+        """Coordinates property
+
+        Array of observation locations the variogram is build for. This
+        property has no setter. If you want to change the coordinates,
+        use a new Variogram instance.
+
+        Returns
+        -------
+        coordinates : numpy.array
+
+        """
+        return self._X
+
+    @property
     def values(self):
         """Values property
 
