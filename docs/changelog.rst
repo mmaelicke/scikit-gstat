@@ -4,6 +4,15 @@ Changelog
 
 Version 0.2.6
 =============
+- [OrdinaryKriging]: widely enhanced the class in terms of performance, code
+  coverage and handling.
+
+    - added `mode` property: The class can derive exact solutions or estimate
+      the kriging matrix for high performance gains
+    - multiprocessing is supported now
+    - the `solver` property can be used to choose from 3 different solver for
+      the kriging matrix.
+
 - [Variogram] deprecated
   :func:`Variogram.compiled_model <skgstat.Variogram.compiled_model>`. Use
   :func:`Variogram.fitted_model <skgstat.Variogram.fitted_model>` instead.
