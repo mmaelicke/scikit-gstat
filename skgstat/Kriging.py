@@ -3,9 +3,12 @@ The kriging module offers only an Ordinary Kriging routine (OK) that can be
 used together with the skgstat.Variogram class. The usage of the class is
 inspired by the scipy.interpolate classes.
 """
+import time
+
 import numpy as np
 from scipy.spatial.distance import squareform
-from scipy.linalg import solve, LinAlgError
+from scipy.linalg import solve as scipy_solve
+from numpy.linalg import solve as numpy_solve, LinAlgError, inv
 from multiprocessing import Pool
 
 from .Variogram import Variogram
@@ -19,14 +22,21 @@ class SingularMatrixError(LinAlgError):
     pass
 
 
+class IllMatrixError(RuntimeWarning):
+    pass
+
+
 class OrdinaryKriging:
     def __init__(
             self,
             variogram,
             min_points=5,
             max_points=15,
-            solver='gen',
+            mode='exact',
+            precision=100,
+            solver='inv',
             n_jobs=1,
+            perf=False
     ):
         """Ordinary Kriging routine
 
@@ -53,29 +63,104 @@ class OrdinaryKriging:
             closest will be used for estimation. Note that the kriging matrix
             will be an max_points x max_points matrix and large numbers do
             significantly increase the calculation time.
-        solver: str
+        mode : str
+            Has to be one of 'exact' or 'estimate'. In exact mode (default)
+            the variogram matrix will be calculated from scratch in each
+            iteration. This gives an exact solution, but it is also slower.
+            In estimate mode, a set of semivariances is pre-calculated and
+            the closest value will be used. This is significantly faster,
+            but the estimation quality is dependent on the given precision.
+        precision : int
+            Only needed if `mode='estimate'`. This is the number of
+            pre-calculated in-range semivariances. If chosen too low,
+            the estimation will be off, if too high the performance gain is
+            limited.
+        solver : str
             Do not change this argument
-        n_jobs = int
+        n_jobs : int
             Number of processes to be started in multiprocessing.
+        perf : bool
+            If True, the different parts of the algorithm will record their
+            processing time. This is meant to be used for optimization and
+            will be removed in a future version. Do not rely on this argument.
 
         """
         # store arguments to the instance
         if not isinstance(variogram, Variogram):
             raise TypeError('variogram has to be of type skgstat.Variogram.')
 
+        # general attributes
         self.V = variogram
         self._minp = min_points
         self._maxp = max_points
-        self.solver = solver
+        self.min_points = min_points
+        self.max_points = max_points
+
+        # general settings
         self.n_jobs = n_jobs
+        self.perf = perf
 
         # copy the distance function from the Variogram
         self.dist = self.V.dist_function
-        self.range = self.V.cof[0]
+        params = self.V.describe()
+        self.range = params['effective_range']
+        self.nugget = params['nugget']
+        self.sill = params['sill']
+
+        # coordinates and semivariance function
+        self.coords, self.values = self._get_coordinates_and_values()
+        self.gamma_model = self.V.compiled_model
+
+        # calculation mode; self.range has to be initialized
+        self._mode = mode
+        self._precision = precision
+        self._prec_dist = None
+        self._prec_g = None
+        self.mode = mode
+        self.precision = precision
+
+        # solver settings
+        self._solver = solver
+        self._solve = None
+        self.solver = solver
 
         # initialize error counter
         self.singular_error = 0
         self.no_points_error = 0
+        self.ill_matrix = 0
+
+        # performance counter
+        if self.perf:
+            self.perf_dist = list()
+            self.perf_mat = list()
+            self.perf_solv = list()
+
+    def _get_coordinates_and_values(self):
+        """Extract the coordinates and values
+
+        The coordinates and values array is extracted from the Variogram
+        instance. Additionally, the coordinates array is checked for
+        duplicates and only the first instance of a duplicate is used.
+        Duplicated coordinates would result in duplicated rows in the
+        variogram matrix and make it singular.
+
+        Returns
+        -------
+        coords : numpy.array
+            copy of Variogram.coordines without duplicates
+        values : numpy.array
+            copy of Variogram.values without duplicates
+
+        """
+        c = self.V.coordinates.copy()
+        v = self.V.values.copy()
+
+        _, idx = np.unique(c, axis=0, return_index=True)
+
+        # sort the index to preserve initial order, if no duplicates were found
+        idx.sort()
+
+        return c[idx], v[idx]
 
     @property
     def min_points(self):
@@ -88,7 +173,7 @@ class OrdinaryKriging:
             raise ValueError('min_points has to be an integer.')
         if value < 0:
             raise ValueError('min_points can\'t be negative.')
-        if value > self.max_points:
+        if value > self._maxp:
             raise ValueError('min_points can\'t be larger than max_points.')
 
         # set
@@ -105,11 +190,54 @@ class OrdinaryKriging:
             raise ValueError('max_points has to be an integer.')
         if value < 0:
             raise ValueError('max_points can\'t be negative.')
-        if value < self.min_points:
+        if value < self._minp:
             raise ValueError('max_points can\'t be smaller than min_points.')
 
         # set
         self._maxp = value
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if value == 'exact':
+            self._prec_g = None
+            self._prec_dist = None
+        elif value == 'estimate':
+            self._precalculate_matrix()
+        else:
+            raise ValueError("mode has to be one of 'exact', 'estimate'.")
+        self._mode = value
+
+    @property
+    def precision(self):
+        return self._precision
+
+    @precision.setter
+    def precision(self, value):
+        if not isinstance(value, int):
+            raise TypeError('precision has to be of type int')
+        if value < 1:
+            raise ValueError('The precision has be be > 1')
+        self._precision = value
+
+    @property
+    def solver(self):
+        return self._solver
+
+    @solver.setter
+    def solver(self, value):
+        if value == 'numpy':
+            self._solve = numpy_solve
+        elif value == 'scipy':
+            self._solve = scipy_solve
+        elif value == 'inv':
+            self._solve = lambda a, b: inv(a).dot(b)
+        else:
+            raise AttributeError("solver has to be ['inv', 'numpy', 'scipy']")
+        self._solver = value
 
     def transform(self, *x):
         """Kriging
@@ -132,14 +260,20 @@ class OrdinaryKriging:
         # reset the internal error counters
         self.singular_error = 0
         self.no_points_error = 0
+        self.ill_matrix = 0
+
+        # reset the internal performance counter
+        if self.perf:
+            self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
         # if multi-core, than here.
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, *x), dtype=float)
         else:
-            raise NotImplementedError
+            def f(*coords):
+                return self._estimator(*coords)
             with Pool(self.n_jobs) as p:
-                z = p.starmap(self._estimator, zip(*x))
+                z = p.starmap(f, zip(*x))
 
         # print warnings
         if self.singular_error > 0:
@@ -147,6 +281,9 @@ class OrdinaryKriging:
         if self.no_points_error > 0:
             print('Warning: for %d locations, not enough neighbors were '
                   'found within the range.' % self.no_points_error)
+        if self.ill_matrix > 0:
+            print('Warning: %d kriging matrices were ill-conditioned.'
+                  ' The result may not be accurate.' % self.ill_matrix)
 
         return np.array(z)
 
@@ -167,9 +304,11 @@ class OrdinaryKriging:
         except LessPointsError:
             self.no_points_error += 1
             return np.nan
+        except IllMatrixError:
+            self.ill_matrix += 1
+            return np.nan
 
         return z
-
 
     def _krige(self, p):
         """Algorithm
@@ -196,54 +335,124 @@ class OrdinaryKriging:
             estimated value at p
 
         """
+        if self.perf:
+            t0 = time.time()
         # determine the points needed for estimation
-        _p = np.concatenate(([p], self.V.coordinates))
+        _p = np.concatenate(([p], self.coords))
 
         # distance matrix for p to all coordinates, without p itself
-        dists = squareform(self.dist(_p))[0][1:]
+        dists = self.dist(_p)[:len(_p) - 1]
 
         # find all points within the search distance
         idx = np.where(dists <= self.range)[0]
-        in_range = self.V.coordinates[idx]
-        dist_mat = squareform(self.dist(in_range))
-        values = self.V.values[idx]
+        in_range = self.coords[idx]
+        dist_mat = self.dist(in_range)
+        values = self.values[idx]
 
         # check min_points and max_points parameters
         if in_range.size > self._maxp:
-            in_range = in_range[np.argsort(dist_mat[0])][:self._maxp:-1]
-            values = values[np.argsort(dist_mat[0])][:self._maxp:-1]
-            dist_mat = squareform(self.dist(in_range))
+            n = len(in_range) - 1
+            in_range = in_range[np.argsort(dist_mat[:n])][:self._maxp:-1]
+            values = values[np.argsort(dist_mat[:n])][:self._maxp:-1]
+            dist_mat = self.dist(in_range)
 
         # min
         if in_range.size < self._minp:
             raise LessPointsError
 
-        # build the kriging Matrix; needs N + 1 dimensionality
-        a = np.ones((len(in_range) + 1, len(in_range) + 1))
+        if self.perf:
+            t1 = time.time()
+            self.perf_dist.append(t1 - t0)
+
+        # OLD ALGORITHM
+        # a = np.ones((len(in_range) + 1, len(in_range) + 1))
 
         # fill; TODO: this can be done faster
-        for i in range(len(in_range)):
-            for j in range(len(in_range)):
-                a[i, j] = self.V.compiled_model(dist_mat[i ,j])
+        #for i in range(len(in_range)):
+        #    for j in range(len(in_range)):
+        #        a[i, j] = self.V.compiled_model(dist_mat[i ,j])
         # the outermost elements are all 1, except the last one
+        #a[-1, -1] = 0
+
+        # build the kriging Matrix; needs N + 1 dimensionality
+        if self.mode == 'exact':
+            a = self._build_matrix(in_range, dist_mat)
+        else:
+            a = self._estimate_matrix(dist_mat)
+
+        # add row a column of 1's
+        n = len(in_range)
+        a = np.concatenate((squareform(a), np.ones((n, 1))), axis=1)
+        a = np.concatenate((a, np.ones((1, n + 1))), axis=0)
+
+        # add lagrange multiplier
         a[-1, -1] = 0
+
+        if self.perf:
+            t2 =time.time()
+            self.perf_mat.append(t2 - t1)
 
         # build the matrix of solutions A
         _p = np.concatenate(([p], in_range))
         _dists = squareform(self.dist(_p))[0][1:]
-        _g = np.fromiter(map(self.V.compiled_model, _dists), dtype=float)
+        _g = np.fromiter(map(self.gamma_model, _dists), dtype=float)
         b = np.concatenate((_g, [1]))
 
         # solve the system
         try:
-            w = solve(a, b, assume_a=self.solver)
+            w = self._solve(a, b)
         except LinAlgError as e:
+            print(a)
             if str(e) == 'Matrix is singular.':
                 raise SingularMatrixError
             else:
                 raise e
+        except RuntimeWarning as w:
+            if 'Ill-conditioned matrix' in str(w):
+                print(a)
+                raise IllMatrixError
+            else:
+                raise w
+        except ValueError as e:
+            print('[DEBUG]: print variogram matrix and distance matrix:')
+            print(a)
+            print(_dists)
+            raise e
+        finally:
+            if self.perf:
+                t3 = time.time()
+                self.perf_solv.append(t3 - t2)
 
         # calulate Z
         return w[:-1].dot(values)
 
+    def _build_matrix(self, in_range, distance_matrix):
+        # calculate the upper matrix
+        return np.fromiter(map(self.gamma_model, distance_matrix), dtype=float)
 
+    def _precalculate_matrix(self):
+        # pre-calculated distance
+        self._prec_dist = np.linspace(0, self.range, self.precision)
+
+        # pre-calculate semivariance
+        self._prec_g = np.fromiter(
+            map(self.gamma_model, self._prec_dist),
+            dtype=float)
+
+    def _estimate_matrix(self, distance_matrix):
+        # transform to the 'precision-space', which matches with the index
+        dist_n = ((distance_matrix / self.range) * self.precision).astype(int)
+
+        # create the gamma array
+        g = np.ones(dist_n.shape) * -1
+
+        # find all indices inside and outside the range
+        out_ = np.where(dist_n >= self.precision)[0]
+        in_ = np.where(dist_n < self.precision)[0]
+
+        # all semivariances outside are set to sill,
+        # the inside are estimated from the precompiled
+        g[out_] = self.sill
+        g[in_] = self._prec_g[dist_n[in_]]
+
+        return g

@@ -17,3 +17,8 @@ from skgstat.tests.SpaceTimeVariogram import (
     TestSpaceTimeVariogramArgumets,
     TestSpaceTimeVariogramPlots,
 )
+
+from skgstat.tests.kriging import (
+    TestKrigingInstantiation,
+    TestPerformance,
+)
