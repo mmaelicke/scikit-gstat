@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 0.2.6
+=============
+- [Variogram] deprecated
+  :func:`Variogram.compiled_model <skgstat.Variogram.compiled_model>`. Use
+  :func:`Variogram.fitted_model <skgstat.Variogram.fitted_model>` instead.
+- [Variogram] added a new and much faster version of the parameterized model:
+  :func:`Variogram.fitted_model <skgstat.Variogram.fitted_model>`
+
 Version 0.2.5
 =============
 - added :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` for using a

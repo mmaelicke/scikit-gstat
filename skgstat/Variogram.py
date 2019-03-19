@@ -889,6 +889,12 @@ class Variogram(object):
         Compile the model using the actual fitting parameters to return a
         function implementing them.
 
+        Deprecated
+        ----------
+        The compiled_model will be removed in version 0.3. Use the
+        `Variogram.fitted_model` property instead. It is works in the same
+        way, but is significantly faster
+
         Returns
         -------
         callable
@@ -900,11 +906,57 @@ class Variogram(object):
         # get the function
         func = self._model
 
+        # get the pars
+        params = self.describe()
+        ming = params['nugget']
+        maxg = params['sill']
+
         # define the wrapper
         def model(x):
-            return func(x, *self.cof)
+            gamma = func(x, *self.cof)
+            if int(x) == 0 and not np.isfinite(gamma):
+                return ming
+            elif int(x) > 0 and not np.isfinite(gamma):
+                return maxg
+            else:
+                return gamma
 
         # return
+        return model
+
+    @property
+    def fitted_model(self):
+        """Fitted Model
+
+        Returns a callable that takes a distance value and returns a
+        semivariance. This model is fitted to the current Variogram
+        parameters. The function will be interpreted at return time with the
+        parameters hard-coded into the function code. This makes it way
+        faster than`Variogram.compiled_model`.
+
+        Returns
+        -------
+        model : callable
+            The current semivariance model fitted to the current Variogram
+            model parameters.
+        """
+        if self.cof is None:
+            self.fit(force=True)
+
+        # get the pars
+        cof = self.cof
+
+        # get the function
+        func = self._model
+
+        code = """model = lambda x: func(x, %s)""" % \
+               (', '.join([str(_) for _ in cof]))
+
+        # run the code
+        loc = dict(func=func)
+        exec(code, loc, loc)
+        model = loc['model']
+
         return model
 
     def _calc_distances(self, force=False):
