@@ -26,6 +26,10 @@ class IllMatrixError(RuntimeWarning):
     pass
 
 
+def inv_solve(a, b):
+    return inv(a).dot(b)
+
+
 class OrdinaryKriging:
     def __init__(
             self,
@@ -222,6 +226,7 @@ class OrdinaryKriging:
         if value < 1:
             raise ValueError('The precision has be be > 1')
         self._precision = value
+        self._precalculate_matrix()
 
     @property
     def solver(self):
@@ -234,7 +239,7 @@ class OrdinaryKriging:
         elif value == 'scipy':
             self._solve = scipy_solve
         elif value == 'inv':
-            self._solve = lambda a, b: inv(a).dot(b)
+            self._solve = inv_solve
         else:
             raise AttributeError("solver has to be ['inv', 'numpy', 'scipy']")
         self._solver = value
@@ -345,20 +350,31 @@ class OrdinaryKriging:
 
         # find all points within the search distance
         idx = np.where(dists <= self.range)[0]
+
+        # raise an error if not enough points are found
+        if idx.size < self._minp:
+            raise LessPointsError
+
+        if idx.size > self._maxp:
+            sorted_idx = np.argsort(dists)
+            idx = sorted_idx[np.isin(sorted_idx, idx)][:self._maxp]
+
+        # finally find the points and values
         in_range = self.coords[idx]
-        dist_mat = self.dist(in_range)
         values = self.values[idx]
+        dist_mat = self.dist(in_range)
+
 
         # check min_points and max_points parameters
-        if in_range.size > self._maxp:
-            n = len(in_range) - 1
-            in_range = in_range[np.argsort(dist_mat[:n])][:self._maxp:-1]
-            values = values[np.argsort(dist_mat[:n])][:self._maxp:-1]
-            dist_mat = self.dist(in_range)
+ #       if in_range.size > self._maxp:
+ #           n = len(in_range) - 1
+ #           in_range = in_range[np.argsort(dist_mat[:n])][:self._maxp]
+ #           values = values[np.argsort(dist_mat[:n])][:self._maxp]
+ #           dist_mat = self.dist(in_range)
 
-        # min
-        if in_range.size < self._minp:
-            raise LessPointsError
+ #       # min
+ #       if in_range.size < self._minp:
+ #           raise LessPointsError
 
         if self.perf:
             t1 = time.time()
@@ -376,11 +392,11 @@ class OrdinaryKriging:
 
         # build the kriging Matrix; needs N + 1 dimensionality
         if self.mode == 'exact':
-            a = self._build_matrix(in_range, dist_mat)
+            a = self._build_matrix(dist_mat)
         else:
             a = self._estimate_matrix(dist_mat)
 
-        # add row a column of 1's
+            # add row a column of 1's
         n = len(in_range)
         a = np.concatenate((squareform(a), np.ones((n, 1))), axis=1)
         a = np.concatenate((a, np.ones((1, n + 1))), axis=0)
@@ -389,18 +405,19 @@ class OrdinaryKriging:
         a[-1, -1] = 0
 
         if self.perf:
-            t2 =time.time()
+            t2 = time.time()
             self.perf_mat.append(t2 - t1)
 
         # build the matrix of solutions A
         _p = np.concatenate(([p], in_range))
-        _dists = squareform(self.dist(_p))[0][1:]
+#        _dists = squareform(self.dist(_p))[0][1:]
+        _dists = self.dist(_p)[:len(_p) - 1]
         _g = np.fromiter(map(self.gamma_model, _dists), dtype=float)
         b = np.concatenate((_g, [1]))
 
         # solve the system
         try:
-            w = self._solve(a, b)
+            l = self._solve(a, b)
         except LinAlgError as e:
             print(a)
             if str(e) == 'Matrix is singular.':
@@ -423,10 +440,10 @@ class OrdinaryKriging:
                 t3 = time.time()
                 self.perf_solv.append(t3 - t2)
 
-        # calulate Z
-        return w[:-1].dot(values)
+        # calculate Z
+        return l[:-1].dot(values)
 
-    def _build_matrix(self, in_range, distance_matrix):
+    def _build_matrix(self, distance_matrix):
         # calculate the upper matrix
         return np.fromiter(map(self.gamma_model, distance_matrix), dtype=float)
 
