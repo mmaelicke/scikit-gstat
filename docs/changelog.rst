@@ -13,6 +13,10 @@ Version 0.2.6
     - the `solver` property can be used to choose from 3 different solver for
       the kriging matrix.
 
+- [OrdinaryKriging]: calculates the kriging variance along with the estimation itself.
+  The Kriging variance can be accessed after a call to 
+  :func:`OrdinaryKriging.transform <skgstat.OrdinaryKriging.transform>` and can be 
+  accessed through the `OrdinaryKriging.sigma` attribute. 
 - [Variogram] deprecated
   :func:`Variogram.compiled_model <skgstat.Variogram.compiled_model>`. Use
   :func:`Variogram.fitted_model <skgstat.Variogram.fitted_model>` instead.

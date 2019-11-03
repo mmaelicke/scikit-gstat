@@ -271,7 +271,10 @@ class OrdinaryKriging:
         if self.perf:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
-        # if multi-core, than here.
+        # DEV: this is dirty, not sure how to do it better at the moment
+        self.sigma = np.empty(len(x[0]))
+        self.__sigma_index = 0
+        # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, *x), dtype=float)
         else:
@@ -302,7 +305,7 @@ class OrdinaryKriging:
 
         """
         try:
-            z = self._krige([*coords])
+            z, sigma = self._krige([*coords])
         except SingularMatrixError:
             self.singular_error += 1
             return np.nan
@@ -312,6 +315,10 @@ class OrdinaryKriging:
         except IllMatrixError:
             self.ill_matrix += 1
             return np.nan
+
+        # TODO: This is a side-effect and I need to re-design this part:
+        self.sigma[self.__sigma_index] = sigma
+        self.__sigma_index += 1
 
         return z
 
@@ -334,10 +341,34 @@ class OrdinaryKriging:
         LessPointsError:
             Raised if there are not the required minimum of points within the
             variogram's radius.
+
+        Notes:
+        ------
+
+        Z is calculated as follows:
+
+        .. math::
+            \hat{Z} = \sum_i(w_i * z_i)
+        
+        where :math:`w_i` is the calulated kriging weight for the i-th point 
+        and :math:`z_i` is the observed value at that point.
+
+        The kriging variance :math:`\sigma^2` (sigma) is calculate as follows:
+
+        .. math::
+            \sigma^2 = \sum_i(w_i * \gamma(p_0 - p_i)) + \lambda
+
+        where :math:`w_i` is again the weight, :math:`\gamma(p_0 - p_i)` is 
+        the semivairance of the distance between the unobserved location and 
+        the i-th observation. :math:`\lamda` is the Lagrange multiplier needed
+        to minimize the estimation error.
+
         Returns
         -------
         Z : float
             estimated value at p
+        sigma : float
+            kriging variance :math:`\sigma^2` for p.
 
         """
         if self.perf:
@@ -440,8 +471,15 @@ class OrdinaryKriging:
                 t3 = time.time()
                 self.perf_solv.append(t3 - t2)
 
+        # calculate Kriging variance
+        # sigma is the weights times the semi-variance to p0 plus the lagrange factor 
+        sigma = sum(b[:-1] * l[:-1]) + l[-1]
+
         # calculate Z
-        return l[:-1].dot(values)
+        Z = l[:-1].dot(values)
+
+        # return
+        return Z, sigma
 
     def _build_matrix(self, distance_matrix):
         # calculate the upper matrix
