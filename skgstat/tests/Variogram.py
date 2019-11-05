@@ -306,7 +306,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [2902.1, 315.2, 18.3], decimal=1
+            self.V.parameters, [2902.1, 315., 18.5], decimal=1
         )
 
     def test_fit_sigma_sq(self):

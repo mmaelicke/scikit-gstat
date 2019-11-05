@@ -322,7 +322,7 @@ def stable(h, r, c0, s, b=0):
 
 
 @variogram
-@jit
+@jit(forceobj=True)
 def matern(h, r, c0, s, b=0):
     r"""Matérn Variogram function
 
