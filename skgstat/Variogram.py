@@ -1599,7 +1599,7 @@ class Variogram(object):
             ax1.set_xlim([0, 1.05])
             ax1.set_ylim([0, 1.05])
         if grid:
-            ax1.grid('off')
+            ax1.grid(False)
             ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85),
                        linestyles='dashed')
         # annotation
@@ -1626,7 +1626,7 @@ class Variogram(object):
 
             # need a grid?
             if grid:
-                ax2.grid('off')
+                ax2.grid(False)
                 ax2.vlines(_bins, *ax2.axes.get_ybound(),
                            colors=(.85, .85, .85), linestyles='dashed')
 
