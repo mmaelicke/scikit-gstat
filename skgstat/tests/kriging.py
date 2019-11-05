@@ -136,9 +136,10 @@ class TestPerformance(unittest.TestCase):
 
         # build the Variogram and Kriging class
         self.V = Variogram(list(zip(self.x, self.y)), self.z,
-                           model='gaussian',
+                           model='exponential',
                            n_lags=15,
-                           maxlag=0.4
+                           maxlag=0.4,
+                           normalize=False
                            )
         self.ok = OrdinaryKriging(self.V, min_points=2, max_points=5, perf=True)
 

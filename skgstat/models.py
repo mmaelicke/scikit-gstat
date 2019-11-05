@@ -253,7 +253,7 @@ def cubic(h, r, c0, b=0):
     # prepare parameters
     a = r / 1.
 
-    if h <= r:
+    if h < r:
         return b + c0 * ((7 * (h ** 2 / a ** 2)) -
                          ((35 / 4) * (h ** 3 / a ** 3)) +
                          ((7 / 2) * (h ** 5 / a ** 5)) -
