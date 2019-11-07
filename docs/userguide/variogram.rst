@@ -258,7 +258,7 @@ You can easily read the data using pandas.
     :okwarning:
 
     import pandas as pd 
-    data = pd.read_csv('docs/data/sample.csv')
+    data = pd.read_csv('data/sample.csv')
 
     V = Variogram(list(zip(data.x, data.y)), data.z, 
         normalize=True, n_lags=25)
