@@ -6,7 +6,7 @@ submodule, or order the bins yourself
 """
 import numpy as np
 from scipy.special import binom
-from numba import njit
+from numba import njit, jit
 
 
 @njit
@@ -184,7 +184,7 @@ def dowd(x):
     return 2.198 * np.nanmedian(x)**2
 
 
-@njit
+@jit(forceobj=True)
 def genton(x):
     r""" Genton robust semi-variance estimator
 
