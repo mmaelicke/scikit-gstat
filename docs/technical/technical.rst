@@ -3,9 +3,9 @@ Technical Notes
 ===============
 
 This chapter collects a number of technical advises for using scikit-gstat.
-These examples and information shall shall either explain the implementation
-or guide you to a correct usage of the packages. Not all features implemented
-make sense in every situation.
+These examples either give details on the implementation or 
+guide a correct package usage. This are technical notes, no tutorials. 
+The application of the shown examples might not make sense in every situation
 
 .. toctree::
     :maxdepth: 2
@@ -13,3 +13,4 @@ make sense in every situation.
 
     fitting
     direction
+    estimate_kriging

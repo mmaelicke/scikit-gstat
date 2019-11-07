@@ -22,6 +22,8 @@ Version 0.2.6
   :func:`Variogram.fitted_model <skgstat.Variogram.fitted_model>` instead.
 - [Variogram] added a new and much faster version of the parameterized model:
   :func:`Variogram.fitted_model <skgstat.Variogram.fitted_model>`
+- [Variogram] minor change in the cubic model. This made the adaption of the 
+  associated unit test necessary. 
 
 Version 0.2.5
 =============
