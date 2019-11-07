@@ -40,10 +40,9 @@ In case you use SciKit-GStat in other software or scientific publications,
 please reference this module. It is published and has a DOI. It can be cited
 as:
 
-  Mälicke, Mirko, & Schneider, Helge David. (2018). mmaelicke/scikit-gstat:
-  Geostatistical variogram toolbox (Version v0.2.2). Zenodo.
-  http://doi.org/10.5281/zenodo.1345584
-
+  Mirko Mälicke, HelgeDavidSchneider, & Codacy Badger. (2019, November 7). 
+  mmaelicke/scikit-gstat: Version 0.2.6 (Version v0.2.6). 
+  Zenodo. http://doi.org/10.5281/zenodo.3531816
 
 .. toctree::
     :maxdepth: 3
