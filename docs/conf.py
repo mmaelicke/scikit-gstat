@@ -102,7 +102,7 @@ html_theme_options = {
     'sidebar_collapse': True,
     'body_text_align': 'justify',
     'extra_nav_links': {
-        'Download PDF': 'SciKitGStat.pdf'
+        'Download PDF': 'https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf'
     }
 }
 

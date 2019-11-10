@@ -18,6 +18,7 @@ correlation apparent.
     import numpy as np
     import matplotlib.pyplot as plt
     plt.style.use('ggplot')
+    from pprint import pprint
 
 This field could look like
 
@@ -261,7 +262,7 @@ You can easily read the data using pandas.
     data = pd.read_csv('data/sample.csv')
 
     V = Variogram(list(zip(data.x, data.y)), data.z, 
-        normalize=True, n_lags=25)
+        normalize=False, n_lags=25, maxlag=60)
     
     @savefig variogram_sample_data.png width=8in
     V.plot()
@@ -413,54 +414,65 @@ It is defined like:
 .. math::
     \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
 
-if h < r and
+if h < r, and
 
 .. math::
     \gamma = b + C_0
     
- else. :math:ˋbˋ is the nugget, :math:ˋC_0ˋ is the sill, :math:ˋhˋ is the input
- distance lag and :math:ˋrˋ is the effective range. That is the range parameter 
- described above, that describes the correlation length. 
- Many other variogram model implementations might define the range parameter, 
- which is a variogram parameter. This is a bit confusing, as the range parameter 
- is specific to the used model. Therefore I decided to directly use the 
- *effective range* as a parameter, as that makes more sense in my opinion. 
+else. ``b`` is the nugget, :math:``C_0`` is the sill, ``h`` is the input
+distance lag and ``r`` is the effective range. That is the range parameter 
+described above, that describes the correlation length. 
+Many other variogram model implementations might define the range parameter, 
+which is a variogram parameter. This is a bit confusing, as the range parameter 
+is specific to the used model. Therefore I decided to directly use the 
+*effective range* as a parameter, as that makes more sense in my opinion. 
  
- As we already calculated an experimental variogram and find the spherical 
- model in the :py:mod:ˋskgstat.modelsˋ sub-module, we can utilize e.g. 
- :func:ˋcurve_fit <scipy.optimize.curve_fit>ˋ from scipy to fit the model 
- using a least squares approach.
+As we already calculated an experimental variogram and find the spherical 
+model in the :py:mod:`skgstat.models` sub-module, we can utilize e.g. 
+:func:`curve_fit <scipy.optimize.curve_fit>` from scipy to fit the model 
+using a least squares approach.
  
- .. ipython:: python
+.. ipython:: python
     :okwarning:
  
+    from skgstat import models
+
+    # set estimator back
+    V.estimator = 'matheron'
+    V.model = 'spherical'
+
     xdata = V.bins
     ydata = V.experimental
-    
+   
     from scipy.optimize import curve_fit
     
-    cof, cov =curve_fit(skg.models.spherical, xdata, ydata)
+    cof, cov =curve_fit(models.spherical, xdata, ydata)
     
-  Here, *cof* are now the coefficients found to fit the model to the data.
-  
-  .. ipython:: python
+Here, *cof* are now the coefficients found to fit the model to the data.
+
+.. ipython:: python
     :okwarning:
+
+    pprint("range: %.2f\nsill: %.f\nnugget: %.2f" % (cof[0], cof[1], cof[2]))
   
+.. ipython:: python
+    :okwarning:
+    
     xi =np.linspace(xdata[0], xdata[-1], 100)
-    yi = [skg.models.spherical(h, *cof) for h in xi]
+    yi = [models.spherical(h, *cof) for h in xi]
     
     plt.plot(xdata, ydata, 'og')
     @savefig manual_fitted_variogram.png width=8in
     plt.plot(xi, yi, '-b')
 
-The :class:ˋVariogram Class <skgstat.Variogram>ˋ does in principle the 
+The :class:`Variogram Class <skgstat.Variogram>` does in principle the 
 same thing. The only difference is that it tries to find a good 
 initial guess for the parameters and limits the search space for 
 parameters. That should make the fitting more robust. 
 Technically, we used the Levenberg-Marquardt algorithm above. 
-:class:ˋVariogram <skgstat.Variogram>ˋ can be forced to use the same 
-by setting the :class:ˋVariogram.fit_method <skgstat.Variogram.fit_method>ˋ 
-to ˋ'lm'ˋ. The default, however, is ˋ'trf'ˋ, which is the *Trust Region Reflective* 
+:class:`Variogram <skgstat.Variogram>` can be forced to use the same 
+by setting the :class:`Variogram.fit_method <skgstat.Variogram.fit_method>` 
+to 'lm'. The default, however, is 'trf', which is the *Trust Region Reflective* 
 algorithm, the bounded fit with initial guesses described above.
 You can use it like:
 
@@ -470,13 +482,18 @@ You can use it like:
     V.fit_method ='trf'
     @savefig trf_automatic_fit.png width=8in
     V.plot()
-    print(V.describe())
+    pprint(V.describe())
     
     V.fit_method ='lm'
     @savefig lm_automatic_fit.png width=8in
     V.plot()
-    print(V.describe())
+    pprint(V.describe())
 
+.. note::
+
+    In this example, the fitting method does not make a difference 
+    at all. Generally, you can say that Levenberg-Marquardt is faster
+    and TRF is more robust.
 
 When direction matters
 ======================
