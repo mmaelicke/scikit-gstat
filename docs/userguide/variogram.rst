@@ -259,7 +259,7 @@ You can easily read the data using pandas.
     :okwarning:
 
     import pandas as pd 
-    data = pd.read_csv('data/sample.csv')
+    data = pd.read_csv('data/sample_sr.csv')
 
     V = Variogram(list(zip(data.x, data.y)), data.z, 
         normalize=False, n_lags=25, maxlag=60)
@@ -510,9 +510,82 @@ parameterized with the same range parameter.
     Remember that SciKit-GStat uses the *effective range* 
     to overcome this confusing behaviour.
 
-Consequently, the exponential can be used for data that show a way
+Consequently, the exponential can be used for data that shows a way
 too large spatial correlation extent for a spherical model to 
 capture. 
+
+Applied to the data used so far, you can see the similarity between 
+the two models:
+
+.. ipython:: python
+    :okwarning:
+
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4))
+
+    V.fit_method = 'trf'
+    V.plot(axes=axes[0], hist=False)
+
+    V.model = 'exponential'
+    @savefig compare_spherical_exponential.png width=8in
+    V.plot(axes=axes[1], hist=False);
+
+Gaussian model
+~~~~~~~~~~~~~~
+
+The last fundamental variogram model is the Gaussian. 
+Unlike the spherical and exponential models a very different 
+spatial relationship between semi-variance and distance.
+Following the Gaussian model, observations are assumed to 
+be similar up to intermediate distances, showing just a 
+gentle increase in semi-variance. Then, the semi-variance 
+increases dramatically wihtin just a few distance units up 
+to the sill, which is again approached asymtotically.
+The model can be used to simulate very sudden and sharp 
+changes in the variable at a specific distance, 
+while being very similar at smaller distances.
+
+To show a typical Gaussian model, we will load another 
+sample dataset.
+
+.. ipython:: python
+    :okwarning:
+
+    data = pd.read_csv('data/sample_lr.csv')
+
+    Vg = Variogram(list(zip(data.x, data.y)), data.z.values,
+        normalize=False, n_lags=25, maxlag=90, model='gaussian')
+
+    @savefig sample_data_gaussian_model.png width=8in
+    Vg.plot();
+
+Matérn model
+~~~~~~~~~~~~
+
+One of the not so commonly used models is the Matérn model. 
+It is nevertheless implemented into scikit-gstat as it is one 
+of the most powerful models. Especially in cases where you cannot 
+chose the appropiate model a priori so easily.
+The Matérn model takes an additional smoothness paramter, that can 
+change the shape of the function in between an exponential 
+model shape and a Gaussian one. 
+
+.. iypthon:: python
+
+    xi = np.linspace(0, 100, 100)
+
+    # plot a exponential and a gaussian
+    y_exp = [models.exponential(h, 40, 10, 3) for h in xi]
+    y_gau = [models.gaussian(h, 40, 10, 3) for h in xi]
+
+    fig, ax = plt.subplots(1, 1, figsize=(8,6))
+    ax.plot(xi, y_exp, '-b', label='exponential')
+    ax.plot(xi, y_gau, '-g', label='gaussian')
+
+    for s in (0.1, 2., 10.):
+        y = [models.matern(h, 40, 10, 3, s) for h in xi]
+        ax.plot(xi, y, '--k', label='matern s=%.1f' % s)
+    @savefig compare_smoothness_parameter_matern.png width=8in
+    plt.legend(loc='lower right')
 
 When direction matters
 ======================
