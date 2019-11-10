@@ -441,9 +441,9 @@ if :math:ˋh < rˋ, and
     
     cof, cov =curve_fit(skg.models.spherical, xdata, ydata)
     
-  Here, ˋˋcofˋˋ are now the coefficients found to fit the model to the data.
+  Here, *cof* are now the coefficients found to fit the model to the data.
   
-  .. ipython::python
+  .. ipython:: python
     :okwarning:
   
     xi =np.linspace(xdata[0], xdata[-1], 100)
