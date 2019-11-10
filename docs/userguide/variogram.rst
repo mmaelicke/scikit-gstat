@@ -432,6 +432,7 @@ if :math:ˋh < rˋ, and
  using a least squares approach.
  
  .. ipython:: python
+    :okwarning:
  
     xdata = V.bins
     ydata = V.experimental
@@ -443,6 +444,7 @@ if :math:ˋh < rˋ, and
   Here, ˋˋcofˋˋ are now the coefficients found to fit the model to the data.
   
   .. ipython::python
+    :okwarning:
   
     xi =np.linspace(xdata[0], xdata[-1], 100)
     yi = [skg.models.spherical(h, *cof) for h in xi]
@@ -463,6 +465,7 @@ algorithm, the bounded fit with initial guesses described above.
 You can use it like:
 
 .. ipython:: python
+    :okwarning:
 
     V.fit_method ='trf'
     @savefig trf_automatic_fit.png width=8in
