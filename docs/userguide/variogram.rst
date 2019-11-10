@@ -413,7 +413,7 @@ It is defined like:
 .. math::
     \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
 
-if :math:ˋh < rˋ, and
+if h < r and
 
 .. math::
     \gamma = b + C_0
@@ -427,7 +427,7 @@ if :math:ˋh < rˋ, and
  *effective range* as a parameter, as that makes more sense in my opinion. 
  
  As we already calculated an experimental variogram and find the spherical 
- model in the :mod:ˋskgstat.modelsˋ sub-module, we can utilize e.g. 
+ model in the :py:mod:ˋskgstat.modelsˋ sub-module, we can utilize e.g. 
  :func:ˋcurve_fit <scipy.optimize.curve_fit>ˋ from scipy to fit the model 
  using a least squares approach.
  

@@ -2,6 +2,10 @@
 Changelog
 =========
 
+Version 0.2.7
+=============
+- 
+
 Version 0.2.6
 =============
 - [OrdinaryKriging]: widely enhanced the class in terms of performance, code
