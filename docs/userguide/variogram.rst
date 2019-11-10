@@ -376,6 +376,34 @@ with caution.
     @savefig compare_estimators.png width=8in
     fig.show()
 
+Variogram models
+----------------
+
+The last step to describe the spatial pattern in a data set 
+using variograms is to model the empirically observed and calculated
+experimental variogram with a proper mathematical function. 
+Technically, this setp is straightforward. We need to define a 
+function that takes a distance value (not a lag) and returns 
+a semi-variance value. One big advantage of these models is, that we 
+can assure different things, like positive definitenes. Most models
+are also monotonically increasing and approach an upper bound.
+Usually these models need three parameters to fit to the experimental
+variogram. All three parameters have a meaning and are usefull
+to learn something about the data. This upper bound a model approaches
+is called *sill*. The distance at which 95% of the sill are approached 
+is called the *range*. That means, the range is the distance at which 
+observation values do **not** become more dissimilar with increasing 
+distance. They are statistically independent. That also means, it doesn't 
+make any sense to further describe spatial relationships of observations 
+further apart with means of geostatistics. The last parameter is the *nugget*.
+It is used to add semi-variance to all values. Graphically that means to
+*move the variogram up on the y-axis*. The nugget is the semi-variance modeled
+on the 0-distance lag. Compared to the sill it is the share of variance that
+can not be described spatially.
+
+The spherical model
+~~~~~~~~~~~~~~~~~~~
+
 When direction matters
 ======================
 
