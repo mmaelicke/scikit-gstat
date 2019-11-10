@@ -404,6 +404,77 @@ can not be described spatially.
 The spherical model
 ~~~~~~~~~~~~~~~~~~~
 
+The sperical model is the most commonly used variogram model. 
+It is characterized by a very steep, exponential increase in semi-variance.
+That means it approaches the sill quite quickly. It can be used when 
+observations show strong dependency on short distances.
+It is defined like:
+
+.. math::
+    \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
+
+if :math:ˋh < rˋ, and
+
+.. math::
+    \gamma = b + C_0
+    
+ else. :math:ˋbˋ is the nugget, :math:ˋC_0ˋ is the sill, :math:ˋhˋ is the input
+ distance lag and :math:ˋrˋ is the effective range. That is the range parameter 
+ described above, that describes the correlation length. 
+ Many other variogram model implementations might define the range parameter, 
+ which is a variogram parameter. This is a bit confusing, as the range parameter 
+ is specific to the used model. Therefore I decided to directly use the 
+ *effective range* as a parameter, as that makes more sense in my opinion. 
+ 
+ As we already calculated an experimental variogram and find the spherical 
+ model in the :mod:ˋskgstat.modelsˋ sub-module, we can utilize e.g. 
+ :func:ˋcurve_fit <scipy.optimize.curve_fit>ˋ from scipy to fit the model 
+ using a least squares approach.
+ 
+ .. ipython:: python
+ 
+    xdata = V.bins
+    ydata = V.experimental
+    
+    from scipy.optimize import curve_fit
+    
+    cof, cov =curve_fit(skg.models.spherical, xdata, ydata)
+    
+  Here, ˋˋcofˋˋ are now the coefficients found to fit the model to the data.
+  
+  .. ipython::python
+  
+    xi =np.linspace(xdata[0], xdata[-1], 100)
+    yi = [skg.models.spherical(h, *cof) for h in xi]
+    
+    plt.plot(xdata, ydata, 'og')
+    @savefig manual_fitted_variogram.png width=8in
+    plt.plot(xi, yi, '-b')
+
+The :class:ˋVariogram Class <skgstat.Variogram>ˋ does in principle the 
+same thing. The only difference is that it tries to find a good 
+initial guess for the parameters and limits the search space for 
+parameters. That should make the fitting more robust. 
+Technically, we used the Levenberg-Marquardt algorithm above. 
+:class:ˋVariogram <skgstat.Variogram>ˋ can be forced to use the same 
+by setting the :class:ˋVariogram.fit_method <skgstat.Variogram.fit_method>ˋ 
+to ˋ'lm'ˋ. The default, however, is ˋ'trf'ˋ, which is the *Trust Region Reflective* 
+algorithm, the bounded fit with initial guesses described above.
+You can use it like:
+
+.. ipython:: python
+
+    V.fit_method ='trf'
+    @savefig trf_automatic_fit.png width=8in
+    V.plot()
+    print(V.describe())
+    
+    V.fit_method ='lm'
+    @savefig lm_automatic_fit.png width=8in
+    V.plot()
+    print(V.describe())
+
+
 When direction matters
 ======================
 
