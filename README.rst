@@ -6,7 +6,7 @@ Info: scikit-gstat needs Python >= 3.5!
 .. image:: https://img.shields.io/badge/pypi%20package-0.2.6-green.svg
     :target: https://pypi.org/project/scikit-gstat/0.2.6/
 
-.. image:: https://img.shields.io/badge/version-0.2.6-green.svg
+.. image:: https://img.shields.io/badge/version-0.2.7-green.svg
     :target: https://github.com/mmaelicke/scikit-gstat
 
 .. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
@@ -35,9 +35,9 @@ In case you use SciKit-GStat in other software or scientific publications,
 please reference this module. It is published and has a DOI. It can be cited
 as:
 
-  Mirko Mälicke, HelgeDavidSchneider, & Codacy Badger. (2019, November 7). 
-  mmaelicke/scikit-gstat: Version 0.2.6 (Version v0.2.6). 
-  Zenodo. http://doi.org/10.5281/zenodo.3531816
+  Mirko Mälicke, & Helge David Schneider. (2019, November 7). Scikit-GStat 0.2.6: 
+  A scipy flavoured geostatistical analysis toolbox written in Python. 
+  (Version v0.2.6). Zenodo. http://doi.org/10.5281/zenodo.3531816
 
 
 
@@ -65,7 +65,7 @@ SciKit-Gstat is a scipy-styled analysis module for geostatistics. It includes
 two base classes ``Variogram`` and ``OrdinaryKriging``. Additionally, various
 variogram classes inheriting from ``Variogram`` are available for solving
 directional or space-time related tasks.
- The module makes use of a rich selection of semi-variance
+The module makes use of a rich selection of semi-variance
 estimators and variogram model functions, while being extensible at the same
 time.
 The estimators include:
