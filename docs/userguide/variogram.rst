@@ -463,7 +463,7 @@ Here, *cof* are now the coefficients found to fit the model to the data.
     
     plt.plot(xdata, ydata, 'og')
     @savefig manual_fitted_variogram.png width=8in
-    plt.plot(xi, yi, '-b')
+    plt.plot(xi, yi, '-b');
 
 The :class:`Variogram Class <skgstat.Variogram>` does in principle the 
 same thing. The only difference is that it tries to find a good 
@@ -481,12 +481,12 @@ You can use it like:
 
     V.fit_method ='trf'
     @savefig trf_automatic_fit.png width=8in
-    V.plot()
+    V.plot();
     pprint(V.describe())
     
     V.fit_method ='lm'
     @savefig lm_automatic_fit.png width=8in
-    V.plot()
+    V.plot();
     pprint(V.describe())
 
 .. note::
@@ -494,6 +494,25 @@ You can use it like:
     In this example, the fitting method does not make a difference 
     at all. Generally, you can say that Levenberg-Marquardt is faster
     and TRF is more robust.
+
+Exponential model
+~~~~~~~~~~~~~~~~~
+
+The exponential model is quite similar to the spherical one. 
+It models semi-variance values to increase exponentially with 
+distance, like the spherical. The main difference is that this 
+increase is not as steep as for the spherical. That means, the 
+effective range is larger for an exponential model, that was 
+parameterized with the same range parameter.
+
+.. note::
+
+    Remember that SciKit-GStat uses the *effective range* 
+    to overcome this confusing behaviour.
+
+Consequently, the exponential can be used for data that show a way
+too large spatial correlation extent for a spherical model to 
+capture. 
 
 When direction matters
 ======================
