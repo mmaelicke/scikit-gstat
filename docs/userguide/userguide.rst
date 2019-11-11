@@ -11,3 +11,4 @@ along with a more general introduction to variogram analysis.
 
     introduction
     variogram
+    kriging
