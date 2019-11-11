@@ -41,6 +41,25 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         for b, e in zip(bins, V.bins):
             self.assertAlmostEqual(b, e, places=2)
+    
+    def test_unknown_binning_func(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, bin_func='notafunc')
+
+            self.assertEqual(
+                'notafunc binning method is not known',
+                str(e)
+            )
+
+    def test_unknown_model(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, model='unknown')
+
+            self.assertEqual(
+                'The theoretical Variogram function unknown is not ' +
+                'understood, please provide the function',
+                str(e)
+            )
 
 
 class TestVariogramArguments(unittest.TestCase):
@@ -217,6 +236,39 @@ class TestVariogramArguments(unittest.TestCase):
     def test_n_lags_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             Variogram(self.c, self.v, n_lags='auto')
+    
+    def test_set_values(self):
+        V = Variogram(self.c, self.v)
+
+        # create a new array of same length
+        _old_vals = V.values
+        new_vals = np.random.normal(10, 2, size=len(_old_vals))
+
+        V.values = new_vals
+
+        # values.setter will call set_values
+        assert_array_almost_equal(V.values, new_vals, decimal=4)
+
+    def test_value_matrix(self):
+        vals = np.array([1, 2, 3, 4])
+        mat = np.asarray([[0, 1, 2, 3], [1, 0, 1, 2],[2, 1, 0, 1], [3, 2, 1, 0]], dtype=int)
+
+        V = Variogram(self.c[:4], vals)
+
+        assert_array_almost_equal(V.value_matrix, mat, decimal=1)
+
+    def _test_normalize_setter(self):
+        # TODO: I should fix this behavior
+        V = Variogram(self.c, self.v, normalize=False)
+
+        # make sure biggest bin larger than 1.0
+        self.assertGreater(np.max(V.bins), 1.0)
+
+        # normalize
+        V.normalize = True
+
+        # now, biggest bin should be almost or exactly 1.0
+        self.assertLessEqual(np.max(V.bins), 1.0)
 
 
 class TestVariogramFittingProcedure(unittest.TestCase):

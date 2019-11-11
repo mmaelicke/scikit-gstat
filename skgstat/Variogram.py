@@ -500,8 +500,8 @@ class Variogram(object):
                 self._model = models.matern
             else:
                 raise ValueError(
-                    'The theoretical Variogram function %s is not' +
-                    'understood, please provide the function' % model_name)
+                    'The theoretical Variogram function %s is not \
+                    understood, please provide the function' % model_name)
         else:
             self._model = model_name
 
