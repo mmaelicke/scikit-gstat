@@ -61,6 +61,15 @@ class TestVariogramInstatiation(unittest.TestCase):
                 str(e)
             )
 
+    def test_unsupported_n_lags(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, n_lags=15.7)
+
+            self.assertEqual(
+                'n_lags has to be of type int or list',
+                str(e)
+            )
+
 
 class TestVariogramArguments(unittest.TestCase):
     def setUp(self):
@@ -196,6 +205,12 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertEqual(V.maxlag, np.max(V.distance) * 0.6)
         self.assertAlmostEqual(V.maxlag, 25.38, places=2)
 
+    def test_maxlag_custom_value(self):
+        V = Variogram(self.c, self.v)
+
+        V.maxlag = 33.3
+        self.assertAlmostEqual(V.maxlag, 33.3, places=1)
+
     def test_use_nugget_setting(self):
         V = Variogram(self.c, self.v)
 
@@ -269,6 +284,21 @@ class TestVariogramArguments(unittest.TestCase):
 
         # now, biggest bin should be almost or exactly 1.0
         self.assertLessEqual(np.max(V.bins), 1.0)
+    
+    def test_distance_matrix(self):
+        coor = [[0, 0], [1, 0], [0, 1], [1, 1]]
+        vals = [0, 1, 2, 3]
+        dist_mat = np.asarray([
+            [0, 1, 1, 1.414],
+            [1, 0, 1.414, 1],
+            [1, 1.414, 0, 1],
+            [1.414, 1, 1, 0]
+        ])
+
+        V = Variogram(coor, vals)
+
+        assert_array_almost_equal(V.distance_matrix, dist_mat, decimal=3)
+
 
 
 class TestVariogramFittingProcedure(unittest.TestCase):
@@ -372,6 +402,37 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         # test the parameters
         assert_array_almost_equal(
             self.V.parameters, [3195., 328.9, 17.8], decimal=1
+        )
+    
+    def test_fit_sigma_on_the_fly(self):
+        self.V.fit(sigma='sq')
+
+        # test the sigmas
+        assert_array_almost_equal(
+            self.V.fit_sigma, [0.04, 0.16, 0.36, 0.64, 1.], decimal=2
+        )
+
+        # test the parameters
+        assert_array_almost_equal(
+            self.V.parameters, [3195., 328.9, 17.8], decimal=1
+        )
+
+    def test_fit_lm(self):
+        self.V.fit(method='lm', sigma='sqrt')
+
+        # test the parameters
+        assert_array_almost_equal(
+            self.V.parameters, [126., 315., 19.], decimal=0
+        )
+
+    def test_fitted_model(self):
+        fun = self.V.fitted_model
+
+        result = [0.99, 7.19, 12.53, 16.14]
+
+        assert_array_almost_equal(
+            result, list(map(fun, np.arange(0, 20, 5))),
+            decimal=2
         )
 
 

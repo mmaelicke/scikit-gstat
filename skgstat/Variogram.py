@@ -416,19 +416,35 @@ class Variogram(object):
 
     @property
     def n_lags(self):
+        """Number of lag bins
+
+
+        """
         return self._n_lags
 
     @n_lags.setter
     def n_lags(self, n):
         # TODO: here accept strings and implement some optimum methods
+        # string are not implemented yet
         if isinstance(n, str):
             raise NotImplementedError('n_lags string values not implemented')
-        if not isinstance(n, int) or n < 1:
-            raise ValueError('n_lags has to be a positive integer')
-        self._n_lags = n
+        
+        # n_lags is int
+        elif isinstance(n, int):
+            if n < 1:
+                raise ValueError('n_lags has to be a positive integer')
+            
+            # set parameter
+            self._n_lags = n
 
-        # reset the bins and fitting
-        self._bins = None
+            # reset the bins
+            self._bins = None
+
+        # else
+        else:
+            raise ValueError('n_lags has to be of type int or list')
+            
+        # reset the fitting
         self.cof = None
         self.cov = None
 
