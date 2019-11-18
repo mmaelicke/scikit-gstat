@@ -155,9 +155,7 @@ class Variogram(object):
         """
         if normalize and not 'SKG_SUPRESS' in os.environ.keys():
             print('Warning: normalize will change the default value \
-                to False. You can add an SKG_SUPPRESS environment variable \
-                to supress this warning.'
-            )
+to False. You can add an SKG_SUPPRESS environment variable to supress this warning.')
         
         # Set coordinates
         self._X = np.asarray(coordinates)
@@ -933,9 +931,7 @@ class Variogram(object):
         """
         if not 'SKG_SUPRESS' in os.environ:
             print('Warning: compiled_model is deprecated and will be removed. \
-                Use Variogram.fitted_model instead. You can add an \
-                SKG_SUPPRESS environment variable to supress this warning.'
-            )
+Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment variable to supress this warning.')
         if self.cof is None:
             self.fit(force=True)
 
@@ -1238,13 +1234,7 @@ class Variogram(object):
         _exp = self.experimental
         _bin = self.bins
 
-        # use relative or absolute bins
-        if self.normalized:
-            _bin /= np.nanmax(_bin)     # normalize X
-            _exp /= np.nanmax(_exp)     # normalize Y
-            x = np.linspace(0, 1, n)    # use n increments
-        else:
-            x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
+        x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
 
         # fit if needed
         if self.cof is None:

@@ -298,7 +298,20 @@ class TestVariogramArguments(unittest.TestCase):
         V = Variogram(coor, vals)
 
         assert_array_almost_equal(V.distance_matrix, dist_mat, decimal=3)
+    
+    def test_entropy_as_estimator(self):
+        """
+        Note: This unittest will change in future, as soon as the 
+        bin edges for Entropy calculation can be set on instantiation
 
+        """
+        V = Variogram(self.c, self.v, estimator='entropy', n_lags=10)
+
+        assert_array_almost_equal(
+            V.experimental, 
+            [2.97, 3.3 , 3.45, 2.95, 3.33, 3.28, 3.31, 3.44, 2.65, 1.01],
+            decimal=2
+        )
 
 
 class TestVariogramFittingProcedure(unittest.TestCase):
@@ -525,6 +538,113 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v, estimator='cressie')
 
         self.assertAlmostEqual(V.nrmse_r, 0.63543, places=5)
+
+    def test_r(self):
+        V = Variogram(self.c, self.v, n_lags=12, normalize=False)
+
+        for model, r in zip(
+            ('gaussian', 'exponential', 'stable'), 
+            [0.39, 0.55, 0.60]
+        ):
+            V.set_model(model)
+            self.assertAlmostEqual(V.r, r, places=2)
+    
+    def test_NS(self):
+        V = Variogram(self.c, self.v, n_lags=15, normalize=False)
+
+        for estimator, NS in zip(
+            ('matheron', 'genton', 'dowd'),
+            [0.0206, 0.0206, 0.0206]
+        ):
+            self.assertAlmostEqual(V.NS, NS, places=4)
+
+
+class TestVariogramMethods(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (30, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 30)
+
+        self.V = Variogram(self.c, self.v, normalize=False, n_lags=10)
+
+    def test_clone_method(self):
+        # copy variogram
+        copy = self.V.clone()
+
+        # test against bins and experimental
+        assert_array_almost_equal(copy.experimental, self.V.experimental)
+        assert_array_almost_equal(copy.bins, self.V.bins)
+
+    def test_data_no_force(self):
+        lags, var = self.V.data(n=10, force=False)
+
+        assert_array_almost_equal(
+            lags,
+            [0.,  4.7,  9.4, 14.1, 18.8, 23.5, 28.2, 32.9, 37.6, 42.3], 
+            decimal=2
+        )
+
+        assert_array_almost_equal(
+            var,
+            [0., 11.82, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97],
+            decimal=2
+        )
+    
+    def test_data_with_force(self):
+        # should work if _dist is corccupted
+        self.V._dist = self.V._dist * 5.
+        self.V.cof = None
+        lags, var = self.V.data(n=10, force=True)
+
+        assert_array_almost_equal(
+            lags,
+            [0., 4.7, 9.4, 14.1, 18.8, 23.5, 28.2, 32.9, 37.6, 42.3],
+            decimal=2
+        )
+
+        assert_array_almost_equal(
+            var,
+            [0., 11.82, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97],
+            decimal=2
+        )
+
+    def test_data_normalized(self):
+        V = self.V.clone()
+
+        V.normalize = True
+
+        lags, var = V.data(n=5, force=True)
+
+        assert_array_almost_equal(
+            lags,
+            [0., 10.58, 21.15, 31.73, 42.3],
+            decimal=2
+        )
+
+        assert_array_almost_equal(
+            var,
+            [0., 13.97, 13.97, 13.97, 13.97],
+            decimal=2
+        )
+    
+    def test_parameter_property_matern(self):
+        V = self.V.clone()
+        
+        # test matern
+        param = [42.3, 16.2,  0.1,  0.]
+        V.set_model('matern')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+    
+    def test_parameter_property_stable(self):
+        V = self.V.clone()
+
+        # test stable
+        param = [42.3 , 15.79, 0.45,  0.]
+        V.set_model('stable')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+    
 
 
 class TestVariogramPlots(unittest.TestCase):

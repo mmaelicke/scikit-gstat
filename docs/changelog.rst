@@ -4,7 +4,10 @@ Changelog
 
 Version 0.2.7
 =============
--
+- [Variogram] The `normalize=True` default in `__init__` will change to 
+  `normalize=False` in a future version. A DeprecationWarning was included.
+- [tests] The Variogram class fitting unit tests are now explicitly setting 
+  the normalize parameter to handle the future deprecation.
   
 Version 0.2.6
 =============
