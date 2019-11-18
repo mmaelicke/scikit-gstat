@@ -309,7 +309,9 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         self.v = np.random.normal(10, 4, 50)
 
         # build a standard variogram to be used
-        self.V = Variogram(self.c, self.v, n_lags=5, use_nugget=True)
+        self.V = Variogram(
+            self.c, self.v, n_lags=5, normalize=False, use_nugget=True
+        )
 
     def test_fit_sigma_is_None(self):
         self.V.fit_sigma = None
@@ -327,7 +329,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         self.V.fit()
         assert_array_almost_equal(
             self.V.parameters,
-            [3035.357, 318.608, 18.464], decimal=3
+            [24.008, 17.083, 0.99], decimal=3
         )
 
     def test_fit_sigma_raises_AttributeError(self):
@@ -362,7 +364,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         # test parameters:
         self.V.fit()
         assert_array_almost_equal(
-            self.V.parameters, [3170.532, 324.385, 17.247], decimal=3
+            self.V.parameters, [25.077, 17.393, 0.925], decimal=3
         )
 
     def test_fit_sigma_exp(self):
@@ -375,7 +377,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test parameters
         assert_array_almost_equal(
-            self.V.parameters, [3195.6, 329.8, 17.9], decimal=1
+            self.V.parameters, [25.3, 17.7, 1.], decimal=1
         )
 
     def test_fit_sigma_sqrt(self):
@@ -388,7 +390,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [2902., 315., 18.], decimal=0
+            self.V.parameters, [23., 17.,  1.], decimal=1
         )
 
     def test_fit_sigma_sq(self):
@@ -401,7 +403,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [3195., 328.9, 17.8], decimal=1
+            self.V.parameters, [25.3, 17.6,  1.], decimal=1
         )
     
     def test_fit_sigma_on_the_fly(self):
@@ -414,7 +416,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [3195., 328.9, 17.8], decimal=1
+            self.V.parameters, [25.3, 17.6,  1.], decimal=1
         )
 
     def test_fit_lm(self):
@@ -422,7 +424,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [126., 315., 19.], decimal=0
+            self.V.parameters, [1., 17., 1.], decimal=0
         )
 
     def test_fitted_model(self):
@@ -434,6 +436,41 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             result, list(map(fun, np.arange(0, 20, 5))),
             decimal=2
         )
+
+    def test_unavailable_method(self):
+        with self.assertRaises(ValueError) as e:
+            self.V.fit(method='unsupported')
+
+            self.assertEqual(
+                "fit method has to be one of ['trf', 'lm']",
+                str(e)
+            )
+  
+    def test_implicit_run_fit_fitted_model(self):
+        self.V.fit_sigma = None
+        self.V.fit_method = 'trf'
+        result = [0.99,  7.19, 12.53, 16.14]
+
+        # remove cof
+        self.V.cof = None
+
+        # test on fitted model
+        fun = self.V.fitted_model
+
+        assert_array_almost_equal(
+            result, list(map(fun, np.arange(0, 20, 5))), decimal=2
+        )
+
+    def test_implicit_run_fit_transform(self):
+        self.V.fit_sigma = None
+        self.V.fit_method = 'trf'
+        result = [0.99,  7.19, 12.53, 16.14]
+
+        # test on transform
+        self.V.cof = None
+        res = self.V.transform(np.arange(0, 20, 5))
+
+        assert_array_almost_equal(result, res, decimal=2)
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
@@ -542,4 +579,6 @@ class TestVariogramPlots(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    import os
+    os.environ['SKG_SUPRESS'] = 'TRUE'
     unittest.main()

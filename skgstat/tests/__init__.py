@@ -22,3 +22,6 @@ from skgstat.tests.kriging import (
     TestKrigingInstantiation,
     TestPerformance,
 )
+
+import os
+os.environ['SKG_SUPRESS'] = 'TRUE'

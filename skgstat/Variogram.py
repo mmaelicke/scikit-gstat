@@ -2,6 +2,7 @@
 Variogram class
 """
 import copy
+import os
 
 import numpy as np
 from pandas import DataFrame
@@ -152,6 +153,12 @@ class Variogram(object):
             this kind of works so far, but will be rewritten (and documented)
 
         """
+        if normalize and not 'SKG_SUPRESS' in os.environ.keys():
+            print('Warning: normalize will change the default value \
+                to False. You can add an SKG_SUPPRESS environment variable \
+                to supress this warning.'
+            )
+        
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -197,6 +204,9 @@ class Variogram(object):
 
         # specify if the experimental variogram shall be harmonized
         self.harmonize = harmonize
+        if harmonize:
+            raise DeprecationWarning('Argument will be removed with 0.3')
+        self._harmonize = None
 
         # set if nugget effect shall be used
         self._use_nugget = None
@@ -418,6 +428,9 @@ class Variogram(object):
     def n_lags(self):
         """Number of lag bins
 
+        Pass the number of lag bins to be used on 
+        this Variogram instance. This will reset 
+        the grouping index and fitting parameters
 
         """
         return self._n_lags
@@ -868,9 +881,13 @@ class Variogram(object):
                 **kwargs
             )
 
+        # monotonization
+        elif self.fit_method == 'harmonize':
+            # TODO, make the harmonization and infer the cof from that
+            raise NotImplementedError
+
         else:
-            raise ValueError('Only the \'lm\' and \'trf\' algorithms are ' +
-                             'supported at the moment.')
+            raise ValueError("fit method has to be one of ['trf', 'lm']")
 
     def transform(self, x):
         """Transform
@@ -905,8 +922,6 @@ class Variogram(object):
         Compile the model using the actual fitting parameters to return a
         function implementing them.
 
-        Deprecated
-        ----------
         The compiled_model will be removed in version 0.3. Use the
         `Variogram.fitted_model` property instead. It is works in the same
         way, but is significantly faster
@@ -916,6 +931,11 @@ class Variogram(object):
         callable
 
         """
+        if not 'SKG_SUPRESS' in os.environ:
+            print('Warning: compiled_model is deprecated and will be removed. \
+                Use Variogram.fitted_model instead. You can add an \
+                SKG_SUPPRESS environment variable to supress this warning.'
+            )
         if self.cof is None:
             self.fit(force=True)
 
