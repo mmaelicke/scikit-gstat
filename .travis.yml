@@ -31,6 +31,9 @@ install:
   # install requirements
   - conda create -q -n travis python=$TRAVIS_PYTHON_VERSION --file requirements.txt
   - source activate travis
+
+  # install additional requirements for tests
+  - pip install -r requirements.unittests.txt
   - python setup.py install
 
   # install codecov
