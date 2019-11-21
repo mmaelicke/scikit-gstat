@@ -8,6 +8,20 @@ Version 0.2.7
   `normalize=False` in a future version. A DeprecationWarning was included.
 - [tests] The Variogram class fitting unit tests are now explicitly setting 
   the normalize parameter to handle the future deprecation.
+- [tests] More unittests were added to increase coverage
+- [interfaces] The new submodule `skgstat.interfaces` is introduced. This 
+  submodule collects interfacing classes to use skgstat classes with other 
+  Python modules.
+- [interfaces] The first interfacing class is the 
+  :class:`VariogramEstimator <skgstat.interfaces.VariogramEstimator>`. This 
+  is a scikit-learn compatible `Estimator` class that can wrap a `Variogram`. 
+  The intended usage is to find variogram hyper-parameters using `GridSearchCV`.
+  This is also the only usecase covered in the unit tests.
+- [interfaces] Implemented 
+  :func:`pykrige_as_kwargs <skgstat.interfaces.pykrige.pykrige_as_kwargs>`. 
+  Pass a :class:`Variogram <skgstat.Variogram>` object and a dict of parameters 
+  is returned that can be passed to pykrige Kriging classes using the double 
+  star operator.
   
 Version 0.2.6
 =============

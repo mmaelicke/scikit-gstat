@@ -1,10 +1,20 @@
+import os
 import unittest
 
-import numpy as np 
+import numpy as np
+import pandas as pd
 from numpy.testing import assert_array_almost_equal
 from sklearn.model_selection import GridSearchCV
 
+from skgstat import Variogram
 from skgstat.interfaces import VariogramEstimator
+from skgstat.interfaces import pykrige as pykrige_interface
+
+try:
+    import pykrige
+    PYKRIGE_AVAILABLE = True
+except ImportError:
+    PYKRIGE_AVAILABLE = False
 
 
 class TestVariogramEstimator(unittest.TestCase):
@@ -60,14 +70,113 @@ class TestVariogramEstimator(unittest.TestCase):
         parameters = dict(
             model=('spherical', 'gaussian', 'exponential', 'matern')
         )
-        gs = GridSearchCV(VariogramEstimator(n_lags=15, normalize=False), parameters)
+        gs = GridSearchCV(
+            VariogramEstimator(n_lags=15, normalize=False), 
+            parameters,
+            cv=3
+        )
 
         gs = gs.fit(self.c, self.v)
 
         self.assertEqual(gs.best_params_['model'], 'spherical')
 
+    def test_find_best_model_future_cv(self):
+        """
+        cv parameter will change to 5 in sklearn 0.22
+        This will change the result, though
+        """
+        parameters = dict(
+            model=('spherical', 'gaussian', 'exponential', 'matern')
+        )
+        gs = GridSearchCV(
+            VariogramEstimator(n_lags=15, normalize=False), 
+            parameters,
+            cv=5
+        )
 
-if __name__=='__main__':
-    import os
-    os.environ['SKG_SUPRESS'] = 'TRUE' # pragma: no cover
-    unittest.main() # pragma: no cover
+        gs = gs.fit(self.c, self.v)
+
+        self.assertEqual(gs.best_params_['model'], 'matern')
+
+
+class TestPyKrigeInterface(unittest.TestCase):
+    def setUp(self):
+        # use real sample data in the interface
+        df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'sample.csv'))
+        self.c = df[['x', 'y']].values
+        self.v = df.z.values
+
+        self.V = Variogram(self.c, self.v, model='matern', normalize=False, use_nugget=True)
+
+        if not PYKRIGE_AVAILABLE:
+            print('PyKrige not found, will skip all pykrige interface tests')
+
+    def test_model_interface(self):
+        # get the function
+        model = pykrige_interface.pykrige_model(self.V)
+
+        # use the transform function.
+        xi = np.arange(1, 85)
+        yi = self.V.transform(xi)
+
+        assert_array_almost_equal(yi, model([], xi), decimal=6)
+    
+    def test_model_interface_from_list(self):
+        # get the function
+        model = pykrige_interface.pykrige_model(self.V)
+
+        # use the transform function
+        xi = list(range(1, 85))
+        yi = self.V.transform(np.array(xi))
+
+        assert_array_almost_equal(yi, model([], xi), decimal=6)
+
+    def test_parameters(self):
+        p = pykrige_interface.pykrige_params(self.V)
+        params = self.V.parameters
+
+        self.assertAlmostEqual(p[0], params[1], places=4)
+        self.assertAlmostEqual(p[1], params[0], places=4)
+        self.assertAlmostEqual(p[2], params[2], places=4)
+
+    def test_as_kwargs(self):
+        args = pykrige_interface.pykrige_as_kwargs(self.V)
+        pars = pykrige_interface.pykrige_params(self.V)
+
+        # test
+        self.assertEqual(args['variogram_model'], 'custom')
+        assert_array_almost_equal(pars, args['variogram_parameters'])
+
+        xi = np.arange(1, 80)
+        yi = self.V.transform(xi)
+        assert_array_almost_equal(
+            yi,
+            args['variogram_function']([], xi),
+            decimal=6
+        )
+
+    def test_as_kwargs_adjust_maxlag(self):
+        V = self.V.clone()
+
+        # now maxlag should be changed
+        args = pykrige_interface.pykrige_as_kwargs(V, adjust_maxlag=True)
+
+        # should be None
+        self.assertIsNone(V.maxlag)
+
+        # transform should change
+        xi = np.arange(1, 20)
+        yi = V.transform(xi)
+        
+        # test changed values
+        assert_array_almost_equal(yi, args['variogram_function']([], xi))
+    
+    def test_as_kwargs_adjust_nlags(self):
+        args = pykrige_interface.pykrige_as_kwargs(self.V, adjust_nlags=True)
+
+        self.assertEqual(args['nlags'], self.V.n_lags)
+
+
+if __name__ == '__main__':
+    os.environ['SKG_SUPRESS'] = 'TRUE'  # pragma: no cover
+    unittest.main()  # pragma: no cover
