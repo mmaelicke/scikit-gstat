@@ -22,6 +22,9 @@ Version 0.2.7
   Pass a :class:`Variogram <skgstat.Variogram>` object and a dict of parameters 
   is returned that can be passed to pykrige Kriging classes using the double 
   star operator.
+- Added Dockerfile. You can now build a docker container with scikit-gstat 
+  installed in a miniconda environment. On run, a jupyter server is exposed on
+  Port 8888. In a future release, this server will serve tutorial notebooks.
   
 Version 0.2.6
 =============

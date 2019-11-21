@@ -18,10 +18,13 @@ from skgstat.tests.SpaceTimeVariogram import (
     TestSpaceTimeVariogramArgumets,
     TestSpaceTimeVariogramPlots,
 )
-
 from skgstat.tests.kriging import (
     TestKrigingInstantiation,
     TestPerformance,
+)
+from skgstat.tests.interfaces import (
+    TestVariogramEstimator,
+    TestPyKrigeInterface
 )
 
 import os
