@@ -28,7 +28,7 @@ is a weighted mean:
 
 .. math::
 
-  Z^{*}(s_0) = \sum_{i=0}^N {\lamda}_i Z(s_i)
+  Z^{*}(s_0) = \sum_{i=0}^N {\lambda}_i Z(s_i)
   
 where :math:`N` is the size of :math:`s` and :math:`\lambda` 
 is the array of weights. This is what we want to calculate 
