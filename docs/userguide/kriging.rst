@@ -41,6 +41,7 @@ estimating the prediction is pretty straightforward:
   :supress:
   
   import numpy as np
+  from scipy.spatial.distance import pdist, squareform
   
 .. ipython:: python
   
@@ -55,3 +56,37 @@ or shorter:
 .. ipython:: python
   
   Z_s.dot(lam)
+
+In the example above the weights were just made up. 
+Now we need to understand how this array of weights 
+can be calculated.
+
+Using a spatial model
+=====================
+
+Instead of just making up weights, we will now learn 
+how we can utilize a variogram model to calculate the weights.
+At its core a variogram describes how point observations become 
+more dissimilar with distance. Point distances can easily be calculated, 
+not only for observed locations, but also for unobserved locations.
+As the variogram is only a function of *distance*, we can easily 
+calculate a semi-variance value for any possible combination of point
+pairs. 
+
+Assume we have five close observations for an unobserved location, 
+like in the example above. Instead of making up weights, we can use 
+the semi-variance value as a weight, as a first shot. 
+What we still need are locations and a variogram model. For both, 
+we can just make something up.
+
+.. ipython:: python
+
+  x = np.array([4.0, 2.0, 4.1, 0.3, 2.0])
+  y = np.array([5.5, 1.2, 3.7, 2.0, 2.5])
+  z = np.array([4.2, 6.1, 0.2, 0.7, 5.2])
+  
+  s_0 = [2., 2.]
+  
+  distance_matrix = pdist([s_0] + list(zip(x,y))
+  
+  distance_matrix
