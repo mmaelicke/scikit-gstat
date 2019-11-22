@@ -453,7 +453,7 @@ to False. You can add an SKG_SUPPRESS environment variable to supress this warni
 
         # else
         else:
-            raise ValueError('n_lags has to be of type int or list')
+            raise ValueError('n_lags has to be a positive integer')
             
         # reset the fitting
         self.cof = None
@@ -488,7 +488,7 @@ to False. You can add an SKG_SUPPRESS environment variable to supress this warni
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
-                    ('Variogram estimator %s is not understood, please' +
+                    ('Variogram estimator %s is not understood, please ' +
                     'provide the function.') % estimator_name
                 )
         elif callable(estimator_name):
@@ -527,8 +527,7 @@ to False. You can add an SKG_SUPPRESS environment variable to supress this warni
                 self._model = models.matern
             else:
                 raise ValueError(
-                    'The theoretical Variogram function %s is not \
-                    understood, please provide the function' % model_name)
+                    'The theoretical Variogram function %s is not understood, please provide the function' % model_name)
         else:
             self._model = model_name
 
@@ -1651,7 +1650,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
             ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
 
             # need a grid?
-            if grid:
+            if grid:  #pragma: no cover
                 ax2.grid(False)
                 ax2.vlines(_bins, *ax2.axes.get_ybound(),
                            colors=(.85, .85, .85), linestyles='dashed')
@@ -1660,12 +1659,12 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
             ax2.axes.set_ylabel('N')
 
         # show the figure
-        if show:
+        if show:  # pragma: no cover
             fig.show()
 
         return fig
 
-    def scattergram(self, ax=None):
+    def scattergram(self, ax=None, show=True):
 
         # create a new plot or use the given
         if ax is None:
@@ -1697,7 +1696,8 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
         ax.set_xlabel('tail')
 
         # show the figure
-        fig.show()
+        if show:  # pragma: no cover
+            fig.show()
 
         return fig
 

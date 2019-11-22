@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import matplotlib.pyplot as plt
 
 from skgstat import Variogram
 from skgstat import estimators
@@ -46,29 +47,28 @@ class TestVariogramInstatiation(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, bin_func='notafunc')
 
-            self.assertEqual(
-                'notafunc binning method is not known',
-                str(e)
-            )
+        self.assertEqual(
+            'notafunc binning method is not known',
+            str(e.exception)
+        )
 
     def test_unknown_model(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, model='unknown')
 
-            self.assertEqual(
-                'The theoretical Variogram function unknown is not ' +
-                'understood, please provide the function',
-                str(e)
-            )
+        self.assertEqual(
+            'The theoretical Variogram function unknown is not understood, please provide the function',
+            str(e.exception)
+        )
 
     def test_unsupported_n_lags(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, n_lags=15.7)
 
-            self.assertEqual(
-                'n_lags has to be of type int or list',
-                str(e)
-            )
+        self.assertEqual(
+            'n_lags has to be a positive integer',
+            str(e.exception)
+        )
 
 
 class TestVariogramArguments(unittest.TestCase):
@@ -132,21 +132,22 @@ class TestVariogramArguments(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             V.set_estimator(45)
-            self.assertEqual(
-                str(e),
-                'The estimator has to be a string or callable.'
-            )
+        self.assertEqual(
+            str(e.exception),
+            'The estimator has to be a string or callable.'
+        )
 
     def test_set_unknown_estimator(self):
         V = Variogram(self.c, self.v)
 
         with self.assertRaises(ValueError) as e:
             V.set_estimator('notaestimator')
-            self.assertEqual(
-                str(e),
-                'Variogram estimator notaestimator is not understood, please ' +
-                'provide the function.'
-            )
+
+        self.assertEqual(
+            str(e.exception),
+            'Variogram estimator notaestimator is not understood, please ' +
+            'provide the function.'
+        )
 
     def test_set_dist_func(self):
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
@@ -161,20 +162,22 @@ class TestVariogramArguments(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             V.set_dist_function('notadistance')
-            self.assertEqual(
-                str(e),
-                'Unknown Distance Metri: notadistance'
-            )
+        
+        self.assertEqual(
+            str(e.exception),
+            'Unknown Distance Metric: notadistance'
+        )
 
     def test_wrong_dist_func_input(self):
         V = Variogram(self.c, self.v)
 
         with self.assertRaises(ValueError) as e:
             V.set_dist_function(55)
-            self.assertEqual(
-                str(e),
-                'Input not supported. Pass a string or callable.'
-            )
+            
+        self.assertEqual(
+            str(e.exception),
+            'Input not supported. Pass a string or callable.'
+        )
 
     def test_callable_dist_function(self):
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
@@ -227,10 +230,11 @@ class TestVariogramArguments(unittest.TestCase):
     def test_use_nugget_exception(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, use_nugget=42)
-            self.assertEqual(
-                str(e),
-                'use_nugget has to be of type bool.'
-            )
+            
+        self.assertEqual(
+            str(e.exception),
+            'use_nugget has to be of type bool.'
+        )
 
     def test_n_lags_change(self):
         V = Variogram(self.c, self.v, n_lags=10)
@@ -243,10 +247,11 @@ class TestVariogramArguments(unittest.TestCase):
         for arg in [15.5, -5]:
             with self.assertRaises(ValueError) as e:
                 Variogram(self.c, self.v, n_lags=arg)
-                self.assertEqual(
-                    str(e),
-                    'n_lags has to be a positive integer'
-                )
+            
+            self.assertEqual(
+                str(e.exception),
+                'n_lags has to be a positive integer'
+            )
 
     def test_n_lags_not_implemented(self):
         with self.assertRaises(NotImplementedError):
@@ -350,21 +355,22 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         with self.assertRaises(AttributeError) as e:
             self.V.fit_sigma
-            self.assertEqual(
-                str(e),
-                'fit_sigma and bins need the same length.'
-            )
+        
+        self.assertEqual(
+            str(e.exception),
+            'fit_sigma and bins need the same length.'
+        )
 
     def test_fit_sigma_raises_ValueError(self):
         self.V.fit_sigma = 'notAnFunction'
 
         with self.assertRaises(ValueError) as e:
             self.V.fit_sigma
-            self.assertEqual(
-                str(e),
-                "fit_sigma is not understood. It has to be an array or" +
-                "one of ['linear', 'exp', 'sqrt', 'sq']."
-            )
+            
+        self.assertEqual(
+            str(e.exception),
+            "fit_sigma is not understood. It has to be an array or one of ['linear', 'exp', 'sqrt', 'sq']."
+        )
 
     def test_fit_sigma_linear(self):
         self.V.fit_sigma = 'linear'
@@ -454,10 +460,10 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             self.V.fit(method='unsupported')
 
-            self.assertEqual(
-                "fit method has to be one of ['trf', 'lm']",
-                str(e)
-            )
+        self.assertEqual(
+            "fit method has to be one of ['trf', 'lm']",
+            str(e.exception)
+        )
   
     def test_implicit_run_fit_fitted_model(self):
         self.V.fit_sigma = None
@@ -656,7 +662,7 @@ class TestVariogramPlots(unittest.TestCase):
         self.v = np.random.normal(10, 4, 150)
 
     def test_main_plot(self):
-        V = Variogram(self.c, self.v, n_lags=5)
+        V = Variogram(self.c, self.v, n_lags=5, normalize=True)
 
         # build the figure
         fig = V.plot(show=False)
@@ -676,8 +682,51 @@ class TestVariogramPlots(unittest.TestCase):
             decimal=2
         )
 
+    def test_main_plot_pass_axes(self):
+        V = Variogram(self.c, self.v, n_lags=5, normalize=True)
+
+        # build the figure externally
+        fig, axes = plt.subplots(1, 2)
+        fig = V.plot(axes=axes, show=False)
+        ax1, ax2 = fig.axes
+
+        # test experimental
+        assert_array_almost_equal(
+            [0.71, 0.83, 1., 0.88, 0.86],
+            ax1.get_children()[1].get_data()[1],
+            decimal=2
+        )
+
+        #  test theoretical at some locations
+        assert_array_almost_equal(
+            [0.16, 0.57, 0.88, 0.89],
+            ax1.get_children()[2].get_data()[1][[4, 15, 30, 50]],
+            decimal=2
+        )
+
+    def test_main_plot_not_normalized(self):
+        V = Variogram(self.c, self.v, n_lags=5, normalize=False)
+
+        # build the figure
+        fig = V.plot(show=False)
+        ax1, ax2 = fig.axes
+
+        # test experimental
+        assert_array_almost_equal(
+            [12.7 , 15., 17.98, 15.9, 15.39],
+            ax1.get_children()[1].get_data()[1],
+            decimal=2
+        )
+
+        #  test theoretical at some locations
+        assert_array_almost_equal(
+            [ 2.9 , 10.18, 15.86, 16.07],
+            ax1.get_children()[2].get_data()[1][[4, 15, 30, 50]],
+            decimal=2
+        )       
+
     def test_main_plot_histogram(self):
-        V = Variogram(self.c, self.v, n_lags=5)
+        V = Variogram(self.c, self.v, n_lags=5, normalize=True)
 
         # build the figure
         fig = V.plot(show=False)
@@ -687,7 +736,7 @@ class TestVariogramPlots(unittest.TestCase):
         for i, h in zip(range(1, 6), [5262, 4674, 1047, 142, 49]):
             self.assertEqual(childs[i].get_height(), h)
 
-    def test_main_plot_no_histogram(self):
+    def test_main_plot_no_histogram(self, normalize=True):
         V = Variogram(self.c, self.v, n_lags=5)
 
         # two axes
@@ -696,6 +745,34 @@ class TestVariogramPlots(unittest.TestCase):
 
         fig = V.plot(hist=False, show=False)
         self.assertEqual(len(fig.axes), 1)
+
+    def test_default_scattergram(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        fig = V.scattergram(show=False)
+        ax = fig.axes[0]
+
+        # test just 3 positions of the scatterplot
+        assert_array_almost_equal(
+            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
+            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
+            decimal=True
+        )
+
+    def test_scattergram_on_ax(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # define figure
+        fig, ax = plt.subplots(1,1)
+        V.scattergram(show=False, ax=ax)
+
+        # test just 3 positions of the scatterplot
+        assert_array_almost_equal(
+            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
+            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
+            decimal=True
+        )
+       
 
 
 if __name__ == '__main__':
