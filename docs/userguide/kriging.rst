@@ -111,4 +111,24 @@ straightforward.
   variances = model(distance_matrix[:5])
   assert len(variances) == 5
   
+Of course we could now use the inverse of these semi-variances 
+to weigh the observations, **but that would not be correct.**
+Remeber, that this array `variances` is what we want the 
+target weights to incorporte. Whatever the weights are, these 
+variances should be respected. At the same time, the five 
+points among each other also have distances and therefore variances
+that should be respected. Or to put it differently. 
+Take the first observation point :math:`s_1`. The associated variances 
+:math:`\gamma` to the other four points need to match the one 
+just calculated.
+
+.. math::
+
+  a_1 * \gamma(s_1, s_1) + a_2 * \gamma(s_1, s_2) + a_3 * \gamma(s_1, s_3) + a_4 * \gamma(s_1, s_4) + a_5 * \gamma(s_1, s_5) =  \gamma(s_1, s_0)
+
+Ok. First: :math:`\gamma(s_1, s_1)` is zero because the distance is obviously zero 
+and the model does not have a nugget. All other distances have already been calculated.
+:math:`a_1 ... a_5` are factors. These are the weights used to satisfy all given 
+semi-variances. This is what we need. Obviously, we cannot calculate 5 unknown 
+variables from just one equation. Lukily we have four more observations.
 
