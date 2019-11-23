@@ -108,7 +108,7 @@ straightforward.
 
 .. ipython:: python
 
-  variances = model(distance_matrx[:5])
+  variances = model(distance_matrix[:5])
   assert len(variances) == 5
   
 
