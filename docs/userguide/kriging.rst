@@ -87,6 +87,6 @@ we can just make something up.
   
   s_0 = [2., 2.]
   
-  distance_matrix = pdist([s_0] + list(zip(x,y))
+  distance_matrix = pdist([s_0] + list(zip(x,y)))
   
   distance_matrix
