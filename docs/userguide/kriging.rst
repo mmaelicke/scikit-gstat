@@ -38,7 +38,7 @@ Assumed that :math:`\lambda` had already been calculated,
 estimating the prediction is pretty straightforward:
 
 .. ipython:: python
-  :supress:
+  :suppress:
   
   import numpy as np
   from scipy.spatial.distance import pdist, squareform
