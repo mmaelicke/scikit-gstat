@@ -85,8 +85,30 @@ we can just make something up.
   y = np.array([5.5, 1.2, 3.7, 2.0, 2.5])
   z = np.array([4.2, 6.1, 0.2, 0.7, 5.2])
   
-  s_0 = [2., 2.]
+  s0 = [2., 2.]
   
-  distance_matrix = pdist([s_0] + list(zip(x,y)))
+  distance_matrix = pdist([s0] + list(zip(x,y)))
   
   distance_matrix
+  
+Next, we build up a variogram model of spherical shape, that uses a 
+effective range larger than the distances in the matrix. Otherwise, 
+we would just calcualte the arithmetic mean.
+
+.. ipython:: python
+
+  from skgstat.models import spherical
+  
+  # range= 7. sill = 2. nugget = 0.
+  model = lambda h: spherical(h, 7.0, 2.0, 0.0)
+  
+The distances to the first point `s0` are the first 5 elements in 
+the distance matrix. Therefore the semi-variances are calculated 
+straightforward.
+
+.. ipython:: python
+
+  variances = model(distance_matrx[:5])
+  assert len(variances) == 5
+  
+
