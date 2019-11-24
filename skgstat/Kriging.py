@@ -395,18 +395,7 @@ class OrdinaryKriging:
         values = self.values[idx]
         dist_mat = self.dist(in_range)
 
-
-        # check min_points and max_points parameters
- #       if in_range.size > self._maxp:
- #           n = len(in_range) - 1
- #           in_range = in_range[np.argsort(dist_mat[:n])][:self._maxp]
- #           values = values[np.argsort(dist_mat[:n])][:self._maxp]
- #           dist_mat = self.dist(in_range)
-
- #       # min
- #       if in_range.size < self._minp:
- #           raise LessPointsError
-
+        # if performance is tracked, time this step
         if self.perf:
             t1 = time.time()
             self.perf_dist.append(t1 - t0)
@@ -471,7 +460,8 @@ class OrdinaryKriging:
                 self.perf_solv.append(t3 - t2)
 
         # calculate Kriging variance
-        # sigma is the weights times the semi-variance to p0 plus the lagrange factor 
+        # sigma is the weights times the semi-variance to p0 
+        # plus the lagrange factor 
         sigma = sum(b[:-1] * l[:-1]) + l[-1]
 
         # calculate Z

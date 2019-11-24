@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\envs\\py37\\python.exe",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true
+}
