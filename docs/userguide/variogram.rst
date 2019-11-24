@@ -18,6 +18,7 @@ correlation apparent.
     import numpy as np
     import matplotlib.pyplot as plt
     plt.style.use('ggplot')
+    from pprint import pprint
 
 This field could look like
 
@@ -258,10 +259,10 @@ You can easily read the data using pandas.
     :okwarning:
 
     import pandas as pd 
-    data = pd.read_csv('data/sample.csv')
+    data = pd.read_csv('data/sample_sr.csv')
 
     V = Variogram(list(zip(data.x, data.y)), data.z, 
-        normalize=True, n_lags=25)
+        normalize=False, n_lags=25, maxlag=60)
     
     @savefig variogram_sample_data.png width=8in
     V.plot()
@@ -375,6 +376,216 @@ with caution.
 
     @savefig compare_estimators.png width=8in
     fig.show()
+
+Variogram models
+----------------
+
+The last step to describe the spatial pattern in a data set 
+using variograms is to model the empirically observed and calculated
+experimental variogram with a proper mathematical function. 
+Technically, this setp is straightforward. We need to define a 
+function that takes a distance value (not a lag) and returns 
+a semi-variance value. One big advantage of these models is, that we 
+can assure different things, like positive definitenes. Most models
+are also monotonically increasing and approach an upper bound.
+Usually these models need three parameters to fit to the experimental
+variogram. All three parameters have a meaning and are usefull
+to learn something about the data. This upper bound a model approaches
+is called *sill*. The distance at which 95% of the sill are approached 
+is called the *range*. That means, the range is the distance at which 
+observation values do **not** become more dissimilar with increasing 
+distance. They are statistically independent. That also means, it doesn't 
+make any sense to further describe spatial relationships of observations 
+further apart with means of geostatistics. The last parameter is the *nugget*.
+It is used to add semi-variance to all values. Graphically that means to
+*move the variogram up on the y-axis*. The nugget is the semi-variance modeled
+on the 0-distance lag. Compared to the sill it is the share of variance that
+can not be described spatially.
+
+The spherical model
+~~~~~~~~~~~~~~~~~~~
+
+The sperical model is the most commonly used variogram model. 
+It is characterized by a very steep, exponential increase in semi-variance.
+That means it approaches the sill quite quickly. It can be used when 
+observations show strong dependency on short distances.
+It is defined like:
+
+.. math::
+    \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
+
+if h < r, and
+
+.. math::
+    \gamma = b + C_0
+    
+else. ``b`` is the nugget, :math:``C_0`` is the sill, ``h`` is the input
+distance lag and ``r`` is the effective range. That is the range parameter 
+described above, that describes the correlation length. 
+Many other variogram model implementations might define the range parameter, 
+which is a variogram parameter. This is a bit confusing, as the range parameter 
+is specific to the used model. Therefore I decided to directly use the 
+*effective range* as a parameter, as that makes more sense in my opinion. 
+ 
+As we already calculated an experimental variogram and find the spherical 
+model in the :py:mod:`skgstat.models` sub-module, we can utilize e.g. 
+:func:`curve_fit <scipy.optimize.curve_fit>` from scipy to fit the model 
+using a least squares approach.
+ 
+.. ipython:: python
+    :okwarning:
+ 
+    from skgstat import models
+
+    # set estimator back
+    V.estimator = 'matheron'
+    V.model = 'spherical'
+
+    xdata = V.bins
+    ydata = V.experimental
+   
+    from scipy.optimize import curve_fit
+    
+    cof, cov =curve_fit(models.spherical, xdata, ydata)
+    
+Here, *cof* are now the coefficients found to fit the model to the data.
+
+.. ipython:: python
+    :okwarning:
+
+    pprint("range: %.2f\nsill: %.f\nnugget: %.2f" % (cof[0], cof[1], cof[2]))
+  
+.. ipython:: python
+    :okwarning:
+    
+    xi =np.linspace(xdata[0], xdata[-1], 100)
+    yi = [models.spherical(h, *cof) for h in xi]
+    
+    plt.plot(xdata, ydata, 'og')
+    @savefig manual_fitted_variogram.png width=8in
+    plt.plot(xi, yi, '-b');
+
+The :class:`Variogram Class <skgstat.Variogram>` does in principle the 
+same thing. The only difference is that it tries to find a good 
+initial guess for the parameters and limits the search space for 
+parameters. That should make the fitting more robust. 
+Technically, we used the Levenberg-Marquardt algorithm above. 
+:class:`Variogram <skgstat.Variogram>` can be forced to use the same 
+by setting the :class:`Variogram.fit_method <skgstat.Variogram.fit_method>` 
+to 'lm'. The default, however, is 'trf', which is the *Trust Region Reflective* 
+algorithm, the bounded fit with initial guesses described above.
+You can use it like:
+
+.. ipython:: python
+    :okwarning:
+
+    V.fit_method ='trf'
+    @savefig trf_automatic_fit.png width=8in
+    V.plot();
+    pprint(V.describe())
+    
+    V.fit_method ='lm'
+    @savefig lm_automatic_fit.png width=8in
+    V.plot();
+    pprint(V.describe())
+
+.. note::
+
+    In this example, the fitting method does not make a difference 
+    at all. Generally, you can say that Levenberg-Marquardt is faster
+    and TRF is more robust.
+
+Exponential model
+~~~~~~~~~~~~~~~~~
+
+The exponential model is quite similar to the spherical one. 
+It models semi-variance values to increase exponentially with 
+distance, like the spherical. The main difference is that this 
+increase is not as steep as for the spherical. That means, the 
+effective range is larger for an exponential model, that was 
+parameterized with the same range parameter.
+
+.. note::
+
+    Remember that SciKit-GStat uses the *effective range* 
+    to overcome this confusing behaviour.
+
+Consequently, the exponential can be used for data that shows a way
+too large spatial correlation extent for a spherical model to 
+capture. 
+
+Applied to the data used so far, you can see the similarity between 
+the two models:
+
+.. ipython:: python
+    :okwarning:
+
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4))
+
+    V.fit_method = 'trf'
+    V.plot(axes=axes[0], hist=False)
+
+    V.model = 'exponential'
+    @savefig compare_spherical_exponential.png width=8in
+    V.plot(axes=axes[1], hist=False);
+
+Gaussian model
+~~~~~~~~~~~~~~
+
+The last fundamental variogram model is the Gaussian. 
+Unlike the spherical and exponential models a very different 
+spatial relationship between semi-variance and distance.
+Following the Gaussian model, observations are assumed to 
+be similar up to intermediate distances, showing just a 
+gentle increase in semi-variance. Then, the semi-variance 
+increases dramatically wihtin just a few distance units up 
+to the sill, which is again approached asymtotically.
+The model can be used to simulate very sudden and sharp 
+changes in the variable at a specific distance, 
+while being very similar at smaller distances.
+
+To show a typical Gaussian model, we will load another 
+sample dataset.
+
+.. ipython:: python
+    :okwarning:
+
+    data = pd.read_csv('data/sample_lr.csv')
+
+    Vg = Variogram(list(zip(data.x, data.y)), data.z.values,
+        normalize=False, n_lags=25, maxlag=90, model='gaussian')
+
+    @savefig sample_data_gaussian_model.png width=8in
+    Vg.plot();
+
+Matérn model
+~~~~~~~~~~~~
+
+One of the not so commonly used models is the Matérn model. 
+It is nevertheless implemented into scikit-gstat as it is one 
+of the most powerful models. Especially in cases where you cannot 
+chose the appropiate model a priori so easily.
+The Matérn model takes an additional smoothness paramter, that can 
+change the shape of the function in between an exponential 
+model shape and a Gaussian one. 
+
+.. iypthon:: python
+
+    xi = np.linspace(0, 100, 100)
+
+    # plot a exponential and a gaussian
+    y_exp = [models.exponential(h, 40, 10, 3) for h in xi]
+    y_gau = [models.gaussian(h, 40, 10, 3) for h in xi]
+
+    fig, ax = plt.subplots(1, 1, figsize=(8,6))
+    ax.plot(xi, y_exp, '-b', label='exponential')
+    ax.plot(xi, y_gau, '-g', label='gaussian')
+
+    for s in (0.1, 2., 10.):
+        y = [models.matern(h, 40, 10, 3, s) for h in xi]
+        ax.plot(xi, y, '--k', label='matern s=%.1f' % s)
+    @savefig compare_smoothness_parameter_matern.png width=8in
+    plt.legend(loc='lower right')
 
 When direction matters
 ======================
