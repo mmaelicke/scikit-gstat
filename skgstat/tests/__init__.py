@@ -6,6 +6,7 @@ from skgstat.tests.Variogram import (
     TestVariogramArguments,
     TestVariogramFittingProcedure,
     TestVariogramQaulityMeasures,
+    TestVariogramMethods,
     TestVariogramPlots,
 )
 from skgstat.tests.DirectionalVariogram import (
@@ -17,8 +18,19 @@ from skgstat.tests.SpaceTimeVariogram import (
     TestSpaceTimeVariogramArgumets,
     TestSpaceTimeVariogramPlots,
 )
-
 from skgstat.tests.kriging import (
     TestKrigingInstantiation,
     TestPerformance,
 )
+from skgstat.tests.interfaces import (
+    TestVariogramEstimator,
+    TestPyKrigeInterface
+)
+from skgstat.tests.stmodels import (
+    TestSumModel,
+    TestProductModel,
+    TestProductSumModel
+)
+
+import os
+os.environ['SKG_SUPRESS'] = 'TRUE'

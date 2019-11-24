@@ -166,25 +166,25 @@ class TestPerformance(unittest.TestCase):
               (np.sum(self.ok.perf_solv), np.std(self.ok.perf_solv)))
         print('---------------------------------------------')
 
-    def test_20points_exact(self):
+    def test_200points_exact(self):
         self.ok.mode = 'exact'
         self.ok.solver = 'inv'
-        self._run_benchmark(points=20)
+        self._run_benchmark(points=200)
 
-    def test_100points_exact(self):
+    def test_2000points_exact(self):
         self.ok.mode = 'exact'
         self.ok.solver = 'inv'
-        self._run_benchmark(points=100)
+        self._run_benchmark(points=2000)
 
-    def test_20points_estimate(self):
+    def test_200points_estimate(self):
         self.ok.mode = 'estimate'
         self.ok.solver = 'inv'
-        self._run_benchmark(points=20)
+        self._run_benchmark(points=200)
 
-    def test_100points_estimate(self):
+    def test_2000points_estimate(self):
         self.ok.mode = 'estimate'
         self.ok.solver = 'inv'
-        self._run_benchmark(points=100)
+        self._run_benchmark(points=2000)
 
 
 if __name__ == '__main__':

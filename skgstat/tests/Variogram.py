@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import matplotlib.pyplot as plt
 
 from skgstat import Variogram
 from skgstat import estimators
@@ -41,6 +42,33 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         for b, e in zip(bins, V.bins):
             self.assertAlmostEqual(b, e, places=2)
+    
+    def test_unknown_binning_func(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, bin_func='notafunc')
+
+        self.assertEqual(
+            'notafunc binning method is not known',
+            str(e.exception)
+        )
+
+    def test_unknown_model(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, model='unknown')
+
+        self.assertEqual(
+            'The theoretical Variogram function unknown is not understood, please provide the function',
+            str(e.exception)
+        )
+
+    def test_unsupported_n_lags(self):
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, self.v, n_lags=15.7)
+
+        self.assertEqual(
+            'n_lags has to be a positive integer',
+            str(e.exception)
+        )
 
 
 class TestVariogramArguments(unittest.TestCase):
@@ -104,21 +132,22 @@ class TestVariogramArguments(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             V.set_estimator(45)
-            self.assertEqual(
-                str(e),
-                'The estimator has to be a string or callable.'
-            )
+        self.assertEqual(
+            str(e.exception),
+            'The estimator has to be a string or callable.'
+        )
 
     def test_set_unknown_estimator(self):
         V = Variogram(self.c, self.v)
 
         with self.assertRaises(ValueError) as e:
             V.set_estimator('notaestimator')
-            self.assertEqual(
-                str(e),
-                'Variogram estimator notaestimator is not understood, please ' +
-                'provide the function.'
-            )
+
+        self.assertEqual(
+            str(e.exception),
+            'Variogram estimator notaestimator is not understood, please ' +
+            'provide the function.'
+        )
 
     def test_set_dist_func(self):
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
@@ -133,20 +162,22 @@ class TestVariogramArguments(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             V.set_dist_function('notadistance')
-            self.assertEqual(
-                str(e),
-                'Unknown Distance Metri: notadistance'
-            )
+        
+        self.assertEqual(
+            str(e.exception),
+            'Unknown Distance Metric: notadistance'
+        )
 
     def test_wrong_dist_func_input(self):
         V = Variogram(self.c, self.v)
 
         with self.assertRaises(ValueError) as e:
             V.set_dist_function(55)
-            self.assertEqual(
-                str(e),
-                'Input not supported. Pass a string or callable.'
-            )
+            
+        self.assertEqual(
+            str(e.exception),
+            'Input not supported. Pass a string or callable.'
+        )
 
     def test_callable_dist_function(self):
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
@@ -177,6 +208,12 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertEqual(V.maxlag, np.max(V.distance) * 0.6)
         self.assertAlmostEqual(V.maxlag, 25.38, places=2)
 
+    def test_maxlag_custom_value(self):
+        V = Variogram(self.c, self.v)
+
+        V.maxlag = 33.3
+        self.assertAlmostEqual(V.maxlag, 33.3, places=1)
+
     def test_use_nugget_setting(self):
         V = Variogram(self.c, self.v)
 
@@ -193,10 +230,11 @@ class TestVariogramArguments(unittest.TestCase):
     def test_use_nugget_exception(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, use_nugget=42)
-            self.assertEqual(
-                str(e),
-                'use_nugget has to be of type bool.'
-            )
+            
+        self.assertEqual(
+            str(e.exception),
+            'use_nugget has to be of type bool.'
+        )
 
     def test_n_lags_change(self):
         V = Variogram(self.c, self.v, n_lags=10)
@@ -209,14 +247,76 @@ class TestVariogramArguments(unittest.TestCase):
         for arg in [15.5, -5]:
             with self.assertRaises(ValueError) as e:
                 Variogram(self.c, self.v, n_lags=arg)
-                self.assertEqual(
-                    str(e),
-                    'n_lags has to be a positive integer'
-                )
+            
+            self.assertEqual(
+                str(e.exception),
+                'n_lags has to be a positive integer'
+            )
 
     def test_n_lags_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             Variogram(self.c, self.v, n_lags='auto')
+    
+    def test_set_values(self):
+        V = Variogram(self.c, self.v)
+
+        # create a new array of same length
+        _old_vals = V.values
+        new_vals = np.random.normal(10, 2, size=len(_old_vals))
+
+        V.values = new_vals
+
+        # values.setter will call set_values
+        assert_array_almost_equal(V.values, new_vals, decimal=4)
+
+    def test_value_matrix(self):
+        vals = np.array([1, 2, 3, 4])
+        mat = np.asarray([[0, 1, 2, 3], [1, 0, 1, 2],[2, 1, 0, 1], [3, 2, 1, 0]], dtype=int)
+
+        V = Variogram(self.c[:4], vals)
+
+        assert_array_almost_equal(V.value_matrix, mat, decimal=1)
+
+    def _test_normalize_setter(self):
+        # TODO: I should fix this behavior
+        V = Variogram(self.c, self.v, normalize=False)
+
+        # make sure biggest bin larger than 1.0
+        self.assertGreater(np.max(V.bins), 1.0)
+
+        # normalize
+        V.normalize = True
+
+        # now, biggest bin should be almost or exactly 1.0
+        self.assertLessEqual(np.max(V.bins), 1.0)
+    
+    def test_distance_matrix(self):
+        coor = [[0, 0], [1, 0], [0, 1], [1, 1]]
+        vals = [0, 1, 2, 3]
+        dist_mat = np.asarray([
+            [0, 1, 1, 1.414],
+            [1, 0, 1.414, 1],
+            [1, 1.414, 0, 1],
+            [1.414, 1, 1, 0]
+        ])
+
+        V = Variogram(coor, vals)
+
+        assert_array_almost_equal(V.distance_matrix, dist_mat, decimal=3)
+    
+    def test_entropy_as_estimator(self):
+        """
+        Note: This unittest will change in future, as soon as the 
+        bin edges for Entropy calculation can be set on instantiation
+
+        """
+        V = Variogram(self.c, self.v, estimator='entropy', n_lags=10)
+
+        assert_array_almost_equal(
+            V.experimental, 
+            [2.97, 3.3 , 3.45, 2.95, 3.33, 3.28, 3.31, 3.44, 2.65, 1.01],
+            decimal=2
+        )
 
 
 class TestVariogramFittingProcedure(unittest.TestCase):
@@ -227,7 +327,9 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         self.v = np.random.normal(10, 4, 50)
 
         # build a standard variogram to be used
-        self.V = Variogram(self.c, self.v, n_lags=5, use_nugget=True)
+        self.V = Variogram(
+            self.c, self.v, n_lags=5, normalize=False, use_nugget=True
+        )
 
     def test_fit_sigma_is_None(self):
         self.V.fit_sigma = None
@@ -245,7 +347,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         self.V.fit()
         assert_array_almost_equal(
             self.V.parameters,
-            [3035.357, 318.608, 18.464], decimal=3
+            [24.008, 17.083, 0.99], decimal=3
         )
 
     def test_fit_sigma_raises_AttributeError(self):
@@ -253,21 +355,22 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         with self.assertRaises(AttributeError) as e:
             self.V.fit_sigma
-            self.assertEqual(
-                str(e),
-                'fit_sigma and bins need the same length.'
-            )
+        
+        self.assertEqual(
+            str(e.exception),
+            'fit_sigma and bins need the same length.'
+        )
 
     def test_fit_sigma_raises_ValueError(self):
         self.V.fit_sigma = 'notAnFunction'
 
         with self.assertRaises(ValueError) as e:
             self.V.fit_sigma
-            self.assertEqual(
-                str(e),
-                "fit_sigma is not understood. It has to be an array or" +
-                "one of ['linear', 'exp', 'sqrt', 'sq']."
-            )
+            
+        self.assertEqual(
+            str(e.exception),
+            "fit_sigma is not understood. It has to be an array or one of ['linear', 'exp', 'sqrt', 'sq']."
+        )
 
     def test_fit_sigma_linear(self):
         self.V.fit_sigma = 'linear'
@@ -280,7 +383,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         # test parameters:
         self.V.fit()
         assert_array_almost_equal(
-            self.V.parameters, [3170.532, 324.385, 17.247], decimal=3
+            self.V.parameters, [25.077, 17.393, 0.925], decimal=3
         )
 
     def test_fit_sigma_exp(self):
@@ -293,7 +396,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test parameters
         assert_array_almost_equal(
-            self.V.parameters, [3195.6, 329.8, 17.9], decimal=1
+            self.V.parameters, [25.3, 17.7, 1.], decimal=1
         )
 
     def test_fit_sigma_sqrt(self):
@@ -306,7 +409,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [2902., 315., 18.], decimal=0
+            self.V.parameters, [23., 17.,  1.], decimal=1
         )
 
     def test_fit_sigma_sq(self):
@@ -319,8 +422,74 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [3195., 328.9, 17.8], decimal=1
+            self.V.parameters, [25.3, 17.6,  1.], decimal=1
         )
+    
+    def test_fit_sigma_on_the_fly(self):
+        self.V.fit(sigma='sq')
+
+        # test the sigmas
+        assert_array_almost_equal(
+            self.V.fit_sigma, [0.04, 0.16, 0.36, 0.64, 1.], decimal=2
+        )
+
+        # test the parameters
+        assert_array_almost_equal(
+            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+        )
+
+    def test_fit_lm(self):
+        self.V.fit(method='lm', sigma='sqrt')
+
+        # test the parameters
+        assert_array_almost_equal(
+            self.V.parameters, [1., 17., 1.], decimal=0
+        )
+
+    def test_fitted_model(self):
+        fun = self.V.fitted_model
+
+        result = [0.99, 7.19, 12.53, 16.14]
+
+        assert_array_almost_equal(
+            result, list(map(fun, np.arange(0, 20, 5))),
+            decimal=2
+        )
+
+    def test_unavailable_method(self):
+        with self.assertRaises(ValueError) as e:
+            self.V.fit(method='unsupported')
+
+        self.assertEqual(
+            "fit method has to be one of ['trf', 'lm']",
+            str(e.exception)
+        )
+  
+    def test_implicit_run_fit_fitted_model(self):
+        self.V.fit_sigma = None
+        self.V.fit_method = 'trf'
+        result = [0.99,  7.19, 12.53, 16.14]
+
+        # remove cof
+        self.V.cof = None
+
+        # test on fitted model
+        fun = self.V.fitted_model
+
+        assert_array_almost_equal(
+            result, list(map(fun, np.arange(0, 20, 5))), decimal=2
+        )
+
+    def test_implicit_run_fit_transform(self):
+        self.V.fit_sigma = None
+        self.V.fit_method = 'trf'
+        result = [0.99,  7.19, 12.53, 16.14]
+
+        # test on transform
+        self.V.cof = None
+        res = self.V.transform(np.arange(0, 20, 5))
+
+        assert_array_almost_equal(result, res, decimal=2)
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
@@ -376,6 +545,112 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
 
         self.assertAlmostEqual(V.nrmse_r, 0.63543, places=5)
 
+    def test_r(self):
+        V = Variogram(self.c, self.v, n_lags=12, normalize=False)
+
+        for model, r in zip(
+            ('gaussian', 'exponential', 'stable'), 
+            [0.39, 0.55, 0.60]
+        ):
+            V.set_model(model)
+            self.assertAlmostEqual(V.r, r, places=2)
+    
+    def test_NS(self):
+        V = Variogram(self.c, self.v, n_lags=15, normalize=False)
+
+        for estimator, NS in zip(
+            ('matheron', 'genton', 'dowd'),
+            [0.0206, 0.0206, 0.0206]
+        ):
+            self.assertAlmostEqual(V.NS, NS, places=4)
+
+
+class TestVariogramMethods(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (30, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 30)
+
+        self.V = Variogram(self.c, self.v, normalize=False, n_lags=10)
+
+    def test_clone_method(self):
+        # copy variogram
+        copy = self.V.clone()
+
+        # test against bins and experimental
+        assert_array_almost_equal(copy.experimental, self.V.experimental)
+        assert_array_almost_equal(copy.bins, self.V.bins)
+
+    def test_data_no_force(self):
+        lags, var = self.V.data(n=10, force=False)
+
+        assert_array_almost_equal(
+            lags,
+            [0.,  4.7,  9.4, 14.1, 18.8, 23.5, 28.2, 32.9, 37.6, 42.3], 
+            decimal=2
+        )
+
+        assert_array_almost_equal(
+            var,
+            [0., 11.82, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97],
+            decimal=2
+        )
+    
+    def test_data_with_force(self):
+        # should work if _dist is corccupted
+        self.V._dist = self.V._dist * 5.
+        self.V.cof = None
+        lags, var = self.V.data(n=10, force=True)
+
+        assert_array_almost_equal(
+            lags,
+            [0., 4.7, 9.4, 14.1, 18.8, 23.5, 28.2, 32.9, 37.6, 42.3],
+            decimal=2
+        )
+
+        assert_array_almost_equal(
+            var,
+            [0., 11.82, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97],
+            decimal=2
+        )
+
+    def test_data_normalized(self):
+        V = self.V.clone()
+
+        V.normalize = True
+
+        lags, var = V.data(n=5, force=True)
+
+        assert_array_almost_equal(
+            lags,
+            [0., 10.58, 21.15, 31.73, 42.3],
+            decimal=2
+        )
+
+        assert_array_almost_equal(
+            var,
+            [0., 13.97, 13.97, 13.97, 13.97],
+            decimal=2
+        )
+    
+    def test_parameter_property_matern(self):
+        V = self.V.clone()
+        
+        # test matern
+        param = [42.3, 16.2,  0.1,  0.]
+        V.set_model('matern')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+    
+    def test_parameter_property_stable(self):
+        V = self.V.clone()
+
+        # test stable
+        param = [42.3 , 15.79, 0.45,  0.]
+        V.set_model('stable')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+
 
 class TestVariogramPlots(unittest.TestCase):
     def setUp(self):
@@ -386,7 +661,7 @@ class TestVariogramPlots(unittest.TestCase):
         self.v = np.random.normal(10, 4, 150)
 
     def test_main_plot(self):
-        V = Variogram(self.c, self.v, n_lags=5)
+        V = Variogram(self.c, self.v, n_lags=5, normalize=True)
 
         # build the figure
         fig = V.plot(show=False)
@@ -406,8 +681,51 @@ class TestVariogramPlots(unittest.TestCase):
             decimal=2
         )
 
+    def test_main_plot_pass_axes(self):
+        V = Variogram(self.c, self.v, n_lags=5, normalize=True)
+
+        # build the figure externally
+        fig, axes = plt.subplots(1, 2)
+        fig = V.plot(axes=axes, show=False)
+        ax1, ax2 = fig.axes
+
+        # test experimental
+        assert_array_almost_equal(
+            [0.71, 0.83, 1., 0.88, 0.86],
+            ax1.get_children()[1].get_data()[1],
+            decimal=2
+        )
+
+        #  test theoretical at some locations
+        assert_array_almost_equal(
+            [0.16, 0.57, 0.88, 0.89],
+            ax1.get_children()[2].get_data()[1][[4, 15, 30, 50]],
+            decimal=2
+        )
+
+    def test_main_plot_not_normalized(self):
+        V = Variogram(self.c, self.v, n_lags=5, normalize=False)
+
+        # build the figure
+        fig = V.plot(show=False)
+        ax1, ax2 = fig.axes
+
+        # test experimental
+        assert_array_almost_equal(
+            [12.7 , 15., 17.98, 15.9, 15.39],
+            ax1.get_children()[1].get_data()[1],
+            decimal=2
+        )
+
+        #  test theoretical at some locations
+        assert_array_almost_equal(
+            [ 2.9 , 10.18, 15.86, 16.07],
+            ax1.get_children()[2].get_data()[1][[4, 15, 30, 50]],
+            decimal=2
+        )       
+
     def test_main_plot_histogram(self):
-        V = Variogram(self.c, self.v, n_lags=5)
+        V = Variogram(self.c, self.v, n_lags=5, normalize=True)
 
         # build the figure
         fig = V.plot(show=False)
@@ -417,7 +735,7 @@ class TestVariogramPlots(unittest.TestCase):
         for i, h in zip(range(1, 6), [5262, 4674, 1047, 142, 49]):
             self.assertEqual(childs[i].get_height(), h)
 
-    def test_main_plot_no_histogram(self):
+    def test_main_plot_no_histogram(self, normalize=True):
         V = Variogram(self.c, self.v, n_lags=5)
 
         # two axes
@@ -427,6 +745,35 @@ class TestVariogramPlots(unittest.TestCase):
         fig = V.plot(hist=False, show=False)
         self.assertEqual(len(fig.axes), 1)
 
+    def test_default_scattergram(self):
+        V = Variogram(self.c, self.v, n_lags=5)
 
-if __name__ == '__main__':
+        fig = V.scattergram(show=False)
+        ax = fig.axes[0]
+
+        # test just 3 positions of the scatterplot
+        assert_array_almost_equal(
+            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
+            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
+            decimal=True
+        )
+
+    def test_scattergram_on_ax(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # define figure
+        fig, ax = plt.subplots(1,1)
+        V.scattergram(show=False, ax=ax)
+
+        # test just 3 positions of the scatterplot
+        assert_array_almost_equal(
+            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
+            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
+            decimal=True
+        )
+
+
+if __name__ == '__main__':  # pragma: no cover
+    import os
+    os.environ['SKG_SUPRESS'] = 'TRUE'
     unittest.main()

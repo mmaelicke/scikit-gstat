@@ -106,3 +106,4 @@ cover
 docs/_build
 docs/savefig
 notebooks
+.vscode

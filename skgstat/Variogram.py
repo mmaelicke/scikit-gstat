@@ -2,6 +2,7 @@
 Variogram class
 """
 import copy
+import os
 
 import numpy as np
 from pandas import DataFrame
@@ -152,6 +153,10 @@ class Variogram(object):
             this kind of works so far, but will be rewritten (and documented)
 
         """
+        if normalize and not 'SKG_SUPRESS' in os.environ.keys():
+            print('Warning: normalize will change the default value \
+to False. You can add an SKG_SUPPRESS environment variable to supress this warning.')
+        
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -197,6 +202,9 @@ class Variogram(object):
 
         # specify if the experimental variogram shall be harmonized
         self.harmonize = harmonize
+        if harmonize:
+            raise DeprecationWarning('Argument will be removed with 0.3')
+        self._harmonize = None
 
         # set if nugget effect shall be used
         self._use_nugget = None
@@ -416,19 +424,38 @@ class Variogram(object):
 
     @property
     def n_lags(self):
+        """Number of lag bins
+
+        Pass the number of lag bins to be used on 
+        this Variogram instance. This will reset 
+        the grouping index and fitting parameters
+
+        """
         return self._n_lags
 
     @n_lags.setter
     def n_lags(self, n):
         # TODO: here accept strings and implement some optimum methods
+        # string are not implemented yet
         if isinstance(n, str):
             raise NotImplementedError('n_lags string values not implemented')
-        if not isinstance(n, int) or n < 1:
-            raise ValueError('n_lags has to be a positive integer')
-        self._n_lags = n
+        
+        # n_lags is int
+        elif isinstance(n, int):
+            if n < 1:
+                raise ValueError('n_lags has to be a positive integer')
+            
+            # set parameter
+            self._n_lags = n
 
-        # reset the bins and fitting
-        self._bins = None
+            # reset the bins
+            self._bins = None
+
+        # else
+        else:
+            raise ValueError('n_lags has to be a positive integer')
+            
+        # reset the fitting
         self.cof = None
         self.cov = None
 
@@ -461,7 +488,7 @@ class Variogram(object):
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
-                    ('Variogram estimator %s is not understood, please' +
+                    ('Variogram estimator %s is not understood, please ' +
                     'provide the function.') % estimator_name
                 )
         elif callable(estimator_name):
@@ -500,8 +527,7 @@ class Variogram(object):
                 self._model = models.matern
             else:
                 raise ValueError(
-                    'The theoretical Variogram function %s is not' +
-                    'understood, please provide the function' % model_name)
+                    'The theoretical Variogram function %s is not understood, please provide the function' % model_name)
         else:
             self._model = model_name
 
@@ -852,9 +878,13 @@ class Variogram(object):
                 **kwargs
             )
 
+        # monotonization
+        elif self.fit_method == 'harmonize':
+            # TODO, make the harmonization and infer the cof from that
+            raise NotImplementedError
+
         else:
-            raise ValueError('Only the \'lm\' and \'trf\' algorithms are ' +
-                             'supported at the moment.')
+            raise ValueError("fit method has to be one of ['trf', 'lm']")
 
     def transform(self, x):
         """Transform
@@ -889,8 +919,6 @@ class Variogram(object):
         Compile the model using the actual fitting parameters to return a
         function implementing them.
 
-        Deprecated
-        ----------
         The compiled_model will be removed in version 0.3. Use the
         `Variogram.fitted_model` property instead. It is works in the same
         way, but is significantly faster
@@ -900,6 +928,9 @@ class Variogram(object):
         callable
 
         """
+        if not 'SKG_SUPRESS' in os.environ:
+            print('Warning: compiled_model is deprecated and will be removed. \
+Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment variable to supress this warning.')
         if self.cof is None:
             self.fit(force=True)
 
@@ -1202,13 +1233,7 @@ class Variogram(object):
         _exp = self.experimental
         _bin = self.bins
 
-        # use relative or absolute bins
-        if self.normalized:
-            _bin /= np.nanmax(_bin)     # normalize X
-            _exp /= np.nanmax(_exp)     # normalize Y
-            x = np.linspace(0, 1, n)    # use n increments
-        else:
-            x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
+        x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
 
         # fit if needed
         if self.cof is None:
@@ -1625,7 +1650,7 @@ class Variogram(object):
             ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
 
             # need a grid?
-            if grid:
+            if grid:  #pragma: no cover
                 ax2.grid(False)
                 ax2.vlines(_bins, *ax2.axes.get_ybound(),
                            colors=(.85, .85, .85), linestyles='dashed')
@@ -1634,12 +1659,12 @@ class Variogram(object):
             ax2.axes.set_ylabel('N')
 
         # show the figure
-        if show:
+        if show:  # pragma: no cover
             fig.show()
 
         return fig
 
-    def scattergram(self, ax=None):
+    def scattergram(self, ax=None, show=True):
 
         # create a new plot or use the given
         if ax is None:
@@ -1671,7 +1696,8 @@ class Variogram(object):
         ax.set_xlabel('tail')
 
         # show the figure
-        fig.show()
+        if show:  # pragma: no cover
+            fig.show()
 
         return fig
 
@@ -1780,7 +1806,7 @@ class Variogram(object):
 
         return fig
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         """
         Textual representation of this Variogram instance.
 
@@ -1793,7 +1819,7 @@ class Variogram(object):
             return "< abstract Variogram >"
         return "< %s Semivariogram fitted to %d bins >" % (_name, _b)
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         """String Representation
 
         Descriptive respresentation of this Variogram instance that shall give
