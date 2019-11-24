@@ -289,3 +289,98 @@ And the sum of weights:
 
 The estimation did not change a lot, but the weights
 perfectly sum up to one now.
+
+Kriging error
+=============
+
+In the last step, we introduced a factor :math:`\mu`. 
+It was needed to solve the linear equation system 
+while assuring that the weights sum up to one. 
+This factor can in turn be added to the weighted
+target semi-variances used to build the equation system, 
+to obtain the Kriging error.
+
+.. ipython:: python
+
+  sum(B[:-1] * weights[:-1]) + weights[-1]
+
+This is really usefull when a whole map is interpolated.
+Using Kriging, you can also produce a map showing
+in which regions the interpolation is more certain.
+
+Example
+=======
+
+We can use the data shown in the variography section, 
+to finally interpolate the field and check the 
+Kriging error. You could either build a loop around the 
+code shown in the previous section, or just use 
+skgstat.
+
+.. ipython:: python
+  :suppress:
+
+  import pandas as pd 
+  from skgstat import Variogram
+  import matplotlib.pyplot as plt
+
+.. ipython:: python
+  :okwarning:
+
+  data = pd.read_csv('data/sample_lr.csv')
+  V = Variogram(data[['x', 'y']].values, data.z.values, 
+    maxlag=90, n_lags=25, model='gaussian', normalize=False)
+  
+  @savefig kriging_used_variogram.png width=8in
+  V.plot()
+
+  from skgstat import OrdinaryKriging
+
+  ok = OrdinaryKriging(V, min_points=5, max_points=20, mode='exact')
+
+The :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` class
+need at least a fitted :class:`Variogram <skgstat.Variogram>` 
+instance. Using `min_points` we can demand the Kriging equation 
+system to be build upon at least 5 points to yield robust results.
+If not enough close observations are found within the effective range
+of the variogram, the estimation will not be calculated and a 
+`np.NaN` value is estimated.
+
+The `max_points` parameter will set the upper bound of the 
+equation system by using in this case at last the 20 nearest points.
+Adding more will most likely not change the estimation, as more points
+will recieve small, if not negligible, weights.
+But it will increase the processing time, as each added point will 
+increase the Kriging equation system dimensionality by one.
+
+The `mode` parameter sets the method that will 
+build up the equation system. There are two implemented:
+`mode='exact'` and `mode='estimate'`. Estimate is much faster, but 
+if not used carefully, it can lead to numerical instability quite 
+quickly. In the technical notes section of this userguide, you 
+will find a whole section on the two modes.
+
+Finally, we need the unobsered locations. The observations in 
+the file were drawn from a `100x100` random field.
+
+.. ipython:: python
+  :okwarning:
+
+  xx, yy = np.mgrid[0:99:100j, 0:99:100j]
+
+  field = ok.transform(xx.flatten(), yy.flatten()).reshape(xx.shape)
+  s2 = ok.sigma.reshape(xx.shape)
+
+.. ipython:: python
+  :suppress:
+  :okwarning:
+
+  fig, axes = plt.subplots(1, 2, figsize=(8,4))
+  axes[0].imshow(field, origin='lower')
+  axes[0].set_title('Kriging Interpolation')
+  axes[1].imshow(s2, origin='lower', vmin=np.min(s2)*1.05, vmax=np.max(s2)*.95)
+  axes[1].set_title('Kriging error')
+
+  @savefig kriging_result_and_error.png width=8in
+  fig.show()
+
