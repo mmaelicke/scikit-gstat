@@ -26,6 +26,11 @@ from skgstat.tests.interfaces import (
     TestVariogramEstimator,
     TestPyKrigeInterface
 )
+from skgstat.tests.stmodels import (
+    TestSumModel,
+    TestProductModel,
+    TestProductSumModel
+)
 
 import os
 os.environ['SKG_SUPRESS'] = 'TRUE'
