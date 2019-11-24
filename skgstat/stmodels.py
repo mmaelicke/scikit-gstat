@@ -1,7 +1,22 @@
-from .models import variogram
+from functools import wraps
+
+import numpy as np
 
 
-@variogram
+def stvariogram(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        st = args[0]
+        if st.ndim == 2:
+            new_args = args[1:]
+            mapping = map(lambda lags: func(lags, *new_args, **kwargs), st)
+            return np.fromiter(mapping, dtype=np.float)
+        else:
+            return func(*args, **kwargs)
+    return wrapper
+
+
+@stvariogram
 def sum(lags, Vx, Vt):
     """Sum space-time model
 
@@ -15,12 +30,12 @@ def sum(lags, Vx, Vt):
     lags : tuple
         Tuple of the space (x) and time (t) lag given as tuple: (x, t) which
         will be used to calculate the dependent semivariance.
-    Vx : skgstat.Variogram
+    Vx : skgstat.Variogram.fitted_model
         instance of the space marginal variogram with a fitted theoretical
         model sufficiently describing the marginal. If this model does not fit
         the experimental variogram, the space-time model fit will be poor as
         well.
-    Vt : skgstat.Variogram
+    Vt : skgstat.Variogram.fitted_model
         instance of the time marginal variogram with a fitted theoretical
         model sufficiently describing the marginal. If this model does not fit
         the experimental variogram, the space-time model fit will be poor as
@@ -53,7 +68,7 @@ def sum(lags, Vx, Vt):
     return Vx(h) + Vt(t)
 
 
-@variogram
+@stvariogram
 def product(lags, Vx, Vt, Cx, Ct):
     """Product model
 
@@ -65,12 +80,12 @@ def product(lags, Vx, Vt, Cx, Ct):
     lags : tuple
         Tuple of the space (x) and time (t) lag given as tuple: (x, t) which
         will be used to calculate the dependent semivariance.
-    Vx : skgstat.Variogram
+    Vx : skgstat.Variogram.fitted_model
         instance of the space marginal variogram with a fitted theoretical
         model sufficiently describing the marginal. If this model does not fit
         the experimental variogram, the space-time model fit will be poor as
         well.
-    Vt : skgstat.Variogram
+    Vt : skgstat.Variogram.fitted_model
         instance of the time marginal variogram with a fitted theoretical
         model sufficiently describing the marginal. If this model does not fit
         the experimental variogram, the space-time model fit will be poor as
@@ -87,9 +102,10 @@ def product(lags, Vx, Vt, Cx, Ct):
 
     """
     h, t = lags
-    return Cx * Vt(t) + Ct * Vx(h) + Vx(h) * Vt(t)
+    return Cx * Vt(t) + Ct * Vx(h) - Vx(h) * Vt(t)
 
-@variogram
+
+@stvariogram
 def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
     """Product-Sum space-time model
 
@@ -102,12 +118,12 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
     lags : tuple
         Tuple of the space (x) and time (t) lag given as tuple: (x, t) which
         will be used to calculate the dependent semivariance.
-    Vx : skgstat.Variogram
+    Vx : skgstat.Variogram.fitted_model
         instance of the space marginal variogram with a fitted theoretical
         model sufficiently describing the marginal. If this model does not fit
         the experimental variogram, the space-time model fit will be poor as
         well.
-    Vt : skgstat.Variogram
+    Vt : skgstat.Variogram.fitted_model
         instance of the time marginal variogram with a fitted theoretical
         model sufficiently describing the marginal. If this model does not fit
         the experimental variogram, the space-time model fit will be poor as
