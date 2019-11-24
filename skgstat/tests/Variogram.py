@@ -650,7 +650,6 @@ class TestVariogramMethods(unittest.TestCase):
         param = [42.3 , 15.79, 0.45,  0.]
         V.set_model('stable')
         assert_array_almost_equal(V.parameters, param, decimal=2)
-    
 
 
 class TestVariogramPlots(unittest.TestCase):
@@ -772,10 +771,9 @@ class TestVariogramPlots(unittest.TestCase):
             ax.get_children()[2].get_offsets()[[5, 1117, 523]],
             decimal=True
         )
-       
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     import os
     os.environ['SKG_SUPRESS'] = 'TRUE'
     unittest.main()

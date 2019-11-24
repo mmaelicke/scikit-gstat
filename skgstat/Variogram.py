@@ -1806,7 +1806,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
 
         return fig
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         """
         Textual representation of this Variogram instance.
 
@@ -1819,7 +1819,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
             return "< abstract Variogram >"
         return "< %s Semivariogram fitted to %d bins >" % (_name, _b)
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         """String Representation
 
         Descriptive respresentation of this Variogram instance that shall give

@@ -4,6 +4,7 @@ from sklearn.utils.validation import check_X_y
 
 from skgstat import Variogram
 
+
 class VariogramEstimator(BaseEstimator):
     def __init__(self,
                  estimator='matheron',
@@ -22,32 +23,33 @@ class VariogramEstimator(BaseEstimator):
                  ):
         r"""VariogramEstimator class
 
-        Interface class for usage with scikit-learn. This class is intentended 
+        Interface class for usage with scikit-learn. This class is intentended
         for usage with the GridSearchCV or Pipeline classes of scikit-learn.
 
-        The input parameters are the same as for the 
-        :class:`Variogram <skgstat.Variogram>` class. Refer to the documentation there.
+        The input parameters are the same as for the
+        :class:`Variogram <skgstat.Variogram>` class.
+        Refer to the documentation there.
 
-        The only parameter specific to the Estimator class is the `score` 
+        The only parameter specific to the Estimator class is the `score`
         attribute.
 
         Parameters
         ----------
         score : str
-            Scoring parameter to assess the Variogram fitting quality. 
-            Defaults to `'rmse'`, the Nash-Suttclife efficiency. 
+            Scoring parameter to assess the Variogram fitting quality.
+            Defaults to `'rmse'`, the Root mean squared error.
             Can be changed to ``['r2', 'residuals']``.
 
         Note
         ----
         The workflow of this class is a bit different from the Variogram class.
         The Variogram parameters are passed on instantiation. The actual data,
-        coordinates and values, are then passed to the fit method, which returns
-        a fitted instance of the model. The predict method takes **distance** 
-        values and *predicts* the semi-variance according to the fitted model.
-        This is in line with the Estimators of sklearn, but breaks the guidelines
-        in one point, as the X passed to fit and predict are in fact two 
-        different things (and of different shape).
+        coordinates and values, are then passed to the fit method, which
+        returns a fitted instance of the model. The predict method takes
+        **distance** values and *predicts* the semi-variance according to the
+        fitted model. This is in line with the Estimators of sklearn, but
+        breaks the guidelines in one point, as the X passed to fit and
+        predict are in fact two different things (and of different shape).
 
         """
         # store all the passed attributes.
@@ -67,16 +69,16 @@ class VariogramEstimator(BaseEstimator):
 
         # add Estimator specific attributes
         self.use_score = use_score
-    
+
     def fit(self, X, y):
         """Fit a model
 
-        Fits a variogram to the given data. 
+        Fits a variogram to the given data.
 
         Parameters
         ----------
         X : numpy.ndarray
-            input data coordinates. Usually 2D or 3D data, 
+            input data coordinates. Usually 2D or 3D data,
             but any dimensionality is allowed.
         y : numpy.ndarray
             observation values at the location given in X.
@@ -86,13 +88,14 @@ class VariogramEstimator(BaseEstimator):
         -------
         variogram : VariogramEstimator
             A fitted instance of VariogramEstimator
-        
+
         """
         # check the input data
         X, y = check_X_y(X, y)
 
         # build the model
-        self.variogram = Variogram(X, y, 
+        self.variogram = Variogram(
+            X, y,
             estimator=self.estimator,
             model=self.model,
             dist_func=self.dist_func,
@@ -125,8 +128,8 @@ class VariogramEstimator(BaseEstimator):
     def predict(self, X):
         """Predict
 
-        Predicting function. A prediction in this context is 
-        the estimation of semi-variance values for a given distance 
+        Predicting function. A prediction in this context is
+        the estimation of semi-variance values for a given distance
         array. The X here is an 1D array of distances, **not coordinates**.
 
         """
@@ -135,7 +138,7 @@ class VariogramEstimator(BaseEstimator):
     def score(self, X, y=None):
         """Fit score
 
-        Score based on the fitting. 
+        Score based on the fitting.
 
         """
         # TODO: maybe I have to create a new V, fitted to X,y here?
