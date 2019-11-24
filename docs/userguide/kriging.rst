@@ -13,7 +13,7 @@ In many text books you will also find the term *prediction*, but
 be aware that Kriging is still based on the assumption 
 that the variable is a random field. THerefore I prefer the 
 term *estimation* and would label the Kriging method a *BLUE*,
-**B**est **L**inear **U**nbiased **E**stimator.
+**B** est **L** inear **U** nbiased **E** stimator.
 In general terms, the objective is to estimate a variable at 
 a location that was not observed using observations from 
 close locations. Kriging is considered to be the **best** 
@@ -42,6 +42,8 @@ estimating the prediction is pretty straightforward:
   
   import numpy as np
   from scipy.spatial.distance import pdist, squareform
+  from pprint import pprint
+  np.set_printoptions(precision=3)
   
 .. ipython:: python
   
@@ -89,7 +91,7 @@ we can just make something up.
   
   distance_matrix = pdist([s0] + list(zip(x,y)))
   
-  distance_matrix
+  squareform(distance_matrix)
   
 Next, we build up a variogram model of spherical shape, that uses a 
 effective range larger than the distances in the matrix. Otherwise, 
@@ -131,4 +133,159 @@ and the model does not have a nugget. All other distances have already been calc
 :math:`a_1 ... a_5` are factors. These are the weights used to satisfy all given 
 semi-variances. This is what we need. Obviously, we cannot calculate 5 unknown 
 variables from just one equation. Lukily we have four more observations.
+Writing the above equation for :math:`s_2, s_3, s_4, s_5`.
+Additionally, we will write the linear equation system in matrix form as a 
+dot product of the :math:`\gamma_i` and the :math:`a_i` part.
 
+.. math::
+
+    \begin{pmatrix}
+    \gamma(s_1, s_1) & \gamma(s_1, s_2) & \gamma(s_1, s_3) & \gamma(s_1, s_4) & \gamma(s_1, s_5) \\
+    \gamma(s_2, s_1) & \gamma(s_2, s_2) & \gamma(s_2, s_3) & \gamma(s_2, s_4) & \gamma(s_2, s_5) \\
+    \gamma(s_3, s_1) & \gamma(s_3, s_2) & \gamma(s_3, s_3) & \gamma(s_3, s_4) & \gamma(s_3, s_5) \\
+    \gamma(s_4, s_1) & \gamma(s_4, s_2) & \gamma(s_4, s_3) & \gamma(s_4, s_4) & \gamma(s_4, s_5) \\
+    \gamma(s_5, s_1) & \gamma(s_5, s_2) & \gamma(s_5, s_3) & \gamma(s_5, s_4) & \gamma(s_5, s_5) \\
+    \end{pmatrix} * 
+    \begin{bmatrix}
+    a_1 \\
+    a_2 \\
+    a_3 \\
+    a_4 \\
+    a_5\\
+    \end{bmatrix} = 
+    \begin{pmatrix}
+    \gamma(s_0, s_1) \\
+    \gamma(s_0, s_2) \\
+    \gamma(s_0, s_3) \\
+    \gamma(s_0, s_4) \\
+    \gamma(s_0, s_5) \\
+    \end{pmatrix}
+
+That might look a bit complicated at first, but we have calculated almost everything. 
+The last matrix are the `variances` that we calculated in the last step.
+The first matrix is of same shape as the sqaureform distance matrix calculated in 
+the very begining. All we need to do is to map the variogram model on it and 
+solve the system for the matrix of factors :math:`a_1 \ldots a_5`.
+In Python, there are several strategies how you could solve this problem.
+Let's at first build the matrix. We need a distance matrix without 
+:math:`s_0` for that.
+
+.. ipython:: python
+
+    dists = pdist(list(zip(x,y)))
+    M = squareform(model(dists))
+
+    pprint(M)
+    pprint(variances)
+
+And solve it:
+
+.. ipython:: python
+    :okwarning:
+
+    from scipy.linalg import solve
+
+    # solve for a
+    a = solve(M, variances)
+    pprint(a)
+
+    # calculate estimation
+    Z_s.dot(a)
+
+That's it. Well, not really. We might have used the 
+variogram and the spatial structure infered from the 
+data for getting better results, but in fact our 
+result is not **unbiased**. That means, the solver 
+can choose any combination that satisfies the equation,
+even setting everything to zero except one weight. 
+That means :math:`a` could be biased.
+That would not be helpful.
+
+.. ipython:: python
+
+    np.sum(a)
+
+Kriging equation system
+=======================
+
+In the last section we came pretty close to the 
+Kriging algorithm. The only thing missing is to 
+assure unbiasedness.
+The weights sum up to almost one, but they are not one.
+We want to ensure, that they are always one. This 
+is done by adding one more equation to the linear 
+equation system. Also, we will rename the :math:`a`
+array to :math:`\lambda`, which is more frequently 
+used for Kriging weights. The missing equation is:
+
+.. math::
+
+    \sum_{i=1}^N \lambda = 1
+
+In matrix form this changes :math:`M` to:
+
+.. math::
+
+    \begin{pmatrix}
+    \gamma(s_1, s_1) & \gamma(s_1, s_2) & \gamma(s_1, s_3) & \gamma(s_1, s_4) & \gamma(s_1, s_5) & 1\\
+    \gamma(s_2, s_1) & \gamma(s_2, s_2) & \gamma(s_2, s_3) & \gamma(s_2, s_4) & \gamma(s_2, s_5) & 1\\
+    \gamma(s_3, s_1) & \gamma(s_3, s_2) & \gamma(s_3, s_3) & \gamma(s_3, s_4) & \gamma(s_3, s_5) & 1\\
+    \gamma(s_4, s_1) & \gamma(s_4, s_2) & \gamma(s_4, s_3) & \gamma(s_4, s_4) & \gamma(s_4, s_5) & 1\\
+    \gamma(s_5, s_1) & \gamma(s_5, s_2) & \gamma(s_5, s_3) & \gamma(s_5, s_4) & \gamma(s_5, s_5) & 1\\
+    1 & 1 & 1 & 1 & 1 & 0 \\
+    \end{pmatrix} * 
+    \begin{bmatrix}
+    \lambda_1 \\
+    \lambda_2 \\
+    \lambda_3 \\
+    \lambda_4 \\
+    \lambda_5 \\
+    \mu \\
+    \end{bmatrix} = 
+    \begin{pmatrix}
+    \gamma(s_0, s_1) \\
+    \gamma(s_0, s_2) \\
+    \gamma(s_0, s_3) \\
+    \gamma(s_0, s_4) \\
+    \gamma(s_0, s_5) \\
+    1 \\
+    \end{pmatrix}
+
+This is the Kriging equation for Ordinary Kriging that can be found 
+in text books. We added the ones to the result array and into the 
+matrix of semivariances. :math:`\mu` is a Lagrangian multiplier 
+that will be used to estimate the Kriging variance, which will 
+be covered later.
+Ordinary Kriging still assumes the observation and their residuals 
+to be normally distributed and second order stationarity.
+
+.. todo:: 
+    Include the references to Kitanidis and Bardossy.
+
+Applied in Python, this can be done like:
+
+.. ipython:: python
+
+    B = np.concatenate((variances, [1]))
+
+    M = np.concatenate((M, [[1, 1, 1, 1, 1]]), axis=0)
+    M = np.concatenate((M, [[1], [1], [1], [1], [1], [0]]), axis=1)
+
+    weights = solve(M, B)
+
+    # see the weights
+    print('Old weights:', a)
+    print('New weights:', weights[:-1])
+
+    print('Old estimation:', Z_s.dot(a))
+    print('New estimation:', Z_s.dot(weights[:-1]))
+    print('Mean:', np.mean(Z_s))
+
+And the sum of weights:
+
+.. ipython:: python
+
+    np.sum(weights[:-1])
+
+The estimation did not change a lot, but the weights
+perfectly sum up to one now.
