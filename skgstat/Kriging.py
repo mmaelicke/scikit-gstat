@@ -113,7 +113,7 @@ class OrdinaryKriging:
 
         # coordinates and semivariance function
         self.coords, self.values = self._get_coordinates_and_values()
-        self.gamma_model = self.V.compiled_model
+        self.gamma_model = self.V.fitted_model
 
         # calculation mode; self.range has to be initialized
         self._mode = mode
@@ -441,9 +441,8 @@ class OrdinaryKriging:
 
         # build the matrix of solutions A
         _p = np.concatenate(([p], in_range))
-#        _dists = squareform(self.dist(_p))[0][1:]
         _dists = self.dist(_p)[:len(_p) - 1]
-        _g = np.fromiter(map(self.gamma_model, _dists), dtype=float)
+        _g = self.gamma_model(_dists)
         b = np.concatenate((_g, [1]))
 
         # solve the system
@@ -483,16 +482,14 @@ class OrdinaryKriging:
 
     def _build_matrix(self, distance_matrix):
         # calculate the upper matrix
-        return np.fromiter(map(self.gamma_model, distance_matrix), dtype=float)
+        return self.gamma_model(distance_matrix)
 
     def _precalculate_matrix(self):
         # pre-calculated distance
         self._prec_dist = np.linspace(0, self.range, self.precision)
 
         # pre-calculate semivariance
-        self._prec_g = np.fromiter(
-            map(self.gamma_model, self._prec_dist),
-            dtype=float)
+        self._prec_g = self.gamma_model(self._prec_dist)
 
     def _estimate_matrix(self, distance_matrix):
         # transform to the 'precision-space', which matches with the index

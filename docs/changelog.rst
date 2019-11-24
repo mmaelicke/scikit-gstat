@@ -4,6 +4,8 @@ Changelog
 
 Version 0.2.7
 =============
+
+- [Kriging] Little performance gains due to code cleanup.
 - [Variogram] The `normalize=True` default in `__init__` will change to 
   `normalize=False` in a future version. A DeprecationWarning was included.
 - [tests] The Variogram class fitting unit tests are now explicitly setting 
@@ -25,6 +27,9 @@ Version 0.2.7
 - Added Dockerfile. You can now build a docker container with scikit-gstat 
   installed in a miniconda environment. On run, a jupyter server is exposed on
   Port 8888. In a future release, this server will serve tutorial notebooks.
+- [stmodels] small bugfix in product model
+- [stmodels] removed variogram wrapper and added stvariogram wrapper to 
+  correctly detect space and time lags
   
 Version 0.2.6
 =============
