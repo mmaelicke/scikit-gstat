@@ -153,9 +153,14 @@ class Variogram(object):
             this kind of works so far, but will be rewritten (and documented)
 
         """
-        if normalize and not 'SKG_SUPRESS' in os.environ.keys():
+        # deprecation warnings
+        if normalize and 'SKG_SUPRESS' not in os.environ.keys(): # pragma: no cover
             print('Warning: normalize will change the default value \
-to False. You can add an SKG_SUPPRESS environment variable to supress this warning.')
+to False. You can add a SKG_SUPPRESS environment variable to suppress this warning.')
+        if 'SKG_SUPRESS' not in os.environ.keys():
+            print("Warning: 'harmonize' is deprecated and will be removed\
+with the next release. You can add a 'SKG_SUPPRESS' environment variable to \
+suppress this warning.")
         
         # Set coordinates
         self._X = np.asarray(coordinates)
