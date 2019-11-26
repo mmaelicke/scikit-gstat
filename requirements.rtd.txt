@@ -9,4 +9,3 @@ pandas
 nose
 matplotlib
 shapely
-pandoc
