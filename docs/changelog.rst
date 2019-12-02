@@ -2,6 +2,19 @@
 Changelog
 =========
 
+Version 0.3
+=============
+
+- [DOCS] Tutorial added and Dockerfile finalized
+- [Variogram] normalize defualt value changed to False
+- [Variogram] harmonize parameter is removed
+- [Variogram] Monotonization (old harmonize par) is available as a new
+  theoretical model function. Can be used by setting `model='harmonize'`
+- [interfaces] gstools interface implemented. 
+  :func:`gstools_cov_model <skgstat.interfaces.gstools.gstools_cov_model>`
+  takes a :class:`skgstat.Variogram` instance and returns a **fitted** 
+  `gstools.CovModel`. 
+
 Version 0.2.7
 =============
 

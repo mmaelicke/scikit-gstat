@@ -1,6 +1,8 @@
 import unittest
+import os
 
 import numpy as np
+import pandas as pd
 from numpy.testing import assert_array_almost_equal
 import matplotlib.pyplot as plt
 
@@ -19,7 +21,7 @@ class TestVariogramInstatiation(unittest.TestCase):
     def test_standard_settings(self):
         V = Variogram(self.c, self.v)
 
-        for x, y in zip(V.parameters, [301.266, 291.284, 0]):
+        for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_pass_median_maxlag_on_instantiation(self):
@@ -215,7 +217,7 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertAlmostEqual(V.maxlag, 33.3, places=1)
 
     def test_use_nugget_setting(self):
-        V = Variogram(self.c, self.v)
+        V = Variogram(self.c, self.v, normalize=True)
 
         # test the property and setter
         self.assertEqual(V.use_nugget, False)
@@ -490,6 +492,20 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         res = self.V.transform(np.arange(0, 20, 5))
 
         assert_array_almost_equal(result, res, decimal=2)
+
+    def test_harmonize_model(self):
+        # load data sample
+        data = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(data[['x', 'y']].values, data.z.values)
+
+        V.model = 'harmonize'
+        x = np.linspace(0, np.max(V.bins), 10)
+
+        assert_array_almost_equal(
+            V.transform(x),
+            [np.NaN, 0.57, 1.01, 1.12, 1.15, 1.15, 1.15, 1.15, 1.21, 1.65],
+            decimal=2
+        )
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
@@ -770,6 +786,71 @@ class TestVariogramPlots(unittest.TestCase):
             [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
             ax.get_children()[2].get_offsets()[[5, 1117, 523]],
             decimal=True
+        )
+    
+    def test_location_trend(self):
+        # test that the correct amount of axes is produced
+        V = Variogram(self.c, self.v)
+
+        fig = V.location_trend(show=False)
+
+        self.assertEqual(len(fig.axes), 2)
+
+    def test_location_trend_pass_axes(self):
+        V = Variogram(self.c, self.v)
+
+        fig, axes = plt.subplots(1, 2)
+        V.location_trend(axes=axes, show=False)
+
+        # test some random y-values
+        assert_array_almost_equal(
+            [9.06, 5.95, 4.34, 10.91],
+            axes[0].get_children()[0].get_data()[1][[4, 16, 100, 140]],
+            decimal=2
+        )
+
+    def test_location_trend_raises(self):
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(ValueError):
+            V.location_trend(axes=[0, 1, 2])
+
+    def test_distance_difference_plot(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        fig = V.distance_difference_plot(show=False)
+        ax = fig.axes[0]
+        
+        # test some scatter positions
+        assert_array_almost_equal(
+            [[14.77, 4.33], [30.11, 7.87], [11.32, 2.63]],
+            ax.get_children()[1].get_offsets()[[5, 112, 1337]],
+            decimal=2
+        )
+
+    def test_distance_difference_pass_ax(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        fig, ax = plt.subplots(1,1)
+        V.distance_difference_plot(ax=ax, show=False)
+
+        # test some scatter positions
+        assert_array_almost_equal(
+            [[14.77, 4.33], [30.11, 7.87], [11.32, 2.63]],
+            ax.get_children()[1].get_offsets()[[5, 112, 1337]],
+            decimal=2
+        )
+
+    def test_distance_difference_with_bins(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        fig1 = V.distance_difference_plot(show=False, plot_bins=False)
+        fig2 = V.distance_difference_plot(show=False, plot_bins=True)
+
+        # there should be one child less
+        self.assertEqual(
+            len(fig1.axes[0].get_children()),
+            len(fig2.axes[0].get_children()) - 1
         )
 
 

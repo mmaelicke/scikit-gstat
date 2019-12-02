@@ -15,13 +15,13 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
         self.v = np.random.normal(5, 4, 30)
 
     def test_standard_settings(self):
-        DV = DirectionalVariogram(self.c, self.v)
+        DV = DirectionalVariogram(self.c, self.v, normalize=True)
 
         for x, y in zip(DV.parameters, [406., 2145., 0]):
             self.assertAlmostEqual(x, y, places=0)
 
     def test_azimuth(self):
-        DV = DirectionalVariogram(self.c, self.v, azimuth=-45)
+        DV = DirectionalVariogram(self.c, self.v, azimuth=-45, normalize=True)
 
         for x, y in zip(DV.parameters, [27.288, 131.644, 0]):
             self.assertAlmostEqual(x, y, places=3)
@@ -36,7 +36,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
             )
 
     def test_tolerance(self):
-        DV = DirectionalVariogram(self.c, self.v, tolerance=15)
+        DV = DirectionalVariogram(self.c, self.v, tolerance=15, normalize=True)
 
         for x, y in zip(DV.parameters, [32.474, 2016.601, 0]):
             self.assertAlmostEqual(x, y, places=3)
@@ -51,7 +51,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
             )
 
     def test_bandwidth(self):
-        DV = DirectionalVariogram(self.c, self.v, bandwidth=12)
+        DV = DirectionalVariogram(self.c, self.v, bandwidth=12, normalize=True)
 
         for x, y in zip(DV.parameters, [435.733, 2746.608, 0]):
             self.assertAlmostEqual(x, y, places=3)

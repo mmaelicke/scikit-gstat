@@ -3,13 +3,14 @@ Variogram class
 """
 import copy
 import os
+import warnings
 
 import numpy as np
 from pandas import DataFrame
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.spatial.distance import pdist, squareform
-from numba import jit
+from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
 
@@ -29,14 +30,13 @@ class Variogram(object):
                  model='spherical',
                  dist_func='euclidean',
                  bin_func='even',
-                 normalize=True,
+                 normalize=False,
                  fit_method='trf',
                  fit_sigma=None,
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False,
-                 harmonize=False
+                 verbose=False
                  ):
         r"""Variogram Class
 
@@ -149,19 +149,8 @@ class Variogram(object):
             function.
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
-        harmonize : bool
-            this kind of works so far, but will be rewritten (and documented)
 
         """
-        # deprecation warnings
-        if normalize and 'SKG_SUPRESS' not in os.environ.keys(): # pragma: no cover
-            print('Warning: normalize will change the default value \
-to False. You can add a SKG_SUPPRESS environment variable to suppress this warning.')
-        if 'SKG_SUPRESS' not in os.environ.keys():
-            print("Warning: 'harmonize' is deprecated and will be removed\
-with the next release. You can add a 'SKG_SUPPRESS' environment variable to \
-suppress this warning.")
-        
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -188,6 +177,9 @@ suppress this warning.")
         self._maxlag = None
         self.maxlag = maxlag
 
+        # harmonize model placeholder
+        self._harmonize = False
+
         # estimator can be a function or a string
         self._estimator = None
         self.set_estimator(estimator_name=estimator)
@@ -204,12 +196,6 @@ suppress this warning.")
 
         # specify if the lag should be given absolute or relative to the maxlag
         self._normalized = normalize
-
-        # specify if the experimental variogram shall be harmonized
-        self.harmonize = harmonize
-        if harmonize:
-            raise DeprecationWarning('Argument will be removed with 0.3')
-        self._harmonize = None
 
         # set if nugget effect shall be used
         self._use_nugget = None
@@ -431,8 +417,8 @@ suppress this warning.")
     def n_lags(self):
         """Number of lag bins
 
-        Pass the number of lag bins to be used on 
-        this Variogram instance. This will reset 
+        Pass the number of lag bins to be used on
+        this Variogram instance. This will reset
         the grouping index and fitting parameters
 
         """
@@ -444,12 +430,12 @@ suppress this warning.")
         # string are not implemented yet
         if isinstance(n, str):
             raise NotImplementedError('n_lags string values not implemented')
-        
+
         # n_lags is int
         elif isinstance(n, int):
             if n < 1:
                 raise ValueError('n_lags has to be a positive integer')
-            
+
             # set parameter
             self._n_lags = n
 
@@ -459,7 +445,7 @@ suppress this warning.")
         # else
         else:
             raise ValueError('n_lags has to be a positive integer')
-            
+
         # reset the fitting
         self.cof = None
         self.cov = None
@@ -518,6 +504,8 @@ suppress this warning.")
         self.cof, self.cov = None, None
 
         if isinstance(model_name, str):
+            # at first reset harmonize
+            self._harmonize = False
             if model_name.lower() == 'spherical':
                 self._model = models.spherical
             elif model_name.lower() == 'exponential':
@@ -530,11 +518,54 @@ suppress this warning.")
                 self._model = models.stable
             elif model_name.lower() == 'matern':
                 self._model = models.matern
+            elif model_name.lower() == 'harmonize':
+                self._harmonize = True
+                self._model = self._build_harmonized_model()
             else:
                 raise ValueError(
                     'The theoretical Variogram function %s is not understood, please provide the function' % model_name)
         else:
             self._model = model_name
+
+    def _build_harmonized_model(self):
+        x = self.bins
+        y = self.experimental
+
+        _x = x[~np.isnan(y)]
+        _y = y[~np.isnan(y)]
+        regr = IsotonicRegression(increasing=True).fit(_x, _y)
+
+        # create the model function
+        def harmonize(x):
+            """Monotonized Variogram
+
+            Return the isotonic harmonized experimental variogram.
+            This means, the experimental variogram is monotonic after harmonization.
+
+            The harmonization is done using following Hinterding (2003) using 
+            the PAVA algorithm (Barlow and Bartholomew, 1972).
+
+            Returns
+            -------
+            gamma : numpy.ndarray
+                monotonized experimental variogram
+            
+            References
+            ----------
+            Barlow, R., D. Bartholomew, et al. (1972): Statistical Interference Under Order Restrictions.
+                John Wiley and Sons, New York.
+            Hiterding, A. (2003): Entwicklung hybrider Interpolationsverfahren für den automatisierten Betrieb am
+                Beispiel meteorologischer Größen. Dissertation, Institut für Geoinformatik, Westphälische
+                Wilhelms-Universität Münster, IfGIprints, Münster. ISBN: 3-936616-12-4
+
+            """
+
+            if isinstance(x, (list, tuple, np.ndarray)):
+                return regr.transform(x)
+            else:
+                return regr.transform([x])
+
+        return harmonize
 
     @property
     def use_nugget(self):
@@ -667,7 +698,6 @@ suppress this warning.")
         Returns
         -------
         void
-
 
         Notes
         -----
@@ -855,9 +885,22 @@ suppress this warning.")
         _x = x[~np.isnan(y)]
         _y = y[~np.isnan(y)]
 
-        # the model function is re-defined. otherwise scipy cannot determine
-        # the number of parameters
-        # TODO: def f(n of par)
+        # handle harmonized models
+        if self._harmonize:
+            _x = np.linspace(0, np.max(_x), 100)
+            _y = self._model(_x)
+
+            # get the params
+            s = 0.95 * np.nanmax(_y)
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                r = np.argwhere(_y >= s)[0][0]
+            n = _y[0] if self.use_nugget else 0.0
+
+            # set the params
+            self.cof = [r, s, n]
+            return
+
 
         # Switch the method
         # Trust Region Reflective
@@ -882,11 +925,6 @@ suppress this warning.")
                 sigma=self.fit_sigma,
                 **kwargs
             )
-
-        # monotonization
-        elif self.fit_method == 'harmonize':
-            # TODO, make the harmonization and infer the cof from that
-            raise NotImplementedError
 
         else:
             raise ValueError("fit method has to be one of ['trf', 'lm']")
@@ -915,50 +953,8 @@ suppress this warning.")
         if self.cof is None:
             self.fit(force=True)
 
-        return np.fromiter(map(self.compiled_model, x), dtype=float)
-
-    @property
-    def compiled_model(self):
-        """Compiled theoretical variogram model
-
-        Compile the model using the actual fitting parameters to return a
-        function implementing them.
-
-        The compiled_model will be removed in version 0.3. Use the
-        `Variogram.fitted_model` property instead. It is works in the same
-        way, but is significantly faster
-
-        Returns
-        -------
-        callable
-
-        """
-        if not 'SKG_SUPRESS' in os.environ:
-            print('Warning: compiled_model is deprecated and will be removed. \
-Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment variable to supress this warning.')
-        if self.cof is None:
-            self.fit(force=True)
-
-        # get the function
-        func = self._model
-
-        # get the pars
-        params = self.describe()
-        ming = params['nugget']
-        maxg = params['sill']
-
-        # define the wrapper
-        def model(x):
-            gamma = func(x, *self.cof)
-            if int(x) == 0 and not np.isfinite(gamma):
-                return ming
-            elif int(x) > 0 and not np.isfinite(gamma):
-                return maxg
-            else:
-                return gamma
-
-        # return
-        return model
+        # return the result
+        return self.fitted_model(x)
 
     @property
     def fitted_model(self):
@@ -967,8 +963,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
         Returns a callable that takes a distance value and returns a
         semivariance. This model is fitted to the current Variogram
         parameters. The function will be interpreted at return time with the
-        parameters hard-coded into the function code. This makes it way
-        faster than`Variogram.compiled_model`.
+        parameters hard-coded into the function code.
 
         Returns
         -------
@@ -985,7 +980,10 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
         # get the function
         func = self._model
 
-        code = """model = lambda x: func(x, %s)""" % \
+        if self._harmonize:
+            code = """model = lambda x: func(x)"""
+        else:
+            code = """model = lambda x: func(x, %s)""" % \
                (', '.join([str(_) for _ in cof]))
 
         # run the code
@@ -1101,10 +1099,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
         Variogram.isotonic
 
         """
-        if self.harmonize:
-            return self.isotonic
-        else:
-            return self._experimental
+        return self._experimental
 
     @property
 #    @jit
@@ -1137,35 +1132,6 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
 
         # apply
         return y.copy()
-
-    @property
-    def isotonic(self):
-        """
-        Return the isotonic harmonized experimental variogram.
-        This means, the experimental variogram is monotonic after harmonization.
-
-        The harmonization is done using PAVA algorithm:
-
-        Barlow, R., D. Bartholomew, et al. (1972): Statistical Interference Under Order Restrictions.
-            John Wiley and Sons, New York.
-        Hiterding, A. (2003): Entwicklung hybrider Interpolationsverfahren für den automatisierten Betrieb am
-            Beispiel meteorologischer Größen. Dissertation, Institut für Geoinformatik, Westphälische
-            Wilhelms-Universität Münster, IfGIprints, Münster. ISBN: 3-936616-12-4
-
-        TODO: solve the import
-
-        :return: np.ndarray, monotonized experimental variogram
-        """
-        # TODO this is imported in the function as sklearn is not a dependency (and should not be for now)
-        raise NotImplementedError
-
-        try:
-            from sklearn.isotonic import IsotonicRegression
-            y = self._experimental
-            x = self.bins
-            return IsotonicRegression().fit_transform(x,y)
-        except ImportError:
-            raise NotImplementedError('scikit-learn is not installed, but the isotonic function without sklear dependency is not installed yet.')
 
     def __get_fit_bounds(self, x, y):
         """
@@ -1706,7 +1672,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
 
         return fig
 
-    def location_trend(self, axes=None):
+    def location_trend(self, axes=None, show=True):
         """Location Trend plot
 
         Plots the values over each dimension of the coordinates in a scatter
@@ -1749,7 +1715,9 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
 
         # plot the figure and return it
         plt.tight_layout()
-        fig.show()
+
+        if show:  # pragma: no cover
+            fig.show()
 
         return fig
 
@@ -1806,7 +1774,7 @@ Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment vari
         ax.set_title('Pairwise distance ~ difference')
 
         # show the plot
-        if show:
+        if show:  # pragma: no cover
             fig.show()
 
         return fig

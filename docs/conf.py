@@ -24,9 +24,9 @@ copyright = '2019, Mirko Mälicke'
 author = 'Mirko Mälicke'
 
 # The short X.Y version
-version = '0.2.7'
+version = '0.2.8'
 # The full version, including alpha/beta/rc tags
-release = '0.2.7'
+release = '0.2.8'
 
 
 # -- General configuration ---------------------------------------------------
@@ -62,7 +62,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.ipynb']
 
 # The master toctree document.
 master_doc = 'index'

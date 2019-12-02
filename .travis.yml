@@ -53,7 +53,7 @@ jobs:
       install:
         # update and install texlive
         - sudo apt-get update
-        - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended
+        - sudo apt-get install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
         - pip install sphinx
         - pip install -r requirements.rtd.txt
 

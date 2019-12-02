@@ -9,12 +9,19 @@ from sklearn.model_selection import GridSearchCV
 from skgstat import Variogram
 from skgstat.interfaces import VariogramEstimator
 from skgstat.interfaces import pykrige as pykrige_interface
+from skgstat.interfaces import gstools as gstools_interface
 
 try:
     import pykrige
     PYKRIGE_AVAILABLE = True
 except ImportError:
     PYKRIGE_AVAILABLE = False
+
+try:
+    import gstools
+    GSTOOLS_AVAILABLE = True
+except ImportError:
+    GSTOOLS_AVAILABLE = False
 
 
 class TestVariogramEstimator(unittest.TestCase):
@@ -175,6 +182,38 @@ class TestPyKrigeInterface(unittest.TestCase):
         args = pykrige_interface.pykrige_as_kwargs(self.V, adjust_nlags=True)
 
         self.assertEqual(args['nlags'], self.V.n_lags)
+
+
+class TestGstoolsInterface(unittest.TestCase):
+    def setUp(self):
+        # use real sample data in the interface
+        df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'sample.csv'))
+        self.c = df[['x', 'y']].values
+        self.v = df.z.values
+
+        # build variogram
+        self.V = Variogram(self.c, self.v, model='matern', normalize=False, use_nugget=True)
+
+        # model data
+        self.xi = np.linspace(0, self.V.bins[-1], 100)
+        self.yi = self.V.transform(self.xi)
+
+        if not GSTOOLS_AVAILABLE:
+            print('GSTools not found, will skip all gstools interface tests')
+
+    def test_interface(self):
+        model = gstools_interface.gstools_cov_model(self.V, dim=2)
+
+        assert_array_almost_equal(
+            model.variogram(self.xi), self.yi, decimal=2
+        )
+
+    def test_infer_dims(self):
+        model = gstools_interface.gstools_cov_model(self.V)
+
+        assert_array_almost_equal(
+            model.variogram(self.xi), self.yi, decimal=2
+        )
 
 
 if __name__ == '__main__':

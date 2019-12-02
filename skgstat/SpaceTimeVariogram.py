@@ -30,7 +30,6 @@ class SpaceTimeVariogram:
                  estimator='matheron',
                  use_nugget=False,
                  model='product-sum',
-
                  verbose=False
                  ):
         # set coordinates array
