@@ -24,7 +24,8 @@ from skgstat.tests.kriging import (
 )
 from skgstat.tests.interfaces import (
     TestVariogramEstimator,
-    TestPyKrigeInterface
+    TestPyKrigeInterface,
+    TestGstoolsInterface
 )
 from skgstat.tests.stmodels import (
     TestSumModel,
