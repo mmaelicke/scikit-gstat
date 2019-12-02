@@ -28,7 +28,7 @@ class DirectionalVariogram(Variogram):
                  model='spherical',
                  dist_func='euclidean',
                  bin_func='even',
-                 normalize=True,
+                 normalize=False,
                  fit_method='trf',
                  fit_sigma=None,
                  directional_model='triangle',
@@ -38,8 +38,7 @@ class DirectionalVariogram(Variogram):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False,
-                 harmonize=False
+                 verbose=False
                  ):
         r"""Variogram Class
 
@@ -193,8 +192,7 @@ class DirectionalVariogram(Variogram):
             function.
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
-        harmonize : bool
-            this kind of works so far, but will be rewritten (and documented)
+
         """
         # Set coordinates
         self._X = np.asarray(coordinates)
@@ -253,9 +251,6 @@ class DirectionalVariogram(Variogram):
 
         # specify if the lag should be given absolute or relative to the maxlag
         self._normalized = normalize
-
-        # specify if the experimental variogram shall be harmonized
-        self.harmonize = harmonize
 
         # set the fitting method and sigma array
         self.fit_method = fit_method

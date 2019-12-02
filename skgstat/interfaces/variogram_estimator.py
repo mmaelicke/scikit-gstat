@@ -18,7 +18,6 @@ class VariogramEstimator(BaseEstimator):
                  maxlag=None,
                  n_lags=10,
                  verbose=False,
-                 harmonize=False,
                  use_score='rmse'
                  ):
         r"""VariogramEstimator class
@@ -65,7 +64,6 @@ class VariogramEstimator(BaseEstimator):
         self.maxlag = maxlag
         self.n_lags = n_lags
         self.verbose = verbose
-        self.harmonize = harmonize
 
         # add Estimator specific attributes
         self.use_score = use_score
@@ -105,8 +103,7 @@ class VariogramEstimator(BaseEstimator):
             fit_sigma=self.fit_sigma,
             use_nugget=self.use_nugget,
             maxlag=self.maxlag,
-            n_lags=self.n_lags,
-            harmonize=self.harmonize
+            n_lags=self.n_lags
         )
 
         # append the data

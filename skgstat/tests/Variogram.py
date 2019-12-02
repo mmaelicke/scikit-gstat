@@ -1,6 +1,8 @@
 import unittest
+import os
 
 import numpy as np
+import pandas as pd
 from numpy.testing import assert_array_almost_equal
 import matplotlib.pyplot as plt
 
@@ -19,7 +21,7 @@ class TestVariogramInstatiation(unittest.TestCase):
     def test_standard_settings(self):
         V = Variogram(self.c, self.v)
 
-        for x, y in zip(V.parameters, [301.266, 291.284, 0]):
+        for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_pass_median_maxlag_on_instantiation(self):
@@ -215,7 +217,7 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertAlmostEqual(V.maxlag, 33.3, places=1)
 
     def test_use_nugget_setting(self):
-        V = Variogram(self.c, self.v)
+        V = Variogram(self.c, self.v, normalize=True)
 
         # test the property and setter
         self.assertEqual(V.use_nugget, False)
@@ -490,6 +492,20 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         res = self.V.transform(np.arange(0, 20, 5))
 
         assert_array_almost_equal(result, res, decimal=2)
+
+    def test_harmonize_model(self):
+        # load data sample
+        data = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(data[['x', 'y']].values, data.z.values)
+
+        V.model = 'harmonize'
+        x = np.linspace(0, np.max(V.bins), 10)
+
+        assert_array_almost_equal(
+            V.transform(x),
+            [np.NaN, 0.57, 1.01, 1.12, 1.15, 1.15, 1.15, 1.15, 1.21, 1.65],
+            decimal=2
+        )
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
