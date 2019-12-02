@@ -154,10 +154,10 @@ class Variogram(object):
 
         """
         # deprecation warnings
-        if normalize and 'SKG_SUPRESS' not in os.environ.keys():  # pragma: no cover
+        if normalize and 'SKG_SUPPRESS' not in os.environ.keys():  # pragma: no cover
             print('Warning: normalize will change the default value \
 to False. You can add a SKG_SUPPRESS environment variable to suppress this warning.')
-        if 'SKG_SUPRESS' not in os.environ.keys():
+        if 'SKG_SUPPRESS' not in os.environ.keys():
             print("Warning: 'harmonize' is deprecated and will be removed\
 with the next release. You can add a 'SKG_SUPPRESS' environment variable to \
 suppress this warning.")
@@ -933,7 +933,7 @@ suppress this warning.")
         callable
 
         """
-        if not 'SKG_SUPRESS' in os.environ:
+        if not 'SKG_SUPPRESS' in os.environ:
             print('Warning: compiled_model is deprecated and will be removed. \
 Use Variogram.fitted_model instead. You can add an SKG_SUPPRESS environment variable to supress this warning.')
         if self.cof is None:
