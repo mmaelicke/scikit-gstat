@@ -787,6 +787,71 @@ class TestVariogramPlots(unittest.TestCase):
             ax.get_children()[2].get_offsets()[[5, 1117, 523]],
             decimal=True
         )
+    
+    def test_location_trend(self):
+        # test that the correct amount of axes is produced
+        V = Variogram(self.c, self.v)
+
+        fig = V.location_trend(show=False)
+
+        self.assertEqual(len(fig.axes), 2)
+
+    def test_location_trend_pass_axes(self):
+        V = Variogram(self.c, self.v)
+
+        fig, axes = plt.subplots(1, 2)
+        V.location_trend(axes=axes, show=False)
+
+        # test some random y-values
+        assert_array_almost_equal(
+            [9.06, 5.95, 4.34, 10.91],
+            axes[0].get_children()[0].get_data()[1][[4, 16, 100, 140]],
+            decimal=2
+        )
+
+    def test_location_trend_raises(self):
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(ValueError):
+            V.location_trend(axes=[0, 1, 2])
+
+    def test_distance_difference_plot(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        fig = V.distance_difference_plot(show=False)
+        ax = fig.axes[0]
+        
+        # test some scatter positions
+        assert_array_almost_equal(
+            [[14.77, 4.33], [30.11, 7.87], [11.32, 2.63]],
+            ax.get_children()[1].get_offsets()[[5, 112, 1337]],
+            decimal=2
+        )
+
+    def test_distance_difference_pass_ax(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        fig, ax = plt.subplots(1,1)
+        V.distance_difference_plot(ax=ax, show=False)
+
+        # test some scatter positions
+        assert_array_almost_equal(
+            [[14.77, 4.33], [30.11, 7.87], [11.32, 2.63]],
+            ax.get_children()[1].get_offsets()[[5, 112, 1337]],
+            decimal=2
+        )
+
+    def test_distance_difference_with_bins(self):
+        V = Variogram(self.c, self.v, n_lags=4)
+
+        fig1 = V.distance_difference_plot(show=False, plot_bins=False)
+        fig2 = V.distance_difference_plot(show=False, plot_bins=True)
+
+        # there should be one child less
+        self.assertEqual(
+            len(fig1.axes[0].get_children()),
+            len(fig2.axes[0].get_children()) - 1
+        )
 
 
 if __name__ == '__main__':  # pragma: no cover

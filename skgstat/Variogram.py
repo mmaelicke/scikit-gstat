@@ -952,7 +952,7 @@ class Variogram(object):
         # if instance is not fitted, fit it
         if self.cof is None:
             self.fit(force=True)
-        
+
         # return the result
         return self.fitted_model(x)
 
@@ -1672,7 +1672,7 @@ class Variogram(object):
 
         return fig
 
-    def location_trend(self, axes=None):
+    def location_trend(self, axes=None, show=True):
         """Location Trend plot
 
         Plots the values over each dimension of the coordinates in a scatter
@@ -1715,7 +1715,9 @@ class Variogram(object):
 
         # plot the figure and return it
         plt.tight_layout()
-        fig.show()
+
+        if show:  # pragma: no cover
+            fig.show()
 
         return fig
 
@@ -1772,7 +1774,7 @@ class Variogram(object):
         ax.set_title('Pairwise distance ~ difference')
 
         # show the plot
-        if show:
+        if show:  # pragma: no cover
             fig.show()
 
         return fig
