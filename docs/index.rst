@@ -51,6 +51,7 @@ as:
     install
     getting_started
     userguide/userguide
+    tutorials/tutorials
     technical/technical
     reference/reference
     changelog
