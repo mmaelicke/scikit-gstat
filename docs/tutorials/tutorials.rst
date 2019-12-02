@@ -12,3 +12,4 @@ while the tutorials are focused on code.
     :caption: Contents:
 
     01_getting_started
+    02_variogram_models
