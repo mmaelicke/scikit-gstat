@@ -46,18 +46,6 @@ Full Documentation
 
 The full documentation can be found at: https://mmaelicke.github.io/scikit-gstat
 
-
-New Version 0.2
----------------
-
-Scikit-gstat was rewritten in major parts. Most of the changes are internal,
-but the attributes and behaviour of the `Variogram` has also changed
-substantially.
-A detailed description of of the new versions usage will follow. The last
-version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
-branch on GitHub, but not developed any further. Those two versions are not
-compatible.
-
 Description
 -----------
 
@@ -89,8 +77,6 @@ The models include:
 with all of them in a nugget and no-nugget variation. All the estimator are
 implemented using numba's jit decorator. The usage of numba might be subject
 to change in future versions.
-At the current stage, the package does not include any kriging.
-This is planned for a future release.
 
 
 Installation
@@ -137,3 +123,15 @@ You can easily set up an example by generating some random data:
   Range:        1.64
   Sill:         5.35
   Nugget:       0.00
+  
+  
+New Version 0.2
+---------------
+
+Scikit-gstat was rewritten in major parts. Most of the changes are internal,
+but the attributes and behaviour of the `Variogram` has also changed
+substantially.
+A detailed description of of the new versions usage will follow. The last
+version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
+branch on GitHub, but not developed any further. Those two versions are not
+compatible.
