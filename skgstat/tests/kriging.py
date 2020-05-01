@@ -56,7 +56,7 @@ class TestKrigingInstantiation(unittest.TestCase):
 
     def test_max_points_type_check(self):
         with self.assertRaises(ValueError) as e:
-            OrdinaryKriging(self.V, max_points=4.0)
+            OrdinaryKriging(self.V, max_points=16.0)
         
         self.assertEqual(
             str(e.exception), 'max_points has to be an integer.'
@@ -64,7 +64,8 @@ class TestKrigingInstantiation(unittest.TestCase):
 
     def test_max_points_negative(self):
         with self.assertRaises(ValueError) as e:
-            OrdinaryKriging(self.V, max_points=-2)
+            ok = OrdinaryKriging(self.V, max_points=10)
+            ok.max_points = - 2
             
         self.assertEqual(
             str(e.exception), 'max_points can\'t be negative.'
@@ -72,10 +73,11 @@ class TestKrigingInstantiation(unittest.TestCase):
 
     def test_max_points_smaller_min_points(self):
         with self.assertRaises(ValueError) as e:
-            OrdinaryKriging(self.V, min_points=10, max_points=5)
+            ok = OrdinaryKriging(self.V, min_points=3, max_points=5)
+            ok.max_points = 2
         
         self.assertEqual(
-            str(e.exception), 'max_points can\'t be larger smaller min_points.'
+            str(e.exception), 'max_points can\'t be smaller than min_points.'
         )
 
     def test_mode_settings(self):
