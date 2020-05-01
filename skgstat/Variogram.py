@@ -284,6 +284,7 @@ class Variogram(object):
         class does only accept one dimensional arrays.
         On success all fitting parameters are deleted and the pairwise
         differences are recalculated.
+        Raises :py:class:`ValueError`s on shape mismatches and a Warning
 
         Parameters
         ----------
@@ -292,6 +293,12 @@ class Variogram(object):
         Returns
         -------
         void
+
+        Raises
+        ------
+        ValueError : raised if the values array shape does not match the
+            coordinates array, or more than one dimension given
+        Warning : raised if all input values are the same
 
         See Also
         --------
@@ -303,15 +310,19 @@ class Variogram(object):
             raise ValueError('The length of the values array has to match' +
                              'the length of coordinates')
 
-        # reset fitting parameter
-        self.cof, self.cov = None, None
-        self._diff = None
-
         # use an array
         _y = np.asarray(values)
         if not _y.ndim == 1:
             raise ValueError('The values shall be a 1-D array.' +
                              'Multi-dimensional values not supported yet.')
+
+        # check if all input values are the same
+        if len(set(_y)) < 2:
+            raise Warning('All input values are the same.')
+
+        # reset fitting parameter
+        self.cof, self.cov = None, None
+        self._diff = None
 
         # set new values
         self._values = np.asarray(values)
