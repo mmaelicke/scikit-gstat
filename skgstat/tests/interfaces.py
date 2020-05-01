@@ -14,14 +14,14 @@ try:
     from skgstat.interfaces import pykrige as pykrige_interface
     PYKRIGE_AVAILABLE = True
 except:
-    PYKRIGE_AVAILABLE = False
+    PYKRIGE_AVAILABLE = False  # pragma: no cover
 
 try:
     import gstools
     from skgstat.interfaces import gstools as gstools_interface
     GSTOOLS_AVAILABLE = True
 except:
-    GSTOOLS_AVAILABLE = False
+    GSTOOLS_AVAILABLE = False  # pragma: no cover
 
 
 class TestVariogramEstimator(unittest.TestCase):
@@ -119,7 +119,7 @@ class TestPyKrigeInterface(unittest.TestCase):
             print('PyKrige not found, will skip all pykrige interface tests')
     
     def test_model_interface(self):
-        if not PYKRIGE_AVAILABLE:
+        if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
         # get the function
         model = pykrige_interface.pykrige_model(self.V)
@@ -131,7 +131,7 @@ class TestPyKrigeInterface(unittest.TestCase):
         assert_array_almost_equal(yi, model([], xi), decimal=6)
     
     def test_model_interface_from_list(self):
-        if not PYKRIGE_AVAILABLE:
+        if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
 
         # get the function
@@ -144,7 +144,7 @@ class TestPyKrigeInterface(unittest.TestCase):
         assert_array_almost_equal(yi, model([], xi), decimal=6)
 
     def test_parameters(self):
-        if not PYKRIGE_AVAILABLE:
+        if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
 
         p = pykrige_interface.pykrige_params(self.V)
@@ -155,7 +155,7 @@ class TestPyKrigeInterface(unittest.TestCase):
         self.assertAlmostEqual(p[2], params[2], places=4)
 
     def test_as_kwargs(self):
-        if not PYKRIGE_AVAILABLE:
+        if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
 
         args = pykrige_interface.pykrige_as_kwargs(self.V)
@@ -174,7 +174,7 @@ class TestPyKrigeInterface(unittest.TestCase):
         )
 
     def test_as_kwargs_adjust_maxlag(self):
-        if not PYKRIGE_AVAILABLE:
+        if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
 
         V = self.V.clone()
@@ -193,7 +193,7 @@ class TestPyKrigeInterface(unittest.TestCase):
         assert_array_almost_equal(yi, args['variogram_function']([], xi))
     
     def test_as_kwargs_adjust_nlags(self):
-        if not PYKRIGE_AVAILABLE:
+        if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
 
         args = pykrige_interface.pykrige_as_kwargs(self.V, adjust_nlags=True)
@@ -219,7 +219,7 @@ class TestGstoolsInterface(unittest.TestCase):
             print('GSTools not found, will skip all gstools interface tests')
 
     def test_interface(self):
-        if not GSTOOLS_AVAILABLE:
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
             return True
 
         model = gstools_interface.gstools_cov_model(self.V, dim=2)
@@ -229,7 +229,7 @@ class TestGstoolsInterface(unittest.TestCase):
         )
 
     def test_infer_dims(self):
-        if not GSTOOLS_AVAILABLE:
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
             return True
 
         model = gstools_interface.gstools_cov_model(self.V)
