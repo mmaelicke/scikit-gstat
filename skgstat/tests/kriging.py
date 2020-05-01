@@ -33,44 +33,50 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_min_points_type_check(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=4.0)
-            self.assertEqual(
-                str(e), 'min_points has to be an integer.'
-            )
+        
+        self.assertEqual(
+            str(e.exception), 'min_points has to be an integer.'
+        )
 
     def test_min_points_negative(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=-2)
-            self.assertEqual(
-                str(e), 'min_points can\'t be negative.'
-            )
+        
+        self.assertEqual(
+            str(e.exception), 'min_points can\'t be negative.'
+        )
 
     def test_min_points_larger_max_points(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=10, max_points=5)
-            self.assertEqual(
-                str(e), 'min_points can\'t be larger than max_points.'
-            )
+        
+        self.assertEqual(
+            str(e.exception), 'min_points can\'t be larger than max_points.'
+        )
 
     def test_max_points_type_check(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, max_points=4.0)
-            self.assertEqual(
-                str(e), 'max_points has to be an integer.'
-            )
+        
+        self.assertEqual(
+            str(e.exception), 'max_points has to be an integer.'
+        )
 
     def test_max_points_negative(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, max_points=-2)
-            self.assertEqual(
-                str(e), 'max_points can\'t be negative.'
-            )
+            
+        self.assertEqual(
+            str(e.exception), 'max_points can\'t be negative.'
+        )
 
     def test_max_points_smaller_min_points(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=10, max_points=5)
-            self.assertEqual(
-                str(e), 'max_points can\'t be larger smaller min_points.'
-            )
+        
+        self.assertEqual(
+            str(e.exception), 'max_points can\'t be larger smaller min_points.'
+        )
 
     def test_mode_settings(self):
         # estimate mode
@@ -86,30 +92,34 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_mode_unknown(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, mode='foo')
-            self.assertEqual(
-                str(e), "mode has to be one of 'exact', 'estimate'."
-            )
+            
+        self.assertEqual(
+            str(e.exception), "mode has to be one of 'exact', 'estimate'."
+        )
 
     def test_precision_TypeError(self):
         with self.assertRaises(TypeError) as e:
             OrdinaryKriging(self.V, precision='5.5')
-            self.assertEqual(
-                str(e), 'precision has to be of type int'
-            )
+            
+        self.assertEqual(
+            str(e.exception), 'precision has to be of type int'
+        )
 
     def test_precision_ValueError(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, precision=0)
-            self.assertEqual(
-                str(e), 'The precision has be be > 1'
-            )
+            
+        self.assertEqual(
+            str(e.exception), 'The precision has be be > 1'
+        )
 
     def test_solver_AttributeError(self):
         with self.assertRaises(AttributeError) as e:
             OrdinaryKriging(self.V, solver='peter')
-            self.assertEqual(
-                str(e), "solver has to be ['inv', 'numpy', 'scipy']"
-            )
+            
+        self.assertEqual(
+            str(e.exception), "solver has to be ['inv', 'numpy', 'scipy']"
+        )
 
 
 class TestPerformance(unittest.TestCase):
@@ -187,5 +197,5 @@ class TestPerformance(unittest.TestCase):
         self._run_benchmark(points=2000)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     unittest.main()
