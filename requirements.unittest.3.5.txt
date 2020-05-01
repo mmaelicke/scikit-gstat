@@ -1,4 +1,3 @@
 nose
 pykrige
-numpy
 gstools
