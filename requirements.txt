@@ -1,7 +1,6 @@
 scipy
 numpy
 pandas
-nose
 matplotlib
 numba
 shapely

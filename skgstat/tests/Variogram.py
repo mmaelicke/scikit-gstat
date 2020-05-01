@@ -72,6 +72,15 @@ class TestVariogramInstatiation(unittest.TestCase):
             str(e.exception)
         )
 
+    def test_value_warning(self):
+        with self.assertRaises(Warning) as w:
+            Variogram(self.c, [42] * 30)
+        
+        self.assertEqual(
+            'All input values are the same.',
+            str(w.exception)
+        )
+
 
 class TestVariogramArguments(unittest.TestCase):
     def setUp(self):

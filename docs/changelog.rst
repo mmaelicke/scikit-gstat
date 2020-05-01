@@ -2,12 +2,13 @@
 Changelog
 =========
 
-Version 0.3
+Version 0.2.8
 =============
 
+- [Variogram] now raises a `Warning` if all input values are the same
 - [DOCS] Tutorial added and Dockerfile finalized
-- [Variogram] normalize defualt value changed to False
-- [Variogram] harmonize parameter is removed
+- [Variogram] `normalize` default value changed to `normalize=False`
+- [Variogram] `harmonize` parameter is removed
 - [Variogram] Monotonization (old harmonize par) is available as a new
   theoretical model function. Can be used by setting `model='harmonize'`
 - [interfaces] gstools interface implemented. 

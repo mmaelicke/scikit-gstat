@@ -33,7 +33,7 @@ install:
   - source activate travis
 
   # install additional requirements for tests
-  - pip install -r requirements.unittest.txt
+  - pip install -r requirements.unittest.$TRAVIS_PYTHON_VERSION.txt
   - python setup.py install
 
   # install codecov
