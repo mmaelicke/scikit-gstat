@@ -1,5 +1,5 @@
 scipy
-numpy>=1.16.*
+numpy
 pandas
 matplotlib
 numba
