@@ -594,6 +594,12 @@ class Variogram(object):
     def dist_function(self):
         return self._dist_func
 
+    def _dist_func_wrapper(self, x):
+        if callable(self._dist_func):
+            return self._dist_func(x)
+        else:
+            return pdist(X=x, metric=self._dist_func)
+    
     @dist_function.setter
     def dist_function(self, func):
         self.set_dist_function(func=func)
@@ -626,7 +632,7 @@ class Variogram(object):
                 raise NotImplementedError
             else:
                 # if not ranks, it has to be a scipy metric
-                self._dist_func = lambda x: pdist(X=x, metric=func)
+                self._dist_func = func
 
         elif callable(func):
             self._dist_func = func
@@ -1014,7 +1020,7 @@ class Variogram(object):
         else:
             _x = self._X
         # else calculate the distances
-        self._dist = self._dist_func(_x)
+        self._dist = self._dist_func_wrapper(_x)
 
     def _calc_diff(self, force=False):
         """Calculates the pairwise differences
