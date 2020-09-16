@@ -17,10 +17,6 @@ Info: scikit-gstat needs Python >= 3.5!
    :alt: Codacy Badge
    :target: https://app.codacy.com/app/mmaelicke/scikit-gstat?utm_source=github.com&utm_medium=referral&utm_content=mmaelicke/scikit-gstat&utm_campaign=Badge_Grade_Dashboard
 
-.. image:: https://readthedocs.org/projects/scikit-gstat/badge/?version=latest
-    :target: http://scikit-gstat.readthedocs.io/en/latest?badge=latest
-    :alt: Documentation Status
-
 .. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
@@ -35,9 +31,7 @@ In case you use SciKit-GStat in other software or scientific publications,
 please reference this module. It is published and has a DOI. It can be cited
 as:
 
-  Mirko Mälicke, & Helge David Schneider. (2019, November 7). Scikit-GStat 0.2.6: 
-  A scipy flavoured geostatistical analysis toolbox written in Python. 
-  (Version v0.2.6). Zenodo. http://doi.org/10.5281/zenodo.3531816
+  Mirko Mälicke, & Helge David Schneider. (2019, November 25). Scikit-GStat 0.2.7: A scipy flavored geostatistical analysis toolbox written in Python. (Version v.0.2.7). Zenodo. http://doi.org/10.5281/zenodo.3552235
 
 
 
@@ -97,7 +91,7 @@ GIT:
   pip install -r requirements.txt
   pip install -e .
 
-**Note:** It can happen that the installation of shapely, numba or numpy is failing using pip. Especially on Windows systems. Usually, a missing Dll or visual c++ redistributable is the reason. These errors are not caused by pip, scikit-gstat or the respective packages and there are a lot of issues in the shapely and numpy repo concerning these problems. Usually, the best workaround is to install especially shapely independent from scikit-gstat. As far as I know, these problems do not apply if anaconda is used like:
+**Note:** It can happen that the installation of shapely, numba or numpy is failing using pip. Especially on Windows systems. Usually, a missing Dll (see eg. `#31 <https://github.com/mmaelicke/scikit-gstat/issues/31>`_) or visual c++ redistributable is the reason. These errors are not caused by pip, scikit-gstat or the respective packages and there are a lot of issues in the shapely and numpy repo concerning these problems. Usually, the best workaround is to install especially shapely independent from scikit-gstat. As far as I know, these problems do not apply if anaconda is used like:
 
 .. code-block:: bash
   
