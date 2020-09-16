@@ -97,6 +97,12 @@ GIT:
   pip install -r requirements.txt
   pip install -e .
 
+**Note:** It can happen that the installation of shapely, numba or numpy is failing using pip. Especially on Windows systems. Usually, a missing Dll or visual c++ redistributable is the reason. These errors are not caused by pip, scikit-gstat or the respective packages and there are a lot of issues in the shapely and numpy repo concerning these problems. Usually, the best workaround is to install especially shapely independent from scikit-gstat. As far as I know, these problems do not apply if anaconda is used like:
+
+.. code-block:: bash
+  
+  conda install shapely numpy
+
 Usage
 ~~~~~
 
