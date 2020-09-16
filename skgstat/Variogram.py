@@ -162,7 +162,8 @@ class Variogram(object):
 
         # set values
         self._values = None
-        self.set_values(values=values)
+        # calc_diff = False here, because it will be calculated by fit() later
+        self.set_values(values=values, calc_diff=False)
 
         # distance matrix
         self._dist = None
@@ -214,7 +215,7 @@ class Variogram(object):
         self._cache_experimental = False
 
         # do the preprocessing and fitting upon initialization
-        self.preprocessing(force=True)
+        # Note that fit() calls preprocessing
         self.fit(force=True)
 
     @property
@@ -276,7 +277,7 @@ class Variogram(object):
         """
         return squareform(self._diff)
 
-    def set_values(self, values):
+    def set_values(self, values, calc_diff=True):
         """Set new values
 
         Will set the passed array as new value array. This array has to be of
@@ -328,7 +329,8 @@ class Variogram(object):
         self._values = np.asarray(values)
 
         # recalculate the pairwise differences
-        self._calc_diff(force=True)
+        if calc_diff:
+            self._calc_diff(force=True)
 
     @property
     def bin_func(self):
@@ -1039,27 +1041,11 @@ class Variogram(object):
         self._diff = np.zeros(int((l**2 - l) / 2))
 
         # calculate the pairwise differences
-        for t, k in zip(self.__vdiff_indexer(), range(len(self._diff))):
-            self._diff[k] = np.abs(v[t[0]] - v[t[1]])
-
-    #@jit
-    def __vdiff_indexer(self):
-        """Pairwise indexer
-
-        Returns an iterator over the values or coordinates in squareform
-        coordinates. The iterable will be of type tuple.
-
-        Returns
-        -------
-        iterable
-
-        """
-        l = len(self.values)
-
+        k = 0
         for i in range(l):
-            for j in range(l):
-                if i < j:
-                    yield i, j
+            for j in range(i+1, l):
+                 self._diff[k] = np.abs(v[i] - v[j])
+                 k += 1
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
@@ -1119,7 +1105,6 @@ class Variogram(object):
         return self._experimental
 
     @property
-#    @jit
     def _experimental(self):
         """
 
