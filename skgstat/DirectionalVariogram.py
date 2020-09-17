@@ -32,7 +32,7 @@ class DirectionalVariogram(Variogram):
                  normalize=False,
                  fit_method='trf',
                  fit_sigma=None,
-                 directional_model='triangle',
+                 directional_model='compass',
                  azimuth=0,
                  tolerance=45.0,
                  bandwidth='q33',
@@ -687,30 +687,9 @@ class DirectionalVariogram(Variogram):
 
         """
 
-        # y coordinate is easy
-        c = self.bandwidth
-        gamma = np.radians(self.tolerance)
-        y = 0.5 * c
+        raise NotImplementedError
 
-        # a and h can be calculated
-        a = c / (2 * np.sin(gamma / 2))
-        h = np.sqrt((4 * a**2 - c**2) / 4)
-
-        # get the maximum x coordinate in the current representation
-        xmax = np.max(local_ref[:, 0])
-
-        # build the figure
-        poly = Polygon([
-            (0, 0),
-            (h, y),
-            (xmax, y),
-            (xmax, -y),
-            (h, -y)
-        ])
-
-        return poly
-
-    def _circle(self, local_ref):
+    def _circle(self, angles, dists):
         r"""Circular Search Area
 
         Construct a half-circled bounded search area for building directional
@@ -741,28 +720,11 @@ class DirectionalVariogram(Variogram):
         DirectionalVariogram._compass
 
         """
-        if self.bandwidth is None or self.bandwidth == 0:
-            raise ValueError('Circular Search Area cannot be used without '
-                             'bandwidth.')
 
-        # radius is half bandwidth
-        r = self.bandwidth / 2.
-
-        # build the half circle
-        circle = Point((r, 0)).buffer(r)
-        half_circle = [_ for _ in circle.boundary.coords if _[0] <= r]
-
-        # get the maximum x coordinate
-        xmax = np.max(local_ref[:, 0])
-
-        # add the bandwidth coordinates
-        half_circle.extend([(xmax, r), (xmax, -r)])
-
-        # return the figure
-        return Polygon(half_circle)
+        raise NotImplementedError
 
     def _compass(self, angles, dists):
-        r"""Compass direction Search Area
+        r"""Compass direction direction mask
 
         Construct a search area for building directional dependent point
         pairs. The compass search area will **not** be bounded by the
@@ -773,34 +735,16 @@ class DirectionalVariogram(Variogram):
 
         Parameters
         ----------
-        local_ref : numpy.array
-            Array of all coordinates transformed into a local representation
-            with the current point of interest being the origin and the
-            azimuth angle aligned onto the x-axis.
+        angles, dists : numpy.array
+            Vectors between point pairs in polar form (angle relative
+            to east in radians, length in coordinate space units)
+          
 
         Returns
         -------
-        search_area : Polygon
-            Search Area of the given compass direction.
-
-        Notes
-        -----
-        The necessary figure is build by searching for the intersection of a
-        half-tolerance angled line with a vertical line at the maximum x-value.
-        Using polar coordinates, these points (positive and negative
-        half-tolerance angle) are the edges of the search area in the local
-        coordinate system. The radius of a polar coordinate can be calculated
-        as:
-
-        .. math::
-            r = \frac{x}{cos (\alpha / 2)}
-
-        The two bounding points P1 nad P2 (in local coordinates) are then
-        (xmax, y) and (xmax, -y), with xmax being the maximum local
-        x-coordinate representation and y:
-
-        .. math::
-            y = r * sin \left( \frac{\alpha}{2} \right)
+        mask : numpy.array(bool)
+            Point pair mask, indexed as the results of
+            scipy.spatial.distance.pdist are.
 
         See Also
         --------
