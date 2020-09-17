@@ -3,7 +3,6 @@ Directional Variogram
 """
 import numpy as np
 from numba import jit
-from shapely.geometry import Polygon, Point
 from itertools import chain
 import matplotlib.pyplot as plt
 import scipy.spatial.distance
@@ -131,15 +130,15 @@ class DirectionalVariogram(Variogram):
                 * 'sq': The weights decrease by the squared distance.
 
             More info is given in the Variogram.fit_sigma documentation.
-        directional_model : string, Polygon
+        directional_model : string, function
             The model used for selecting all points fulfilling the
-            directional constraint of the Variogram. A predefined model can
-            be selected by passing the model name as string. Optionally a
-            callable accepting the current local coordinate system and
-            returning a Polygon representing the search area itself
-            can be passed. In this case, the tolerance and bandwidth has to
-            be incorporated by hand into the model. The azimuth is handled
-            by the class. The predefined options are:
+            directional constraint of the Variogram. A predefined
+            model can be selected by passing the model name as string.
+            Optionally a callable accepting the difference vectors
+            between points in polar form as angles and distances and
+            returning a mask array can be passed. In this case, the
+            azimuth, tolerance and bandwidth has to be incorporated by
+            hand into the model.
 
                 * 'compass': includes points in the direction of the
                   azimuth at given tolerance. The bandwidth parameter will be
@@ -420,15 +419,16 @@ class DirectionalVariogram(Variogram):
         """Set new directional model
 
         The model used for selecting all points fulfilling the
-        directional constraint of the Variogram. A predefined model can
-        be selected by passing the model name as string. Optionally a function
-        can be passed that accepts the current local coordinate system and
-        returns a Polygon representing the search area. In this case, the
-        tolerance and bandwidth has to be incorporated by hand into the
-        model. The azimuth is handled by the class. The predefined options are:
+        directional constraint of the Variogram. A predefined model
+        can be selected by passing the model name as string.
+        Optionally a callable accepting the difference vectors between
+        points in polar form as angles and distances and returning a
+        mask array can be passed. In this case, the azimuth, tolerance
+        and bandwidth has to be incorporated by hand into the model.
+        The predefined options are:
 
         * 'compass': includes points in the direction of the azimuth at given
-           tolerance. The bandwidth parameter will be ignored.
+          tolerance. The bandwidth parameter will be ignored.
         * 'triangle': constructs a triangle with an angle of tolerance at the
           point of interest and union an rectangle parallel to azimuth,
           once the hypotenuse length reaches bandwidth.
@@ -443,9 +443,9 @@ class DirectionalVariogram(Variogram):
         Parameters
         ----------
         model_name : string, callable
-            The name of the predefined model (string) or a function that
-            accepts the current local coordinate system and returns a Polygon
-            of the search area.
+            The name of the predefined model (string) or a function
+            that accepts angle and distance arrays and returns a mask
+            array.
 
         """
         # handle predefined models
@@ -548,34 +548,7 @@ class DirectionalVariogram(Variogram):
         """
 
         if force or self._direction_mask_cache is None:
-
             self._direction_mask_cache = self._directional_model(self._angles, self._euclidean_dist)
-            # # build the full coordinate matrix
-            # n = len(self._X)
-            # _mask = np.zeros((n, n), dtype=bool)
-
-            # # build the masking
-            # for i in range(n):
-                
-            #     loc = self.local_reference_system(poi=self._X[i])
-
-            #     # apply the search radius
-            #     sr = self._directional_model(local_ref=loc)
-
-            #     _m = np.fromiter(
-            #         (Point(p).within(sr) or Point(p).touches(sr) for p in loc),
-            #         dtype=bool)
-            #     _mask[:, i] = _m
-
-            # # combine lower and upper triangle
-            # def _indexer():
-            #     for i in range(n):
-            #         for j in range(n):
-            #             if i < j:
-            #                 yield _mask[i, j] or _mask[j, i]
-
-            # self._direction_mask_cache = np.fromiter(_indexer(), dtype=bool)
-
         return self._direction_mask_cache
 
     def search_area(self, poi=0, ax=None):
@@ -649,15 +622,16 @@ class DirectionalVariogram(Variogram):
 
         Parameters
         ----------
-        angles : numpy.array
-            Array of angles in radians between point pairs
-        dists : numpy.array
-            Array of euclidean distances between point pairs
+        angles, dists : numpy.array
+            Vectors between point pairs in polar form (angle relative
+            to east in radians, length in coordinate space units)
+          
 
         Returns
         -------
-        mask : numpy.array
-            Mask of point pairs within the search area of each other
+        mask : numpy.array(bool)
+            Point pair mask, indexed as the results of
+            scipy.spatial.distance.pdist are.
 
         Notes
         -----
@@ -700,15 +674,16 @@ class DirectionalVariogram(Variogram):
 
         Parameters
         ----------
-        local_ref : numpy.array
-            Array of all coordinates transformed into a local representation
-            with the current point of interest being the origin and the
-            azimuth angle aligned onto the x-axis.
+        angles, dists : numpy.array
+            Vectors between point pairs in polar form (angle relative
+            to east in radians, length in coordinate space units)
+          
 
         Returns
         -------
-        search_area : Polygon
-            Search Area of half-circular shape bounded by the current bandwidth.
+        mask : numpy.array(bool)
+            Point pair mask, indexed as the results of
+            scipy.spatial.distance.pdist are.
 
         Raises
         ------
