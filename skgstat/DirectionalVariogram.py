@@ -6,6 +6,7 @@ from numba import jit
 from shapely.geometry import Polygon, Point
 from itertools import chain
 import matplotlib.pyplot as plt
+import scipy.spatial.distance
 
 from .Variogram import Variogram
 
@@ -582,6 +583,23 @@ class DirectionalVariogram(Variogram):
 
         return fig
 
+    def pair_field(self, ax, cmap="gist_rainbow", alpha=0.3):
+        mask = scipy.spatial.distance.squareform(self._direction_mask())
+
+        x1, x2 = np.meshgrid(np.arange(len(self._X)), np.arange(len(self._X)))
+
+        start = self._X[x1[mask]]
+        end = self._X[x2[mask]]
+
+        lines = np.column_stack((start.reshape(len(start), 1, 2), end.reshape(len(end), 1, 2)))
+        colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
+        colors[:,3] = alpha
+
+        lc = mc.LineCollection(lines, colors=colors, linewidths=1)
+        ax.add_collection(lc)
+        ax.autoscale()
+        ax.margins(0.1)
+    
     def _triangle(self, local_ref):
         r"""Triangular Search Area
 
