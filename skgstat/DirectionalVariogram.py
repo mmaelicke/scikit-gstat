@@ -7,6 +7,7 @@ from shapely.geometry import Polygon, Point
 from itertools import chain
 import matplotlib.pyplot as plt
 import scipy.spatial.distance
+import matplotlib.collections
 
 from .Variogram import Variogram
 
@@ -595,7 +596,7 @@ class DirectionalVariogram(Variogram):
         colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
         colors[:,3] = alpha
 
-        lc = mc.LineCollection(lines, colors=colors, linewidths=1)
+        lc = matplotlib.collections.LineCollection(lines, colors=colors, linewidths=1)
         ax.add_collection(lc)
         ax.autoscale()
         ax.margins(0.1)
