@@ -5,6 +5,7 @@ Changelog
 Version 0.2.8
 =============
 
+- [Variogram] is now ``pickle.dump()``-able, by removing ``lambda`` usage (thanks to @redhog!)
 - [Variogram] now raises a `Warning` if all input values are the same
 - [DOCS] Tutorial added and Dockerfile finalized
 - [Variogram] `normalize` default value changed to `normalize=False`
