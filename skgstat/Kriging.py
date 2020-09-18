@@ -105,7 +105,7 @@ class OrdinaryKriging:
         self.perf = perf
 
         # copy the distance function from the Variogram
-        self.dist = self.V.dist_function
+        self.dist = self.V._dist_func_wrapper
         params = self.V.describe()
         self.range = params['effective_range']
         self.nugget = params['nugget']

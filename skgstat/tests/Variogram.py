@@ -1,5 +1,6 @@
 import unittest
 import os
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -861,6 +862,24 @@ class TestVariogramPlots(unittest.TestCase):
             len(fig1.axes[0].get_children()),
             len(fig2.axes[0].get_children()) - 1
         )
+
+
+class TestVariogramPickling(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (150, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 150)
+
+        self.V = Variogram(self.c, self.v, normalize=False)
+
+    def test_save_load_pickle(self):
+        """
+        Only test if loading and saving a pickle works without error
+        """
+        pickle.loads(pickle.dumps(self.V))
+        self.assertTrue()
 
 
 if __name__ == '__main__':  # pragma: no cover
