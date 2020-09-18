@@ -194,6 +194,11 @@ class DirectionalVariogram(Variogram):
             Set the Verbosity of the class. Not Implemented yet.
 
         """
+
+        # FIXME: Call __init__ of baseclass?
+
+        self._direction_mask_cache = None
+        
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -205,7 +210,8 @@ class DirectionalVariogram(Variogram):
 
         # set values
         self._values = None
-        self.set_values(values=values)
+        # calc_diff = False here, because it will be calculated by fit() later
+        self.set_values(values=values, calc_diff=False)
 
         # distance matrix
         self._dist = None
@@ -268,7 +274,7 @@ class DirectionalVariogram(Variogram):
         self._cache_experimental = False
 
         # do the preprocessing and fitting upon initialization
-        self.preprocessing(force=True)
+        # Note that fit() calls preprocessing
         self.fit(force=True)
 
     @property
@@ -452,20 +458,21 @@ class DirectionalVariogram(Variogram):
             the original coordinates.
 
         """
-        # define a point-wise transform function
-        def _transform(p1, p2, a):
-            p = p1 - p2
-            x = p[0] * np.cos(a) - p[1] * np.sin(a)
-            y = p[0] * np.sin(a) + p[1] * np.cos(a)
-            return np.array([x, y])
+
+
 
         # get the azimuth in radians
         gamma = np.radians(self.azimuth)
 
-        # transform
-        _X = np.fromiter(chain.from_iterable(
-            map(lambda p: _transform(p, poi, gamma), self._X)
-        ), dtype=self._X.dtype).reshape(self._X.shape)
+        cosgamma = np.cos(gamma)
+        singamma = np.sin(gamma)
+
+        _X = np.zeros(dtype=self._X.dtype, shape=self._X.shape)
+
+        for i in range(0, len(self._X)):
+            p = self._X[i,:] - poi
+            _X[i,0] = p[0] * cosgamma - p[1] * singamma
+            _X[i,1] = p[0] * singamma + p[1] * cosgamma
 
         # return
         return _X
@@ -488,16 +495,13 @@ class DirectionalVariogram(Variogram):
         self._groups[np.where(~self._direction_mask())] = -1
 
 #    @jit
-    def _direction_mask(self):
+    def _direction_mask(self, force=False):
         """Directional Mask
 
         Array aligned to self.distance masking all point pairs which shall be
         ignored for binning and grouping. The one dimensional array contains
         all row-wise point pair combinations from the upper or lower triangle
         of the distance matrix in case either of both is directional.
-
-        TODO: This array is not cached. it is used twice, for binning and
-        grouping.
 
         Returns
         -------
@@ -507,30 +511,34 @@ class DirectionalVariogram(Variogram):
             not.
 
         """
-        # build the full coordinate matrix
-        n = len(self._X)
-        _mask = np.zeros((n, n), dtype=bool)
 
-        # build the masking
-        for i in range(n):
-            loc = self.local_reference_system(poi=self._X[i])
+        if force or self._direction_mask_cache is None:
+            # build the full coordinate matrix
+            n = len(self._X)
+            _mask = np.zeros((n, n), dtype=bool)
 
-            # apply the search radius
-            sr = self._directional_model(local_ref=loc)
-
-            _m = np.fromiter(
-                (Point(p).within(sr) or Point(p).touches(sr) for p in loc),
-                dtype=bool)
-            _mask[:, i] = _m
-
-        # combine lower and upper triangle
-        def _indexer():
+            # build the masking
             for i in range(n):
-                for j in range(n):
-                    if i < j:
-                        yield _mask[i, j] or _mask[j, i]
+                loc = self.local_reference_system(poi=self._X[i])
 
-        return np.fromiter(_indexer(), dtype=bool)
+                # apply the search radius
+                sr = self._directional_model(local_ref=loc)
+
+                _m = np.fromiter(
+                    (Point(p).within(sr) or Point(p).touches(sr) for p in loc),
+                    dtype=bool)
+                _mask[:, i] = _m
+
+            # combine lower and upper triangle
+            def _indexer():
+                for i in range(n):
+                    for j in range(n):
+                        if i < j:
+                            yield _mask[i, j] or _mask[j, i]
+
+            self._direction_mask_cache = np.fromiter(_indexer(), dtype=bool)
+
+        return self._direction_mask_cache
 
     def search_area(self, poi=0, ax=None):
         """Plot Search Area
