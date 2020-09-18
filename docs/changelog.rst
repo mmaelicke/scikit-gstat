@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.2.9
+=============
+
+- [unittests] - more unittests were added.
+
 Version 0.2.8
 =============
 
