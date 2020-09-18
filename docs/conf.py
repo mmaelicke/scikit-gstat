@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'SciKit GStat'
-copyright = '2019, Mirko Mälicke'
+copyright = '2020, Mirko Mälicke'
 author = 'Mirko Mälicke'
 
 # The short X.Y version
-version = '0.2.8'
+version = '0.2.9'
 # The full version, including alpha/beta/rc tags
-release = '0.2.8'
+release = '0.2.9'
 
 
 # -- General configuration ---------------------------------------------------
