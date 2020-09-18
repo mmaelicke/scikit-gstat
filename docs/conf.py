@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'SciKit GStat'
-copyright = '2019, Mirko Mälicke'
+copyright = '2020, Mirko Mälicke'
 author = 'Mirko Mälicke'
 
 # The short X.Y version
