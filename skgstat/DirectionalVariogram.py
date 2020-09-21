@@ -470,48 +470,6 @@ class DirectionalVariogram(Variogram):
         # reset the groups as the directional model changed
         self._groups = None
 
-#    @jit
-    def local_reference_system(self, poi):
-        """Calculate local coordinate system
-
-        The coordinates will be transformed into a local reference system
-        that will simplify the directional dependence selection. The point of
-        interest (poi) of the current iteration will be used as origin of the
-        local reference system and the x-axis will be rotated onto the azimuth.
-
-        Parameters
-        ----------
-        poi : tuple
-            First two coordinate dimensions of the point of interest. will be
-            used as the new origin
-
-        Returns
-        -------
-        local_ref : numpy.array
-            Array of dimension (m, 2) where m is the length of the
-            coordinates array. Transformed coordinates in the same order as
-            the original coordinates.
-
-        """
-
-        assert False
-
-        # get the azimuth in radians
-        gamma = np.radians(self.azimuth)
-
-        cosgamma = np.cos(gamma)
-        singamma = np.sin(gamma)
-
-        _X = np.zeros(dtype=self._X.dtype, shape=self._X.shape)
-
-        for i in range(0, len(self._X)):
-            p = self._X[i,:] - poi
-            _X[i,0] = p[0] * cosgamma - p[1] * singamma
-            _X[i,1] = p[0] * singamma + p[1] * cosgamma
-
-        # return
-        return _X
-
     @property
     def bins(self):
         if self._bins is None:
@@ -550,50 +508,6 @@ class DirectionalVariogram(Variogram):
         if force or self._direction_mask_cache is None:
             self._direction_mask_cache = self._directional_model(self._angles, self._euclidean_dist)
         return self._direction_mask_cache
-
-    def search_area(self, poi=0, ax=None):
-        """Plot Search Area
-
-        Parameters
-        ----------
-        poi : integer
-            Point of interest. Index of the coordinate that shall be used to
-            visualize the search area.
-        ax : None, matplotlib.AxesSubplot
-            If not None, the Search Area will be plotted into the given
-            Subplot object. If None, a new matplotlib Figure will be created
-            and returned
-
-        Returns
-        -------
-        plot
-
-        """
-        assert False
-        
-        # get the poi
-        p = self._X[poi]
-
-        # create the local coordinate system for POI
-        loc = self.local_reference_system(poi=p)
-
-        # create the search area based on current directional model
-        sa = self._directional_model(loc)
-
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8, 8))
-        else:
-            fig = ax.get_figure()
-
-        # plot all coordinate
-        ax.plot(loc[:,0], loc[:,1], '.r')
-
-        # plot the search area
-        x, y = sa.exterior.xy
-        ax.plot(x, y, color='#00a562', alpha=0.7, linewidth=2,
-                solid_capstyle='round')
-
-        return fig
 
     def pair_field(self, ax, cmap="gist_rainbow", alpha=0.3):
         mask = scipy.spatial.distance.squareform(self._direction_mask())
