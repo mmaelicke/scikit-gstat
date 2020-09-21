@@ -31,7 +31,7 @@ class DirectionalVariogram(Variogram):
                  normalize=False,
                  fit_method='trf',
                  fit_sigma=None,
-                 directional_model='compass',
+                 directional_model='triangle',
                  azimuth=0,
                  tolerance=45.0,
                  bandwidth='q33',
@@ -661,7 +661,11 @@ class DirectionalVariogram(Variogram):
 
         """
 
-        raise NotImplementedError
+        absdiff = np.abs(angles - np.radians(self.azimuth))
+        absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
+        absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
+
+        return (absdiff <= np.radians(self.tolerance)) & (dists <= self.bandwidth / np.sin(np.abs(angles - np.radians(self.azimuth))))
 
     def _circle(self, angles, dists):
         r"""Circular Search Area
