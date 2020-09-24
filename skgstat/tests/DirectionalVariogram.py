@@ -17,7 +17,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_standard_settings(self):
         DV = DirectionalVariogram(self.c, self.v, normalize=True)
 
-        for x, y in zip(DV.parameters, [406., 2145., 0]):
+        for x, y in zip(DV.parameters, [407.467, 2138.098, 0]):
             self.assertAlmostEqual(x, y, places=0)
 
     def test_azimuth(self):
@@ -38,7 +38,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_tolerance(self):
         DV = DirectionalVariogram(self.c, self.v, tolerance=15, normalize=True)
 
-        for x, y in zip(DV.parameters, [32.474, 2016.601, 0]):
+        for x, y in zip(DV.parameters, [26.342, 1880.015, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_invalid_tolerance(self):
@@ -53,7 +53,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_bandwidth(self):
         DV = DirectionalVariogram(self.c, self.v, bandwidth=12, normalize=True)
 
-        for x, y in zip(DV.parameters, [435.733, 2746.608, 0]):
+        for x, y in zip(DV.parameters, [435.733, 2715.865, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_invalid_model(self):

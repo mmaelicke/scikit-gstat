@@ -641,6 +641,9 @@ class DirectionalVariogram(Variogram):
         # get the maximum x coordinate in the current representation
         xmax = np.max(local_ref[:, 0])
 
+        if h >= xmax:
+            return self._compass(local_ref)
+
         # build the figure
         poly = Polygon([
             (0, 0),
@@ -757,7 +760,7 @@ class DirectionalVariogram(Variogram):
         xmax = np.max(local_ref[:,0])
 
         # calculate the radius and y coordinates
-        r = xmax / a
+        r = xmax / np.cos(a)
         y = r * np.sin(a)
 
         # build and return the figure
