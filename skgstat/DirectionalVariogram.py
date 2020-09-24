@@ -579,7 +579,7 @@ class DirectionalVariogram(Variogram):
         absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
         absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
 
-        return (absdiff <= np.radians(self.tolerance)) & (dists <= self.bandwidth / np.sin(np.abs(angles - np.radians(self.azimuth))))
+        return (absdiff <= np.radians(self.tolerance / 2)) & (dists <= (self.bandwidth / 2) / np.sin(np.abs(angles - np.radians(self.azimuth))))
 
     def _circle(self, angles, dists):
         r"""Circular Search Area
@@ -650,4 +650,4 @@ class DirectionalVariogram(Variogram):
         absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
         absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
 
-        return absdiff <= np.radians(self.tolerance)
+        return absdiff <= np.radians(self.tolerance / 2)
