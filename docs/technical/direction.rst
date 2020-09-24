@@ -64,11 +64,9 @@ The difference between the
 the triangle uses the bandwidth and the compass does not.
 
 The :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` has a
-function to plot the current search area. As the search area is specific to
-the current poi, it has to be defined as the index of the coordinate to be used.
-The method is called
-:func:`search_area <skgstat.DirectionalVariogram.search_area>`.
-Using random coordinates, the search area shapes are presented below.
+function to plot the effect of the search area. The method is called
+:func:`pair_field <skgstat.DirectionalVariogram.pair_field>`. Using
+random coordinates, the visualization is shown below.
 
 .. ipython:: python
     :okwarning:
@@ -88,8 +86,8 @@ Using random coordinates, the search area shapes are presented below.
         directional_model='triangle')
 
     @savefig dv1.png width=6in
-    DV.search_area(poi=3)
-
+    DV.pair_field(plt.gca())
+    
 The model can easily be changed, using the
 :func:`set_directional_model <skgstat.DirectionalVariogram.set_directional_model>`
 function:
@@ -99,111 +97,18 @@ function:
 
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
 
-    DV.set_directional_model('circle')
-    DV.search_area(poi=3, ax=axes[0])
-
-    DV.set_directional_model('compass')
-    DV.search_area(poi=3, ax=axes[1])
+    DV.set_directional_model('triangle')
+    DV.pair_field(plt.gca())
 
     @savefig dv2.png width=8in
+    DV.pair_field(plt.gca())
     fig.show()
 
+    DV.set_directional_model('compass')
 
-Local Reference System
-======================
-
-In order to apply different search area shapes and rotate them considering
-the given azimuth, a few preprocessing steps are necessary. This can lead to
-some calculation overhead, as in the case of a
-:func:`compass <skgstat.DirectionalVariogram._compass>` model.
-The selection of point pairs being directional is implemented by transforming
-the coordinates into a local reference system iteratively for each coordinate.
-For multidimensional coordinates, only the first two dimensions are used.
-They are shifted to make the current point of interest the origin of the
-local reference system. Then all other points are rotated until the azimuth
-overlays the local x-axis. This makes the definition of different shapes way
-easier.
-In this local system, the bandwidth can easily be applied to the transformed
-y-axis. The
-:func:`set_directional_model <skgstat.DirectionalVariogram.set_directional_model>`
-can also set a custom function as search area shape, that accepts the current
-local reference system and returns the search area for the given poi.
-The search area has to be returned as a shapely Polygon. Unfortunately, the
-:func:`tolerance <skgstat.DirectionalVariogram.tolerance>` and
-:func:`bandwidth <skgstat.DirectionalVariogram.bandwidth>` parameter are not
-passed yet.
-
-.. note::
-
-    For the next release, it is planned to pass all necessary parameters to
-    the directional model function. This should greatly improve the
-    definition of custom shapes. Until the implementation, the parameters
-    have to be injected directly.
-
-The following example will illustrate the rotation of the local reference
-system.
-
-.. ipython:: python
-    :okwarning:
-
-    from matplotlib.patches import FancyArrowPatch as arrow
-    np.random.seed(42)
-    c = np.random.gamma(10, 6, (9, 2))
-    mid = np.array([[np.mean(c[:,0]), np.mean(c[:,1])]])
-    coords = np.append(mid, c, axis=0) - mid
-
-    DV = DirectionalVariogram(coords, vals[:10],
-        azimuth=45, tolerance=45)
-
-    loc = DV.local_reference_system(poi=0)
-
-    fig, ax = plt.subplots(1, 1, figsize=(6, 6))
-    ax.scatter(coords[:,0], coords[:,1], 15, c='b')
-    ax.scatter(loc[:,0], loc[:,1], 20, c='r')
-    ax.scatter([0], [0], 40, c='y')
-
-    for u,v in zip(coords[1:], loc[1:]):
-        arrowstyle="Simple,head_width=6,head_length=12,tail_width=1"
-        a = arrow(u, v,  color='grey', linestyle='--',
-            connectionstyle="arc3, rad=.3", arrowstyle=arrowstyle)
-        ax.add_patch(a)
-
-    @savefig transform.png width=6in
+    @savefig dv3.png width=8in
+    DV.pair_field(plt.gca())
     fig.show()
-
-After moving and shifting, any type of Geometry could be generated and passed
-as the search area.
-
-.. ipython:: python
-    :okwarning:
-
-    from shapely.geometry import Polygon
-
-    def M(loc):
-        xmax = np.max(loc[:,0])
-        ymax = np.max(loc[:,1])
-        return Polygon([
-            (0, 0),
-            (0, ymax * 0.6),
-            (0.05*xmax, ymax * 0.6),
-            (xmax * 0.3, ymax * 0.3),
-            (0.55 * xmax, 0.6 * ymax),
-            (0.6 * xmax, 0.6 * ymax),
-            (0.6 * xmax, 0),
-            (0.55 * xmax, 0),
-            (0.55 * xmax, 0.55 * ymax),
-            (xmax * 0.325, ymax * 0.275),
-            (xmax * 0.275, ymax * 0.275),
-            (0.05 * xmax, 0.55 * ymax),
-            (0.05 * xmax, 0),
-            (0, 0)
-        ])
-
-    DV.set_directional_model(M)
-
-    @savefig custom.png width=6in
-    DV.search_area(poi=0)
-
 
 Directional variograms
 ======================

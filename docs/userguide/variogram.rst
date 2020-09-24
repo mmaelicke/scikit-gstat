@@ -569,8 +569,9 @@ The Matérn model takes an additional smoothness paramter, that can
 change the shape of the function in between an exponential 
 model shape and a Gaussian one. 
 
-.. iypthon:: python
-
+.. ipython:: python
+    :okwarning:
+   
     xi = np.linspace(0, 100, 100)
 
     # plot a exponential and a gaussian
