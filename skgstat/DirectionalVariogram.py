@@ -308,7 +308,10 @@ class DirectionalVariogram(Variogram):
         # (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)
         # cos(v) = (a - b).[1,0] / ||a - b||
         # cos(v) = (a.[1,0] - b.[1,0]) / ||a - b||
-        self._angles = np.arccos(scipy.spatial.distance.pdist(np.array([np.dot(_x, [1, 0])]).T, np.subtract) / self._euclidean_dist)
+        pos_angles = np.arccos(scipy.spatial.distance.pdist(np.array([np.dot(_x, [1, 0])]).T, np.subtract) / self._euclidean_dist)
+        # cos(v) for [2,1] and [2, -1] is the same, but v is not (v vs -v), fix that.
+        ydiff = scipy.spatial.distance.pdist(np.array([np.dot(_x, [0, 1])]).T, np.subtract)
+        self._angles = np.where(ydiff >= 0, pos_angles, -pos_angles)
 
 
     @property
@@ -575,11 +578,14 @@ class DirectionalVariogram(Variogram):
 
         """
 
-        absdiff = np.abs(angles - np.radians(self.azimuth))
+        absdiff = np.abs(angles + np.radians(self.azimuth))
         absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
         absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
 
-        return (absdiff <= np.radians(self.tolerance / 2)) & (dists <= (self.bandwidth / 2) / np.sin(np.abs(angles - np.radians(self.azimuth))))
+        in_tol = absdiff <= np.radians(self.tolerance / 2)
+        in_band = self.bandwidth / 2 >= np.abs(dists * np.sin(np.abs(angles + np.radians(self.azimuth))))
+
+        return in_tol & in_band
 
     def _circle(self, angles, dists):
         r"""Circular Search Area
@@ -646,7 +652,7 @@ class DirectionalVariogram(Variogram):
 
         """
 
-        absdiff = np.abs(angles - np.radians(self.azimuth))
+        absdiff = np.abs(angles + np.radians(self.azimuth))
         absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
         absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
 
