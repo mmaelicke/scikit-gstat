@@ -594,6 +594,28 @@ When direction matters
 What is 'direction'?
 --------------------
 
+The classic approach to calculate a variogram is based on the 
+assumption that covariance between observations can be related to 
+their separating distance. For this, point pairs of all observation 
+points are formed and it is assumed that they can be formed without any restriction.
+The only paramter to be influenced is a limiting distance, beyond which 
+a point pair does not make sense anymore. 
+
+This assumption might not always hold. Especially in landscapes, processes do 
+not occur randomly, but in an organized manner. This organization is often 
+directed, which can lead to stronger covariance in one direction than another.
+Therefore, another step has to be introduced before lag classes are formed.
+
+The *direction* of a variogram is then a orientation, which two points need. 
+If they are not oriented in the specified way, they will be ignored while calculating 
+a semi-variance value for a given lag class. Usually, you will specify a 
+orientation, which is called :attr:`azimuth <skgstat.DirectionalVariogram.azimuth>`, 
+and a :attr:`tolerance <skgstat.DirectionalVariogram.tolerance>`, which is an 
+offset from the given azimuth, at which a point pair will still be accepted.
+
+
+
+
 
 Space-time variography
 ======================
