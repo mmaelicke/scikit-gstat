@@ -609,13 +609,66 @@ Therefore, another step has to be introduced before lag classes are formed.
 The *direction* of a variogram is then a orientation, which two points need. 
 If they are not oriented in the specified way, they will be ignored while calculating 
 a semi-variance value for a given lag class. Usually, you will specify a 
-orientation, which is called :attr:`azimuth <skgstat.DirectionalVariogram.azimuth>`, 
-and a :attr:`tolerance <skgstat.DirectionalVariogram.tolerance>`, which is an 
+orientation, which is called :func:`azimuth <skgstat.DirectionalVariogram.azimuth>`, 
+and a :func:`tolerance <skgstat.DirectionalVariogram.tolerance>`, which is an 
 offset from the given azimuth, at which a point pair will still be accepted.
 
+Defining orientiation
+---------------------
 
+One has to decide how orientation of two points is determined. In scikit-gstat,
+orientation between two observation points is only defined in :math:`\mathbb{R}^2`.
+We define the orientation as the **angle between the vector connecting two observation points 
+with the x-axis**.
 
+Thus, also the :func:`azimuth <skgstat.DirectionalVariogram.azimuth>` is defined as an 
+angle of the azimutal vector to the x-axis, with an 
+:func:`tolerance <skgstat.DirectionalVariogram.tolerance>` in degrees added to the 
+exact azimutal orientation clockwise and counter clockwise.
 
+The angle :math:`\Phi` between two vetors ``u,v`` is given like:
+
+.. math::
+
+    \Phi = cos^{-1}\left(\frac{u \circ v}{||u|| \cdot ||v||}\right)
+
+.. ipython:: python
+    :okwarning:
+
+    fig, ax = plt.subplots(1, 1, figsize=(6,4))
+    ax.arrow(0,0,2,1,color='k')
+    ax.arrow(-.1,0,3.1,0,color='k')
+    ax.set_xlim(-.1, 3)
+    ax.set_ylim(-.1,2.)
+    ax.scatter([0,2], [0,1], 50, c='r')
+    ax.annotate('A (0, 0)', (.0, .26), fontsize=14)
+    ax.annotate('B (2, 1)', (2.05,1.05), fontsize=14)
+    ar = farrow([1.5,0], [1.25, 0.625],  color='r', connectionstyle="arc3, rad=.2", arrowstyle=arrowstyle)
+    ax.add_patch(ar)
+    @savefig sample_orientation_of_2_1.png width=6in
+    ax.annotate('26.5°', (1.5, 0.25), fontsize=14, color='r')
+
+The described definition of orientation is illustrated in the figure above. 
+There are two observation points, :math:`A (0,0)` and :math:`B (2, 1)`. To decide
+wether to account for them when calculating the semi-variance at their separating 
+distance lag, their orientation is used. Only if the direction of the varigram includes
+this orientation, the points are used. Imagine the azimuth and tolerance would be 
+``45°``, then anything between ``0°`` (East) and ``90°`` orientation would be included.
+The given example shows the orientation angle :math:`\Phi = 26.5°`, which means the 
+vector :math:`\overrightarrow{AB}` is included.
+
+Calculating orientations
+------------------------
+
+SciKit-GStat implements a slightly adaped version of the formula given in the 
+last section. It makes use of symmetric search areas (tolerance is applied clockwise 
+and counter clockwise) und therefore any calculated angle might be the result 
+of calculating the orientation of :math:`\overrightarrow{AB}` or 
+:math:`\overrightarrow{BA}`. Mathematically, these two vectors have two different 
+angles, but they are always both taken into account or omitted for a variagram 
+at the same time. Thus, it does not make a difference for variography. 
+However, it does make a difference when you try to use the orientation angles 
+directly as the containing matrix can contain the inverse angles.
 
 Space-time variography
 ======================
