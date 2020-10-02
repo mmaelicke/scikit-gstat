@@ -2,13 +2,12 @@
 Directional Variogram
 """
 import numpy as np
-from numba import jit
-from itertools import chain
 import matplotlib.pyplot as plt
-import scipy.spatial.distance
+from scipy.spatial.distance import squareform, pdist
 import matplotlib.collections
 
 from .Variogram import Variogram
+
 
 class DirectionalVariogram(Variogram):
     """DirectionalVariogram Class
@@ -288,29 +287,66 @@ class DirectionalVariogram(Variogram):
         self._calc_groups(force=force)
 
     def _calc_direction_mask_data(self, force=False):
+        r"""
+        Calculate directional mask data.
+        For this, the angle between the vector between the two
+        points, and east (see comment about self.azimuth) is calculated.
+        The result is stored in self._angles and contains the angle of each
+        point pair vector to the x-axis in radians.
+
+        Parameters
+        ----------
+        force : bool
+            If True, a new calculation of all angles is forced, even if they
+            are already in the cache.
+
+        Notes
+        -----
+        The masked data is in radias, while azimuth is given in degrees.
+        For the Vector between a point pair A,B :math:`\overrightarrow{AB}=u` and the
+        x-axis, represented by vector :math:`\overrightarrow{e} = [1,0]`, the angle
+        :math:`\Theta` is calculated like:
+
+        .. math::
+            cos(\Theta) = \frac{u \circ e}{|e| \cdot |[1,0]|}
+
+        See Also
+        --------
+        `azimuth <skgstat.DirectionalVariogram.azimuth>`_
+
+        """
+        # check if already calculated
         if self._angles is not None and not force:
             return
 
         # if self._X is of just one dimension, concat zeros.
         if self._X.ndim == 1:
             _x = np.vstack(zip(self._X, np.zeros(len(self._X))))
-        else:
+        elif self._X.ndim == 2:
             _x = self._X
+        else:
+            raise NotImplementedError('N-dimensional coordinates cannot be handled')
 
+        # for angles, we need Euklidean distance,
+        # no matter which distance function is used
         if self._dist_func == "euclidean":
             self._euclidean_dist = self._dist
         else:
-            self._euclidean_dist = scipy.spatial.distance.pdist(_x, "euclidean")
+            self._euclidean_dist = pdist(_x, "euclidean")
 
-        # Calculate the angle between the vector between the two
-        # points, and east (see comment about self.azimuth)
-        # Note that this is in radians, while azimuth is in degrees.
+        # Calculate the angles
         # (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)
         # cos(v) = (a - b).[1,0] / ||a - b||
         # cos(v) = (a.[1,0] - b.[1,0]) / ||a - b||
-        pos_angles = np.arccos(scipy.spatial.distance.pdist(np.array([np.dot(_x, [1, 0])]).T, np.subtract) / self._euclidean_dist)
-        # cos(v) for [2,1] and [2, -1] is the same, but v is not (v vs -v), fix that.
-        ydiff = scipy.spatial.distance.pdist(np.array([np.dot(_x, [0, 1])]).T, np.subtract)
+        scalar = pdist(np.array([np.dot(_x, [1, 0])]).T, np.subtract)
+        pos_angles = np.arccos(scalar / self._euclidean_dist)
+
+        # cos(v) for [2,1] and [2, -1] is the same,
+        # but v is not (v vs -v), fix that.
+        ydiff = pdist(np.array([np.dot(_x, [0, 1])]).T, np.subtract)
+
+        # store the angle or negative angle, depending on the
+        # amount of the x coordinate
         self._angles = np.where(ydiff >= 0, pos_angles, -pos_angles)
 
 
@@ -342,7 +378,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._azimuth = angle
 
-        # reset groups on azimuth change
+        # reset groups and mask cache on azimuth change
+        self._direction_mask_cache = None
         self._groups = None
 
     @property
@@ -373,7 +410,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._tolerance = angle
 
-        # reset groups on tolerance change
+        # reset groups and mask on tolerance change
+        self._direction_mask_cache = None
         self._groups = None
 
     @property
@@ -415,7 +453,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._bandwidth = width
 
-        # reset groups on bandwidth change
+        # reset groups and direction mask cache on bandwidth change
+        self._direction_mask_cache = None
         self._groups = None
 
     def set_directional_model(self, model_name):
@@ -512,23 +551,79 @@ class DirectionalVariogram(Variogram):
             self._direction_mask_cache = self._directional_model(self._angles, self._euclidean_dist)
         return self._direction_mask_cache
 
-    def pair_field(self, ax, cmap="gist_rainbow", alpha=0.3):
-        mask = scipy.spatial.distance.squareform(self._direction_mask())
+    def pair_field(self, ax=None, cmap="gist_rainbow", points='all',add_points=True, alpha=0.3):  # pragma: no cover
+        """
+        Plot a pair field.
 
-        x1, x2 = np.meshgrid(np.arange(len(self._X)), np.arange(len(self._X)))
+        Plot a network graph for all point pairs that fulfill the direction
+        filter and lie within each others search area.
 
+        Parameters
+        ----------
+        ax : matplotlib.Subplot
+            A matplotlib Axes object to plot the pair field onto.
+            If ``None``, a new new matplotlib figure will be created.
+        cmap : string
+            Any color-map name that is supported by matplotlib
+        points : 'all', int, list
+            If not ``'all'``, only the given coordinate (int) or 
+            list of coordinates (list) will be plotted. Recommended, if
+            the input data is quite large.
+        add_points : bool
+            If True (default) The coordinates will be added as black points.
+        alpha : float
+            Alpha value for the colors to make overlapping vertices
+            visualize better. Defaults to ``0.3``.
+            
+        """
+        # get the direction mask
+        mask = squareform(self._direction_mask())
+
+        # build a coordinate meshgrid
+        r = np.arange(len(self._X))
+        x1, x2 = np.meshgrid(r, r)
         start = self._X[x1[mask]]
         end = self._X[x2[mask]]
 
-        lines = np.column_stack((start.reshape(len(start), 1, 2), end.reshape(len(end), 1, 2)))
-        colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
-        colors[:,3] = alpha
+        # handle lesser points
+        if isinstance(points, int):
+            points = [points]
+        if isinstance(points, list):
+            _start, _end = list(), list()
+            for p in self._X[points]:
+                _start.extend(start[np.where(end == p)[0]])
+                _end.extend(end[np.where(end == p)[0]])
+            start = np.array(_start)
+            end = np.array(_end)
 
+        # extract all lines and align colors
+        lines = np.column_stack((start.reshape(len(start), 1, 2), end.reshape(len(end), 1, 2)))
+        #colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
+        colors = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(lines)))
+        colors[:, 3] = alpha
+
+        # get the figure and ax object
+        if ax is None:
+            fig, ax = plt.subplots(1, 1, figsize=(8,8))
+        else:
+            fig = ax.get_figure()
+
+        # plot
         lc = matplotlib.collections.LineCollection(lines, colors=colors, linewidths=1)
         ax.add_collection(lc)
+        
+        # add coordinates
+        if add_points:
+            ax.scatter(self._X[:, 0], self._X[:, 1], 15, c='k')
+            if isinstance(points, list):
+                ax.scatter(self._X[:, 0][points], self._X[:, 1][points], 25, c='r')
+
+        # finish plot
         ax.autoscale()
         ax.margins(0.1)
-   
+
+        return fig
+
     def _triangle(self, angles, dists):
         r"""Triangular Search Area
 
@@ -542,7 +637,6 @@ class DirectionalVariogram(Variogram):
         angles, dists : numpy.array
             Vectors between point pairs in polar form (angle relative
             to east in radians, length in coordinate space units)
-          
 
         Returns
         -------
@@ -601,7 +695,6 @@ class DirectionalVariogram(Variogram):
         angles, dists : numpy.array
             Vectors between point pairs in polar form (angle relative
             to east in radians, length in coordinate space units)
-          
 
         Returns
         -------
@@ -619,7 +712,6 @@ class DirectionalVariogram(Variogram):
         DirectionalVariogram._compass
 
         """
-
         raise NotImplementedError
 
     def _compass(self, angles, dists):
@@ -637,7 +729,6 @@ class DirectionalVariogram(Variogram):
         angles, dists : numpy.array
             Vectors between point pairs in polar form (angle relative
             to east in radians, length in coordinate space units)
-          
 
         Returns
         -------

@@ -594,6 +594,159 @@ When direction matters
 What is 'direction'?
 --------------------
 
+The classic approach to calculate a variogram is based on the 
+assumption that covariance between observations can be related to 
+their separating distance. For this, point pairs of all observation 
+points are formed and it is assumed that they can be formed without any restriction.
+The only paramter to be influenced is a limiting distance, beyond which 
+a point pair does not make sense anymore. 
 
-Space-time variography
-======================
+This assumption might not always hold. Especially in landscapes, processes do 
+not occur randomly, but in an organized manner. This organization is often 
+directed, which can lead to stronger covariance in one direction than another.
+Therefore, another step has to be introduced before lag classes are formed.
+
+The *direction* of a variogram is then a orientation, which two points need. 
+If they are not oriented in the specified way, they will be ignored while calculating 
+a semi-variance value for a given lag class. Usually, you will specify a 
+orientation, which is called :func:`azimuth <skgstat.DirectionalVariogram.azimuth>`, 
+and a :func:`tolerance <skgstat.DirectionalVariogram.tolerance>`, which is an 
+offset from the given azimuth, at which a point pair will still be accepted.
+
+Defining orientiation
+---------------------
+
+One has to decide how orientation of two points is determined. In scikit-gstat,
+orientation between two observation points is only defined in :math:`\mathbb{R}^2`.
+We define the orientation as the **angle between the vector connecting two observation points 
+with the x-axis**.
+
+Thus, also the :func:`azimuth <skgstat.DirectionalVariogram.azimuth>` is defined as an 
+angle of the azimutal vector to the x-axis, with an 
+:func:`tolerance <skgstat.DirectionalVariogram.tolerance>` in degrees added to the 
+exact azimutal orientation clockwise and counter clockwise.
+
+The angle :math:`\Phi` between two vetors ``u,v`` is given like:
+
+.. math::
+
+    \Phi = cos^{-1}\left(\frac{u \circ v}{||u|| \cdot ||v||}\right)
+
+.. ipython:: python
+    :okwarning:
+
+    from matplotlib.patches import FancyArrowPatch as farrow
+    fig, ax = plt.subplots(1, 1, figsize=(6,4))
+    ax.arrow(0,0,2,1,color='k')
+    ax.arrow(-.1,0,3.1,0,color='k')
+    ax.set_xlim(-.1, 3)
+    ax.set_ylim(-.1,2.)
+    ax.scatter([0,2], [0,1], 50, c='r')
+    ax.annotate('A (0, 0)', (.0, .26), fontsize=14)
+    ax.annotate('B (2, 1)', (2.05,1.05), fontsize=14)
+    arrowstyle="Simple,head_width=6,head_length=12,tail_width=1"
+    ar = farrow([1.5,0], [1.25, 0.625],  color='r', connectionstyle="arc3, rad=.2", arrowstyle=arrowstyle)
+    ax.add_patch(ar)
+    @savefig sample_orientation_of_2_1.png width=6in
+    ax.annotate('26.5°', (1.5, 0.25), fontsize=14, color='r')
+
+The described definition of orientation is illustrated in the figure above. 
+There are two observation points, :math:`A (0,0)` and :math:`B (2, 1)`. To decide
+wether to account for them when calculating the semi-variance at their separating 
+distance lag, their orientation is used. Only if the direction of the varigram includes
+this orientation, the points are used. Imagine the azimuth and tolerance would be 
+``45°``, then anything between ``0°`` (East) and ``90°`` orientation would be included.
+The given example shows the orientation angle :math:`\Phi = 26.5°`, which means the 
+vector :math:`\overrightarrow{AB}` is included.
+
+Calculating orientations
+------------------------
+
+SciKit-GStat implements a slightly adaped version of the formula given in the 
+last section. It makes use of symmetric search areas (tolerance is applied clockwise 
+and counter clockwise) und therefore any calculated angle might be the result 
+of calculating the orientation of :math:`\overrightarrow{AB}` or 
+:math:`\overrightarrow{BA}`. Mathematically, these two vectors have two different 
+angles, but they are always both taken into account or omitted for a variagram 
+at the same time. Thus, it does not make a difference for variography. 
+However, it does make a difference when you try to use the orientation angles 
+directly as the containing matrix can contain the inverse angles.
+
+This can be demonstrated by an easy example. Let ``c`` be a set of points mirrored 
+along the x-axis.
+
+.. ipython:: python
+    :okwarning:
+
+    c = np.array([[0,0], [2,1], [1,2], [2, -1], [1, -2]])
+    east = np.array([1,0])
+
+We can plug these two arrays into the the formula above:
+
+.. ipython:: python
+    :okwarning:
+
+    u = c[1:]   # omit the first one
+    angles = np.degrees(np.arccos(u.dot(east) / np.sqrt(np.sum(u**2, axis=1))))
+    angles.round(1)
+
+You can see, that the both points and their mirrored counterpart have the same 
+angle to the x-axis, just like expected. This can be visualized by the plot below:
+
+.. ipython:: python
+    :okwarning:
+
+    fig, ax = plt.subplots(1, 1, figsize=(6,4))
+    ax.set_xlim(-.1, 2.25)
+    ax.set_ylim(-2.1,2.1)
+    ax.arrow(-.1,0,3.1,0,color='k')
+    for i,p in enumerate(u):
+        ax.arrow(0,0,p[0],p[1],color='r')
+        ax.annotate('%.1f°' % angles[i], (p[0] / 2, p[1] / 2 ), fontsize=14, color='r')
+    @savefig sample_orientation_of_multiple_points.png width=6in
+    ax.scatter(c[:,0], c[:,1], 50, c='r')
+
+The main difference to the internal structure storing the orientation angles for a 
+:class:`DirectionalVariogram <skgstat.DirectionalVariogram>` instance will store different
+angles.
+To use the class on only five points, we need to prevent the class from fitting, as 
+fitting on only 5 points will not work. But this does not affect the orientation calculations.
+Therefore, the :func:`fit <skgstat.DirectionalVariogram.fit>` mehtod is overwritten.
+
+.. iypthon:: python
+    :okwarning:
+
+    class TestCls(DirectionalVariogram):
+        def fit(*args, **kwargs):
+            pass
+
+    DV = TestCls(c, np.random.normal(0,1,len(c))
+    DV._calc_direction_mask_data()
+    np.degrees(DV._angles + np.pi)[:len(c) - 1]
+
+The first two points (with positive y-coordinate) show the same result. The other two, 
+with negative y-coordinates, are also calculated counter clockwise:
+
+.. ipython:: python
+    :okwarning:
+
+    360 - np.degrees(DV._angles + np.pi)[[2,3]]
+
+The :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` class has a plotting 
+function to show a network graph of all point pairs that are oriented in the 
+variogram direction. But first we need to increase the tolerance as half tolerance 
+(``45° / 2 = 22.5°`` clockwise and counter clockwise) is smaller than both orientations.
+
+.. ipython:: python
+    :okwarning:
+
+    DV.tolerance = 90 
+    @savefig sample_pair_field_plot.png width=8in
+    DV.pair_field()
+
+Directional variogram
+---------------------
+
+.. note::
+
+    To be continued...
