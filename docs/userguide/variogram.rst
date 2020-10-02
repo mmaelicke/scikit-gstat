@@ -672,5 +672,81 @@ at the same time. Thus, it does not make a difference for variography.
 However, it does make a difference when you try to use the orientation angles 
 directly as the containing matrix can contain the inverse angles.
 
-Space-time variography
-======================
+This can be demonstrated by an easy example. Let ``c`` be a set of points mirrored 
+along the x-axis.
+
+.. ipython:: python
+    :okwarning:
+
+    c = np.array([[0,0], [2,1], [1,2], [2, -1], [1, -2]])
+    east = np.array([1,0])
+
+We can plug these two arrays into the the formula above:
+
+.. ipython:: python
+    :okwarning:
+
+    u = c[1:]   # omit the first one
+    angles = np.degrees(np.arccos(u.dot(east) / np.sqrt(np.sum(u**2, axis=1))))
+    angles.round(1)
+
+You can see, that the both points and their mirrored counterpart have the same 
+angle to the x-axis, just like expected. This can be visualized by the plot below:
+
+.. ipython:: python
+    :okwarning:
+
+    fig, ax = plt.subplots(1, 1, figsize=(6,4))
+    ax.set_xlim(-.1, 2.25)
+    ax.set_ylim(-2.1,2.1)
+    ax.arrow(-.1,0,3.1,0,color='k')
+    for i,p in enumerate(u):
+        ax.arrow(0,0,p[0],p[1],color='r')
+        ax.annotate('%.1f°' % angles[i], (p[0] / 2, p[1] / 2 ), fontsize=14, color='r')
+    @savefig sample_orientation_of_multiple_points.png width=6in
+    ax.scatter(c[:,0], c[:,1], 50, c='r')
+
+The main difference to the internal structure storing the orientation angles for a 
+:class:`DirectionalVariogram <skgstat.DirectionalVariogram>` instance will store different
+angles.
+To use the class on only five points, we need to prevent the class from fitting, as 
+fitting on only 5 points will not work. But this does not affect the orientation calculations.
+Therefore, the :func:`fit <skgstat.DirectionalVariogram.fit>` mehtod is overwritten.
+
+.. iypthon:: python
+    :okwarning:
+
+    class TestCls(DirectionalVariogram):
+        def fit(*args, **kwargs):
+            pass
+
+    DV = TestCls(c, np.random.normal(0,1,len(c))
+    DV._calc_direction_mask_data()
+    np.degrees(DV._angles + np.pi)[:len(c) - 1]
+
+The first two points (with positive y-coordinate) show the same result. The other two, 
+with negative y-coordinates, are also calculated counter clockwise:
+
+.. ipython:: python
+    :okwarning:
+
+    360 - np.degrees(DV._angles + np.pi)[[2,3]]
+
+The :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` class has a plotting 
+function to show a network graph of all point pairs that are oriented in the 
+variogram direction. But first we need to increase the tolerance as half tolerance 
+(``45° / 2 = 22.5°`` clockwise and counter clockwise) is smaller than both orientations.
+
+.. ipython:: python
+    :okwarning:
+
+    DV.tolerance = 90 
+    @savefig sample_pair_field_plot width=8in
+    DV.pair_field()
+
+Directional variogram
+---------------------
+
+.. note::
+
+    To be continued...
