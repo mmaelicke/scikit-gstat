@@ -378,7 +378,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._azimuth = angle
 
-        # reset groups on azimuth change
+        # reset groups and mask cache on azimuth change
+        self._direction_mask_cache = None
         self._groups = None
 
     @property
@@ -409,7 +410,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._tolerance = angle
 
-        # reset groups on tolerance change
+        # reset groups and mask on tolerance change
+        self._direction_mask_cache = None
         self._groups = None
 
     @property
@@ -451,7 +453,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._bandwidth = width
 
-        # reset groups on bandwidth change
+        # reset groups and direction mask cache on bandwidth change
+        self._direction_mask_cache = None
         self._groups = None
 
     def set_directional_model(self, model_name):
