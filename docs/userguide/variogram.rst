@@ -644,6 +644,7 @@ The angle :math:`\Phi` between two vetors ``u,v`` is given like:
     ax.scatter([0,2], [0,1], 50, c='r')
     ax.annotate('A (0, 0)', (.0, .26), fontsize=14)
     ax.annotate('B (2, 1)', (2.05,1.05), fontsize=14)
+    arrowstyle="Simple,head_width=6,head_length=12,tail_width=1"
     ar = farrow([1.5,0], [1.25, 0.625],  color='r', connectionstyle="arc3, rad=.2", arrowstyle=arrowstyle)
     ax.add_patch(ar)
     @savefig sample_orientation_of_2_1.png width=6in
