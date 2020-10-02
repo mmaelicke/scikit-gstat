@@ -40,7 +40,9 @@ class OrdinaryKriging:
             precision=100,
             solver='inv',
             n_jobs=1,
-            perf=False
+            perf=False,
+            coords=None,
+            values=None
     ):
         """Ordinary Kriging routine
 
@@ -87,7 +89,15 @@ class OrdinaryKriging:
             If True, the different parts of the algorithm will record their
             processing time. This is meant to be used for optimization and
             will be removed in a future version. Do not rely on this argument.
-
+        coords: numpy.ndarray((N,2)) or None
+            x,y coordinates for data to interpolate from. If not
+            specified, use the coordinates used to generate the
+            variogram.
+        values: numpy.ndarray((N)) or None
+            values to interpolate from. If not specified, use the
+            values used to generate the variogram. values and coords
+            must have the same length and either both be None or both
+            be arrays.
         """
         # store arguments to the instance
         if not isinstance(variogram, Variogram):
@@ -111,8 +121,17 @@ class OrdinaryKriging:
         self.nugget = params['nugget']
         self.sill = params['sill']
 
-        # coordinates and semivariance function
-        self.coords, self.values = self._get_coordinates_and_values()
+        # Grab the coordinates and values to interpolate from from the
+        # variogram if not specified
+        if coords is not None:
+            assert values is not None, "Both coords and values must be specified"
+            self.coords = coords
+            self.values = values
+        else:
+            assert values is None, "Both coords and values must be specified"
+            self.coords, self.values = self._get_coordinates_and_values()
+
+        # Get the semivariance function
         self.gamma_model = self.V.fitted_model
 
         # calculation mode; self.range has to be initialized
