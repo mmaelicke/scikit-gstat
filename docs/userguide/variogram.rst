@@ -741,7 +741,7 @@ variogram direction. But first we need to increase the tolerance as half toleran
     :okwarning:
 
     DV.tolerance = 90 
-    @savefig sample_pair_field_plot width=8in
+    @savefig sample_pair_field_plot.png width=8in
     DV.pair_field()
 
 Directional variogram
