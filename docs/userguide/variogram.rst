@@ -635,6 +635,7 @@ The angle :math:`\Phi` between two vetors ``u,v`` is given like:
 .. ipython:: python
     :okwarning:
 
+    from matplotlib.patches import FancyArrowPatch as farrow
     fig, ax = plt.subplots(1, 1, figsize=(6,4))
     ax.arrow(0,0,2,1,color='k')
     ax.arrow(-.1,0,3.1,0,color='k')
