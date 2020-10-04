@@ -115,7 +115,7 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
         assert_array_almost_equal(
             np.degrees(var._angles + np.pi)[:2],
             [63.4, 26.6],
-            places=1
+            decimal=1
         )
 
 
