@@ -124,14 +124,3 @@ You can easily set up an example by generating some random data:
   Sill:         5.35
   Nugget:       0.00
   
-  
-New Version 0.2
----------------
-
-Scikit-gstat was rewritten in major parts. Most of the changes are internal,
-but the attributes and behaviour of the `Variogram` has also changed
-substantially.
-A detailed description of of the new versions usage will follow. The last
-version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
-branch on GitHub, but not developed any further. Those two versions are not
-compatible.
