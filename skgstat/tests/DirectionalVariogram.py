@@ -89,30 +89,6 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
         np.random.seed(11884)
         self.v = np.random.normal(9, 2, 30)
 
-    @staticmethod
-    def test_local_reference_system():
-        # build a Mock
-        c = np.array([[1, 1], [1, 0], [4, 4], [2, 1]])
-        m = Mock(c=c)
-        m.azimuth = 0
-
-        # get local ref sys
-        loc = DirectionalVariogram.local_reference_system(m, np.array([1, 1]))
-
-        assert_array_almost_equal(
-            np.array([[0, 0], [0, -1], [3, 3], [1, 0]]),
-            loc, decimal=0
-        )
-
-        # change the azimuth
-        m.azimuth = -15
-        m._X = m._X.astype(float)
-        loc = DirectionalVariogram.local_reference_system(m, np.array([1, 1]))
-
-        assert_array_almost_equal(
-            np.array([[0, 0], [-0.26, -0.97], [3.67, 2.12], [0.97, -0.26]]),
-            loc, decimal=2
-        )
 
     def test_bin_func(self):
         DV = DirectionalVariogram(self.c, self.v, n_lags=4)
@@ -123,6 +99,23 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
 
         assert_array_almost_equal(
             np.array([12.3, 24.7, 37., 49.4]), DV.bins, decimal=1
+        )
+
+    def test_directional_mask(self):
+        a = np.array([[0, 0], [1, 2], [2, 1]])
+
+        # overwrite fit method
+        class Test(DirectionalVariogram):
+            def fit(*args, **kwargs):
+                pass
+
+        var = Test(a, np.random.normal(0, 1, size=3))
+        var._calc_direction_mask_data()
+
+        assert_array_almost_equal(
+            np.degrees(var._angles + np.pi)[:2],
+            [63.4, 26.6],
+            decimal=1
         )
 
 

@@ -3,5 +3,4 @@ numpy
 pandas
 matplotlib
 numba
-shapely
 scikit-learn

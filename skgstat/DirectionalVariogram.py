@@ -2,10 +2,9 @@
 Directional Variogram
 """
 import numpy as np
-from numba import jit
-from shapely.geometry import Polygon, Point
-from itertools import chain
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import squareform, pdist
+import matplotlib.collections
 
 from .Variogram import Variogram
 
@@ -130,15 +129,15 @@ class DirectionalVariogram(Variogram):
                 * 'sq': The weights decrease by the squared distance.
 
             More info is given in the Variogram.fit_sigma documentation.
-        directional_model : string, Polygon
+        directional_model : string, function
             The model used for selecting all points fulfilling the
-            directional constraint of the Variogram. A predefined model can
-            be selected by passing the model name as string. Optionally a
-            callable accepting the current local coordinate system and
-            returning a Polygon representing the search area itself
-            can be passed. In this case, the tolerance and bandwidth has to
-            be incorporated by hand into the model. The azimuth is handled
-            by the class. The predefined options are:
+            directional constraint of the Variogram. A predefined
+            model can be selected by passing the model name as string.
+            Optionally a callable accepting the difference vectors
+            between points in polar form as angles and distances and
+            returning a mask array can be passed. In this case, the
+            azimuth, tolerance and bandwidth has to be incorporated by
+            hand into the model.
 
                 * 'compass': includes points in the direction of the
                   azimuth at given tolerance. The bandwidth parameter will be
@@ -212,13 +211,17 @@ class DirectionalVariogram(Variogram):
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
         self.set_values(values=values, calc_diff=False)
-
+        
         # distance matrix
         self._dist = None
 
         # set distance calculation function
         self._dist_func = None
         self.set_dist_function(func=dist_func)
+
+        # Angles and euclidean distances used for direction mask calculation
+        self._angles = None
+        self._euclidean_dist = None
 
         # lags and max lag
         self.n_lags = n_lags
@@ -277,6 +280,76 @@ class DirectionalVariogram(Variogram):
         # Note that fit() calls preprocessing
         self.fit(force=True)
 
+    def preprocessing(self, force=False):
+        self._calc_distances(force=force)
+        self._calc_direction_mask_data(force)
+        self._calc_diff(force=force)
+        self._calc_groups(force=force)
+
+    def _calc_direction_mask_data(self, force=False):
+        r"""
+        Calculate directional mask data.
+        For this, the angle between the vector between the two
+        points, and east (see comment about self.azimuth) is calculated.
+        The result is stored in self._angles and contains the angle of each
+        point pair vector to the x-axis in radians.
+
+        Parameters
+        ----------
+        force : bool
+            If True, a new calculation of all angles is forced, even if they
+            are already in the cache.
+
+        Notes
+        -----
+        The masked data is in radias, while azimuth is given in degrees.
+        For the Vector between a point pair A,B :math:`\overrightarrow{AB}=u` and the
+        x-axis, represented by vector :math:`\overrightarrow{e} = [1,0]`, the angle
+        :math:`\Theta` is calculated like:
+
+        .. math::
+            cos(\Theta) = \frac{u \circ e}{|e| \cdot |[1,0]|}
+
+        See Also
+        --------
+        `azimuth <skgstat.DirectionalVariogram.azimuth>`_
+
+        """
+        # check if already calculated
+        if self._angles is not None and not force:
+            return
+
+        # if self._X is of just one dimension, concat zeros.
+        if self._X.ndim == 1:
+            _x = np.vstack(zip(self._X, np.zeros(len(self._X))))
+        elif self._X.ndim == 2:
+            _x = self._X
+        else:
+            raise NotImplementedError('N-dimensional coordinates cannot be handled')
+
+        # for angles, we need Euklidean distance,
+        # no matter which distance function is used
+        if self._dist_func == "euclidean":
+            self._euclidean_dist = self._dist
+        else:
+            self._euclidean_dist = pdist(_x, "euclidean")
+
+        # Calculate the angles
+        # (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)
+        # cos(v) = (a - b).[1,0] / ||a - b||
+        # cos(v) = (a.[1,0] - b.[1,0]) / ||a - b||
+        scalar = pdist(np.array([np.dot(_x, [1, 0])]).T, np.subtract)
+        pos_angles = np.arccos(scalar / self._euclidean_dist)
+
+        # cos(v) for [2,1] and [2, -1] is the same,
+        # but v is not (v vs -v), fix that.
+        ydiff = pdist(np.array([np.dot(_x, [0, 1])]).T, np.subtract)
+
+        # store the angle or negative angle, depending on the
+        # amount of the x coordinate
+        self._angles = np.where(ydiff >= 0, pos_angles, -pos_angles)
+
+
     @property
     def azimuth(self):
         """Direction azimuth
@@ -305,7 +378,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._azimuth = angle
 
-        # reset groups on azimuth change
+        # reset groups and mask cache on azimuth change
+        self._direction_mask_cache = None
         self._groups = None
 
     @property
@@ -336,7 +410,8 @@ class DirectionalVariogram(Variogram):
         else:
             self._tolerance = angle
 
-        # reset groups on tolerance change
+        # reset groups and mask on tolerance change
+        self._direction_mask_cache = None
         self._groups = None
 
     @property
@@ -378,22 +453,24 @@ class DirectionalVariogram(Variogram):
         else:
             self._bandwidth = width
 
-        # reset groups on bandwidth change
+        # reset groups and direction mask cache on bandwidth change
+        self._direction_mask_cache = None
         self._groups = None
 
     def set_directional_model(self, model_name):
         """Set new directional model
 
         The model used for selecting all points fulfilling the
-        directional constraint of the Variogram. A predefined model can
-        be selected by passing the model name as string. Optionally a function
-        can be passed that accepts the current local coordinate system and
-        returns a Polygon representing the search area. In this case, the
-        tolerance and bandwidth has to be incorporated by hand into the
-        model. The azimuth is handled by the class. The predefined options are:
+        directional constraint of the Variogram. A predefined model
+        can be selected by passing the model name as string.
+        Optionally a callable accepting the difference vectors between
+        points in polar form as angles and distances and returning a
+        mask array can be passed. In this case, the azimuth, tolerance
+        and bandwidth has to be incorporated by hand into the model.
+        The predefined options are:
 
         * 'compass': includes points in the direction of the azimuth at given
-           tolerance. The bandwidth parameter will be ignored.
+          tolerance. The bandwidth parameter will be ignored.
         * 'triangle': constructs a triangle with an angle of tolerance at the
           point of interest and union an rectangle parallel to azimuth,
           once the hypotenuse length reaches bandwidth.
@@ -408,9 +485,9 @@ class DirectionalVariogram(Variogram):
         Parameters
         ----------
         model_name : string, callable
-            The name of the predefined model (string) or a function that
-            accepts the current local coordinate system and returns a Polygon
-            of the search area.
+            The name of the predefined model (string) or a function
+            that accepts angle and distance arrays and returns a mask
+            array.
 
         """
         # handle predefined models
@@ -434,48 +511,6 @@ class DirectionalVariogram(Variogram):
 
         # reset the groups as the directional model changed
         self._groups = None
-
-#    @jit
-    def local_reference_system(self, poi):
-        """Calculate local coordinate system
-
-        The coordinates will be transformed into a local reference system
-        that will simplify the directional dependence selection. The point of
-        interest (poi) of the current iteration will be used as origin of the
-        local reference system and the x-axis will be rotated onto the azimuth.
-
-        Parameters
-        ----------
-        poi : tuple
-            First two coordinate dimensions of the point of interest. will be
-            used as the new origin
-
-        Returns
-        -------
-        local_ref : numpy.array
-            Array of dimension (m, 2) where m is the length of the
-            coordinates array. Transformed coordinates in the same order as
-            the original coordinates.
-
-        """
-
-
-
-        # get the azimuth in radians
-        gamma = np.radians(self.azimuth)
-
-        cosgamma = np.cos(gamma)
-        singamma = np.sin(gamma)
-
-        _X = np.zeros(dtype=self._X.dtype, shape=self._X.shape)
-
-        for i in range(0, len(self._X)):
-            p = self._X[i,:] - poi
-            _X[i,0] = p[0] * cosgamma - p[1] * singamma
-            _X[i,1] = p[0] * singamma + p[1] * cosgamma
-
-        # return
-        return _X
 
     @property
     def bins(self):
@@ -513,76 +548,83 @@ class DirectionalVariogram(Variogram):
         """
 
         if force or self._direction_mask_cache is None:
-            # build the full coordinate matrix
-            n = len(self._X)
-            _mask = np.zeros((n, n), dtype=bool)
-
-            # build the masking
-            for i in range(n):
-                loc = self.local_reference_system(poi=self._X[i])
-
-                # apply the search radius
-                sr = self._directional_model(local_ref=loc)
-
-                _m = np.fromiter(
-                    (Point(p).within(sr) or Point(p).touches(sr) for p in loc),
-                    dtype=bool)
-                _mask[:, i] = _m
-
-            # combine lower and upper triangle
-            def _indexer():
-                for i in range(n):
-                    for j in range(n):
-                        if i < j:
-                            yield _mask[i, j] or _mask[j, i]
-
-            self._direction_mask_cache = np.fromiter(_indexer(), dtype=bool)
-
+            self._direction_mask_cache = self._directional_model(self._angles, self._euclidean_dist)
         return self._direction_mask_cache
 
-    def search_area(self, poi=0, ax=None):
-        """Plot Search Area
+    def pair_field(self, ax=None, cmap="gist_rainbow", points='all',add_points=True, alpha=0.3):  # pragma: no cover
+        """
+        Plot a pair field.
+
+        Plot a network graph for all point pairs that fulfill the direction
+        filter and lie within each others search area.
 
         Parameters
         ----------
-        poi : integer
-            Point of interest. Index of the coordinate that shall be used to
-            visualize the search area.
-        ax : None, matplotlib.AxesSubplot
-            If not None, the Search Area will be plotted into the given
-            Subplot object. If None, a new matplotlib Figure will be created
-            and returned
-
-        Returns
-        -------
-        plot
-
+        ax : matplotlib.Subplot
+            A matplotlib Axes object to plot the pair field onto.
+            If ``None``, a new new matplotlib figure will be created.
+        cmap : string
+            Any color-map name that is supported by matplotlib
+        points : 'all', int, list
+            If not ``'all'``, only the given coordinate (int) or 
+            list of coordinates (list) will be plotted. Recommended, if
+            the input data is quite large.
+        add_points : bool
+            If True (default) The coordinates will be added as black points.
+        alpha : float
+            Alpha value for the colors to make overlapping vertices
+            visualize better. Defaults to ``0.3``.
+            
         """
-        # get the poi
-        p = self._X[poi]
+        # get the direction mask
+        mask = squareform(self._direction_mask())
 
-        # create the local coordinate system for POI
-        loc = self.local_reference_system(poi=p)
+        # build a coordinate meshgrid
+        r = np.arange(len(self._X))
+        x1, x2 = np.meshgrid(r, r)
+        start = self._X[x1[mask]]
+        end = self._X[x2[mask]]
 
-        # create the search area based on current directional model
-        sa = self._directional_model(loc)
+        # handle lesser points
+        if isinstance(points, int):
+            points = [points]
+        if isinstance(points, list):
+            _start, _end = list(), list()
+            for p in self._X[points]:
+                _start.extend(start[np.where(end == p)[0]])
+                _end.extend(end[np.where(end == p)[0]])
+            start = np.array(_start)
+            end = np.array(_end)
 
+        # extract all lines and align colors
+        lines = np.column_stack((start.reshape(len(start), 1, 2), end.reshape(len(end), 1, 2)))
+        #colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
+        colors = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(lines)))
+        colors[:, 3] = alpha
+
+        # get the figure and ax object
         if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8, 8))
+            fig, ax = plt.subplots(1, 1, figsize=(8,8))
         else:
             fig = ax.get_figure()
 
-        # plot all coordinate
-        ax.plot(loc[:,0], loc[:,1], '.r')
+        # plot
+        lc = matplotlib.collections.LineCollection(lines, colors=colors, linewidths=1)
+        ax.add_collection(lc)
+        
+        # add coordinates
+        if add_points:
+            ax.scatter(self._X[:, 0], self._X[:, 1], 15, c='k')
+            if isinstance(points, list):
+                ax.scatter(self._X[:, 0][points], self._X[:, 1][points], 25, c='r')
 
-        # plot the search area
-        x, y = sa.exterior.xy
-        ax.plot(x, y, color='#00a562', alpha=0.7, linewidth=2,
-                solid_capstyle='round')
+        # finish plot
+        ax.autoscale()
+        ax.margins(0.1)
 
         return fig
 
-    def _triangle(self, local_ref):
+    def _triangle(self, angles, dists):
         r"""Triangular Search Area
 
         Construct a triangular bounded search area for building directional
@@ -592,15 +634,15 @@ class DirectionalVariogram(Variogram):
 
         Parameters
         ----------
-        local_ref : numpy.array
-            Array of all coordinates transformed into a local representation
-            with the current point of interest being the origin and the
-            azimuth angle aligned onto the x-axis.
+        angles, dists : numpy.array
+            Vectors between point pairs in polar form (angle relative
+            to east in radians, length in coordinate space units)
 
         Returns
         -------
-        search_area : Polygon
-            Search Area of triangular shape bounded by the current bandwidth.
+        mask : numpy.array(bool)
+            Point pair mask, indexed as the results of
+            scipy.spatial.distance.pdist are.
 
         Notes
         -----
@@ -629,33 +671,17 @@ class DirectionalVariogram(Variogram):
         DirectionalVariogram._circle
 
         """
-        # y coordinate is easy
-        c = self.bandwidth
-        gamma = np.radians(self.tolerance)
-        y = 0.5 * c
 
-        # a and h can be calculated
-        a = c / (2 * np.sin(gamma / 2))
-        h = np.sqrt((4 * a**2 - c**2) / 4)
+        absdiff = np.abs(angles + np.radians(self.azimuth))
+        absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
+        absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
 
-        # get the maximum x coordinate in the current representation
-        xmax = np.max(local_ref[:, 0])
+        in_tol = absdiff <= np.radians(self.tolerance / 2)
+        in_band = self.bandwidth / 2 >= np.abs(dists * np.sin(np.abs(angles + np.radians(self.azimuth))))
 
-        if h >= xmax:
-            return self._compass(local_ref)
+        return in_tol & in_band
 
-        # build the figure
-        poly = Polygon([
-            (0, 0),
-            (h, y),
-            (xmax, y),
-            (xmax, -y),
-            (h, -y)
-        ])
-
-        return poly
-
-    def _circle(self, local_ref):
+    def _circle(self, angles, dists):
         r"""Circular Search Area
 
         Construct a half-circled bounded search area for building directional
@@ -666,15 +692,15 @@ class DirectionalVariogram(Variogram):
 
         Parameters
         ----------
-        local_ref : numpy.array
-            Array of all coordinates transformed into a local representation
-            with the current point of interest being the origin and the
-            azimuth angle aligned onto the x-axis.
+        angles, dists : numpy.array
+            Vectors between point pairs in polar form (angle relative
+            to east in radians, length in coordinate space units)
 
         Returns
         -------
-        search_area : Polygon
-            Search Area of half-circular shape bounded by the current bandwidth.
+        mask : numpy.array(bool)
+            Point pair mask, indexed as the results of
+            scipy.spatial.distance.pdist are.
 
         Raises
         ------
@@ -686,28 +712,10 @@ class DirectionalVariogram(Variogram):
         DirectionalVariogram._compass
 
         """
-        if self.bandwidth is None or self.bandwidth == 0:
-            raise ValueError('Circular Search Area cannot be used without '
-                             'bandwidth.')
+        raise NotImplementedError
 
-        # radius is half bandwidth
-        r = self.bandwidth / 2.
-
-        # build the half circle
-        circle = Point((r, 0)).buffer(r)
-        half_circle = [_ for _ in circle.boundary.coords if _[0] <= r]
-
-        # get the maximum x coordinate
-        xmax = np.max(local_ref[:, 0])
-
-        # add the bandwidth coordinates
-        half_circle.extend([(xmax, r), (xmax, -r)])
-
-        # return the figure
-        return Polygon(half_circle)
-
-    def _compass(self, local_ref):
-        r"""Compass direction Search Area
+    def _compass(self, angles, dists):
+        r"""Compass direction direction mask
 
         Construct a search area for building directional dependent point
         pairs. The compass search area will **not** be bounded by the
@@ -718,34 +726,15 @@ class DirectionalVariogram(Variogram):
 
         Parameters
         ----------
-        local_ref : numpy.array
-            Array of all coordinates transformed into a local representation
-            with the current point of interest being the origin and the
-            azimuth angle aligned onto the x-axis.
+        angles, dists : numpy.array
+            Vectors between point pairs in polar form (angle relative
+            to east in radians, length in coordinate space units)
 
         Returns
         -------
-        search_area : Polygon
-            Search Area of the given compass direction.
-
-        Notes
-        -----
-        The necessary figure is build by searching for the intersection of a
-        half-tolerance angled line with a vertical line at the maximum x-value.
-        Using polar coordinates, these points (positive and negative
-        half-tolerance angle) are the edges of the search area in the local
-        coordinate system. The radius of a polar coordinate can be calculated
-        as:
-
-        .. math::
-            r = \frac{x}{cos (\alpha / 2)}
-
-        The two bounding points P1 nad P2 (in local coordinates) are then
-        (xmax, y) and (xmax, -y), with xmax being the maximum local
-        x-coordinate representation and y:
-
-        .. math::
-            y = r * sin \left( \frac{\alpha}{2} \right)
+        mask : numpy.array(bool)
+            Point pair mask, indexed as the results of
+            scipy.spatial.distance.pdist are.
 
         See Also
         --------
@@ -753,15 +742,9 @@ class DirectionalVariogram(Variogram):
         DirectionalVariogram._circle
 
         """
-        # get the half tolerance angle
-        a = np.radians(self.tolerance / 2)
 
-        # get the maximum x coordinate
-        xmax = np.max(local_ref[:,0])
+        absdiff = np.abs(angles + np.radians(self.azimuth))
+        absdiff = np.where(absdiff > np.pi, absdiff - np.pi, absdiff)
+        absdiff = np.where(absdiff > np.pi / 2, np.pi - absdiff, absdiff)
 
-        # calculate the radius and y coordinates
-        r = xmax / np.cos(a)
-        y = r * np.sin(a)
-
-        # build and return the figure
-        return Polygon([(0, 0), (xmax, y), (xmax, -y)])
+        return absdiff <= np.radians(self.tolerance / 2)
