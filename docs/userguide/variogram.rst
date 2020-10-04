@@ -747,6 +747,49 @@ variogram direction. But first we need to increase the tolerance as half toleran
 Directional variogram
 ---------------------
 
-.. note::
 
-    To be continued...
+.. ipython:: python
+    :okwarning:
+
+    field = np.loadtxt('data/aniso_x2.txt')
+    np.random.seed(1312)
+    coords = np.random.randint(100, size=(300,2))
+    vals = [field[_[0], _[1]] for _ in coords]
+
+The next step is to create two different variogram instances, which share the same 
+parameters, but use a different azimuth angle. One oriented to North and the 
+second one oriented to East.
+
+.. ipython:: python
+    :okwarning:
+
+    Vnorth = DirectionalVariogram(coords, vals, azimuth=90, tolerance=90, maxlag=80, n_lags=20)
+    Veast = DirectionalVariogram(coords, vals, azimuth=0, tolerance=90, maxlag=80, n_lags=20)
+    pd.DataFrame({'north':Vnorth.describe(), 'east': Veast.describe()})
+
+You can see, how the two are differing in effective range and also sill, only 
+caused by the orientation. Let's look at the experimental variogram:
+
+.. ipython:: python
+
+    fix, ax = plt.subplots(1,1,figsize=(8,6))
+    ax.plot(Vnorth.bins, Vnorth.experimental, '.--r', label='North-South')
+    ax.plot(Veast.bins, Veast.experimental, '.--b', label='East-West')
+    ax.set_xlabel('lag [m]')
+    ax.set_ylabel('semi-variance (matheron)')
+    @savefig expermiental_direcional_varigram_comparison.png width=8in
+    plt.legend(loc='upper left')
+
+The shape of both experimental variograms is very similar on the first 40 meters 
+of distance. Within this range, the apparent anisotropy is not pronounced. 
+The East-West oriented variograms also have an effective range of only about 40 meters,
+which means that in this direction the observations become statistically independent 
+at larger distances.
+For the North-South variogram the effective range is way bigger and the variogram 
+plot reveals much larger correlation lengths in that direction. The spatial 
+dependency is thus directed in North-South direction.
+
+
+To perform Kriging, you would now transform the data, especially in North-West 
+direction, unitl both variograms look the same within the effective range. 
+Finally, the Kriging result is back-transformed into the original coordinate system.
