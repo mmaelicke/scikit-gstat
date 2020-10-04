@@ -110,7 +110,7 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
                 pass
 
         var = Test(a, np.random.normal(0, 1, size=3))
-        var._calc_directional_mask_data()
+        var._calc_direction_mask_data()
 
         assert_array_almost_equal(
             np.degrees(var._angles + np.pi)[:2],
