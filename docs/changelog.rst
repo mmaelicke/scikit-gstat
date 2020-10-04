@@ -2,9 +2,13 @@
 Changelog
 =========
 
-Version 0.2.9
+Version 0.3.0
 =============
 
+- [Variogram] some internal calculations were changed.
+- [DirectionalVariogram] - the circular search are is removed and raises a NotImplementedError
+- [DirectionalVariogram] - direction mask data is calculated way faster and without shapely involved.
+- shapely is not a dependency anymore
 - [unittests] - more unittests were added.
 
 Version 0.2.8
