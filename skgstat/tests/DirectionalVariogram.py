@@ -101,6 +101,23 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
             np.array([12.3, 24.7, 37., 49.4]), DV.bins, decimal=1
         )
 
+    def test_directional_mask(self):
+        a = np.array([[0, 0], [1, 2], [2, 1]])
+
+        # overwrite fit method
+        class Test(DirectionalVariogram):
+            def fit(*args, **kwargs):
+                pass
+
+        var = Test(a, np.random.normal(0, 1, size=3))
+        var._calc_directional_mask_data()
+
+        assert_array_almost_equal(
+            np.degrees(var._angles + np.pi)[:2],
+            [63.4, 26.6],
+            places=1
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
