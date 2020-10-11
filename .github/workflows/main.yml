@@ -30,3 +30,41 @@ jobs:
         with:
           file: ./coverage.xml
           env_vars: OS, PYTHON
+
+  docs:
+    name: Build and deploy documentation
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: '3.6'
+      - name: Install SciKit-GStat
+        run: | 
+          pip3 install -r requirements.txt
+          python3 setup.py install
+      - name: Install Sphinx requirements
+        run: pip3 install -r requirements.rtd.txt
+      - name: Install pdflatex
+        run: sudo apt install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
+      - name: make HTML & LaTeX docs
+        run: | 
+          cd docs
+          make html 
+          make latex
+      - name: compile LaTeX
+        run: | 
+          cd _build/latex
+          pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
+          cd ../..
+          cp _build/latex/SciKitGStat.pdf _build/html
+      - name: deploy to gh pages
+        uses: crazy-max/ghaction-github-pages@v1
+        with:
+          target_branch: gh-pages
+          build_dir: docs/build/html
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     
