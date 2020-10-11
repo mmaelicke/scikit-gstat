@@ -1,3 +1,4 @@
 pytest
+pytest-cov
 pykrige
 gstools==1.1.*
