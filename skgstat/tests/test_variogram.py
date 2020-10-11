@@ -879,7 +879,7 @@ class TestVariogramPickling(unittest.TestCase):
         Only test if loading and saving a pickle works without error
         """
         pickle.loads(pickle.dumps(self.V))
-        self.assertTrue()
+        return True
 
 
 if __name__ == '__main__':  # pragma: no cover

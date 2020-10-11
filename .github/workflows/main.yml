@@ -1,0 +1,27 @@
+name: Test and build docs
+
+on: push
+
+jobs:
+  test:
+   name: Run Unittest
+   runs-on: ubuntu-18.04
+   strategy:
+    matrix: 
+      python: [3.5, 3.6, 3.7]
+   
+   steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Install Python
+        uses: actions/setup-python@master
+        with:
+          python-version: {{ matrix.python }}
+      - name: Install SciKit-GStat
+        run: | 
+          pip3 install -r requirements.txt
+          python3 setup.py install
+      - name: Install PyTest requirements
+        run: pip3 install -r requirements.unittest.{{ matrix.python }}.txt
+      - name: Run tests
+        run: pytest
