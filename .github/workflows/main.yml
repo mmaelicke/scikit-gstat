@@ -34,6 +34,7 @@ jobs:
   docs:
     name: Build and deploy documentation
     runs-on: ubuntu-18.04
+    needs: test
 
     steps:
       - name: Checkout
