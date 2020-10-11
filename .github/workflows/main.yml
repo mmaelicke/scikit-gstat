@@ -8,15 +8,15 @@ jobs:
    runs-on: ubuntu-18.04
    strategy:
     matrix: 
-      python: [3.5, 3.6, 3.7]
+      python: ['3.5', '3.6', '3.7']
    
    steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Install Python
+      - name: Install Python ${{ matrix.python }}
         uses: actions/setup-python@master
         with:
-          python-version: {{ matrix.python }}
+          python-version: ${{ matrix.python }}
       - name: Install SciKit-GStat
         run: | 
           pip3 install -r requirements.txt
