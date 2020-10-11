@@ -58,7 +58,7 @@ jobs:
           make latex
       - name: compile LaTeX
         run: | 
-          cd _build/latex
+          cd docs/_build/latex
           pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
           cd ../..
           cp _build/latex/SciKitGStat.pdf _build/html
