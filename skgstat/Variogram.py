@@ -1037,15 +1037,10 @@ class Variogram(object):
             return
 
         v = self.values
-        l = len(v)
-        self._diff = np.zeros(int((l**2 - l) / 2))
 
-        # calculate the pairwise differences
-        k = 0
-        for i in range(l):
-            for j in range(i+1, l):
-                 self._diff[k] = np.abs(v[i] - v[j])
-                 k += 1
+        # Append a column of zeros to make pdist happy
+        # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
+        self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
