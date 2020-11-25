@@ -10,6 +10,7 @@ from scipy.spatial.distance import squareform
 from scipy.linalg import solve as scipy_solve
 from numpy.linalg import solve as numpy_solve, LinAlgError, inv
 from multiprocessing import Pool
+import scipy.spatial.distance
 
 from .Variogram import Variogram
 
@@ -104,8 +105,6 @@ class OrdinaryKriging:
         self.n_jobs = n_jobs
         self.perf = perf
 
-        # copy the distance function from the Variogram
-        self.dist = self.V._dist_func_wrapper
         params = self.V.describe()
         self.range = params['effective_range']
         self.nugget = params['nugget']
@@ -139,6 +138,14 @@ class OrdinaryKriging:
             self.perf_mat = list()
             self.perf_solv = list()
 
+    @property
+    def dist(self):
+        return self.V._dist_func_wrapper
+
+    @property
+    def dist_metric(self):
+        return self.V._dist_func
+               
     def _get_coordinates_and_values(self):
         """Extract the coordinates and values
 
@@ -271,17 +278,20 @@ class OrdinaryKriging:
         if self.perf:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
+        self.transform_coordinates = np.column_stack(x)
+        self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
+        
         # DEV: this is dirty, not sure how to do it better at the moment
         self.sigma = np.empty(len(x[0]))
         self.__sigma_index = 0
         # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
-            z = np.fromiter(map(self._estimator, *x), dtype=float)
+            z = np.fromiter(map(self._estimator, range(len(self.transform_coordinates))), dtype=float)
         else:
-            def f(*coords):
-                return self._estimator(*coords)
+            def f(idxs):
+                return self._estimator(idxs)
             with Pool(self.n_jobs) as p:
-                z = p.starmap(f, zip(*x))
+                z = p.starmap(f, range(len(self.transform_coordinates)))
 
         # print warnings
         if self.singular_error > 0:
@@ -295,7 +305,7 @@ class OrdinaryKriging:
 
         return np.array(z)
 
-    def _estimator(self, *coords):
+    def _estimator(self, idx):
         """Estimation wrapper
 
         Wrapper around OrdinaryKriging._krige function to build the point of
@@ -305,7 +315,7 @@ class OrdinaryKriging:
 
         """
         try:
-            z, sigma = self._krige([*coords])
+            z, sigma = self._krige(idx)
         except SingularMatrixError:
             self.singular_error += 1
             return np.nan
@@ -322,7 +332,7 @@ class OrdinaryKriging:
 
         return z
 
-    def _krige(self, p):
+    def _krige(self, idx):
         """Algorithm
 
         Kriging algorithm for one point. This is the place, where the
@@ -330,8 +340,8 @@ class OrdinaryKriging:
 
         Parameters
         ----------
-        p : numpy.array
-            point location coordinates of the unobserved location
+        idx : int
+            Index into self.transform_* arrays for an unobserved location
 
         Raises
         ------
@@ -371,14 +381,13 @@ class OrdinaryKriging:
             kriging variance :math:`\sigma^2` for p.
 
         """
+        
         if self.perf:
             t0 = time.time()
-        # determine the points needed for estimation
-        _p = np.concatenate(([p], self.coords))
 
-        # distance matrix for p to all coordinates, without p itself
-        dists = self.dist(_p)[:len(_p) - 1]
-
+        p = self.transform_coordinates[idx,:]
+        dists = self.transform_dists[idx,:]
+        
         # find all points within the search distance
         idx = np.where(dists <= self.range)[0]
 
