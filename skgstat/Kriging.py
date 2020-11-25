@@ -279,7 +279,13 @@ class OrdinaryKriging:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
         self.transform_coordinates = np.column_stack(x)
-        self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
+        if self.dist_metric == "euclidean":
+            tt = scipy.spatial.cKDTree(self.transform_coordinates)
+            ct = scipy.spatial.cKDTree(self.coords)
+
+            self.transform_dists = tt.sparse_distance_matrix(ct, self.range).todok()
+        else:
+            self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
         
         # DEV: this is dirty, not sure how to do it better at the moment
         self.sigma = np.empty(len(x[0]))
@@ -389,16 +395,23 @@ class OrdinaryKriging:
         dists = self.transform_dists[idx,:]
         
         # find all points within the search distance
-        idx = np.where(dists <= self.range)[0]
+        if isinstance(dists, scipy.sparse.spmatrix):
+            idx = np.array([k[1] for k in dists.keys()])
+        else:
+            idx = np.where(dists <= self.range)[0]
 
         # raise an error if not enough points are found
         if idx.size < self._minp:
             raise LessPointsError
 
         if idx.size > self._maxp:
-            sorted_idx = np.argsort(dists)
-            idx = sorted_idx[np.isin(sorted_idx, idx)][:self._maxp]
-
+            if isinstance(dists, scipy.sparse.spmatrix):
+                selected_dists = dists[0, idx].toarray()[0,:]
+            else:
+                selected_dists = dists[idx]
+            sorted_idx = np.argsort(selected_dists, kind="stable")
+            idx = idx[sorted_idx][:self._maxp]
+            
         # finally find the points and values
         in_range = self.coords[idx]
         values = self.values[idx]
