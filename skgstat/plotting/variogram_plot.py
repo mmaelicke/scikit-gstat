@@ -131,7 +131,7 @@ def plotly_variogram_plot(variogram, fig=None, grid=True, show=True, hist=True):
     )
 
     # update axis title
-    fig.update_xaxes(title_text='Lag [-]')
+    fig.update_xaxes(title_text='Lag [-]', row=2 if hist else 1, col=1)
     fig.update_yaxes(
         title_text='semivariance (%s)' % variogram.estimator.__name__,
         row=2 if hist else 1, col=1

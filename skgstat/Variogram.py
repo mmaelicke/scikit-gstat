@@ -1562,41 +1562,39 @@ class Variogram(object):
         raise ValueError('The plotting backend has an undefined state.')
 
     def scattergram(self, ax=None, show=True):
+        """Scattergram plot
 
-        # create a new plot or use the given
-        if ax is None:
-            fig, ax = plt.subplots(1, 1)
-        else:
-            fig = ax.get_figure()
+        Groups the values by lags and plots the head and tail values
+        of all point pairs within the groups against each other.
+        This can be used to investigate the distribution of the
+        value residuals.
 
-        tail = np.empty(0)
-        head = tail.copy()
+        Parameters
+        ----------
+        ax : matplotlib.Axes, plotly.graph_objects.Figure
+            If None, a new plotting Figure will be created. If given, 
+            it has to be an instance of the used plotting backend, which 
+            will be used to plot on.
+        show : boolean
+            If True (default), the `show` method of the Figure will be 
+            called. Can be set to False to prevent duplicated plots in 
+            some environments.
+        
+        Returns
+        -------
+        fig : matplotlib.Figure, plotly.graph_objects.Figure
+            Resulting figure, depending on the plotting backend
+        """
+        # get the backend
+        used_backend = plotting.backend()
 
-        for h in np.unique(self.lag_groups()):
-            # get the head and tail
-            x, y = np.where(squareform(self.lag_groups()) == h)
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_scattergram(self, ax=ax, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_variogram_scattergram(self, fig=ax, show=show)
 
-            # concatenate
-            tail = np.concatenate((tail, self.values[x]))
-            head = np.concatenate((head, self.values[y]))
-
-        # plot the mean on tail and head
-        ax.vlines(np.mean(tail), np.min(tail), np.max(tail), linestyles='--',
-                  color='red', lw=2)
-        ax.hlines(np.mean(head), np.min(head), np.max(head), linestyles='--',
-                  color='red', lw=2)
-        # plot
-        ax.scatter(tail, head, 10, marker='o', color='orange')
-
-        # annotate
-        ax.set_ylabel('head')
-        ax.set_xlabel('tail')
-
-        # show the figure
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def location_trend(self, axes=None, show=True):
         """Location Trend plot

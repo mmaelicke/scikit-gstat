@@ -1,5 +1,6 @@
 import skgstat
 from .variogram_plot import matplotlib_variogram_plot, plotly_variogram_plot
+from .variogram_scattergram import matplotlib_variogram_scattergram, plotly_variogram_scattergram
 
 ALLOWED_BACKENDS = [
     'matplotlib',
