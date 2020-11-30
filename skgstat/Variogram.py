@@ -13,6 +13,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
+from skgstat import plotting
 
 
 class Variogram(object):
@@ -1549,88 +1550,16 @@ class Variogram(object):
         matplotlib.Figure
 
         """
-        # get the parameters
-        _bins = self.bins
-        _exp = self.experimental
-        x = np.linspace(0, np.nanmax(_bins), 100)  # make the 100 a param?
+        # get the backend
+        used_backend = plotting.backend()
 
-        # do the plotting
-        if axes is None:
-            if hist:
-                fig = plt.figure(figsize=(8, 5))
-                ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
-                ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
-                fig.subplots_adjust(hspace=0)
-            else:
-                fig, ax1 = plt.subplots(1, 1, figsize=(8, 4))
-                ax2 = None
-        elif isinstance(axes, (list, tuple, np.ndarray)):
-            ax1, ax2 = axes
-            fig = ax1.get_figure()
-        else:
-            ax1 = axes
-            ax2 = None
-            fig = ax1.get_figure()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_plot(self, axes=axes, grid=grid, show=show, hist=hist)
+        elif used_backend == 'plotly':
+            return plotting.plotly_variogram_plot(self, fig=axes, grid=grid, show=show, hist=hist)
 
-        # apply the model
-        y = self.transform(x)
-
-        # handle the relative experimental variogram
-        if self.normalized:
-            _bins /= np.nanmax(_bins)
-            y /= np.max(_exp)
-            _exp /= np.nanmax(_exp)
-            x /= np.nanmax(x)
-
-        # ------------------------
-        # plot Variograms
-        ax1.plot(_bins, _exp, '.b')
-        ax1.plot(x, y, '-g')
-
-        # ax limits
-        if self.normalized:
-            ax1.set_xlim([0, 1.05])
-            ax1.set_ylim([0, 1.05])
-        if grid:
-            ax1.grid(False)
-            ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85),
-                       linestyles='dashed')
-        # annotation
-        ax1.axes.set_ylabel('semivariance (%s)' % self._estimator.__name__)
-        ax1.axes.set_xlabel('Lag (-)')
-
-        # ------------------------
-        # plot histogram
-        if ax2 is not None and hist:
-            # calc the histogram
-            _count = np.fromiter(
-                (g.size for g in self.lag_classes()), dtype=int
-            )
-
-            # set the sum of hist bar widths to 70% of the x-axis space
-            w = (np.max(_bins) * 0.7) / len(_count)
-
-            # plot
-            ax2.bar(_bins, _count, width=w, align='center', color='red')
-
-            # adjust
-            plt.setp(ax2.axes.get_xticklabels(), visible=False)
-            ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
-
-            # need a grid?
-            if grid:  #pragma: no cover
-                ax2.grid(False)
-                ax2.vlines(_bins, *ax2.axes.get_ybound(),
-                           colors=(.85, .85, .85), linestyles='dashed')
-
-            # anotate
-            ax2.axes.set_ylabel('N')
-
-        # show the figure
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def scattergram(self, ax=None, show=True):
 
