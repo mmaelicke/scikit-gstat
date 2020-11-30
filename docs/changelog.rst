@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.3.1
+=============
+
+- [Variogram] - internal distance calculations were refactored, to speed things up
+- [Kriging] - internal distance calculations were refactored, to speed things up
+
 Version 0.3.0
 =============
 
