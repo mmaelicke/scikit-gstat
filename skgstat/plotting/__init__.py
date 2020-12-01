@@ -20,5 +20,12 @@ def backend(name=None):
             (name, ','.join(["'%s'" % _ for _ in ALLOWED_BACKENDS]))
         )
 
-    else:
-        skgstat.__backend__ = name
+    elif name == 'plotly':
+        try:
+            import plotly
+        except ImportError:
+            print('You need to install plotly >=4.12.0 separatly:\npip install plotly')
+            return
+
+    # were are good to set the new backend
+    skgstat.__backend__ = name
