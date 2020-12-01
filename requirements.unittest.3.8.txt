@@ -3,3 +3,4 @@ pytest-cov
 pytest-depends
 pykrige
 gstools
+plotly
