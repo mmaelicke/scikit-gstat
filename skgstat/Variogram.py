@@ -1669,7 +1669,7 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_variogram_scattergram(self, ax=ax, plot_bins=plot_bins, show=show)
+            return plotting.matplotlib_dd_plot(self, ax=ax, plot_bins=plot_bins, show=show)
         elif used_backend == 'plotly':
             return plotting.plotly_dd_plot(self, fig=ax, plot_bins=plot_bins, show=show)
 
