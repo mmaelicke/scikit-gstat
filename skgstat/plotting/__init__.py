@@ -1,6 +1,8 @@
 import skgstat
+
 from .variogram_plot import matplotlib_variogram_plot, plotly_variogram_plot
 from .variogram_scattergram import matplotlib_variogram_scattergram, plotly_variogram_scattergram
+from .variogram_location_trend import matplotlib_location_trend, plotly_location_trend
 
 ALLOWED_BACKENDS = [
     'matplotlib',

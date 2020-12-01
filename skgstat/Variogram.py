@@ -1526,6 +1526,9 @@ class Variogram(object):
         is passed, the hist attribute will be ignored as only the variogram
         will be plotted anyway.
 
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
+
         Parameters
         ----------
         axes : list, tuple, array, AxesSubplot or None
@@ -1569,6 +1572,9 @@ class Variogram(object):
         This can be used to investigate the distribution of the
         value residuals.
 
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
+
         Parameters
         ----------
         ax : matplotlib.Axes, plotly.graph_objects.Figure
@@ -1605,6 +1611,9 @@ class Variogram(object):
         location, this would violate the intrinsic hypothesis. This is a
         weaker form of stationarity of second order.
 
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
+
         Parameters
         ----------
         axes : list
@@ -1616,34 +1625,19 @@ class Variogram(object):
 
         Returns
         -------
-        matplotlib.Figure
+        matplotlib.Figure, plotly.graph_objects.Figure
 
         """
-        N = len(self._X[0])
-        if axes is None:
-            # derive the needed amount of col and row
-            nrow = int(round(np.sqrt(N)))
-            ncol = int(np.ceil(N / nrow))
-            fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 6 ,nrow * 6))
-        else:
-            if not len(axes) == N:
-                raise ValueError(
-                    'The amount of passed axes does not fit the coordinate' +
-                    ' dimensionality of %d' % N)
-            fig = axes[0].get_figure()
+        # get the backend
+        used_backend = plotting.backend()
 
-        for i in range(N):
-            axes.flatten()[i].plot([_[i] for _ in self._X], self.values, '.r')
-            axes.flatten()[i].set_xlabel('%d-dimension' % (i + 1))
-            axes.flatten()[i].set_ylabel('value')
-
-        # plot the figure and return it
-        plt.tight_layout()
-
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_location_trend(self, axes=axes, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_location_trend(self, fig=axes, show=show)
+        
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def distance_difference_plot(self, ax=None, plot_bins=True, show=True):
         """Raw distance plot
