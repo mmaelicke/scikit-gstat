@@ -1645,6 +1645,9 @@ class Variogram(object):
         Plots all absoulte value differences of all point pair combinations
         over their separating distance, without sorting them into a lag.
 
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
+
         Parameters
         ----------
         ax : None, AxesSubplot
@@ -1662,40 +1665,16 @@ class Variogram(object):
         matplotlib.pyplot.Figure
 
         """
-        # get all distances
-        _dist = self.distance
+        # get the backend
+        used_backend = plotting.backend()
 
-        # get all differences
-        if self._diff is None:
-            self._calc_diff()
-        _diff = self._diff
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_scattergram(self, ax=ax, plot_bins=plot_bins, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_dd_plot(self, fig=ax, plot_bins=plot_bins, show=show)
 
-        # create the plot
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8, 6))
-        else:
-            fig = ax.get_figure()
-
-        # plot the bins
-        if plot_bins:
-            _bins = self.bins
-            ax.vlines(_bins, 0, np.max(_diff), linestyle='--', lw=1, color='r')
-
-        # plot
-        ax.scatter(_dist, _diff, 8, color='b', marker='o', alpha=0.5)
-
-        # set limits
-        ax.set_ylim((0, np.max(_diff)))
-        ax.set_xlim((0, np.max(_dist)))
-        ax.set_xlabel('separating distance')
-        ax.set_ylabel('pairwise difference')
-        ax.set_title('Pairwise distance ~ difference')
-
-        # show the plot
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def __repr__(self):  # pragma: no cover
         """
