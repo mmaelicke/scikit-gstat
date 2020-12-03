@@ -30,6 +30,11 @@ class IllMatrixError(RuntimeWarning):
 def inv_solve(a, b):
     return inv(a).dot(b)
 
+def sparse_dok_get(m, fill_value=np.NaN):
+    mm = np.full(m.shape, fill_value)
+    for (x, y), value in m.items():
+        mm[x,y] = value
+    return mm
 
 class OrdinaryKriging:
     def __init__(
@@ -132,6 +137,13 @@ class OrdinaryKriging:
         self.no_points_error = 0
         self.ill_matrix = 0
 
+        if self.dist_metric == "euclidean":
+            self.coords_tree = scipy.spatial.cKDTree(self.coords)
+            self.coords_dists = self.coords_tree.sparse_distance_matrix(self.coords_tree, self.range).todok()
+        else:
+            self.coords_dists = scipy.spatial.distance.squareform(
+                scipy.spatial.distance.pdist(self.coords, metric=self.dist_metric))
+        
         # performance counter
         if self.perf:
             self.perf_dist = list()
@@ -281,9 +293,7 @@ class OrdinaryKriging:
         self.transform_coordinates = np.column_stack(x)
         if self.dist_metric == "euclidean":
             tt = scipy.spatial.cKDTree(self.transform_coordinates)
-            ct = scipy.spatial.cKDTree(self.coords)
-
-            self.transform_dists = tt.sparse_distance_matrix(ct, self.range).todok()
+            self.transform_dists = tt.sparse_distance_matrix(self.coords_tree, self.range).todok()
         else:
             self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
         
@@ -411,12 +421,16 @@ class OrdinaryKriging:
                 selected_dists = dists[idx]
             sorted_idx = np.argsort(selected_dists, kind="stable")
             idx = idx[sorted_idx][:self._maxp]
-            
+        
         # finally find the points and values
         in_range = self.coords[idx]
         values = self.values[idx]
-        dist_mat = self.dist(in_range)
-
+        dist_mat = self.coords_dists[idx,:][:,idx]
+        if isinstance(dist_mat, scipy.sparse.spmatrix):
+            dist_mat = sparse_dok_get(dist_mat, np.inf)
+            np.fill_diagonal(dist_mat, 0) # Normally set to inf
+        dist_mat = scipy.spatial.distance.squareform(dist_mat)
+        
         # if performance is tracked, time this step
         if self.perf:
             t1 = time.time()
