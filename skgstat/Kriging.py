@@ -46,7 +46,8 @@ class OrdinaryKriging:
             precision=100,
             solver='inv',
             n_jobs=1,
-            perf=False
+            perf=False,
+            sparse=True
     ):
         """Ordinary Kriging routine
 
@@ -99,6 +100,8 @@ class OrdinaryKriging:
         if not isinstance(variogram, Variogram):
             raise TypeError('variogram has to be of type skgstat.Variogram.')
 
+        self.sparse = sparse
+        
         # general attributes
         self.V = variogram
         self._minp = min_points
@@ -137,7 +140,7 @@ class OrdinaryKriging:
         self.no_points_error = 0
         self.ill_matrix = 0
 
-        if self.dist_metric == "euclidean":
+        if self.sparse and self.dist_metric == "euclidean":
             self.coords_tree = scipy.spatial.cKDTree(self.coords)
             self.coords_dists = self.coords_tree.sparse_distance_matrix(self.coords_tree, self.range).todok()
         else:
@@ -291,9 +294,9 @@ class OrdinaryKriging:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
         self.transform_coordinates = np.column_stack(x)
-        if self.dist_metric == "euclidean":
+        if self.sparse and self.dist_metric == "euclidean":
             tt = scipy.spatial.cKDTree(self.transform_coordinates)
-            self.transform_dists = tt.sparse_distance_matrix(self.coords_tree, self.range).todok()
+            self.transform_dists = tt.sparse_distance_matrix(self.coords_tree, self.range).tolil()
         else:
             self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
         
@@ -406,7 +409,7 @@ class OrdinaryKriging:
         
         # find all points within the search distance
         if isinstance(dists, scipy.sparse.spmatrix):
-            idx = np.array([k[1] for k in dists.keys()])
+            idx = np.array([k[1] for k in dists.todok().keys()])
         else:
             idx = np.where(dists <= self.range)[0]
 
