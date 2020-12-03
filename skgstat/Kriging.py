@@ -142,7 +142,7 @@ class OrdinaryKriging:
 
         if self.sparse and self.dist_metric == "euclidean":
             self.coords_tree = scipy.spatial.cKDTree(self.coords)
-            self.coords_dists = self.coords_tree.sparse_distance_matrix(self.coords_tree, self.range).todok()
+            self.coords_dists = self.coords_tree.sparse_distance_matrix(self.coords_tree, self.range, output_type="coo_matrix").tocsr()
         else:
             self.coords_dists = scipy.spatial.distance.squareform(
                 scipy.spatial.distance.pdist(self.coords, metric=self.dist_metric))
@@ -296,7 +296,7 @@ class OrdinaryKriging:
         self.transform_coordinates = np.column_stack(x)
         if self.sparse and self.dist_metric == "euclidean":
             tt = scipy.spatial.cKDTree(self.transform_coordinates)
-            self.transform_dists = tt.sparse_distance_matrix(self.coords_tree, self.range).tolil()
+            self.transform_dists = tt.sparse_distance_matrix(self.coords_tree, self.range, output_type="coo_matrix").tocsr()
         else:
             self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
         
@@ -405,7 +405,10 @@ class OrdinaryKriging:
             t0 = time.time()
 
         p = self.transform_coordinates[idx,:]
-        dists = self.transform_dists[idx,:]
+        if isinstance(self.transform_dists, scipy.sparse.spmatrix):
+            dists = self.transform_dists.getrow(idx)
+        else:
+            dists = self.transform_dists[idx,:]
         
         # find all points within the search distance
         if isinstance(dists, scipy.sparse.spmatrix):
@@ -429,8 +432,8 @@ class OrdinaryKriging:
         in_range = self.coords[idx]
         values = self.values[idx]
         dist_mat = self.coords_dists[idx,:][:,idx]
-        if isinstance(dist_mat, scipy.sparse.spmatrix):
-            dist_mat = sparse_dok_get(dist_mat, np.inf)
+        if isinstance(self.coords_dists, scipy.sparse.spmatrix):
+            dist_mat = sparse_dok_get(dist_mat.todok(), np.inf)
             np.fill_diagonal(dist_mat, 0) # Normally set to inf
         dist_mat = scipy.spatial.distance.squareform(dist_mat)
         
