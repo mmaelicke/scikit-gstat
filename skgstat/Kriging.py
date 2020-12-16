@@ -30,7 +30,7 @@ class IllMatrixError(RuntimeWarning):
 def inv_solve(a, b):
     return inv(a).dot(b)
 
-def sparse_dok_get(m, fill_value=np.NaN):
+def _sparse_dok_get(m, fill_value=np.NaN):
     mm = np.full(m.shape, fill_value)
     for (x, y), value in m.items():
         mm[x,y] = value
@@ -47,7 +47,7 @@ class OrdinaryKriging:
             solver='inv',
             n_jobs=1,
             perf=False,
-            sparse=True
+            sparse=False
     ):
         """Ordinary Kriging routine
 
@@ -433,7 +433,7 @@ class OrdinaryKriging:
         values = self.values[idx]
         dist_mat = self.coords_dists[idx,:][:,idx]
         if isinstance(self.coords_dists, scipy.sparse.spmatrix):
-            dist_mat = sparse_dok_get(dist_mat.todok(), np.inf)
+            dist_mat = _sparse_dok_get(dist_mat.todok(), np.inf)
             np.fill_diagonal(dist_mat, 0) # Normally set to inf
         dist_mat = scipy.spatial.distance.squareform(dist_mat)
         
