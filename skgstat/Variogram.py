@@ -14,7 +14,6 @@ from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
 
-
 class Variogram(object):
     """Variogram Class
 
@@ -519,21 +518,11 @@ class Variogram(object):
         if isinstance(model_name, str):
             # at first reset harmonize
             self._harmonize = False
-            if model_name.lower() == 'spherical':
-                self._model = models.spherical
-            elif model_name.lower() == 'exponential':
-                self._model = models.exponential
-            elif model_name.lower() == 'gaussian':
-                self._model = models.gaussian
-            elif model_name.lower() == 'cubic':
-                self._model = models.cubic
-            elif model_name.lower() == 'stable':
-                self._model = models.stable
-            elif model_name.lower() == 'matern':
-                self._model = models.matern
-            elif model_name.lower() == 'harmonize':
+            if model_name.lower() == 'harmonize':
                 self._harmonize = True
                 self._model = self._build_harmonized_model()
+            elif hasattr(models, model_name.lower()):
+                self._model = getattr(models, model_name.lower())
             else:
                 raise ValueError(
                     'The theoretical Variogram function %s is not understood, please provide the function' % model_name)
@@ -596,11 +585,12 @@ class Variogram(object):
     def dist_function(self):
         return self._dist_func
 
-    def _dist_func_wrapper(self, x):
-        if callable(self._dist_func):
-            return self._dist_func(x)
+    @classmethod
+    def wrapped_distance_function(cls, dist_func, x):
+        if callable(dist_func):
+            return dist_func(x)
         else:
-            return pdist(X=x, metric=self._dist_func)
+            return pdist(X=x, metric=dist_func)
     
     @dist_function.setter
     def dist_function(self, func):
@@ -996,22 +986,41 @@ class Variogram(object):
         # get the pars
         cof = self.cof
 
-        # get the function
-        func = self._model
+        return self.fitted_model_function(self._model, self.cof)
 
-        if self._harmonize:
-            code = """model = lambda x: func(x)"""
+    @classmethod
+    def fitted_model_function(cls, model, cof=None, **kw):
+        if cof is None:
+            # Make sure to keep this synchronized with the output
+            # of describe()!
+            cof = [kw["effective_range"], kw["sill"]]
+            if "smoothness" in kw:
+                cof.append(kw["smoothness"])
+            if "shape" in kw:
+                cof.append(kw["shape"])
+            if kw["nugget"] != 0:
+                cof.append(kw["nugget"])
+
+        harmonize = False
+        if not callable(model):
+            if model == "harmonize":
+                # FIXME: How do we serialize a harmonized model in describe()?
+                pass
+            else:
+                model = model.lower()
+                model = getattr(models, model)
+            
+        if model.__name__ == "harmonize":
+            code = """fitted_model = lambda x: model(x)"""
         else:
-            code = """model = lambda x: func(x, %s)""" % \
+            code = """fitted_model = lambda x: model(x, %s)""" % \
                (', '.join([str(_) for _ in cof]))
 
         # run the code
-        loc = dict(func=func)
+        loc = dict(model=model)
         exec(code, loc, loc)
-        model = loc['model']
-
-        return model
-
+        return loc['fitted_model']
+    
     def _calc_distances(self, force=False):
         if self._dist is not None and not force:
             return
@@ -1022,7 +1031,7 @@ class Variogram(object):
         else:
             _x = self._X
         # else calculate the distances
-        self._dist = self._dist_func_wrapper(_x)
+        self._dist = self.wrapped_distance_function(self._dist_func, _x)
 
     def _calc_diff(self, force=False):
         """Calculates the pairwise differences
@@ -1421,23 +1430,35 @@ class Variogram(object):
             self.fit(force=True)
 
         # scale sill and range
-        if self.normalized:
-            maxlag = np.nanmax(self.bins)
-            maxvar = np.nanmax(self.experimental)
-        else:
-            maxlag = 1.
-            maxvar = 1.
+        maxlag = np.nanmax(self.bins)
+        maxvar = np.nanmax(self.experimental)
 
         # get the fitting coefficents
         cof = self.cof
 
         # build the dict
+
+        def fnname(fn):
+            if callable(fn):
+                name = "%s.%s" % (fn.__module__, fn.__name__)
+            else:
+                name = fn
+            if name.startswith("skgstat."):
+                return name.split(".")[-1]
+            return name
+        
         rdict = dict(
-            name=self._model.__name__,
-            estimator=self._estimator.__name__,
-            effective_range=cof[0] * maxlag,
-            sill=cof[1] * maxvar,
-            nugget=cof[-1] * maxvar if self.use_nugget else 0
+            model=fnname(self._model),
+            estimator=fnname(self._estimator),
+            dist_func=fnname(self._dist_func),
+            
+            normalized_effective_range=cof[0] * maxlag,
+            normalized_sill=cof[1] * maxvar,
+            normalized_nugget=cof[-1] * maxvar if self.use_nugget else 0,
+
+            effective_range=cof[0],
+            sill=cof[1],
+            nugget=cof[-1] if self.use_nugget else 0,
         )
 
         # handle s parameters for matern and stable model

@@ -41,7 +41,10 @@ class OrdinaryKriging:
             solver='inv',
             n_jobs=1,
             perf=False,
-            sparse=False
+            sparse=False,
+            
+            coordinates=None,
+            values=None
     ):
         """Ordinary Kriging routine
 
@@ -91,13 +94,15 @@ class OrdinaryKriging:
 
         """
         # store arguments to the instance
-        if not isinstance(variogram, Variogram):
-            raise TypeError('variogram has to be of type skgstat.Variogram.')
+
+        if isinstance(variogram, Variogram):
+            if coordinates is None: coordinates = variogram.coordinates
+            if values is None: values = variogram.values
+            variogram = variogram.describe()
 
         self.sparse = sparse
         
         # general attributes
-        self.V = variogram
         self._minp = min_points
         self._maxp = max_points
         self.min_points = min_points
@@ -107,14 +112,15 @@ class OrdinaryKriging:
         self.n_jobs = n_jobs
         self.perf = perf
 
-        params = self.V.describe()
-        self.range = params['effective_range']
-        self.nugget = params['nugget']
-        self.sill = params['sill']
-
+        self.range = variogram['effective_range']
+        self.nugget = variogram['nugget']
+        self.sill = variogram['sill']
+        self.dist_metric = variogram["dist_func"]
+        
         # coordinates and semivariance function
-        self.coords, self.values = self._get_coordinates_and_values()
-        self.gamma_model = self.V.fitted_model
+        self.coords, self.values = coordinates.copy(), values.copy()
+        self._remove_duplicated_coordinates()
+        self.gamma_model = Variogram.fitted_model_function(**variogram)
 
         # calculation mode; self.range has to be initialized
         self._mode = mode
@@ -142,40 +148,27 @@ class OrdinaryKriging:
             self.perf_mat = list()
             self.perf_solv = list()
 
-    @property
-    def dist(self):
-        return self.V._dist_func_wrapper
+    def dist(self, x):
+        return Variogram.wrapped_distance_function(self.dist_metric, x)
 
-    @property
-    def dist_metric(self):
-        return self.V._dist_func
-               
-    def _get_coordinates_and_values(self):
+    def _remove_duplicated_coordinates(self):
         """Extract the coordinates and values
 
-        The coordinates and values array is extracted from the Variogram
-        instance. Additionally, the coordinates array is checked for
-        duplicates and only the first instance of a duplicate is used.
-        Duplicated coordinates would result in duplicated rows in the
-        variogram matrix and make it singular.
-
-        Returns
-        -------
-        coords : numpy.array
-            copy of Variogram.coordines without duplicates
-        values : numpy.array
-            copy of Variogram.values without duplicates
+        The coordinates array is checked for duplicates and only the
+        first instance of a duplicate is used. Duplicated coordinates
+        would result in duplicated rows in the variogram matrix and
+        make it singular.
 
         """
-        c = self.V.coordinates.copy()
-        v = self.V.values.copy()
+        c = self.coords
+        v = self.values
 
         _, idx = np.unique(c, axis=0, return_index=True)
 
         # sort the index to preserve initial order, if no duplicates were found
         idx.sort()
 
-        return c[idx], v[idx]
+        self.coords, self.values = c[idx], v[idx]
 
     @property
     def min_points(self):
