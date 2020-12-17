@@ -13,7 +13,7 @@ from multiprocessing import Pool
 import scipy.spatial.distance
 
 from .Variogram import Variogram
-
+from .MetricSpace import MetricSpace, MetricSpacePair
 
 class LessPointsError(RuntimeError):
     pass
@@ -139,13 +139,8 @@ class OrdinaryKriging:
         self.singular_error = 0
         self.no_points_error = 0
         self.ill_matrix = 0
-
-        if self.sparse and self.dist_metric == "euclidean":
-            self.coords_tree = scipy.spatial.cKDTree(self.coords)
-            self.coords_dists = self.coords_tree.sparse_distance_matrix(self.coords_tree, self.range, output_type="coo_matrix").tocsr()
-        else:
-            self.coords_dists = scipy.spatial.distance.squareform(
-                scipy.spatial.distance.pdist(self.coords, metric=self.dist_metric))
+            
+        self.metric_space = MetricSpace(self.coords.copy(), self.dist_metric, self.range if self.sparse else None)
         
         # performance counter
         if self.perf:
@@ -294,11 +289,8 @@ class OrdinaryKriging:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
         self.transform_coordinates = np.column_stack(x)
-        if self.sparse and self.dist_metric == "euclidean":
-            tt = scipy.spatial.cKDTree(self.transform_coordinates)
-            self.transform_dists = tt.sparse_distance_matrix(self.coords_tree, self.range, output_type="coo_matrix").tocsr()
-        else:
-            self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
+        self.transform_metric_space = MetricSpace(self.transform_coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
+        self.transform_metric_space_pair = MetricSpacePair(self.transform_metric_space, self.metric_space)
         
         # DEV: this is dirty, not sure how to do it better at the moment
         self.sigma = np.empty(len(x[0]))
@@ -405,37 +397,17 @@ class OrdinaryKriging:
             t0 = time.time()
 
         p = self.transform_coordinates[idx,:]
-        if isinstance(self.transform_dists, scipy.sparse.spmatrix):
-            dists = self.transform_dists.getrow(idx)
-        else:
-            dists = self.transform_dists[idx,:]
-        
-        # find all points within the search distance
-        if isinstance(dists, scipy.sparse.spmatrix):
-            idx = np.array([k[1] for k in dists.todok().keys()])
-        else:
-            idx = np.where(dists <= self.range)[0]
 
+        idx = self.transform_metric_space_pair.find_closest(idx, self.range, self._maxp)
+        
         # raise an error if not enough points are found
         if idx.size < self._minp:
             raise LessPointsError
-
-        if idx.size > self._maxp:
-            if isinstance(dists, scipy.sparse.spmatrix):
-                selected_dists = dists[0, idx].toarray()[0,:]
-            else:
-                selected_dists = dists[idx]
-            sorted_idx = np.argsort(selected_dists, kind="stable")
-            idx = idx[sorted_idx][:self._maxp]
-        
+            
         # finally find the points and values
         in_range = self.coords[idx]
         values = self.values[idx]
-        dist_mat = self.coords_dists[idx,:][:,idx]
-        if isinstance(self.coords_dists, scipy.sparse.spmatrix):
-            dist_mat = sparse_dok_get(dist_mat.todok(), np.inf)
-            np.fill_diagonal(dist_mat, 0) # Normally set to inf
-        dist_mat = scipy.spatial.distance.squareform(dist_mat)
+        dist_mat = self.metric_space.diagonal(idx)
         
         # if performance is tracked, time this step
         if self.perf:
