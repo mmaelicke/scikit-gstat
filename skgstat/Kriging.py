@@ -30,12 +30,6 @@ class IllMatrixError(RuntimeWarning):
 def inv_solve(a, b):
     return inv(a).dot(b)
 
-def sparse_dok_get(m, fill_value=np.NaN):
-    mm = np.full(m.shape, fill_value)
-    for (x, y), value in m.items():
-        mm[x,y] = value
-    return mm
-
 class OrdinaryKriging:
     def __init__(
             self,
