@@ -15,7 +15,7 @@ class TestKrigingInstantiation(unittest.TestCase):
 
     def test_coordinates_and_values(self):
         ok = OrdinaryKriging(self.V)
-        assert_array_almost_equal(self.c, ok.coords)
+        assert_array_almost_equal(self.c, ok.coords.coords)
 
     def test_coordinates_with_duplicates(self):
         c = self.c.copy()

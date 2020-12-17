@@ -91,6 +91,10 @@ class OrdinaryKriging:
             If True, the different parts of the algorithm will record their
             processing time. This is meant to be used for optimization and
             will be removed in a future version. Do not rely on this argument.
+        sparse : bool
+
+        coordinates: numpy.ndarray, MetricSpace
+        values: numpy.ndarray
 
         """
         # store arguments to the instance
@@ -118,8 +122,11 @@ class OrdinaryKriging:
         self.dist_metric = variogram["dist_func"]
         
         # coordinates and semivariance function
-        self.coords, self.values = coordinates.copy(), values.copy()
-        self._remove_duplicated_coordinates()
+        if not isinstance(coordinates, MetricSpace):
+            coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
+            coordinates = MetricSpace(coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
+        self.values = values.copy()
+        self.coords = coordinates
         self.gamma_model = Variogram.fitted_model_function(**variogram)
 
         # calculation mode; self.range has to be initialized
@@ -139,9 +146,7 @@ class OrdinaryKriging:
         self.singular_error = 0
         self.no_points_error = 0
         self.ill_matrix = 0
-            
-        self.metric_space = MetricSpace(self.coords.copy(), self.dist_metric, self.range if self.sparse else None)
-        
+                
         # performance counter
         if self.perf:
             self.perf_dist = list()
@@ -151,7 +156,8 @@ class OrdinaryKriging:
     def dist(self, x):
         return Variogram.wrapped_distance_function(self.dist_metric, x)
 
-    def _remove_duplicated_coordinates(self):
+    @classmethod
+    def _remove_duplicated_coordinates(cls, coords, values):
         """Extract the coordinates and values
 
         The coordinates array is checked for duplicates and only the
@@ -160,15 +166,15 @@ class OrdinaryKriging:
         make it singular.
 
         """
-        c = self.coords
-        v = self.values
+        c = coords
+        v = values
 
         _, idx = np.unique(c, axis=0, return_index=True)
 
         # sort the index to preserve initial order, if no duplicates were found
         idx.sort()
 
-        self.coords, self.values = c[idx], v[idx]
+        return c[idx], v[idx]
 
     @property
     def min_points(self):
@@ -275,21 +281,20 @@ class OrdinaryKriging:
         if self.perf:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
-        self.transform_coordinates = np.column_stack(x)
-        self.transform_metric_space = MetricSpace(self.transform_coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
-        self.transform_metric_space_pair = MetricSpacePair(self.transform_metric_space, self.metric_space)
+        self.transform_coords = MetricSpace(np.column_stack(x).copy(), self.dist_metric, self.range if self.sparse else None)
+        self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
         
         # DEV: this is dirty, not sure how to do it better at the moment
         self.sigma = np.empty(len(x[0]))
         self.__sigma_index = 0
         # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
-            z = np.fromiter(map(self._estimator, range(len(self.transform_coordinates))), dtype=float)
+            z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
         else:
             def f(idxs):
                 return self._estimator(idxs)
             with Pool(self.n_jobs) as p:
-                z = p.starmap(f, range(len(self.transform_coordinates)))
+                z = p.starmap(f, range(len(self.transform_coords)))
 
         # print warnings
         if self.singular_error > 0:
@@ -383,18 +388,18 @@ class OrdinaryKriging:
         if self.perf:
             t0 = time.time()
 
-        p = self.transform_coordinates[idx,:]
+        p = self.transform_coords.coords[idx,:]
 
-        idx = self.transform_metric_space_pair.find_closest(idx, self.range, self._maxp)
+        idx = self.transform_coords_pair.find_closest(idx, self.range, self._maxp)
         
         # raise an error if not enough points are found
         if idx.size < self._minp:
             raise LessPointsError
             
         # finally find the points and values
-        in_range = self.coords[idx]
+        in_range = self.coords.coords[idx]
         values = self.values[idx]
-        dist_mat = self.metric_space.diagonal(idx)
+        dist_mat = self.coords.diagonal(idx)
         
         # if performance is tracked, time this step
         if self.perf:

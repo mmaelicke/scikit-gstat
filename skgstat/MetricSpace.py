@@ -32,7 +32,7 @@ class DistanceMethods(object):
             sorted_ridx = np.argsort(selected_dists, kind="stable")
             ridx = ridx[sorted_ridx][:N]
         return ridx
-            
+    
 class MetricSpace(DistanceMethods):
     """A MetricSpace represents a point cloud together with a distance
     metric and possibly a maximum distance. It efficiently provides
@@ -82,6 +82,9 @@ class MetricSpace(DistanceMethods):
             np.fill_diagonal(dist_mat, 0) # Normally set to inf
         return scipy.spatial.distance.squareform(dist_mat)
     
+    def __len__(self):
+        return len(self.coords)
+
 class MetricSpacePair(DistanceMethods):
     """A MetricSpacePair represents a set of point clouds (MetricSpaces).
     It efficiently provides the distances between each point in one
