@@ -41,7 +41,7 @@ class OrdinaryKriging:
             solver='inv',
             n_jobs=1,
             perf=False,
-            sparse=True
+            sparse=False
     ):
         """Ordinary Kriging routine
 
