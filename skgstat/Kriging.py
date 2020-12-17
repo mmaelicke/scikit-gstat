@@ -262,7 +262,7 @@ class OrdinaryKriging:
 
         Parameters
         ----------
-        x : numpy.array
+        x : numpy.array, MetricSpace
             One 1D array for each coordinate dimension. Typically two or
             three array, x, y, (z) are passed for 2D and 3D Kriging
 
@@ -281,7 +281,10 @@ class OrdinaryKriging:
         if self.perf:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
-        self.transform_coords = MetricSpace(np.column_stack(x).copy(), self.dist_metric, self.range if self.sparse else None)
+        if len(x) != 1 or not isinstance(x[0], MetricSpace):
+            self.transform_coords = MetricSpace(np.column_stack(x).copy(), self.dist_metric, self.range if self.sparse else None)
+        else:
+            self.transform_coords = x[0]
         self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
         
         # DEV: this is dirty, not sure how to do it better at the moment
