@@ -15,6 +15,7 @@ class DistanceMethods(object):
         index idx (in the left set).
         """
         assert self.max_dist is None or max_dist is None or max_dist == self.max_dist, "max_dist specified and max_dist != self.max_dist"
+        if max_dist is None: max_dist = self.max_dist
         if isinstance(self.dists, scipy.sparse.spmatrix):
             dists = self.dists.getrow(idx)
         else:
@@ -22,7 +23,7 @@ class DistanceMethods(object):
         if isinstance(dists, scipy.sparse.spmatrix):
             ridx = np.array([k[1] for k in dists.todok().keys()])
         else:
-            ridx = np.where(dists <= self.range)[0]
+            ridx = np.where(dists <= max_dist)[0]
         if ridx.size > N:
             if isinstance(dists, scipy.sparse.spmatrix):
                 selected_dists = dists[0, ridx].toarray()[0,:]
