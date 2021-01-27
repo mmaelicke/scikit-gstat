@@ -135,7 +135,7 @@ class TestModels(unittest.TestCase):
         f = matern.py_func
 
         result = [24.64, 43.2, 81.68, 94.09, 99.65]
-        model = list(map(f, self.h, [50]*5, [100]*5, [0.5]*5))
+        model = list(map(f, self.h, [50]*5, [100]*5, [0.50001]*5))
 
         for r, m in zip(result, model):
             self.assertAlmostEqual(r, m, places=2)
@@ -148,7 +148,19 @@ class TestModels(unittest.TestCase):
 
         # calculate
         nuggets = [1, 2, 3, 4, 5]
-        model = list(map(f, self.h, [20] * 5, [10] * 5, [8] * 5, nuggets))
+        model = list(map(f, self.h, [20] * 5, [9.99999] * 5, [8] * 5, nuggets))
+
+        for r, m in zip(result, model):
+            self.assertAlmostEqual(r, m, places=2)
+    
+    def test_matern_r_switch(self):
+        # run the default with an extreme s value
+
+        # extract the actual function
+        f = matern.py_func
+
+        result = [34.57, 57.2, 92.16, 98.56, 99.98]
+        model = list(map(f, self.h, [50]*5, [100]*5, [0.5]*5))
 
         for r, m in zip(result, model):
             self.assertAlmostEqual(r, m, places=2)
