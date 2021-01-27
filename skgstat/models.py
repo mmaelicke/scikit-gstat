@@ -117,7 +117,7 @@ def exponential(h, r, c0, b=0):
 
     Notes
     -----
-    The implementation following [7]_ and [8]_ is as:
+    The implementation following [7]_, [9]_ and [8]_ is as:
 
     .. math::
         \gamma = b + C_0 * \left({1 - e^{-\frac{h}{a}}}\right)
@@ -133,6 +133,9 @@ def exponential(h, r, c0, b=0):
 
     .. [8] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
+    
+    .. [9] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
+        United Kingdom: N. p., 1976.
 
     """
     # prepare parameters
@@ -177,7 +180,7 @@ def gaussian(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation follows [9]_:
+    This implementation follows [10]_ and [11]_:
 
     .. math::
 
@@ -194,8 +197,10 @@ def gaussian(h, r, c0, b=0):
     References
     ----------
 
-    .. [9] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+    .. [10] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
+    .. [11] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
+        United Kingdom: N. p., 1976.
 
     """
     # prepare parameters
@@ -237,7 +242,7 @@ def cubic(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation is like:
+    This implementation is taken from [11]_:
 
     .. math::
 
@@ -248,6 +253,12 @@ def cubic(h, r, c0, b=0):
 
     a is the range parameter. For the cubic function, the effective range and
     range parameter are the same.
+
+    References
+    ----------
+
+    .. [11] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+        geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
     # prepare parameters
@@ -302,7 +313,7 @@ def stable(h, r, c0, s, b=0):
 
     Notes
     -----
-    The implementation is:
+    The implementation is taken from [12]_:
 
     .. math::
         \gamma = b + C_0 * \left({1. - e^{- {\frac{h}{a}}^s}}\right)
@@ -311,6 +322,12 @@ def stable(h, r, c0, s, b=0):
 
     .. math::
         a = \frac{r}{3^{\frac{1}{s}}}
+
+    References
+    ----------
+
+    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+        geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
     # prepare parameters
@@ -367,7 +384,7 @@ def matern(h, r, c0, s, b=0):
 
     Notes
     -----
-    The implementation is taken from [10]_:
+    The implementation is taken from [13]_:
 
     .. math::
         \gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1} 
@@ -381,7 +398,7 @@ def matern(h, r, c0, s, b=0):
 
     References
     ----------
-    .. [10] Zimmermann, B., Zehe, E., Hartmann, N. K., & Elsenbeer, H. (2008). 
+    .. [13] Zimmermann, B., Zehe, E., Hartmann, N. K., & Elsenbeer, H. (2008). 
         Analyzing spatial data: An assessment of assumptions, new methods, and 
         uncertainty using soil hydraulic data. Water Resources Research, 
         44(10), 1–18. https://doi.org/10.1029/2007WR006604
