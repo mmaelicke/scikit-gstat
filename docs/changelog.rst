@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.3.2
+=============
+- [models] Matérn model now adapts effective range to smoothness parameter
+- [models] Matérn model documentation updated
+- [models] some minor updates to references in the docs
+
 Version 0.3.1
 =============
 
