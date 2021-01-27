@@ -241,7 +241,7 @@ def cubic(h, r, c0, b=0):
 
     .. math::
 
-        \gamma = b + c_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -
+        \gamma = b + C_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -
         \frac{35}{4} * \left(\frac{h^3}{a^3}\right) +
         \frac{7}{2} * \left(\frac{h^5}{a^5}\right) -
         \frac{3}{4} * \left(\frac{h^7}{a^7}\right)}\right]
@@ -329,6 +329,9 @@ def matern(h, r, c0, s, b=0):
     Implementation of the Matérn variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
 
+    .. versionchanged:: 0.3.2
+        a is now r/3 for s <= 0.2 or s >= 10.
+
     Parameters
     ----------
     h : float
@@ -337,7 +340,8 @@ def matern(h, r, c0, s, b=0):
     r : float
         The effective range. Note this is not the range parameter! For the
         Matérn variogram function the range parameter a is defined to be
-        :math:`a = \frac{r}{2}`. The effective range is the lag
+        :math:`a = \frac{r}{2}` and :math:`a = \frac{r}{3}` if s is smaller 
+        than 0.5 or larger than 10. The effective range is the lag
         where 95% of the sill are exceeded. This is needed as the sill is
         only approached asymptotically by Matérn model.
     c0 : float
@@ -363,12 +367,32 @@ def matern(h, r, c0, s, b=0):
 
     Notes
     -----
-    The formula and references will follow.
+    The implementation is taken from [10]_:
+
+    .. math::
+        \gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1} 
+        \Gamma(\upsilon)}\left(\frac{h}{a}\right)^\upsilon K_\upsilon
+        \left(\frac{h}{a}\right)\right)
+
+    a is the range parameter and is calculated from the effective range r as:
+
+    .. math::
+        a = \frac{r}{2}
+
+    References
+    ----------
+    .. [10] Zimmermann, B., Zehe, E., Hartmann, N. K., & Elsenbeer, H. (2008). 
+        Analyzing spatial data: An assessment of assumptions, new methods, and 
+        uncertainty using soil hydraulic data. Water Resources Research, 
+        44(10), 1–18. https://doi.org/10.1029/2007WR006604
 
     """
     # prepare parameters
-    # TODO: depend a on s, for 0.5 should be 3, above 10 should be 3
-    a = r / 2.
+    # depend a on s, for 0.5 should be 3, above 10 should be 3
+    if s >= 10 or s <= 0.5:
+        a = r / 3.
+    else:
+        a = r / 2.
 
     # calculate
     return b + c0 * (1. - (2 / special.gamma(s)) *
