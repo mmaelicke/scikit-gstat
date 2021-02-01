@@ -11,24 +11,25 @@ except ImportError:
 
 def __calculate_plot_data(variogram, points):
     # get the direction mask
-    mask = squareform(variogram._direction_mask())
+    direction_mask = squareform(variogram._direction_mask())
 
     # build a coordinate meshgrid
-    r = np.arange(len(variogram._X))
+    n = len(variogram._X)
+    r = np.arange(n)
     x1, x2 = np.meshgrid(r, r)
-    start = variogram._X[x1[mask]]
-    end = variogram._X[x2[mask]]
 
-    # handle lesser points
+    # handle the point pairs
     if isinstance(points, int):
         points = [points]
-    if isinstance(points, list):
-        _start, _end = list(), list()
-        for p in variogram._X[points]:
-            _start.extend(start[np.where(end == p)[0]])
-            _end.extend(end[np.where(end == p)[0]])
-        start = np.array(_start)
-        end = np.array(_end)
+    if isinstance(points, (list, tuple)):
+        point_mask = np.zeros((n, n), dtype=bool)
+        point_mask[:, points] = True
+    else:
+        # use all points
+        point_mask = np.ones((n, n), dtype=bool)
+
+    start = variogram._X[x1[direction_mask & point_mask]]
+    end = variogram._X[x2[direction_mask & point_mask]]
 
     # extract all lines
     lines = np.column_stack((
@@ -67,5 +68,45 @@ def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all',
     # finish plot
     ax.autoscale()
     ax.margins(0.1)
+
+    return fig
+
+
+def plotly_pair_field(variogram, fig=None, points='all', add_points=True, alpha=0.3, **kwargs):
+    # get the plot data 
+    lines = __calculate_plot_data(variogram, points)
+
+    # create a figure if none is passed
+    if fig is None:
+        fig = go.Figure()
+
+    # plot all requested networks
+    for line in lines:
+        fig.add_trace(
+            go.Scatter(x=line[:, 0], y=line[:, 1], mode='lines', opacity=alpha)
+        )
+
+    # add the coordinates as well
+    if add_points:
+        x = variogram._X[:, 0]
+        y = variogram._X[:, 1]
+        fig.add_trace(
+            go.Scatter(
+                x=x, y=y, mode='markers', 
+                marker=dict(color='black', size=5),
+                text=['Coord: #%d' % i for i in range(len(x))]
+            )
+        )
+        if isinstance(points, (list, tuple)):
+            fig.add_trace(
+                go.Scatter(
+                    x=x[points], y=y[points], mode='markers',
+                    marker=dict(color='red', size=15),
+                    text=['Coordinate: #%d' % p for p in points]   
+                )
+            )
+
+    # get rid of the legend
+    fig.update_layout(showlegend=False)
 
     return fig

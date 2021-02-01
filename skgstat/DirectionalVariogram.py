@@ -583,7 +583,7 @@ class DirectionalVariogram(Variogram):
         if used_backend == 'matplotlib':
             return plotting.matplotlib_pair_field(self, ax=ax, cmap=cmap, points=points, add_points=add_points, alpha=alpha, **kwargs)
         elif used_backend == 'plotly':
-            raise NotImplementedError        
+            return plotting.plotly_pair_field(self, fig=ax, points=points, add_points=add_points, alpha=alpha, **kwargs)       
 
     def _triangle(self, angles, dists):
         r"""Triangular Search Area
