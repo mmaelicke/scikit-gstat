@@ -14,17 +14,17 @@ def __calculate_plot_data(variogram, points):
     mask = squareform(variogram._direction_mask())
 
     # build a coordinate meshgrid
-    r = np.arange(len(self._X))
+    r = np.arange(len(variogram._X))
     x1, x2 = np.meshgrid(r, r)
-    start = self._X[x1[mask]]
-    end = self._X[x2[mask]]
+    start = variogram._X[x1[mask]]
+    end = variogram._X[x2[mask]]
 
     # handle lesser points
     if isinstance(points, int):
         points = [points]
     if isinstance(points, list):
         _start, _end = list(), list()
-        for p in self._X[points]:
+        for p in variogram._X[points]:
             _start.extend(start[np.where(end == p)[0]])
             _end.extend(end[np.where(end == p)[0]])
         start = np.array(_start)
@@ -32,7 +32,7 @@ def __calculate_plot_data(variogram, points):
 
         # extract all lines
         lines = np.column_stack((
-            start.reshape(len(start), 1, 2), 
+            start.reshape(len(start), 1, 2),
             end.reshape(len(end), 1, 2)
         ))
 
@@ -42,7 +42,7 @@ def __calculate_plot_data(variogram, points):
 def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all', add_points=True, alpha=0.3, **kwargs):
     # get the plot data
     lines = __calculate_plot_data(variogram, points)
- 
+
     # align the colors
     colors = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(lines)))
     colors[:, 3] = alpha
