@@ -6,7 +6,7 @@ from scipy.spatial.distance import squareform
 try:
     import plotly.graph_objects as go
 except ImportError:
-    pass    
+    pass
 
 
 def __calculate_plot_data(variogram, points):
@@ -40,7 +40,14 @@ def __calculate_plot_data(variogram, points):
     return lines
 
 
-def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all', add_points=True, alpha=0.3, **kwargs):
+def matplotlib_pair_field(
+    variogram, ax=None,
+    cmap='gist_rainbow',
+    points='all',
+    add_points=True,
+    alpha=0.3,
+    **kwargs
+):
     # get the plot data
     lines = __calculate_plot_data(variogram, points)
 
@@ -63,7 +70,11 @@ def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all',
     if add_points:
         ax.scatter(variogram._X[:, 0], variogram._X[:, 1], 15, c='k')
         if isinstance(points, list):
-            ax.scatter(variogram._X[:, 0][points], variogram._X[:, 1][points], 25, c='r')
+            ax.scatter(
+                variogram._X[:, 0][points],
+                variogram._X[:, 1][points],
+                25, c='r'
+            )
 
     # finish plot
     ax.autoscale()
@@ -72,8 +83,15 @@ def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all',
     return fig
 
 
-def plotly_pair_field(variogram, fig=None, points='all', add_points=True, alpha=0.3, **kwargs):
-    # get the plot data 
+def plotly_pair_field(
+    variogram,
+    fig=None,
+    points='all',
+    add_points=True,
+    alpha=0.3,
+    **kwargs
+):
+    # get the plot data
     lines = __calculate_plot_data(variogram, points)
 
     # create a figure if none is passed
@@ -92,7 +110,7 @@ def plotly_pair_field(variogram, fig=None, points='all', add_points=True, alpha=
         y = variogram._X[:, 1]
         fig.add_trace(
             go.Scatter(
-                x=x, y=y, mode='markers', 
+                x=x, y=y, mode='markers',
                 marker=dict(color='black', size=5),
                 text=['Coord: #%d' % i for i in range(len(x))]
             )
@@ -102,7 +120,7 @@ def plotly_pair_field(variogram, fig=None, points='all', add_points=True, alpha=
                 go.Scatter(
                     x=x[points], y=y[points], mode='markers',
                     marker=dict(color='red', size=15),
-                    text=['Coordinate: #%d' % p for p in points]   
+                    text=['Coordinate: #%d' % p for p in points]
                 )
             )
 
