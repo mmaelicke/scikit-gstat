@@ -30,13 +30,13 @@ def __calculate_plot_data(variogram, points):
         start = np.array(_start)
         end = np.array(_end)
 
-        # extract all lines
-        lines = np.column_stack((
-            start.reshape(len(start), 1, 2),
-            end.reshape(len(end), 1, 2)
-        ))
+    # extract all lines
+    lines = np.column_stack((
+        start.reshape(len(start), 1, 2),
+        end.reshape(len(end), 1, 2)
+    ))
 
-        return lines
+    return lines
 
 
 def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all', add_points=True, alpha=0.3, **kwargs):
@@ -57,7 +57,7 @@ def matplotlib_pair_field(variogram, ax=None, cmap='gist_rainbow', points='all',
     # plot
     lc = LineCollection(lines, colors=colors, linewidths=1)
     ax.add_collection(lc)
-        
+
     # add coordinates
     if add_points:
         ax.scatter(variogram._X[:, 0], variogram._X[:, 1], 15, c='k')
