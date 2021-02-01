@@ -7,6 +7,7 @@ from scipy.spatial.distance import squareform, pdist
 import matplotlib.collections
 
 from .Variogram import Variogram
+from skgstat import plotting
 
 
 class DirectionalVariogram(Variogram):
@@ -551,7 +552,7 @@ class DirectionalVariogram(Variogram):
             self._direction_mask_cache = self._directional_model(self._angles, self._euclidean_dist)
         return self._direction_mask_cache
 
-    def pair_field(self, ax=None, cmap="gist_rainbow", points='all',add_points=True, alpha=0.3):  # pragma: no cover
+    def pair_field(self, ax=None, cmap="gist_rainbow", points='all', add_points=True, alpha=0.3, **kwargs):  # pragma: no cover
         """
         Plot a pair field.
 
@@ -576,53 +577,13 @@ class DirectionalVariogram(Variogram):
             visualize better. Defaults to ``0.3``.
             
         """
-        # get the direction mask
-        mask = squareform(self._direction_mask())
+        # get the backend
+        used_backend = plotting.backend()
 
-        # build a coordinate meshgrid
-        r = np.arange(len(self._X))
-        x1, x2 = np.meshgrid(r, r)
-        start = self._X[x1[mask]]
-        end = self._X[x2[mask]]
-
-        # handle lesser points
-        if isinstance(points, int):
-            points = [points]
-        if isinstance(points, list):
-            _start, _end = list(), list()
-            for p in self._X[points]:
-                _start.extend(start[np.where(end == p)[0]])
-                _end.extend(end[np.where(end == p)[0]])
-            start = np.array(_start)
-            end = np.array(_end)
-
-        # extract all lines and align colors
-        lines = np.column_stack((start.reshape(len(start), 1, 2), end.reshape(len(end), 1, 2)))
-        #colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
-        colors = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(lines)))
-        colors[:, 3] = alpha
-
-        # get the figure and ax object
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8,8))
-        else:
-            fig = ax.get_figure()
-
-        # plot
-        lc = matplotlib.collections.LineCollection(lines, colors=colors, linewidths=1)
-        ax.add_collection(lc)
-        
-        # add coordinates
-        if add_points:
-            ax.scatter(self._X[:, 0], self._X[:, 1], 15, c='k')
-            if isinstance(points, list):
-                ax.scatter(self._X[:, 0][points], self._X[:, 1][points], 25, c='r')
-
-        # finish plot
-        ax.autoscale()
-        ax.margins(0.1)
-
-        return fig
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_pair_field(self, ax=ax, cmap=cmap, points=points, add_points=add_points, alpha=alpha, **kwargs)
+        elif used_backend == 'plotly':
+            raise NotImplementedError        
 
     def _triangle(self, angles, dists):
         r"""Triangular Search Area
