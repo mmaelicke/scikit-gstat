@@ -3,11 +3,8 @@
 """
 import numpy as np
 from scipy.spatial.distance import pdist
-from scipy.ndimage.interpolation import zoom
-from scipy.interpolate import griddata
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import inspect
 
 from skgstat import binning, estimators, Variogram, stmodels, plotting
@@ -1403,65 +1400,17 @@ class SpaceTimeVariogram:
         return self._plot2d(kind='contourf', ax=ax, zoom_factor=zoom_factor,
                             levels=levels, cmap=cmap, method=method, **kwargs)
 
-    def _plot2d(self, kind='contour', ax=None, zoom_factor=100.,
-                levels=10, method="fast", **kwargs):
-        # get or create the figure
-        if ax is not None:
-            fig = ax.get_figure()
-        else:
-            fig, ax = plt.subplots(1, 1, figsize=kwargs.get('figsize', (8, 8)))
+    def _plot2d(self, kind='contour', ax=None, zoom_factor=100., levels=10, method="fast", **kwargs):
+        # get the backend
+        used_backend = plotting.backend()
 
-        # prepare the meshgrid
-        xx, yy = self.meshbins
-        z = self.experimental
-        x = xx.flatten()
-        y = yy.flatten()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_plot_2d(self, kind=kind, ax=ax, zoom_factor=zoom_factor, level=10, method=method, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_plot_2d(self, kind=kind, fig=ax, **kwargs)
 
-        xxi = zoom(xx, zoom_factor, order=1)
-        yyi = zoom(yy, zoom_factor, order=1)
-
-        # interpolation, either fast or precise
-        if method.lower() == "fast":
-            zi = zoom(z.reshape((self.t_lags, self.x_lags)), zoom_factor,
-                      order=1, prefilter=False)
-        elif method.lower() == "precise":
-            # zoom the meshgrid by linear interpolation
-
-            # interpolate the semivariance
-            zi = griddata((x, y), z, (xxi, yyi), method='linear')
-        else:
-            raise ValueError("method has to be one of ['fast', 'precise']")
-
-        # get the bounds
-        zmin = np.nanmin(zi)
-        zmax = np.nanmax(zi)
-
-        # get the plotting parameters
-        lev = np.linspace(0, zmax, levels)
-        c = kwargs.get('color') if 'color' in kwargs else kwargs.get('c', 'k')
-        cmap = kwargs.get('cmap', 'RdYlBu_r')
-
-        # plot
-        if kind.lower() == 'contour':
-            ax.contour(xxi, yyi, zi, colors=c, levels=lev, vmin=zmin * 1.1,
-                       vmax=zmax * 0.9, linewidths=kwargs.get('linewidths', 0.3)
-                       )
-        elif kind.lower() == 'contourf':
-            C = ax.contourf(xxi, yyi, zi, cmap=cmap, levels=lev, vmin=zmin *
-                                                                      1.1,
-                            vmax=zmax * 0.9)
-            if kwargs.get('colorbar', True):
-                plt.colorbar(C, ax=ax)
-        else:
-            raise ValueError("%s is not a valid 2D plot" % kind)
-
-        # some labels
-        ax.set_xlabel(kwargs.get('xlabel', 'space'))
-        ax.set_ylabel(kwargs.get('ylabel', 'time'))
-        ax.set_xlim(kwargs.get('xlim', (0, self.xbins[-1])))
-        ax.set_ylim(kwargs.get('ylim', (0, self.tbins[-1])))
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def marginals(self, plot=True, axes=None, sharey=True, include_model=False,
         **kwargs):
