@@ -1564,7 +1564,7 @@ class Variogram(object):
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
 
-    def scattergram(self, ax=None, show=True):
+    def scattergram(self, ax=None, show=True):  # pragma: no cover
         """Scattergram plot
 
         Groups the values by lags and plots the head and tail values

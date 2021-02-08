@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import inspect
 
-from skgstat import binning, estimators, Variogram, stmodels
+from skgstat import binning, estimators, Variogram, stmodels, plotting
 
 
 class SpaceTimeVariogram:
@@ -1163,7 +1163,7 @@ class SpaceTimeVariogram:
         else:
             raise ValueError('kind %s is not a valid value.')
 
-    def scatter(self, ax=None, elev=30, azim=220, c='g',
+    def scatter(self, ax=None, elev=30, azim=220, c='blue',
                 depthshade=True, **kwargs):
         """3D Scatter Variogram
 
@@ -1219,7 +1219,7 @@ class SpaceTimeVariogram:
         return self._plot3d(kind='scatter', ax=ax, elev=elev, azim=azim,
                             c=c, depthshade=depthshade, **kwargs)
 
-    def surface(self, ax=None, elev=30, azim=220, color='g',
+    def surface(self, ax=None, elev=30, azim=220, color='blue',
                 alpha=0.5, **kwargs):
         """3D Scatter Variogram
 
@@ -1278,41 +1278,17 @@ class SpaceTimeVariogram:
         return self._plot3d(kind='surf', ax=ax, elev=elev, azim=azim,
                             color=color, alpha=alpha, **kwargs)
 
-    def _plot3d(self, kind='scatter', ax=None, elev=30, azim=220, **kwargs):
-        # Create or check the Figure and Axes
-        if ax is not None:
-            if not isinstance(ax, Axes3D):
-                raise ValueError('The passed ax object is not an instance '
-                                 'of mpl_toolkis.mplot3d.Axes3D.')
-            fig = ax.get_figure()
-        else:
-            fig = plt.figure(figsize=kwargs.get('figsize', (10, 10)))
-            ax = fig.add_subplot(111, projection='3d')
+    def _plot3d(self, kind='scatter', ax=None, elev=30, azim=220, **kwargs):  # pragma: no cover
+        # get the backend
+        used_backend = plotting.backend()
 
-        # get the data, spanned over a bin meshgrid
-        xx, yy = self.meshbins
-        z = self.experimental
-        x = xx.flatten()
-        y = yy.flatten()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_plot_3d(self, kind=kind, ax=ax, elev=elev, azim=azim, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_plot_3d(self, kind=kind, fig=ax, **kwargs)
 
-        # plot
-        c = kwargs.get('color', 'g') if 'color' in kwargs else kwargs.get('c', 'g')
-
-        ax.view_init(elev=elev, azim=azim)
-        if kind == 'surf':
-            ax.plot_trisurf(x, y, z, color=c, alpha=kwargs.get('alpha', 0.8))
-        elif kind == 'scatter':
-            ax.scatter(x, y, z, c=c, depthshade=kwargs.get('depthshade', False))
-        else:
-            raise ValueError('%s is not a valid 3D plot' % kind)
-
-        # set the labels
-        ax.set_xlabel('space')
-        ax.set_ylabel('time')
-        ax.set_zlabel('semivariance [%s]' % self.estimator.__name__)
-
-        # return
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def contour(self, ax=None, zoom_factor=100., levels=10, colors='k',
                 linewidths=0.3, method="fast", **kwargs):
