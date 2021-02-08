@@ -95,7 +95,8 @@ def plotly_plot_3d(stvariogram, kind='scatter', fig=None, **kwargs):
                 y=yy,
                 z=z.reshape(xx.shape),
                 opacity=0.8 * alpha,
-                colorscale=[[0, c], [1, c]]
+                colorscale=[[0, c], [1, c]],
+                name='experimental variogram'
             )
         )
     elif kind == 'scatter' or kwargs.get('add_points', False):
@@ -107,7 +108,7 @@ def plotly_plot_3d(stvariogram, kind='scatter', fig=None, **kwargs):
                 mode='markers',
                 opacity=alpha,
                 marker=dict(color=c, size=kwargs.get('size', 4)),
-                name='experimental'
+                name='experimental variogram'
             )
         )
 
