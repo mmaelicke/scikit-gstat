@@ -975,9 +975,6 @@ class SpaceTimeVariogram:
         # if force, force a clean preprocessing
         self.preprocessing(force=force)
 
-        # This is not finished
-        return
-
         # load the fitting data
         xx, yy = self.meshbins
         z = self.experimental
@@ -997,10 +994,6 @@ class SpaceTimeVariogram:
         model_args = inspect.getargs(_code_obj).args
         self._model_params = dict()
 
-#        if 'Vx' in model_args:
-#            self._model_params['Vx'] = Vx
-#        if 'Vt' in model_args:
-#            self._model_params['Vt'] = Vt
 
         # fix the sills?
         fix_sills = True    # TODO: Make this a param in __init__
@@ -1022,7 +1015,7 @@ class SpaceTimeVariogram:
             return self._model(lags, Vx, Vt, *args, **self._model_params)
 
         self.cof, self.cov = curve_fit(
-            _model, xdata, ydata, bounds=[0,  np.inf], p0=[1.] * free_args
+            _model, xdata.T, ydata, bounds=[0,  np.inf], p0=[1.] * free_args
         )
 
         return
@@ -1046,9 +1039,12 @@ class SpaceTimeVariogram:
         Vx = self.XMarginal.fitted_model
         Vt = self.TMarginal.fitted_model
 
+        cof = self.cof if self.cof is not None else []
+        params = self._model_params if self._model_params is not None else {}
+
         # define the function
         def model(lags):
-            return func(lags, Vx, Vt, *self.cof, **self._model_params)
+            return func(lags, Vx, Vt, *cof, **params)
 
         return model
 
