@@ -1096,7 +1096,7 @@ class SpaceTimeVariogram:
     # ------------------------------------------------------------------------ #
     #                             PLOTTING                                     #
     # ------------------------------------------------------------------------ #
-    def plot(self, kind='scatter', ax=None, **kwargs):
+    def plot(self, kind='scatter', ax=None, **kwargs):  # pragma: no cover
         """Plot the experimental variogram
 
         At the current version the SpaceTimeVariogram class is not capable of
@@ -1161,7 +1161,7 @@ class SpaceTimeVariogram:
             raise ValueError('kind %s is not a valid value.')
 
     def scatter(self, ax=None, elev=30, azim=220, c='blue',
-                depthshade=True, **kwargs):
+                depthshade=True, **kwargs):  # pragma: no cover
         """3D Scatter Variogram
 
         Plot the experimental variogram into a 3D matplotlib.Figure. The two
@@ -1217,7 +1217,7 @@ class SpaceTimeVariogram:
                             c=c, depthshade=depthshade, **kwargs)
 
     def surface(self, ax=None, elev=30, azim=220, color='blue',
-                alpha=0.5, **kwargs):
+                alpha=0.5, **kwargs):  # pragma: no cover
         """3D Scatter Variogram
 
         Plot the experimental variogram into a 3D matplotlib.Figure. The two
@@ -1288,7 +1288,7 @@ class SpaceTimeVariogram:
         raise ValueError('The plotting backend has an undefined state.')
 
     def contour(self, ax=None, zoom_factor=100., levels=10, colors='k',
-                linewidths=0.3, method="fast", **kwargs):
+                linewidths=0.3, method="fast", **kwargs):  # pragma: no cover
         """Variogram 2D contour plot
 
         Plot a 2D contour plot of the experimental variogram. The
@@ -1345,7 +1345,7 @@ class SpaceTimeVariogram:
                             linewidths=linewidths, **kwargs)
 
     def contourf(self, ax=None, zoom_factor=100., levels=10,
-                 cmap='RdYlBu_r', method="fast", **kwargs):
+                 cmap='RdYlBu_r', method="fast", **kwargs):  # pragma: no cover
         """Variogram 2D filled contour plot
 
         Plot a 2D filled contour plot of the experimental variogram. The
@@ -1400,7 +1400,7 @@ class SpaceTimeVariogram:
         return self._plot2d(kind='contourf', ax=ax, zoom_factor=zoom_factor,
                             levels=levels, cmap=cmap, method=method, **kwargs)
 
-    def _plot2d(self, kind='contour', ax=None, zoom_factor=100., levels=10, method="fast", **kwargs):
+    def _plot2d(self, kind='contour', ax=None, zoom_factor=100., levels=10, method="fast", **kwargs):  # pragma: no cover
         # get the backend
         used_backend = plotting.backend()
 
@@ -1413,7 +1413,7 @@ class SpaceTimeVariogram:
         raise ValueError('The plotting backend has an undefined state.')
 
     def marginals(self, plot=True, axes=None, sharey=True, include_model=False,
-        **kwargs):
+        **kwargs):  # pragma: no cover
         """Plot marginal variograms
 
         Plots the two marginal variograms into a new or existing figure. The
@@ -1426,6 +1426,8 @@ class SpaceTimeVariogram:
         Parameters
         ----------
         plot : bool
+            .. deprecated:: 0.4
+                With version 0.4, this parameter will be removed
             If set to False, no matplotlib.Figure will be returned. Instead a
             tuple of the two marginal experimental variogram values is
             returned.
@@ -1453,64 +1455,21 @@ class SpaceTimeVariogram:
             If plot is True, the matplotlib.Figure will be returned.
 
         """
-        # get the marginal space variogram
-#        vx = self.get_marginal(axis='space', lag=0)
-#        vy = self.get_marginal(axis='time', lag=0)
-        vx = self.XMarginal.experimental
-        vy = self.TMarginal.experimental
-
-        # if no plot is desired, return the experimental variograms
+        # handle plot
         if not plot:
-            return vx, vy
+            raise DeprecationWarning('The plot parameter will be removed.')
+            return (
+                self.XMarginal.experimental,
+                self.TMarginal.experimental
+            )
 
-        # check if an ax needs to be created
-        if axes is None:
-            fig, axes = plt.subplots(1, 2,
-                                     figsize=kwargs.get('figsize', (12, 6)),
-                                     sharey=sharey
-                                     )
-        else:
-            if len(axes) != 2:
-                raise ValueError('axes needs to an array of two AxesSubplot '
-                                 'objects')
-            fig = axes[0].get_figure()
+        # backend
+        used_backend = plotting.backend()
 
-        # plot
-        ax = axes[0]
-        ax2 = axes[1]
-        ax3 = ax2.twinx()
-        ax3.get_shared_y_axes().join(ax3, ax)
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_marginal(self, axes=axes, sharey=sharey, include_model=include_model, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_marginal(self, fig=axes, include_model=include_model, **kwargs)
 
-        if include_model:
-            # transform
-            xx = np.linspace(0, self.xbins[-1], 50)
-            xy = np.linspace(0, self.tbins[-1], 50)
-            y_vx = self.XMarginal.transform(xx)
-            y_vy = self.TMarginal.transform(xy)
-
-            # plot
-            ax.plot(self.xbins, vx, 'Db')
-            ax.plot(xx, y_vx, '-b')
-            ax3.plot(self.tbins, vy, 'Dg')
-            ax3.plot(xy, y_vy, '-g')
-        else:
-            ax.plot(self.xbins, vx, '-ob')
-            ax3.plot(self.tbins, vy, '-og')
-
-        # set labels
-        ax.set_xlabel('distance [spatial]')
-        ax.set_ylabel('semivariance [%s]' % self.estimator.__name__)
-        ax2.set_xlabel('distance [temporal]')
-        if not sharey:
-            ax3.set_ylabel('semivariance [%s]' % self.estimator.__name__)
-
-        # set title and grid
-        ax.set_title('spatial marginal variogram')
-        ax2.set_title('temporal marginal variogram')
-
-        ax.grid(which='major')
-        ax2.grid(which='major')
-        plt.tight_layout()
-
-        # return
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')

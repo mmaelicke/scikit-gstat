@@ -7,6 +7,7 @@ from .variogram_dd_plot import matplotlib_dd_plot, plotly_dd_plot
 from .directtional_variogram import matplotlib_pair_field, plotly_pair_field
 from .stvariogram_plot3d import matplotlib_plot_3d, plotly_plot_3d
 from .stvariogram_plot2d import matplotlib_plot_2d, plotly_plot_2d
+from .stvariogram_marginal import matplotlib_marginal, plotly_marginal
 
 
 ALLOWED_BACKENDS = [
