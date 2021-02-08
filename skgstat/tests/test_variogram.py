@@ -7,8 +7,16 @@ import pandas as pd
 from numpy.testing import assert_array_almost_equal
 import matplotlib.pyplot as plt
 
+try:
+    import plotly.graph_objects as go
+    PLOTLY_FOUND = True
+except ImportError:
+    print('No plotly installed. Skip plot tests')
+    PLOTLY_FOUND = False
+
 from skgstat import Variogram
 from skgstat import estimators
+from skgstat import plotting
 
 
 class TestVariogramInstatiation(unittest.TestCase):
@@ -862,6 +870,77 @@ class TestVariogramPlots(unittest.TestCase):
             len(fig1.axes[0].get_children()),
             len(fig2.axes[0].get_children()) - 1
         )
+
+
+class TestVariogramPlotlyPlots(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (150, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 150)
+        self.V = Variogram(self.c, self.v)
+
+    def test_plotly_main_plot(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.plot(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+
+    def test_plotly_scattergram(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.scattergram(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+
+    def test_plotly_location_trend(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.location_trend(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+
+    def test_plotly_dd_plot(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.distance_difference_plot(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+    
+    def test_undefined_backend(self):
+        # force the backend into an undefined state
+        import skgstat
+        skgstat.__backend__ = 'not-a-backend'
+
+        for fname in ('plot', 'scattergram', 'location_trend', 'distance_difference_plot'):
+            with self.assertRaises(ValueError) as e:
+                self.V.plot()
+
+                self.assertEqual(
+                    str(e.exception),
+                    'The plotting backend has an undefined state.'
+                )
+        
+        # make the backend valid again
+        skgstat.__backend__ = 'matplotlib'
 
 
 class TestVariogramPickling(unittest.TestCase):

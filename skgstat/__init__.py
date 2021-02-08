@@ -7,3 +7,4 @@ from . import interfaces
 # set some stuff
 __version__ = '0.3.2'
 __author__ = 'Mirko Maelicke <mirko.maelicke@kit.edu>'
+__backend__ = 'matplotlib'

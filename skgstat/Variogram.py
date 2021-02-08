@@ -13,6 +13,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
+from skgstat import plotting
 
 
 class Variogram(object):
@@ -1525,6 +1526,9 @@ class Variogram(object):
         is passed, the hist attribute will be ignored as only the variogram
         will be plotted anyway.
 
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
+
         Parameters
         ----------
         axes : list, tuple, array, AxesSubplot or None
@@ -1549,125 +1553,54 @@ class Variogram(object):
         matplotlib.Figure
 
         """
-        # get the parameters
-        _bins = self.bins
-        _exp = self.experimental
-        x = np.linspace(0, np.nanmax(_bins), 100)  # make the 100 a param?
+        # get the backend
+        used_backend = plotting.backend()
 
-        # do the plotting
-        if axes is None:
-            if hist:
-                fig = plt.figure(figsize=(8, 5))
-                ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
-                ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
-                fig.subplots_adjust(hspace=0)
-            else:
-                fig, ax1 = plt.subplots(1, 1, figsize=(8, 4))
-                ax2 = None
-        elif isinstance(axes, (list, tuple, np.ndarray)):
-            ax1, ax2 = axes
-            fig = ax1.get_figure()
-        else:
-            ax1 = axes
-            ax2 = None
-            fig = ax1.get_figure()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_plot(self, axes=axes, grid=grid, show=show, hist=hist)
+        elif used_backend == 'plotly':
+            return plotting.plotly_variogram_plot(self, fig=axes, grid=grid, show=show, hist=hist)
 
-        # apply the model
-        y = self.transform(x)
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
-        # handle the relative experimental variogram
-        if self.normalized:
-            _bins /= np.nanmax(_bins)
-            y /= np.max(_exp)
-            _exp /= np.nanmax(_exp)
-            x /= np.nanmax(x)
+    def scattergram(self, ax=None, show=True):  # pragma: no cover
+        """Scattergram plot
 
-        # ------------------------
-        # plot Variograms
-        ax1.plot(_bins, _exp, '.b')
-        ax1.plot(x, y, '-g')
+        Groups the values by lags and plots the head and tail values
+        of all point pairs within the groups against each other.
+        This can be used to investigate the distribution of the
+        value residuals.
 
-        # ax limits
-        if self.normalized:
-            ax1.set_xlim([0, 1.05])
-            ax1.set_ylim([0, 1.05])
-        if grid:
-            ax1.grid(False)
-            ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85),
-                       linestyles='dashed')
-        # annotation
-        ax1.axes.set_ylabel('semivariance (%s)' % self._estimator.__name__)
-        ax1.axes.set_xlabel('Lag (-)')
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
 
-        # ------------------------
-        # plot histogram
-        if ax2 is not None and hist:
-            # calc the histogram
-            _count = np.fromiter(
-                (g.size for g in self.lag_classes()), dtype=int
-            )
+        Parameters
+        ----------
+        ax : matplotlib.Axes, plotly.graph_objects.Figure
+            If None, a new plotting Figure will be created. If given, 
+            it has to be an instance of the used plotting backend, which 
+            will be used to plot on.
+        show : boolean
+            If True (default), the `show` method of the Figure will be 
+            called. Can be set to False to prevent duplicated plots in 
+            some environments.
+        
+        Returns
+        -------
+        fig : matplotlib.Figure, plotly.graph_objects.Figure
+            Resulting figure, depending on the plotting backend
+        """
+        # get the backend
+        used_backend = plotting.backend()
 
-            # set the sum of hist bar widths to 70% of the x-axis space
-            w = (np.max(_bins) * 0.7) / len(_count)
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_scattergram(self, ax=ax, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_variogram_scattergram(self, fig=ax, show=show)
 
-            # plot
-            ax2.bar(_bins, _count, width=w, align='center', color='red')
-
-            # adjust
-            plt.setp(ax2.axes.get_xticklabels(), visible=False)
-            ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
-
-            # need a grid?
-            if grid:  #pragma: no cover
-                ax2.grid(False)
-                ax2.vlines(_bins, *ax2.axes.get_ybound(),
-                           colors=(.85, .85, .85), linestyles='dashed')
-
-            # anotate
-            ax2.axes.set_ylabel('N')
-
-        # show the figure
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
-
-    def scattergram(self, ax=None, show=True):
-
-        # create a new plot or use the given
-        if ax is None:
-            fig, ax = plt.subplots(1, 1)
-        else:
-            fig = ax.get_figure()
-
-        tail = np.empty(0)
-        head = tail.copy()
-
-        for h in np.unique(self.lag_groups()):
-            # get the head and tail
-            x, y = np.where(squareform(self.lag_groups()) == h)
-
-            # concatenate
-            tail = np.concatenate((tail, self.values[x]))
-            head = np.concatenate((head, self.values[y]))
-
-        # plot the mean on tail and head
-        ax.vlines(np.mean(tail), np.min(tail), np.max(tail), linestyles='--',
-                  color='red', lw=2)
-        ax.hlines(np.mean(head), np.min(head), np.max(head), linestyles='--',
-                  color='red', lw=2)
-        # plot
-        ax.scatter(tail, head, 10, marker='o', color='orange')
-
-        # annotate
-        ax.set_ylabel('head')
-        ax.set_xlabel('tail')
-
-        # show the figure
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def location_trend(self, axes=None, show=True):
         """Location Trend plot
@@ -1677,6 +1610,9 @@ class Variogram(object):
         of the coordinate dimension. If there is a value dependence on the
         location, this would violate the intrinsic hypothesis. This is a
         weaker form of stationarity of second order.
+
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
 
         Parameters
         ----------
@@ -1689,40 +1625,28 @@ class Variogram(object):
 
         Returns
         -------
-        matplotlib.Figure
+        matplotlib.Figure, plotly.graph_objects.Figure
 
         """
-        N = len(self._X[0])
-        if axes is None:
-            # derive the needed amount of col and row
-            nrow = int(round(np.sqrt(N)))
-            ncol = int(np.ceil(N / nrow))
-            fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 6 ,nrow * 6))
-        else:
-            if not len(axes) == N:
-                raise ValueError(
-                    'The amount of passed axes does not fit the coordinate' +
-                    ' dimensionality of %d' % N)
-            fig = axes[0].get_figure()
+        # get the backend
+        used_backend = plotting.backend()
 
-        for i in range(N):
-            axes.flatten()[i].plot([_[i] for _ in self._X], self.values, '.r')
-            axes.flatten()[i].set_xlabel('%d-dimension' % (i + 1))
-            axes.flatten()[i].set_ylabel('value')
-
-        # plot the figure and return it
-        plt.tight_layout()
-
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_location_trend(self, axes=axes, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_location_trend(self, fig=axes, show=show)
+        
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def distance_difference_plot(self, ax=None, plot_bins=True, show=True):
         """Raw distance plot
 
         Plots all absoulte value differences of all point pair combinations
         over their separating distance, without sorting them into a lag.
+
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
 
         Parameters
         ----------
@@ -1741,40 +1665,16 @@ class Variogram(object):
         matplotlib.pyplot.Figure
 
         """
-        # get all distances
-        _dist = self.distance
+        # get the backend
+        used_backend = plotting.backend()
 
-        # get all differences
-        if self._diff is None:
-            self._calc_diff()
-        _diff = self._diff
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_dd_plot(self, ax=ax, plot_bins=plot_bins, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_dd_plot(self, fig=ax, plot_bins=plot_bins, show=show)
 
-        # create the plot
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8, 6))
-        else:
-            fig = ax.get_figure()
-
-        # plot the bins
-        if plot_bins:
-            _bins = self.bins
-            ax.vlines(_bins, 0, np.max(_diff), linestyle='--', lw=1, color='r')
-
-        # plot
-        ax.scatter(_dist, _diff, 8, color='b', marker='o', alpha=0.5)
-
-        # set limits
-        ax.set_ylim((0, np.max(_diff)))
-        ax.set_xlim((0, np.max(_dist)))
-        ax.set_xlabel('separating distance')
-        ax.set_ylabel('pairwise difference')
-        ax.set_title('Pairwise distance ~ difference')
-
-        # show the plot
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def __repr__(self):  # pragma: no cover
         """

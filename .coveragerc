@@ -1,6 +1,7 @@
 [run]
 omit = 
     skgstat/tests/*
+    skgstat/plotting/*
     docs/*
     setup.py
 
