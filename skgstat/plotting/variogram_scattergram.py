@@ -1,15 +1,16 @@
 import numpy as np
 from scipy.spatial.distance import squareform
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 try:
-    import plotly.graph_objects as go 
+    import plotly.graph_objects as go
 except ImportError:
     pass
 
+
 def __calculate_plot_data(variogram):
-    tail = np.empty(0)
-    head = tail.copy() 
+    tails = []
+    heads = [] 
 
     sq_lags = squareform(variogram.lag_groups())
 
@@ -18,15 +19,15 @@ def __calculate_plot_data(variogram):
         x, y = np.where(sq_lags == h)
 
         # add
-        tail = np.concatenate((tail, variogram.values[x]))
-        head = np.concatenate((head, variogram.values[y]))
+        tails.append(variogram.values[x].flatten())
+        heads.append(variogram.values[y].flatten())
 
-    return tail, head
+    return tails, heads
 
 
-def matplotlib_variogram_scattergram(variogram, ax=None, show=True):
+def matplotlib_variogram_scattergram(variogram, ax=None, show=True, single_color=True, **kwargs):
     # get the plot data
-    tail, head = __calculate_plot_data(variogram)
+    tails, heads = __calculate_plot_data(variogram)
 
     # create a new figure or use the given
     if ax is None:
@@ -34,13 +35,18 @@ def matplotlib_variogram_scattergram(variogram, ax=None, show=True):
     else:
         fig = ax.get_figure()
 
+    # some settings
+    color = 'orange' if single_color else None
+
     # plot
-    ax.vlines(np.mean(tail), np.min(tail), np.max(tail), linestyles='--',
-        color='red', lw=2)
-    ax.hlines(np.mean(head), np.min(head), np.max(head), linestyles='--',
-        color='red', lw=2)
+    h = np.concatenate(heads).ravel()
+    t = np.concatenate(tails).ravel()
+    ax.vlines(np.nanmean(t), np.min(t), np.nanmax(t), linestyles='--', color='red', lw=kwargs.get('lw', 1.5))
+    ax.hlines(np.nanmean(h), np.nanmin(h), np.nanmax(h), linestyles='--', color='red', lw=kwargs.get('lw', 1.5))
+    
     # plot
-    ax.scatter(tail, head, 10, marker='o', color='orange')
+    for tail, head in zip(tails, heads):
+        ax.scatter(tail, head, kwargs.get('size', 8), marker='o', color=color)
 
     # annotate
     ax.set_ylabel('head')
@@ -53,27 +59,34 @@ def matplotlib_variogram_scattergram(variogram, ax=None, show=True):
     return fig
 
 
-def plotly_variogram_scattergram(variogram, fig=None, show=True):
+def plotly_variogram_scattergram(variogram, fig=None, show=False, **kwargs):
     # get the plot data
-    tail, head = __calculate_plot_data(variogram)
+    tails, heads = __calculate_plot_data(variogram)
 
     # create a new Figure if needed
     if fig is None:
         fig = go.Figure()
 
+    # some arguments
+    lw = kwargs.get('line_width', kwargs.get('lw', 1.5))
+    ld = kwargs.get('line_dash', 'dash')
+
     # add vertical and horizontal lines
     try:
-        fig.add_vline(x=np.mean(tail), line_dash='dash', line_width=2, line_color='red')
-        fig.add_hline(y=np.mean(head), line_dash='dash', line_width=2, line_color='red')
+        h = np.concatenate(heads).ravel()
+        t = np.concatenate(tails).ravel()
+        fig.add_vline(x=np.nanmean(t), line_dash=ld, line_width=lw, line_color='red')
+        fig.add_hline(y=np.nanmean(h), line_dash=ld, line_width=lw, line_color='red')
     except AttributeError:
         # add_hline and add_vline were added in plotly >= 4.12
         print("Can't plot lines, consider updating your plotly to >= 4.12")
         pass
 
     # do the plot
-    fig.add_trace(
-        go.Scattergl(x=tail, y=head, mode='markers', marker=dict(color='orange'))
-    )
+    for i, (tail, head) in enumerate(zip(tails, heads)):
+        fig.add_trace(
+            go.Scattergl(x=tail, y=head, mode='markers', marker=dict(size=kwargs.get('size', 4)), name='Lag #%d' % i)
+        )
 
     # add some titles
     fig.update_xaxes(title_text='Tail')

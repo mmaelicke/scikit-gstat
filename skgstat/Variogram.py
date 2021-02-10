@@ -1564,7 +1564,7 @@ class Variogram(object):
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
 
-    def scattergram(self, ax=None, show=True):  # pragma: no cover
+    def scattergram(self, ax=None, show=True, **kwargs):  # pragma: no cover
         """Scattergram plot
 
         Groups the values by lags and plots the head and tail values
@@ -1595,9 +1595,9 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_variogram_scattergram(self, ax=ax, show=show)
+            return plotting.matplotlib_variogram_scattergram(self, ax=ax, show=show, **kwargs)
         elif used_backend == 'plotly':
-            return plotting.plotly_variogram_scattergram(self, fig=ax, show=show)
+            return plotting.plotly_variogram_scattergram(self, fig=ax, show=show, **kwargs)
 
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
