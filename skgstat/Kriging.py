@@ -144,7 +144,7 @@ class OrdinaryKriging:
 
     @property
     def dist_metric(self):
-        return self.V._dist_func
+        return self.V._dist_func_name
                
     def _get_coordinates_and_values(self):
         """Extract the coordinates and values
