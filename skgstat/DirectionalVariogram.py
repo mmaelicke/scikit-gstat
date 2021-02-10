@@ -217,7 +217,7 @@ class DirectionalVariogram(Variogram):
         self._dist = None
 
         # set distance calculation function
-        self._dist_func = None
+        self._dist_func_name = None
         self.set_dist_function(func=dist_func)
 
         # Angles and euclidean distances used for direction mask calculation
@@ -330,7 +330,7 @@ class DirectionalVariogram(Variogram):
 
         # for angles, we need Euklidean distance,
         # no matter which distance function is used
-        if self._dist_func == "euclidean":
+        if self._dist_func_name == "euclidean":
             self._euclidean_dist = self._dist
         else:
             self._euclidean_dist = pdist(_x, "euclidean")

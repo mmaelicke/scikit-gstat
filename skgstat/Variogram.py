@@ -170,7 +170,7 @@ class Variogram(object):
         self._dist = None
 
         # set distance calculation function
-        self._dist_func = None
+        self._dist_func_name = None
         self.set_dist_function(func=dist_func)
 
         # lags and max lag
@@ -595,13 +595,13 @@ class Variogram(object):
 
     @property
     def dist_function(self):
-        return self._dist_func
+        return self._dist_func_name
 
     def _dist_func_wrapper(self, x):
-        if callable(self._dist_func):
-            return self._dist_func(x)
+        if callable(self._dist_func_name):
+            return self._dist_func_name(x)
         else:
-            return pdist(X=x, metric=self._dist_func)
+            return pdist(X=x, metric=self._dist_func_name)
     
     @dist_function.setter
     def dist_function(self, func):
@@ -635,10 +635,10 @@ class Variogram(object):
                 raise NotImplementedError
             else:
                 # if not ranks, it has to be a scipy metric
-                self._dist_func = func
+                self._dist_func_name = func
 
         elif callable(func):
-            self._dist_func = func
+            self._dist_func_name = func
         else:
             raise ValueError('Input not supported. Pass a string or callable.')
 

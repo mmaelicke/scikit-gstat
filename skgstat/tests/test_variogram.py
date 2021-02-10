@@ -778,33 +778,6 @@ class TestVariogramPlots(unittest.TestCase):
 
         fig = V.plot(hist=False, show=False)
         self.assertEqual(len(fig.axes), 1)
-
-    def test_default_scattergram(self):
-        V = Variogram(self.c, self.v, n_lags=5)
-
-        fig = V.scattergram(show=False)
-        ax = fig.axes[0]
-
-        # test just 3 positions of the scatterplot
-        assert_array_almost_equal(
-            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
-            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
-            decimal=True
-        )
-
-    def test_scattergram_on_ax(self):
-        V = Variogram(self.c, self.v, n_lags=5)
-
-        # define figure
-        fig, ax = plt.subplots(1,1)
-        V.scattergram(show=False, ax=ax)
-
-        # test just 3 positions of the scatterplot
-        assert_array_almost_equal(
-            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
-            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
-            decimal=True
-        )
     
     def test_location_trend(self):
         # test that the correct amount of axes is produced
