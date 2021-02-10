@@ -12,21 +12,27 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 
+
+def get_version():
+    B = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(B, '..', 'VERSION'), 'r') as f:
+        return f.read().strip()
 
 # -- Project information -----------------------------------------------------
+
 
 project = 'SciKit GStat'
 copyright = '2021, Mirko Mälicke'
 author = 'Mirko Mälicke'
 
 # The short X.Y version
-version = '0.3.2'
+# version = '0.3.2'
 # The full version, including alpha/beta/rc tags
-release = '0.3.2'
+release = get_version()
 
 
 # -- General configuration ---------------------------------------------------
@@ -52,6 +58,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'nbsphinx',
+    'sphinx_gallery.load_style'
 #    'numpydoc'
 ]
 
@@ -88,24 +95,25 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'pydata_sphinx_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {
-    'github_user': 'mmaelicke',
-    'github_repo': 'scikit-gstat',
-    'github_button': 'true',
-    'show_related': True,
-    'sidebar_collapse': True,
-    'body_text_align': 'justify',
-    'extra_nav_links': {
-        'Download PDF': 'https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf'
-    }
+    'github_url': 'https://github.com/mmaelicke/scikit-gstat',
 }
 
+html_context = {
+    'github_user': 'mmaelicke',
+    'github_repo': 'scikit-gstat',
+    'github_version': 'master',
+    'doc_path': 'docs'
+}
+
+html_short_title = 'SciKit-GStat'
+"""
 html_sidebars = {
     '**': [
         'about.html',
@@ -115,6 +123,7 @@ html_sidebars = {
         'donate.html'
     ]
 }
+"""
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

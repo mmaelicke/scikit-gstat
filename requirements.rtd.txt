@@ -1,7 +1,6 @@
 ipython>=6
 autoapi
 numpydoc
-sphinx_rtd_theme
 nbsphinx
 scipy
 numpy
@@ -9,3 +8,5 @@ pandas
 nose
 matplotlib
 shapely
+sphinx_gallery
+pydata_sphinx_theme

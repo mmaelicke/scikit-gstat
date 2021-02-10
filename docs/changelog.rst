@@ -2,6 +2,21 @@
 Changelog
 =========
 
+Version 0.3.4
+=============
+- [plotting] The `scattergram` functions color the plotted points with respect to the lag bin they
+  are originating from. For `matplotlib`, this coloring is suppressed, but can activated by 
+  passing the argument ``scattergram(single_color=False)``.
+
+Version 0.3.3
+=============
+
+- [plotting] a new submodule is introduced: `skgstat.plotting`. This contains all plotting functions. 
+  The plotting behavior is not changed, but using `skgstat.plotting.backend`, the used plotting library
+  can be switched from `matplotlib` to `plotly`
+- [stmodels] some code cleanup
+- [SpaceTimeVariogram] finally can fit the product-sum model to the experimental variogram
+
 Version 0.3.2
 =============
 - [models] Matérn model now adapts effective range to smoothness parameter
