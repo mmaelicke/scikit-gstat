@@ -57,5 +57,5 @@ as:
     technical/technical
     reference/reference
     changelog
-    PDF <http://SciKitGStat.pdf>
+    PDF <https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf>
 
