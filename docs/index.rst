@@ -57,4 +57,5 @@ as:
     technical/technical
     reference/reference
     changelog
+    PDF <http://SciKitGStat.pdf>
 
