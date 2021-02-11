@@ -7,6 +7,8 @@ Version 0.3.5
 - [plotting] The :func:`location_trend <skgstat.Variogram.location_trend>` can now add 
   trend model lines to the scatter plot for the `'plotly'` backend and calculate the 
   R² for the trend model.
+- [Variogram] the *internal* attribute holding the name of the current distance function
+  was renamed from `_dict_func` to `_dist_func_name`
 
 Version 0.3.4
 =============
