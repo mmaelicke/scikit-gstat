@@ -460,6 +460,9 @@ class Variogram(object):
         else:
             raise ValueError('n_lags has to be a positive integer')
 
+        # reset the groups
+        self._groups = None
+
         # reset the fitting
         self.cof = None
         self.cov = None
@@ -801,17 +804,17 @@ class Variogram(object):
         Generates an iterator over all lag classes. Can be zipped with
         Variogram.bins to identify the lag.
 
+        .. versionchanged:: 0.3.6
+            yields an empty array for empty lag groups now
+
         Returns
         -------
         iterable
 
         """
         # yield all groups
-        for i in np.unique(self.lag_groups()):
-            if i < 0:
-                continue
-            else:
-                yield self._diff[np.where(self.lag_groups() == i)]
+        for i in range(len(self.bins)):
+            yield self._diff[np.where(self.lag_groups() == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -1109,7 +1112,7 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.6
             replaced the for-loops with :func:`fromiter <numpy.fromiter>`
-        
+
         Returns
         -------
         experimental : np.ndarray
