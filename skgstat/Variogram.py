@@ -460,6 +460,9 @@ class Variogram(object):
         else:
             raise ValueError('n_lags has to be a positive integer')
 
+        # reset the groups
+        self._groups = None
+
         # reset the fitting
         self.cof = None
         self.cov = None
@@ -801,17 +804,17 @@ class Variogram(object):
         Generates an iterator over all lag classes. Can be zipped with
         Variogram.bins to identify the lag.
 
+        .. versionchanged:: 0.3.6
+            yields an empty array for empty lag groups now
+
         Returns
         -------
         iterable
 
         """
         # yield all groups
-        for i in np.unique(self.lag_groups()):
-            if i < 0:
-                continue
-            else:
-                yield self._diff[np.where(self.lag_groups() == i)]
+        for i in range(len(self.bins)):
+            yield self._diff[np.where(self.lag_groups() == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -1103,33 +1106,37 @@ class Variogram(object):
     @property
     def _experimental(self):
         """
+        Calculates the experimental variogram from the current lag classes.
+        It handles the special case of the `'entropy'` and `'percentile'`
+        estimators, which take an additional argument.
+
+        .. versionchanged:: 0.3.6
+            replaced the for-loops with :func:`fromiter <numpy.fromiter>`
 
         Returns
         -------
+        experimental : np.ndarray
+            1D array of the experimental variogram values. Has same length
+            as :func:`bins <skgstat.Variogram.bins>`
 
         """
-        # prepare the result array
-        y = np.zeros(len(self.bins), dtype=np.float64)
-
-        # args, can set the bins for entropy
-        # and should set p of percentile, not properly implemented
         if self._estimator.__name__ == 'entropy':
             bins = np.linspace(
                 np.min(self.distance),
                 np.max(self.distance),
-                50
+                50      # TODO: this should be set by kwargs
             )
-            # apply
-            for i, lag_values in enumerate(self.lag_classes()):
-                y[i] = self._estimator(lag_values, bins=bins)
 
-        # default
+            def mapper(lag_values):
+                return self._estimator(lag_values, bins=bins)
+        elif self._estimator.__name__ == 'percentile':
+            # TODO after the kwargs are accepted, the p value can be set here
+            mapper = self._estimator
         else:
-            for i, lag_values in enumerate(self.lag_classes()):
-                y[i] = self._estimator(lag_values)
+            mapper = self._estimator
 
-        # apply
-        return y.copy()
+        # return the mapped result
+        return np.fromiter(map(mapper, self.lag_classes()), dtype=float)
 
     def __get_fit_bounds(self, x, y):
         """

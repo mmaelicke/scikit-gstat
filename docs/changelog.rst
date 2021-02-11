@@ -2,6 +2,21 @@
 Changelog
 =========
 
+Version 0.3.6
+=============
+.. warning:: 
+  There is some potential breaking behaviour
+
+- [Variogram] some internal code cleanup. Removed some unnecessary loops
+- [Variogram] setting the `n_lags <skgstat.Variogram.n_lags>` property now correctly forces
+  a recalculation of the lag groupings. So far they were kept untouches, which might result
+  in old experimental variogram values for the changed instance.
+  **This is a potential breaking change**.
+- [Variogram] The `lag_classes <skgstat.Variogram.lag_classes>` generator now yields empty 
+  arrays for unoccupied lag classes. This will result in `NaN <numpy.NaN>` values for the 
+  semi-variance. This is actually a bug-fix.
+  **This is a potential breaking change**
+
 Version 0.3.5
 =============
 - [plotting] The :func:`location_trend <skgstat.Variogram.location_trend>` can now add 
