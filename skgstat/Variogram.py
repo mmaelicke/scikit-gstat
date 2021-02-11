@@ -1136,7 +1136,7 @@ class Variogram(object):
             mapper = self._estimator
 
         # return the mapped result
-        return np.fromiter(map(mapper, self.lag_classes()), dtype=np.float)
+        return np.fromiter(map(mapper, self.lag_classes()), dtype=float)
 
     def __get_fit_bounds(self, x, y):
         """
