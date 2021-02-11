@@ -2,9 +2,16 @@
 Changelog
 =========
 
+Version 0.3.5
+=============
+- [plotting] The :func:`location_trend <skgstat.Variogram.location_trend>` can now add 
+  trend model lines to the scatter plot for the `'plotly'` backend and calculate the 
+  R² for the trend model.
+
 Version 0.3.4
 =============
-- [plotting] The `scattergram` functions color the plotted points with respect to the lag bin they
+- [plotting] The :func:`scattergram <skgstat.Variogram.scattergram>` 
+  functions color the plotted points with respect to the lag bin they
   are originating from. For `matplotlib`, this coloring is suppressed, but can activated by 
   passing the argument ``scattergram(single_color=False)``.
 
