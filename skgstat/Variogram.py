@@ -1103,33 +1103,31 @@ class Variogram(object):
     @property
     def _experimental(self):
         """
+        Calculates the experimental variogram from the current lag classes.
+        It handles the special case of the `'entropy'` and `'percentile'`
+        estimators, which take an additional argument
 
         Returns
         -------
 
         """
-        # prepare the result array
-        y = np.zeros(len(self.bins), dtype=np.float64)
-
-        # args, can set the bins for entropy
-        # and should set p of percentile, not properly implemented
         if self._estimator.__name__ == 'entropy':
             bins = np.linspace(
                 np.min(self.distance),
                 np.max(self.distance),
-                50
+                50      # TODO: this should be set by kwargs
             )
-            # apply
-            for i, lag_values in enumerate(self.lag_classes()):
-                y[i] = self._estimator(lag_values, bins=bins)
 
-        # default
+            def mapper(lag_values):
+                return self._estimator(lag_values, bins=bins)
+        elif self._estimator.__name__ == 'percentile':
+            # TODO after the kwargs are accepted, the p value can be set here
+            mapper = self._estimator
         else:
-            for i, lag_values in enumerate(self.lag_classes()):
-                y[i] = self._estimator(lag_values)
+            mapper = self._estimator
 
-        # apply
-        return y.copy()
+        # return the mapped result
+        return np.fromiter(map(mapper, self.lag_classes()), dtype=np.float)
 
     def __get_fit_bounds(self, x, y):
         """
