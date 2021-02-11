@@ -1602,7 +1602,7 @@ class Variogram(object):
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
 
-    def location_trend(self, axes=None, show=True):
+    def location_trend(self, axes=None, show=True, **kwargs):
         """Location Trend plot
 
         Plots the values over each dimension of the coordinates in a scatter
@@ -1622,6 +1622,21 @@ class Variogram(object):
             given instances. Note that then length of the list has to match
             the dimeonsionality of the coordinates array. In case 3D
             coordinates are used, three subplots have to be given.
+        show : boolean
+            If True (default), the `show` method of the Figure will be
+            called. Can be set to False to prevent duplicated plots in
+            some environments.
+
+        Keyword Arguments
+        -----------------
+        add_trend_line : bool
+            .. versionadded:: 0.3.5
+            If set to `True`, the class will fit a linear model to each
+            coordinate dimension and output the model along with a
+            calculated R². With high R² values, you should consider
+            rejecting the input data, or transforming it.
+            .. note::
+                Right now, this is only supported for ``'plotly'`` backend
 
         Returns
         -------
@@ -1632,9 +1647,9 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_location_trend(self, axes=axes, show=show)
+            return plotting.matplotlib_location_trend(self, axes=axes, show=show, **kwargs)
         elif used_backend == 'plotly':
-            return plotting.plotly_location_trend(self, fig=axes, show=show)
+            return plotting.plotly_location_trend(self, fig=axes, show=show, **kwargs)
         
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')

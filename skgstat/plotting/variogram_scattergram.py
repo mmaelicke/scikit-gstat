@@ -10,7 +10,7 @@ except ImportError:
 
 def __calculate_plot_data(variogram):
     tails = []
-    heads = [] 
+    heads = []
 
     sq_lags = squareform(variogram.lag_groups())
 
@@ -43,7 +43,7 @@ def matplotlib_variogram_scattergram(variogram, ax=None, show=True, single_color
     t = np.concatenate(tails).ravel()
     ax.vlines(np.nanmean(t), np.min(t), np.nanmax(t), linestyles='--', color='red', lw=kwargs.get('lw', 1.5))
     ax.hlines(np.nanmean(h), np.nanmin(h), np.nanmax(h), linestyles='--', color='red', lw=kwargs.get('lw', 1.5))
-    
+
     # plot
     for tail, head in zip(tails, heads):
         ax.scatter(tail, head, kwargs.get('size', 8), marker='o', color=color)
@@ -59,7 +59,7 @@ def matplotlib_variogram_scattergram(variogram, ax=None, show=True, single_color
     return fig
 
 
-def plotly_variogram_scattergram(variogram, fig=None, show=False, **kwargs):
+def plotly_variogram_scattergram(variogram, fig=None, show=False, single_color=False, **kwargs):
     # get the plot data
     tails, heads = __calculate_plot_data(variogram)
 
@@ -70,6 +70,7 @@ def plotly_variogram_scattergram(variogram, fig=None, show=False, **kwargs):
     # some arguments
     lw = kwargs.get('line_width', kwargs.get('lw', 1.5))
     ld = kwargs.get('line_dash', 'dash')
+    color = 'orange' if single_color else None
 
     # add vertical and horizontal lines
     try:
@@ -85,12 +86,15 @@ def plotly_variogram_scattergram(variogram, fig=None, show=False, **kwargs):
     # do the plot
     for i, (tail, head) in enumerate(zip(tails, heads)):
         fig.add_trace(
-            go.Scattergl(x=tail, y=head, mode='markers', marker=dict(size=kwargs.get('size', 4)), name='Lag #%d' % i)
+            go.Scattergl(x=tail, y=head, mode='markers', marker=dict(size=kwargs.get('size', 4), color=color), name='Lag #%d' % i)
         )
 
     # add some titles
     fig.update_xaxes(title_text='Tail')
     fig.update_yaxes(title_text='Head')
+
+    if single_color:
+        fig.update_layout(showlegend=False)
 
     if show:
         fig.show()
