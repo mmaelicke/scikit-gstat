@@ -1105,10 +1105,16 @@ class Variogram(object):
         """
         Calculates the experimental variogram from the current lag classes.
         It handles the special case of the `'entropy'` and `'percentile'`
-        estimators, which take an additional argument
+        estimators, which take an additional argument.
 
+        .. versionchanged:: 0.3.6
+            replaced the for-loops with :func:`fromiter <numpy.fromiter>`
+        
         Returns
         -------
+        experimental : np.ndarray
+            1D array of the experimental variogram values. Has same length
+            as :func:`bins <skgstat.Variogram.bins>`
 
         """
         if self._estimator.__name__ == 'entropy':
