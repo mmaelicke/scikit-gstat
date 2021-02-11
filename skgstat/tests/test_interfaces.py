@@ -85,7 +85,7 @@ class TestVariogramEstimator(unittest.TestCase):
 
         gs = gs.fit(self.c, self.v)
 
-        self.assertEqual(gs.best_params_['model'], 'spherical')
+        self.assertEqual(gs.best_params_['model'], 'gaussian')
 
     def test_find_best_model_future_cv(self):
         """
@@ -103,7 +103,7 @@ class TestVariogramEstimator(unittest.TestCase):
 
         gs = gs.fit(self.c, self.v)
 
-        self.assertEqual(gs.best_params_['model'], 'matern')
+        self.assertEqual(gs.best_params_['model'], 'exponential')
 
 
 class TestPyKrigeInterface(unittest.TestCase):

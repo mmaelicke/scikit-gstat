@@ -17,14 +17,17 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_standard_settings(self):
         DV = DirectionalVariogram(self.c, self.v, normalize=True)
 
-        for x, y in zip(DV.parameters, [407.467, 2138.098, 0]):
-            self.assertAlmostEqual(x, y, places=0)
+        assert_array_almost_equal(
+            DV.parameters, [436., 2706., 0],
+            decimal=0
+        )
 
     def test_azimuth(self):
         DV = DirectionalVariogram(self.c, self.v, azimuth=-45, normalize=True)
 
-        for x, y in zip(DV.parameters, [27.288, 131.644, 0]):
-            self.assertAlmostEqual(x, y, places=3)
+        assert_array_almost_equal(
+            DV.parameters, [23.438, 219.406, 0], decimal=3
+        )
 
     def test_invalid_azimuth(self):
         with self.assertRaises(ValueError) as e:
@@ -38,8 +41,10 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_tolerance(self):
         DV = DirectionalVariogram(self.c, self.v, tolerance=15, normalize=True)
 
-        for x, y in zip(DV.parameters, [26.342, 1880.015, 0]):
-            self.assertAlmostEqual(x, y, places=3)
+        assert_array_almost_equal(
+            DV.parameters, [435.7, 2722.1, 0],
+            decimal=1
+        )
 
     def test_invalid_tolerance(self):
         with self.assertRaises(ValueError) as e:
