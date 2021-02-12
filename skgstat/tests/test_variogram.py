@@ -612,6 +612,21 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
             V._kwargs.get('percentile'), 0.7, places=1
         )
 
+    def test_kwargs_setter_in_experimental(self):
+        V = Variogram(self.c, self.v, estimator='percentile')
+
+        # store with p of 50 == median
+        exp = V.experimental
+
+        V.update_kwargs(percentile=25)
+
+        exp2 = V.experimental
+
+        # 25% should be very different from median
+        with self.assertRaises(AssertionError):
+            assert_array_almost_equal(exp, exp2, decimal=2)
+
+
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
