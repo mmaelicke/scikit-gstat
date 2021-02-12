@@ -37,7 +37,8 @@ class Variogram(object):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False
+                 verbose=False,
+                 **kwargs,
                  ):
         r"""Variogram Class
 
@@ -151,7 +152,22 @@ class Variogram(object):
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
+        Keyword Arguments
+        -----------------
+        entropy_bins : int, str
+            .. versionadded:: 0.3.7
+            If the `estimator <skgstat.Variogram.estimator>` is set to
+            `'entropy'` this argument sets the number of bins, that should be
+            used for histogram calculation.
+        percentile : int
+            .. versionadded:: 0.3.7
+            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            `'entropy'` this argument sets the percentile to be used.
+
         """
+        # Before we do anything else, make kwargs available
+        self._kwargs = self._validate_kwargs(**kwargs)
+
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -777,6 +793,42 @@ class Variogram(object):
         self.cof = None
         self.cov = None
 
+    def update_kwargs(self, **kwargs):
+        """
+        .. versionadded:: 0.3.7
+
+        Update the keyword arguments of this Variogram instance.
+        The keyword arguments will be validated first and the update the
+        existing kwargs. That means, you can pass only the kwargs, which
+        need to be updated.
+
+        .. note::
+            Updating the kwargs does not force a preprocessing circle. 
+            Any affected intermediate result, that might be cached internally, 
+            will not make use of updated kwargs. Make a call to 
+            :func:`preprocessing(force=True) <skgstat.Variogram.preprocessing>`
+            to force a clean re-calculation of the Variogram instance.
+
+        """
+        old = self._kwargs
+
+        # update the keyword-arguments
+        updated = self._validate_kwargs(**kwargs)
+        old.update(updated)
+
+        self._kwargs = old
+
+    def _validate_kwargs(self, **kwargs):
+        """
+        .. versionadded:: 0.3.7
+
+        This functions actually does nothing right now.
+        It will be used in the future, as soon as the Variogram takes
+        more kwargs. Then, these can be checked here.
+
+        """
+        return kwargs
+
     def lag_groups(self):
         """Lag class groups
 
@@ -1112,6 +1164,10 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.6
             replaced the for-loops with :func:`fromiter <numpy.fromiter>`
+        
+        .. versionchanged:: 0.3.7
+            makes use of `kwargs <skgstat.Variogram._kwargs>` for 
+            specific estimators now 
 
         Returns
         -------
@@ -1121,17 +1177,28 @@ class Variogram(object):
 
         """
         if self._estimator.__name__ == 'entropy':
-            bins = np.linspace(
-                np.min(self.distance),
-                np.max(self.distance),
-                50      # TODO: this should be set by kwargs
-            )
+            # get the parameter from kwargs, if not set use 50
+            N = self._kwargs.get('entropy_bins', 50)
 
+            # we need to use N -1 as we use the last inclusive
+            if isinstance(N, int):
+                N -= 1
+            
+            bins = np.histogram_bin_edges(self.distance, bins=N)
+
+            # define the mapper to the estimator function
             def mapper(lag_values):
                 return self._estimator(lag_values, bins=bins)
+
         elif self._estimator.__name__ == 'percentile':
-            # TODO after the kwargs are accepted, the p value can be set here
-            mapper = self._estimator
+            if self._kwargs.get('percentile', False):
+                p = self._kwargs.get('percentile')
+
+                def mapper(lag_values):
+                    return self._estimator(lag_values, p=p)
+            else:
+                mapper = self._estimator
+
         else:
             mapper = self._estimator
 

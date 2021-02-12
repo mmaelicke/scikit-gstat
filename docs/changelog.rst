@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 0.3.7
+=============
+- [Variogram] now accepts arbitary kwargs. These can be used to further specify functional behavior
+  of the class. As of Version `0.3.7` this is used to pass arguments down to the 
+  :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.percentile.entropy>` 
+  estimators.
+
 Version 0.3.6
 =============
 .. warning:: 

@@ -38,7 +38,8 @@ class DirectionalVariogram(Variogram):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False
+                 verbose=False,
+                 **kwargs
                  ):
         r"""Variogram Class
 
@@ -193,12 +194,29 @@ class DirectionalVariogram(Variogram):
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
+        Keyword Arguments
+        -----------------
+        entropy_bins : int, str
+            .. versionadded:: 0.3.7
+            If the `estimator <skgstat.Variogram.estimator>` is set to
+            `'entropy'` this argument sets the number of bins, that should be
+            used for histogram calculation.
+        percentile : int
+            .. versionadded:: 0.3.7
+            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            `'entropy'` this argument sets the percentile to be used.
+
         """
+        # Before we do anything else, make kwargs available
+        self._kwargs = self._validate_kwargs(**kwargs)
 
         # FIXME: Call __init__ of baseclass?
+        # No, because the sequence at which the arguments get initialized
+        # does matter. There is way too much transitive dependence, thus
+        # it was easiest to copy the init over.
 
         self._direction_mask_cache = None
-        
+
         # Set coordinates
         self._X = np.asarray(coordinates)
 
