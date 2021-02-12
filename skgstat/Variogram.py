@@ -795,8 +795,20 @@ class Variogram(object):
 
     def update_kwargs(self, **kwargs):
         """
+        .. versionadded:: 0.3.7
+
         Update the keyword arguments of this Variogram instance.
-        The keyword arguments.
+        The keyword arguments will be validated first and the update the
+        existing kwargs. That means, you can pass only the kwargs, which
+        need to be updated.
+
+        .. note::
+            Updating the kwargs does not force a preprocessing circle. 
+            Any affected intermediate result, that might be cached internally, 
+            will not make use of updated kwargs. Make a call to 
+            :func:`preprocessing(force=True) <skgstat.Variogram.preprocessing>`
+            to force a clean re-calculation of the Variogram instance.
+
         """
         old = self._kwargs
 
