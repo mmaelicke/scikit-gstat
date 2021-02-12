@@ -38,7 +38,8 @@ class DirectionalVariogram(Variogram):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False
+                 verbose=False,
+                 **kwargs
                  ):
         r"""Variogram Class
 
@@ -194,11 +195,13 @@ class DirectionalVariogram(Variogram):
             Set the Verbosity of the class. Not Implemented yet.
 
         """
-
+        # Before we do anything else, make kwargs available
+        self._kwargs = self.__validate_kwargs(**kwargs)
+        
         # FIXME: Call __init__ of baseclass?
 
         self._direction_mask_cache = None
-        
+
         # Set coordinates
         self._X = np.asarray(coordinates)
 
