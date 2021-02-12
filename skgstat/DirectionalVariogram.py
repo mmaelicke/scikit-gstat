@@ -194,6 +194,18 @@ class DirectionalVariogram(Variogram):
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
+        Keyword Arguments
+        -----------------
+        entropy_bins : int, str
+            .. versionadded:: 0.3.7
+            If the `estimator <skgstat.Variogram.estimator>` is set to
+            `'entropy'` this argument sets the number of bins, that should be
+            used for histogram calculation.
+        percentile : int
+            .. versionadded:: 0.3.7
+            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            `'entropy'` this argument sets the percentile to be used.
+
         """
         # Before we do anything else, make kwargs available
         self._kwargs = self.__validate_kwargs(**kwargs)
