@@ -166,7 +166,7 @@ class Variogram(object):
 
         """
         # Before we do anything else, make kwargs available
-        self._kwargs = self.__validate_kwargs(**kwargs)
+        self._kwargs = self._validate_kwargs(**kwargs)
 
         # Set coordinates
         self._X = np.asarray(coordinates)
@@ -813,12 +813,12 @@ class Variogram(object):
         old = self._kwargs
 
         # update the keyword-arguments
-        updated = self.__validate_kwargs(**kwargs)
+        updated = self._validate_kwargs(**kwargs)
         old.update(updated)
 
         self._kwargs = old
 
-    def __validate_kwargs(self, **kwargs):
+    def _validate_kwargs(self, **kwargs):
         """
         .. versionadded:: 0.3.7
 
