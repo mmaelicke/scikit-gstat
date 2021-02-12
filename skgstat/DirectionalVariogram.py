@@ -197,8 +197,11 @@ class DirectionalVariogram(Variogram):
         """
         # Before we do anything else, make kwargs available
         self._kwargs = self.__validate_kwargs(**kwargs)
-        
+
         # FIXME: Call __init__ of baseclass?
+        # No, because the sequence at which the arguments get initialized
+        # does matter. There is way too much transitive dependence, thus
+        # it was easiest to copy the init over.
 
         self._direction_mask_cache = None
 
