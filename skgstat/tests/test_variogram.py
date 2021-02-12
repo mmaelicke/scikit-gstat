@@ -588,7 +588,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.r, r, places=2)
-    
+
     def test_NS(self):
         V = Variogram(self.c, self.v, n_lags=15, normalize=False)
 
@@ -598,6 +598,19 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         ):
             self.assertAlmostEqual(V.NS, NS, places=4)
 
+    def test_update_kwargs(self):
+        V = Variogram(self.c, self.v, percentile=.3)
+
+        self.assertAlmostEqual(
+            V._kwargs.get('percentile'), 0.3, places=1
+        )
+
+        # change the parameter
+        V.update_kwargs(percentile=0.7)
+
+        self.assertAlmostEqual(
+            V._kwargs.get('percentile'), 0.7, places=1
+        )
 
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
