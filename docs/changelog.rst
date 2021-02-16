@@ -8,6 +8,9 @@ Version 0.3.7
   of the class. As of Version `0.3.7` this is used to pass arguments down to the 
   :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.percentile.entropy>` 
   estimators.
+- [Variogram] the `describe <skgstat.Variogram.describe>` now adds the 
+  `init <skgstat.Variogram.__init__>` arguments by default to the output. The method can output 
+  the init params as a nested dict inside the output or flatten the output dict.
 
 Version 0.3.6
 =============
