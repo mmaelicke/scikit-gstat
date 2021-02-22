@@ -190,6 +190,7 @@ class Variogram(object):
         self.set_dist_function(func=dist_func)
 
         # lags and max lag
+        self._n_lags_passed_value = n_lags
         self._n_lags = None
         self.n_lags = n_lags
         self._maxlag = None
@@ -207,6 +208,7 @@ class Variogram(object):
         self.set_model(model_name=model)
 
         # the binning settings
+        self._bin_func_name = None
         self._bin_func = None
         self._groups = None
         self._bins = None
@@ -375,7 +377,7 @@ class Variogram(object):
     def bin_func(self, bin_func):
         self.set_bin_func(bin_func=bin_func)
 
-    def set_bin_func(self, bin_func):
+    def set_bin_func(self, bin_func: str):
         """Set binning function
 
         Sets a new binning function to be used. The new binning method is set
@@ -411,6 +413,9 @@ class Variogram(object):
             self._bin_func = binning.uniform_count_lags
         else:
             raise ValueError('%s binning method is not known' % bin_func)
+        
+        # store the name
+        self._bin_func_name = bin_func
 
         # reset groups and bins
         self._groups = None
@@ -475,6 +480,9 @@ class Variogram(object):
         # else
         else:
             raise ValueError('n_lags has to be a positive integer')
+        
+        # if there are no errors, store the passed value
+        self._n_lags_passed_value = n
 
         # reset the groups
         self._groups = None
@@ -1481,14 +1489,33 @@ class Variogram(object):
 
         return _exp, _model
 
-    def describe(self):
+    def describe(self, short=False, flat=False):
         """Variogram parameters
 
         Return a dictionary of the variogram parameters.
 
+        .. versionchanged:: 0.3.7
+            The describe now returns all init parameters in as the 
+            `describe()['params']` key and all keyword arguments as
+            `describe()['kwargs']`. This output can be suppressed 
+            by setting `short=True`.
+        
+        Parameters
+        ----------
+        short : bool
+            If `True`, the `'params'` and `'kwargs'` keys will be 
+            omitted. Defaults to `False`.
+        flat : bool
+            If `True`, the `'params'` and `'kwargs'` nested `dict`s
+            will be distributed to the main `dict` to return a 
+            flat `dict`. Defaults to `False`
+
         Returns
         -------
-        dict
+        parameters : dict
+            Returns fitting parameters of the theoretical variogram
+            model along with the init parameters of the 
+            `Variogram <skgstat.Variogram>` instance.
 
         """
         # fit, if not already done
@@ -1520,6 +1547,31 @@ class Variogram(object):
             rdict['smoothness'] = cof[2]
         elif self._model.__name__ == 'stable':
             rdict['shape'] = cof[2]
+
+        # add other stuff if not short version requested
+        if not short:
+            kwargs = self._kwargs
+            params = dict(
+                estimator=self._estimator.__name__,
+                model=self._model.__name__,
+                dist_func=str(self._dist_func_name),
+                bin_func=self._bin_func_name,
+                normalize=self.normalized,
+                fit_method=self.fit_method,
+                fit_sigma=self.fit_sigma,
+                use_nugget=self.use_nugget,
+                maxlag=self.maxlag,
+                n_lags=self._n_lags_passed_value,
+                verbose=self.verbose
+            )
+
+            # update or append the params
+            if flat:
+                rdict.update(params)
+                rdict.update(kwargs)
+            else:
+                rdict['params'] = params
+                rdict['kwargs'] = kwargs
 
         # return
         return rdict

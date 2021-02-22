@@ -872,6 +872,29 @@ class TestVariogramPlots(unittest.TestCase):
             len(fig2.axes[0].get_children()) - 1
         )
 
+    def test_variogram_default_describe(self):
+        V = Variogram(self.c, self.v)
+
+        desc = V.describe()
+        self.assertTrue('params' in desc.keys())
+        self.assertTrue('kwargs' in desc.keys())
+
+    def test_variogram_describe_short(self):
+        V = Variogram(self.c, self.v)
+
+        desc = V.describe(short=True)
+        self.assertFalse('params' in desc.keys())
+        self.assertFalse('kwargs' in desc.keys())
+
+
+    def test_variogram_describe_flat(self):
+        V = Variogram(self.c, self.v)
+
+        desc = V.describe(flat=True)
+
+        # test there are no nested dicts
+        self.assertTrue(all([not isinstance(v, dict) for v in desc.values()]))
+
 
 class TestVariogramPlotlyPlots(unittest.TestCase):
     def setUp(self):
