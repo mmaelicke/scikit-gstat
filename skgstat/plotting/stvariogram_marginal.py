@@ -52,8 +52,8 @@ def matplotlib_marginal(stvariogram, axes=None, sharey=True, include_model=False
 
         # plot
         ax.plot(xx, y_vx, '-b')
-        ax.plot(xy, y_vy, '-g')
-    
+        ax3.plot(xy, y_vy, '-g')
+
     # set labels
     ax.set_xlabel('distance [spatial]')
     ax.set_ylabel('semivariance [%s]' % stvariogram.estimator.__name__)
@@ -87,7 +87,7 @@ def plotly_marginal(stvariogram, fig=None, include_model=False, **kwargs):
     # get some settings
     x_color = kwargs.get('x_color', 'black' if include_model else 'green')
     t_color = kwargs.get('t_color', 'black' if include_model else 'blue')
-    
+
     # plot the marginal experimental variogram
     fig.add_trace(
         go.Scatter(

@@ -74,7 +74,7 @@ def plotly_plot_2d(stvariogram, kind='contour', fig=None, **kwargs):
     colorscale = kwargs.get('colorscale', 'Earth_r')
     smooth = kwargs.get('line_smoothing', 0.0)
     coloring = kwargs.get('coloring', 'heatmap')
-    if kind == 'contourf':
+    if kind == 'contour':
         coloring = 'lines'
         lw = kwargs.get('line_width', kwargs.get('lw', 2))
         label_color = kwargs.get('label_color', 'black')

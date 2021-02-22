@@ -63,7 +63,8 @@ def matplotlib_plot_3d(stvariogram, kind='scatter', ax=None, elev=30, azim=220, 
 
 
     # add the model
-    ax.plot_trisurf(_xx.flatten(), _yy.flatten(), _z, cmap=cmap, alpha=alpha)
+    if not kwargs.get('no_model', False):
+        ax.plot_trisurf(_xx.flatten(), _yy.flatten(), _z, cmap=cmap, alpha=alpha)
 
     # labels:
     ax.set_xlabel('space')
