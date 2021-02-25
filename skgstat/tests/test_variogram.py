@@ -53,13 +53,13 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         for b, e in zip(bins, V.bins):
             self.assertAlmostEqual(b, e, places=2)
-    
+
     def test_unknown_binning_func(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, bin_func='notafunc')
 
         self.assertEqual(
-            'notafunc binning method is not known',
+            "'notafunc' is not a valid estimator for `bins`",
             str(e.exception)
         )
 
