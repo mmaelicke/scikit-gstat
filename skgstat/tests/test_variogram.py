@@ -154,6 +154,11 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertIsNone(V.cov)
         self.assertIsNone(V.cof)
 
+    def test_binning_non_string_arg(self):
+        V = Variogram(self.c, self.v, n_lags=8)
+
+        return True
+
     def test_estimator_method_setting(self):
         """
         Only test if the estimator functions are correctly set. The

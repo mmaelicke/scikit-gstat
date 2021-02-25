@@ -7,6 +7,10 @@ def even_width_lags(distances, n, maxlag):
     Calculate the lag edges for a given amount of bins using the same lag
     step width for all bins.
 
+    .. versionchanged:: 0.3.8
+        Function returns `None` as second value to indicate that
+        The number of lag classes was not changed
+
     Parameters
     ----------
     distances : numpy.array
@@ -35,6 +39,10 @@ def uniform_count_lags(distances, n, maxlag):
 
     Calculate the lag edges for a given amount of bins with the same amount
     of observations in each lag class. The lag step width will be variable.
+
+    .. versionchanged:: 0.3.8
+        Function returns `None` as second value to indicate that
+        The number of lag classes was not changed
 
     Parameters
     ----------
