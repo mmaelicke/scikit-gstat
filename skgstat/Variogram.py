@@ -417,6 +417,7 @@ class Variogram(object):
                 return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
 
             self._bin_func = wrapper
+            self._n_lags = None
         else:
             raise ValueError('%s binning method is not known' % bin_func)
 
@@ -441,7 +442,7 @@ class Variogram(object):
     def bins(self):
         # if bins are not calculated, do it
         if self._bins is None:
-            self._bins, n = self.bin_func(self.distance, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
 
             # if the binning function returned an N, the n_lags need
             # to be adjusted directly (not through the setter)
@@ -469,6 +470,8 @@ class Variogram(object):
         the grouping index and fitting parameters
 
         """
+        if self._n_lags is None:
+            self._n_lags = len(self.bins)
         return self._n_lags
 
     @n_lags.setter

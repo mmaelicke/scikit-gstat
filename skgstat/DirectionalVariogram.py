@@ -538,7 +538,7 @@ class DirectionalVariogram(Variogram):
             d = self.distance.copy()
             d[np.where(~self._direction_mask())] = np.nan
 
-            self._bins, n = self.bin_func(d, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(d, self._n_lags, self.maxlag)
 
             # if the binning function returned an N, the n_lags need
             # to be adjusted directly (not through the setter)
