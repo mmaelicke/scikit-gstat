@@ -92,13 +92,24 @@ class Variogram(object):
             scipy.spatial.distance.pdist. Additional parameters are not (yet)
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
-        bin_func : str
+        bin_func : str            
+            .. versionchanged:: 0.3.8
+                added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+
             String identifying the binning function used to find lag class
-            edges. At the moment there are two possible values: 'even'
-            (default) or 'uniform'. Even will find n_lags bins of same width
-            in the interval [0,maxlag[. 'uniform' will identfy n_lags bins on
-            the same interval, but with varying edges so that all bins count
-            the same amount of observations.
+            edges. All methods calculate bin edges on the interval [0, maxlag[.
+            Possible values are:
+
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
+                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` as `n_lags`.
+
+            More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
+
         normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
@@ -156,11 +167,13 @@ class Variogram(object):
         -----------------
         entropy_bins : int, str
             .. versionadded:: 0.3.7
+
             If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the number of bins, that should be
             used for histogram calculation.
         percentile : int
             .. versionadded:: 0.3.7
+
             If the `estimator <skgstat.Variogram.estimator>` is set to 
             `'entropy'` this argument sets the percentile to be used.
 
@@ -378,32 +391,94 @@ class Variogram(object):
         self.set_bin_func(bin_func=bin_func)
 
     def set_bin_func(self, bin_func: str):
-        """Set binning function
+        r"""Set binning function
 
         Sets a new binning function to be used. The new binning method is set
         by a string identifying the new function to be used. Can be one of:
-        ['even', 'uniform'].
+        ['even', 'uniform', 'fd', 'sturges', 'scott', 'sqrt', 'doane'].
+        If the number of lag classes should be estimated automatically, it is 
+        recommended to use ' sturges' for small, normal distributed locations
+        and 'fd' or 'scott' for large datasets, where 'fd' is more robust to
+        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an 
+        extension of Sturge's rule for non-normal distributed data.
+
+        .. versionchanged:: 0.3.8
+            added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
 
         Parameters
         ----------
         bin_func : str
             Can be one of:
 
-            * **'even'**: Use skgstat.binning.even_width_lags for using
-              n_lags lags of equal width up to maxlag.
-            * **'uniform'**: Use skgstat.binning.uniform_count_lags for using
-              n_lags lags up to maxlag in which the pairwise differences
-              follow a uniform distribution.
+                * 'even'
+                * 'uniform'
+                * 'fd'
+                * 'sturges'
+                * 'scott'
+                * 'sqrt'
+                * 'doane'
 
         Returns
         -------
         void
+
+        Notes
+        -----
+        **`'even'`**: Use skgstat.binning.even_width_lags for using
+        n_lags lags of equal width up to maxlag.
+
+        **`'uniform'`**: Use skgstat.binning.uniform_count_lags for using
+        n_lags lags up to maxlag in which the pairwise differences
+        follow a uniform distribution.
+
+        **`'sturges'`**: estimates the number of evenly distributed lag
+        classes (n) by Sturges rule [101]_:
+
+        .. math::
+            n = log_2 n + 1
+
+        **`'scott'`**: estimates the lag class widths (h) by Scott's rule [102]_:
+
+        .. math::
+            h = \sigma \frac{24 * \sqrt{\pi}}{n}^{\frac{1}{3}}
+
+        **`'sqrt'`**: estimates the number of lags (n) by the suare-root:
+
+        .. math::
+            n = \sqrt{n}
+
+        **`'fd'`**: estimates the lag class widths (h) using the
+        Freedman Diaconis estimator [103]_:
+
+        .. math::
+            h = 2\frac{IQR}{n^{1/3}}
+
+        **`'doane'`**: estimates the number of evenly distributed lag classes
+        using Doane's extension to Sturge's rule [104]_:
+
+        .. math::
+            n = 1 + \log_{2}(n) + \log_2(1 + \frac{|g|}{\sigma})
+            g = E[(\frac{x - \mu}{\sigma})^3]
+            \sigma = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
 
         See Also
         --------
         Variogram.bin_func
         skgstat.binning.uniform_count_lags
         skgstat.binning.even_width_lags
+        skgstat.binning.auto_derived_lags
+
+        References
+        ----------
+        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306. 
+            https://doi.org/10.1002/wics.35
+        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502. 
+            https://doi.org/10.1002/wics.103
+        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as 
+            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie 
+            und verwandte Gebiete 57.4: 453-476.
+        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications. 
+            The American Statistician, 30(4), 181-183.
 
         """
         # switch the input
@@ -411,9 +486,19 @@ class Variogram(object):
             self._bin_func = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
+        elif isinstance(bin_func, str):
+            # define a helper wrapper
+            def wrapper(distances, n, maxlag):
+                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+
+            self._bin_func = wrapper
+            self._n_lags = None
+        elif callable(bin_func):
+            self._bin_func = bin_func
+            bin_func = 'custom'
         else:
-            raise ValueError('%s binning method is not known' % bin_func)
-        
+            raise AttributeError('bin_func has to be of type string.')
+
         # store the name
         self._bin_func_name = bin_func
 
@@ -433,8 +518,14 @@ class Variogram(object):
 
     @property
     def bins(self):
+        # if bins are not calculated, do it
         if self._bins is None:
-            self._bins = self.bin_func(self.distance, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
+
+            # if the binning function returned an N, the n_lags need
+            # to be adjusted directly (not through the setter)
+            if n is not None:
+                self._n_lags = n
 
         return self._bins.copy()
 
@@ -457,6 +548,8 @@ class Variogram(object):
         the grouping index and fitting parameters
 
         """
+        if self._n_lags is None:
+            self._n_lags = len(self.bins)
         return self._n_lags
 
     @n_lags.setter
@@ -1757,16 +1850,21 @@ class Variogram(object):
         -----------------
         add_trend_line : bool
             .. versionadded:: 0.3.5
+
             If set to `True`, the class will fit a linear model to each
             coordinate dimension and output the model along with a
             calculated R². With high R² values, you should consider
             rejecting the input data, or transforming it.
+
             .. note::
                 Right now, this is only supported for ``'plotly'`` backend
+   
 
         Returns
         -------
-        matplotlib.Figure, plotly.graph_objects.Figure
+        fig : matplotlib.Figure, plotly.graph_objects.Figure
+            The figure produced by the function. Dependends on the 
+            current backend.
 
         """
         # get the backend

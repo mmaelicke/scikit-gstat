@@ -2,9 +2,7 @@
 Directional Variogram
 """
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import squareform, pdist
-import matplotlib.collections
+from scipy.spatial.distance import pdist
 
 from .Variogram import Variogram
 from skgstat import plotting
@@ -93,12 +91,22 @@ class DirectionalVariogram(Variogram):
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
         bin_func : str
+            .. versionchanged:: 0.3.8
+                added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+            
             String identifying the binning function used to find lag class
-            edges. At the moment there are two possible values: 'even'
-            (default) or 'uniform'. Even will find n_lags bins of same width
-            in the interval [0,maxlag[. 'uniform' will identfy n_lags bins on
-            the same interval, but with varying edges so that all bins count
-            the same amount of observations.
+            edges. All methods calculate bin edges on the interval [0, maxlag[.
+            Possible values are:
+            
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
+                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>`. as `n_lags`.
+
+            More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
         normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
@@ -198,12 +206,14 @@ class DirectionalVariogram(Variogram):
         -----------------
         entropy_bins : int, str
             .. versionadded:: 0.3.7
+
             If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the number of bins, that should be
             used for histogram calculation.
         percentile : int
             .. versionadded:: 0.3.7
-            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            
+            If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the percentile to be used.
 
         """
@@ -538,7 +548,12 @@ class DirectionalVariogram(Variogram):
             d = self.distance.copy()
             d[np.where(~self._direction_mask())] = np.nan
 
-            self._bins = self.bin_func(d, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(d, self._n_lags, self.maxlag)
+
+            # if the binning function returned an N, the n_lags need
+            # to be adjusted directly (not through the setter)
+            if n is not None:
+                self._n_lags = n
 
         return self._bins.copy()
 

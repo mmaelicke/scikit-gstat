@@ -307,6 +307,8 @@ class SpaceTimeVariogram:
 
     @property
     def x_lags(self):
+        if self._x_lags is None:
+            self._x_lags = len(self.xbins)
         return self._x_lags
 
     @x_lags.setter
@@ -331,8 +333,10 @@ class SpaceTimeVariogram:
                 return self.values.shape[1] - 1
             else:
                 raise ValueError("Only 'max' supported as string argument.")
-        else:
-            return self._t_lags
+        elif self._t_lags is None:
+            self._t_lags = len(self.tbins)
+        
+        return self._t_lags
 
     @t_lags.setter
     def t_lags(self, lags):
@@ -400,11 +404,19 @@ class SpaceTimeVariogram:
         skgstat.binning.uniform_count_lags
 
         """
+        adjust_n_lags = False
         # switch the function
         if bin_func.lower() == 'even':
             f = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
             f = binning.uniform_count_lags
+        elif isinstance(bin_func, str):
+            # define a wrapper to pass the name
+            def wrapper(distances, n, maxlag):
+                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+
+            f = wrapper
+            adjust_n_lags = True
         else:
             raise ValueError('%s binning method is not known' % bin_func)
 
@@ -413,15 +425,22 @@ class SpaceTimeVariogram:
             self._xbin_func = f
             self._xbin_func_name = bin_func
 
+            if adjust_n_lags:
+                self._x_lags = None
+
             # update marginal
             self._set_xmarg_params()
 
             # reset
             self._xgroups = None
             self._xbins = None
+
         elif axis.lower() == 'time' or axis.lower() == 't':
             self._tbin_func = f
             self._tbin_func_name = bin_func
+
+            if adjust_n_lags:
+                self._t_lags = None
 
             # update marignal
             self._set_tmarg_params()
@@ -429,6 +448,7 @@ class SpaceTimeVariogram:
             # reset
             self._tgroups = None
             self._tbins = None
+
         else:
             raise ValueError('%s is not a valid axis' % axis)
 
@@ -451,8 +471,12 @@ class SpaceTimeVariogram:
         """
         # check if cached
         if self._xbins is None:
-            self._xbins = self._xbin_func(self.xdistance,
-                                          self.x_lags, self.maxlag)
+            self._xbins, n = self._xbin_func(self.xdistance, self._x_lags, self.maxlag)
+
+            # if n is not None, the binning func overwrote it
+            if n is not None:
+                self._x_lags = n
+
         return self._xbins
 
     @xbins.setter
@@ -489,7 +513,13 @@ class SpaceTimeVariogram:
 
         """
         if self._tbins is None:
-            self._tbins = self._tbin_func(self.tdistance, self.t_lags, None)
+            # this is a bit dumb, but we cannot pass a string as n param
+            tn = self._t_lags if self._t_lags != 'max' else self.t_lags
+            self._tbins, n = self._tbin_func(self.tdistance, tn, None)
+
+            # if n is not None, the binning func overwote it
+            if n is not None:
+                self._t_lags = n
 
         return self._tbins
 

@@ -153,6 +153,30 @@ class TestSpaceTimeVariogramArgumets(unittest.TestCase):
                 str(e), "Only 'max' supported as string argument."
             )
 
+    def test_autoset_lag_bins(self):
+        V = SpaceTimeVariogram(self.c, self.v, xbins='scott', tbins='fd')
+
+        # test if the bins were set correctly
+        self.assertTrue(V.x_lags == 20)
+        self.assertTrue(V.t_lags == 2)
+
+        assert_array_almost_equal(
+            V.xbins,
+            np.array([21.5, 34.8, 48., 61.3, 74.5, 87.8, 101.1, 114.3, 127.6,
+                140.8, 154.1, 167.4, 180.6, 193.9, 207.2, 220.4, 233.7, 246.9,
+                260.2, 273.5]),
+                decimal=1
+        )
+
+    def test_change_lag_method(self):
+        V = V = SpaceTimeVariogram(self.c, self.v, x_lags=4, t_lags='max')
+
+        self.assertTrue(V.x_lags == V.t_lags == 4)
+
+        V.set_bin_func('sqrt', 'space')
+
+        self.assertTrue(V.x_lags == 43)
+
 
 class TestSpaceTimeVariogramPlots(unittest.TestCase):
     def setUp(self):

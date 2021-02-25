@@ -78,6 +78,19 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
                 'model name, or it has to be the search area '
                 'itself'
             )
+    
+    def test_binning_change_nlags(self):
+        DV = DirectionalVariogram(self.c, self.v, n_lags=5)
+
+        self.assertEqual(DV.n_lags, 5)
+
+        # go through the n_lags chaning procedure
+        DV.bin_func = 'scott'
+
+        # with scott, there are 6 classes now
+        self.assertEqual(DV.n_lags, 6)
+
+
 
 
 class Mock:
