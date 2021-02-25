@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.3.8
+=============
+- [plotting] minor bugfixes in plotting routines (wrong arguments, pltting issues)
+- [docs] added a tutorial about plotting
+
 Version 0.3.7
 =============
 - [Variogram] now accepts arbitary kwargs. These can be used to further specify functional behavior
