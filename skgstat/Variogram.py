@@ -431,9 +431,9 @@ class Variogram(object):
             * `'doane'` estimates the number of evenly distributed lag classes
                 using Doane's extension to Sturge's rule [104]_:
                 .. math::
-                n = 1 + \log_{2}(n) + \log_{2}(1 + \frac{|g_1|}{\sigma_{g}})
-                g = E[(\frac{x - \mu}{\sigma})^3]
-                \sigma_{g} = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
+                    n = 1 + \log_{2}(n) + \log_{2}(1 + \frac{|g_1|}{\sigma_{g}})
+                    g = E[(\frac{x - \mu}{\sigma})^3]
+                    \sigma_{g} = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
 
         Returns
         -------
