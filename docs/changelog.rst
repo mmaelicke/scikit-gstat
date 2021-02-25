@@ -6,6 +6,12 @@ Version 0.3.8
 =============
 - [plotting] minor bugfixes in plotting routines (wrong arguments, pltting issues)
 - [docs] added a tutorial about plotting
+- [binning] added :func:`auto_derived_lags <skgstat.binning.auto_derived_lags>` for a variety
+  of different methods that find a good estimate for either the number of lag classes or the 
+  lag class width. These can be used by passing the method name as `bin_func <skgstat.Variogram.set_bin_func>` 
+  parameter: Freedman-Diaconis (`'fd'`), Sturge's rule (`'sturges'`), Scott's rule (`'scott'`) and 
+  Doane's extension to Sturge's rule (`'doane'`). 
+  Uses `histogram_bin_edges <numpy.histogram_bin_edges>` internally.
 
 Version 0.3.7
 =============
