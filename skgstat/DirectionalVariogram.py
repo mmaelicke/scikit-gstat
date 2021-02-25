@@ -2,9 +2,7 @@
 Directional Variogram
 """
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import squareform, pdist
-import matplotlib.collections
+from scipy.spatial.distance import pdist
 
 from .Variogram import Variogram
 from skgstat import plotting
@@ -95,19 +93,18 @@ class DirectionalVariogram(Variogram):
         bin_func : str
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+            
             String identifying the binning function used to find lag class
             edges. All methods calculate bin edges on the interval [0, maxlag[.
             Possible values are:
-
-            * `'even'` (default) finds `n_lags` same width bins
-            * `'uniform'` forms `n_lags` bins of same data count
-            * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
-            * `'sturges'` applies Sturge's rule to find `n_lags`.
-            * `'scott'` applies Scott's rule to find `n_lags`
-            * `'doane'` applies Doane's extension to Sturge's rule to
-                find `n_lags`
-            * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` 
-                as `n_lags`.
+            
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
+                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>`. as `n_lags`.
 
             More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
         normalize : bool
@@ -209,12 +206,14 @@ class DirectionalVariogram(Variogram):
         -----------------
         entropy_bins : int, str
             .. versionadded:: 0.3.7
+
             If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the number of bins, that should be
             used for histogram calculation.
         percentile : int
             .. versionadded:: 0.3.7
-            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            
+            If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the percentile to be used.
 
         """

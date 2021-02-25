@@ -92,24 +92,24 @@ class Variogram(object):
             scipy.spatial.distance.pdist. Additional parameters are not (yet)
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
-        bin_func : str
+        bin_func : str            
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+
             String identifying the binning function used to find lag class
             edges. All methods calculate bin edges on the interval [0, maxlag[.
             Possible values are:
 
-            * `'even'` (default) finds `n_lags` same width bins
-            * `'uniform'` forms `n_lags` bins of same data count
-            * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
-            * `'sturges'` applies Sturge's rule to find `n_lags`.
-            * `'scott'` applies Scott's rule to find `n_lags`
-            * `'doane'` applies Doane's extension to Sturge's rule to
-                find `n_lags`
-            * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` 
-                as `n_lags`.
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
+                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` as `n_lags`.
 
             More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
+
         normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
@@ -167,11 +167,13 @@ class Variogram(object):
         -----------------
         entropy_bins : int, str
             .. versionadded:: 0.3.7
+
             If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the number of bins, that should be
             used for histogram calculation.
         percentile : int
             .. versionadded:: 0.3.7
+
             If the `estimator <skgstat.Variogram.estimator>` is set to 
             `'entropy'` this argument sets the percentile to be used.
 
@@ -408,36 +410,56 @@ class Variogram(object):
         bin_func : str
             Can be one of:
 
-            * `'even'`: Use skgstat.binning.even_width_lags for using
-                n_lags lags of equal width up to maxlag.
-            * `'uniform'`: Use skgstat.binning.uniform_count_lags for using
-                n_lags lags up to maxlag in which the pairwise differences
-                follow a uniform distribution.
-            * `'sturges'` estimates the number of evenly distributed lag
-                classes (n) by Sturges rule [101]_:
-                .. math::
-                    n = log_2 n + 1
-            * `'scott'` estimates the lag class widths (h) by
-                Scott's rule [102]_:
-                .. math::
-                    h = \sigma \frac{24 * \sqrt{\pi}}{n}^{\frac{1}{3}}
-            * `'sqrt'` estimates the number of lags (n) by the suare-root:
-                .. math::
-                    n = \sqrt{n}
-            * `'fd'` estimates the lag class widths (h) using the
-                Freedman Diaconis estimator [103]_:
-                .. math::
-                    h = 2\frac{IQR}{n^{1/3}}
-            * `'doane'` estimates the number of evenly distributed lag classes
-                using Doane's extension to Sturge's rule [104]_:
-                .. math::
-                    n = 1 + \log_{2}(n) + \log_2(1 + \frac{|g|}{\sigma})
-                    g = E[(\frac{x - \mu}{\sigma})^3]
-                    \sigma = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
+                * 'even'
+                * 'uniform'
+                * 'fd'
+                * 'sturges'
+                * 'scott'
+                * 'sqrt'
+                * 'doane'
 
         Returns
         -------
         void
+
+        Notes
+        -----
+        **`'even'`**: Use skgstat.binning.even_width_lags for using
+        n_lags lags of equal width up to maxlag.
+
+        **`'uniform'`**: Use skgstat.binning.uniform_count_lags for using
+        n_lags lags up to maxlag in which the pairwise differences
+        follow a uniform distribution.
+
+        **`'sturges'`**: estimates the number of evenly distributed lag
+        classes (n) by Sturges rule [101]_:
+
+        .. math::
+            n = log_2 n + 1
+
+        **`'scott'`**: estimates the lag class widths (h) by Scott's rule [102]_:
+
+        .. math::
+            h = \sigma \frac{24 * \sqrt{\pi}}{n}^{\frac{1}{3}}
+
+        **`'sqrt'`**: estimates the number of lags (n) by the suare-root:
+
+        .. math::
+            n = \sqrt{n}
+
+        **`'fd'`**: estimates the lag class widths (h) using the
+        Freedman Diaconis estimator [103]_:
+
+        .. math::
+            h = 2\frac{IQR}{n^{1/3}}
+
+        **`'doane'`**: estimates the number of evenly distributed lag classes
+        using Doane's extension to Sturge's rule [104]_:
+
+        .. math::
+            n = 1 + \log_{2}(n) + \log_2(1 + \frac{|g|}{\sigma})
+            g = E[(\frac{x - \mu}{\sigma})^3]
+            \sigma = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
 
         See Also
         --------
@@ -1828,16 +1850,21 @@ class Variogram(object):
         -----------------
         add_trend_line : bool
             .. versionadded:: 0.3.5
+
             If set to `True`, the class will fit a linear model to each
             coordinate dimension and output the model along with a
             calculated R². With high R² values, you should consider
             rejecting the input data, or transforming it.
+
             .. note::
                 Right now, this is only supported for ``'plotly'`` backend
+   
 
         Returns
         -------
-        matplotlib.Figure, plotly.graph_objects.Figure
+        fig : matplotlib.Figure, plotly.graph_objects.Figure
+            The figure produced by the function. Dependends on the 
+            current backend.
 
         """
         # get the backend
