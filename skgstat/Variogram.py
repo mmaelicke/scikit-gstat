@@ -411,9 +411,15 @@ class Variogram(object):
             self._bin_func = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
+        elif isinstance(bin_func, str):
+            # define a helper wrapper
+            def wrapper(distances, n, maxlag):
+                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+
+            self._bin_func = wrapper
         else:
             raise ValueError('%s binning method is not known' % bin_func)
-        
+
         # store the name
         self._bin_func_name = bin_func
 
@@ -433,8 +439,14 @@ class Variogram(object):
 
     @property
     def bins(self):
+        # if bins are not calculated, do it
         if self._bins is None:
-            self._bins = self.bin_func(self.distance, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(self.distance, self.n_lags, self.maxlag)
+
+            # if the binning function returned an N, the n_lags need
+            # to be adjusted directly (not through the setter)
+            if n is not None:
+                self._n_lags = n
 
         return self._bins.copy()
 
