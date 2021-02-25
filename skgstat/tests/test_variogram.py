@@ -117,6 +117,29 @@ class TestVariogramArguments(unittest.TestCase):
         V.bin_func = 'even'
         assert_array_almost_equal(even, V.bins, decimal=2)
 
+    def test_binning_method_scott(self):
+        V = Variogram(self.c, self.v, bin_func='scott')
+
+        # scott should yield 11 bins here
+        self.assertTrue(V.n_lags == 11)
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.9, 8.6, 12.4, 16.1, 19.9, 23.6, 27.3, 31.1, 34.8, 38.6, 42.3]),
+            decimal=1
+        )
+
+    def test_binning_change_nlags(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # 5 lags are awaited
+        self.assertTrue(V.n_lags == 5)
+
+        # switch to fd rule
+        V.bin_func = 'fd'
+
+        self.assertTrue(V.n_lags == 13)
+
     def test_set_bins_directly(self):
         V = Variogram(self.c, self.v, n_lags=5)
 
