@@ -159,6 +159,25 @@ class TestVariogramArguments(unittest.TestCase):
 
         return True
 
+    def test_binning_kmeans_method(self):
+        V = Variogram(self.c, self.v, n_lags=6, bin_func='kmeans')
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([2.5, 7.7, 12.9, 18.1, 23.7, 30.1]),
+            decimal=1
+        )
+
+    def test_binning_ward_method(self):
+        V = Variogram(self.c, self.v, n_lags=6, bin_func='ward')
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([2.5,  7.1, 11.1, 16.2, 23., 30.]),
+            decimal=1
+        )
+
+
     def test_estimator_method_setting(self):
         """
         Only test if the estimator functions are correctly set. The

@@ -95,6 +95,8 @@ class Variogram(object):
         bin_func : str            
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+            .. versionchanged:: 0.3.9
+                added 'kmeans', 'ward'
 
             String identifying the binning function used to find lag class
             edges. All methods calculate bin edges on the interval [0, maxlag[.
@@ -107,6 +109,8 @@ class Variogram(object):
                 * `'scott'` applies Scott's rule to find `n_lags`
                 * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
                 * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` as `n_lags`.
+                * `'kmeans'` uses KMeans clustering to well supported bins
+                * `'ward'` uses hierachical clustering to find minimum-variance clusters.
 
             More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
 
@@ -404,6 +408,9 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.8
             added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+        
+        .. versionchanged:: 0.3.9
+            added 'kmeans', 'ward'
 
         Parameters
         ----------
@@ -417,6 +424,8 @@ class Variogram(object):
                 * 'scott'
                 * 'sqrt'
                 * 'doane'
+                * 'kmeans'
+                * 'ward'
 
         Returns
         -------
@@ -461,12 +470,26 @@ class Variogram(object):
             g = E[(\frac{x - \mu}{\sigma})^3]
             \sigma = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
 
+        **`'kmeans'`**: This method will search for `n` clusters in the
+        distance matrix. The cluster centroids are used to calculate the
+        upper edges of the lag classes, by setting it to half of the distance
+        between two neighboring clusters. Note: This does not necessarily
+        result in even width bins.
+
+        **`'ward'`** uses a hierachical culstering algorithm to iteratively
+        merge pairs of clusters until there are only `n` remaining clusters.
+        The merging is done by minimizing the variance for the merged cluster.
+
         See Also
         --------
         Variogram.bin_func
         skgstat.binning.uniform_count_lags
         skgstat.binning.even_width_lags
         skgstat.binning.auto_derived_lags
+        skgstat.binning.kmeans
+        skgstat.binning.ward
+        sklearn.cluster.KMeans
+        sklearn.cluster.AgglomerativeClustering
 
         References
         ----------
@@ -486,6 +509,10 @@ class Variogram(object):
             self._bin_func = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
+        elif bin_func.lower() == 'kmeans':
+            self._bin_func = binning.kmeans
+        elif bin_func.lower() == 'ward':
+            self._bin_func = binning.ward
         elif isinstance(bin_func, str):
             # define a helper wrapper
             def wrapper(distances, n, maxlag):
