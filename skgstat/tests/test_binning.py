@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from skgstat.binning import even_width_lags, uniform_count_lags, auto_derived_lags
+from skgstat.binning import even_width_lags, uniform_count_lags, auto_derived_lags, kmeans, ward
 
 
 class TestEvenWidth(unittest.TestCase):
@@ -99,6 +99,29 @@ class TestDerivedBins(unittest.TestCase):
             np.array([ 75.6, 80.4, 85.3, 90.2, 95.1, 100.]),
             decimal=1
         )
+
+
+class TestClusteringBins(unittest.TestCase):
+    def test_kmeans(self):
+        np.random.seed(1312)
+        bins, _ = kmeans(np.random.gamma(10, 40, 500), 6, None)
+
+        assert_array_almost_equal(
+            np.array([117.9, 281.1, 370.4, 461.1, 568.4, 760.4]),
+            bins,
+            decimal=1
+        )
+
+    def test_ward(self):
+        np.random.seed(1312)
+        bins, _ = ward(np.random.gamma(10, 40, 500), 6, None)
+
+        assert_array_almost_equal(
+            np.array([122.7, 283.7, 352.3, 422.7, 520.9, 660.4]),
+            bins,
+            decimal=1
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
