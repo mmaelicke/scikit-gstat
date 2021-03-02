@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.cluster import KMeans, AgglomerativeClustering
 
 
 def even_width_lags(distances, n, maxlag):
@@ -114,3 +115,94 @@ def auto_derived_lags(distances, method_name, maxlag):
     edges = np.histogram_bin_edges(d, bins=method_name)[1:]
 
     return edges, len(edges)
+
+
+def kmeans(distances, n, maxlag):
+    """KMeans binning
+    .. versionadded:: 0.3.9
+
+    Clustering of pairwise separating distances between locations up to
+    maxlag. The lag class edges are formed equidistant from each cluster
+    center. Note: this does not necessarily result in equidistance lag classes.
+
+    Parameters
+    ----------
+    distances : numpy.array
+        Flat numpy array representing the upper triangle of
+        the distance matrix.
+    n : integer
+        Amount of lag classes to find
+    maxlag : integer, float
+        Limit the last lag class to this separating distance.
+
+    Returns
+    -------
+    bin_edges : numpy.ndarray
+        The **upper** bin edges of the lag classes
+
+    """
+    # maxlags largher than maximum separating distance will be ignored
+    if maxlag is None or maxlag > np.nanmax(distances):
+        maxlag = np.nanmax(distances)
+
+    # filter for distances < maxlag
+    d = distances[np.where(distances <= maxlag)]
+
+    # cluster the filtered distances
+    km = KMeans(n_clusters=n).fit(d.reshape(-1, 1))
+
+    # get the centers
+    _centers = np.sort(km.cluster_centers_.flatten())
+
+    # build the upper edges
+    bounds = zip([0] + list(_centers)[:-1], _centers)
+    edges = np.fromiter(((low + up) / 2 for low, up in bounds), dtype=float)
+
+    return edges, None
+
+
+def ward(distances, n, maxlag):
+    """Agglomerative binning
+    .. versionadded:: 0.3.9
+
+    Clustering of pairwise separating distances between locations up to
+    maxlag. The lag class edges are formed equidistant from each cluster
+    center. Note: this does not necessarily result in equidistance lag classes.
+
+    The clustering is done by merging pairs of clusters that minimize the
+    variance for the merged clusters, unitl `n` clusters are found.
+
+    Parameters
+    ----------
+    distances : numpy.array
+        Flat numpy array representing the upper triangle of
+        the distance matrix.
+    n : integer
+        Amount of lag classes to find
+    maxlag : integer, float
+        Limit the last lag class to this separating distance.
+
+    Returns
+    -------
+    bin_edges : numpy.ndarray
+        The **upper** bin edges of the lag classes
+
+    """
+    # maxlags largher than maximum separating distance will be ignored
+    if maxlag is None or maxlag > np.nanmax(distances):
+        maxlag = np.nanmax(distances)
+
+    # filter for distances < maxlag
+    d = distances[np.where(distances <= maxlag)]
+
+    # cluster the filtered distances
+    w = AgglomerativeClustering(linkage='ward', n_clusters=n).fit(d.reshape(-1, 1))
+
+    # get the centers
+    _centers = np.sort([np.mean(d[np.where(w.labels_ == i)[0]]) for i in np.unique(w.labels_)])
+
+    # build the upper edges
+    bounds = zip([0] + list(_centers)[:-1], _centers)
+    edges = np.fromiter(((low + up) / 2 for low, up in bounds), dtype=float)
+
+    return edges, None
