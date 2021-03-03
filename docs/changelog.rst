@@ -4,7 +4,7 @@ Changelog
 
 Version 0.3.9
 =============
-- [binning] added `kmeans <skgstat.binning.kmeans>` and `ward <skgstat.binning.ward>` for forming
+- [binning] added :func:`kmeans <skgstat.binning.kmeans>` and :func:`ward <skgstat.binning.ward>` for forming
   non-equidistant lag classes based on a distance matrix clustering
 - [Kriging] Kriging now stores the last interpolated field as `z`. This is the first of a few changes
   in future releases, which will ultimately add some plotting methods to Kriging.
@@ -15,7 +15,7 @@ Version 0.3.8
 - [docs] added a tutorial about plotting
 - [binning] added :func:`auto_derived_lags <skgstat.binning.auto_derived_lags>` for a variety
   of different methods that find a good estimate for either the number of lag classes or the 
-  lag class width. These can be used by passing the method name as `bin_func <skgstat.Variogram.set_bin_func>` 
+  lag class width. These can be used by passing the method name as :func:`bin_func <skgstat.Variogram.set_bin_func>` 
   parameter: Freedman-Diaconis (`'fd'`), Sturge's rule (`'sturges'`), Scott's rule (`'scott'`) and 
   Doane's extension to Sturge's rule (`'doane'`). 
   Uses `histogram_bin_edges <numpy.histogram_bin_edges>` internally.
@@ -24,10 +24,10 @@ Version 0.3.7
 =============
 - [Variogram] now accepts arbitary kwargs. These can be used to further specify functional behavior
   of the class. As of Version `0.3.7` this is used to pass arguments down to the 
-  :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.percentile.entropy>` 
+  :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.estimators.percentile>` 
   estimators.
-- [Variogram] the `describe <skgstat.Variogram.describe>` now adds the 
-  `init <skgstat.Variogram.__init__>` arguments by default to the output. The method can output 
+- [Variogram] the :func:`describe <skgstat.Variogram.describe>` now adds the 
+  :func:`init <skgstat.Variogram.__init__>` arguments by default to the output. The method can output 
   the init params as a nested dict inside the output or flatten the output dict.
 
 Version 0.3.6
@@ -36,12 +36,12 @@ Version 0.3.6
   There is some potential breaking behaviour
 
 - [Variogram] some internal code cleanup. Removed some unnecessary loops
-- [Variogram] setting the `n_lags <skgstat.Variogram.n_lags>` property now correctly forces
+- [Variogram] setting the :func:`n_lags <skgstat.Variogram.n_lags>` property now correctly forces
   a recalculation of the lag groupings. So far they were kept untouches, which might result
   in old experimental variogram values for the changed instance.
   **This is a potential breaking change**.
-- [Variogram] The `lag_classes <skgstat.Variogram.lag_classes>` generator now yields empty 
-  arrays for unoccupied lag classes. This will result in `NaN <numpy.NaN>` values for the 
+- [Variogram] The :func:`lag_classes <skgstat.Variogram.lag_classes>` generator now yields empty 
+  arrays for unoccupied lag classes. This will result in :class:`NaN <numpy.NaN>` values for the 
   semi-variance. This is actually a bug-fix.
   **This is a potential breaking change**
 
@@ -63,8 +63,8 @@ Version 0.3.4
 Version 0.3.3
 =============
 
-- [plotting] a new submodule is introduced: `skgstat.plotting`. This contains all plotting functions. 
-  The plotting behavior is not changed, but using `skgstat.plotting.backend`, the used plotting library
+- [plotting] a new submodule is introduced: :py:mod:`skgstat.plotting`. This contains all plotting functions. 
+  The plotting behavior is not changed, but using :func:`skgstat.plotting.backend`, the used plotting library
   can be switched from `matplotlib` to `plotly`
 - [stmodels] some code cleanup
 - [SpaceTimeVariogram] finally can fit the product-sum model to the experimental variogram
