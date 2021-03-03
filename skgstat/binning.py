@@ -117,7 +117,7 @@ def auto_derived_lags(distances, method_name, maxlag):
     return edges, len(edges)
 
 
-def kmeans(distances, n, maxlag):
+def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
     """KMeans binning
     .. versionadded:: 0.3.9
 
@@ -140,6 +140,15 @@ def kmeans(distances, n, maxlag):
     bin_edges : numpy.ndarray
         The **upper** bin edges of the lag classes
 
+    Note
+    ----
+    The `KMeans <sklearn.cluster.KMeans>` that is used under the hood is not
+    a deterministic algorithm, as the starting cluster centroids are seeded
+    randomly. This can yield slightly different results on reach run.
+    Thus, for this application, the random_state on KMeans is fixed to a
+    specific value. You can change the seed by passing another seed to
+    `Variogram <skgstat.Variogram>` as `binning_random_state`. 
+
     """
     # maxlags largher than maximum separating distance will be ignored
     if maxlag is None or maxlag > np.nanmax(distances):
@@ -149,7 +158,7 @@ def kmeans(distances, n, maxlag):
     d = distances[np.where(distances <= maxlag)]
 
     # cluster the filtered distances
-    km = KMeans(n_clusters=n).fit(d.reshape(-1, 1))
+    km = KMeans(n_clusters=n, random_state=binning_random_state).fit(d.reshape(-1, 1))
 
     # get the centers
     _centers = np.sort(km.cluster_centers_.flatten())

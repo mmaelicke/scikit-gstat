@@ -510,7 +510,10 @@ class Variogram(object):
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
         elif bin_func.lower() == 'kmeans':
-            self._bin_func = binning.kmeans
+            # define a helper to pass kwargs
+            def wrapper(distance, n, maxlag):
+                return binning.kmeans(distance, n, maxlag, **self._kwargs)
+            self._bin_func = wrapper
         elif bin_func.lower() == 'ward':
             self._bin_func = binning.ward
         elif isinstance(bin_func, str):

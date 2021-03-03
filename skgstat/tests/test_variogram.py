@@ -160,11 +160,17 @@ class TestVariogramArguments(unittest.TestCase):
         return True
 
     def test_binning_kmeans_method(self):
-        V = Variogram(self.c, self.v, n_lags=6, bin_func='kmeans')
+        V = Variogram(
+            self.c,
+            self.v,
+            n_lags=6,
+            bin_func='kmeans',
+            binning_random_state=1306
+        )
 
         assert_array_almost_equal(
             V.bins,
-            np.array([2.5, 7.7, 12.9, 18.1, 23.7, 30.1]),
+            np.array([2.5, 7.7, 12.9, 18.1, 23.7, 30.3]),
             decimal=1
         )
 
