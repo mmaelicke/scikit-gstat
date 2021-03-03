@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.3.9
+=============
+- [binning] added `kmeans <skgstat.binning.kmeans>` and `ward <skgstat.binning.ward>` for forming
+  non-equidistant lag classes based on a distance matrix clustering
+
 Version 0.3.8
 =============
 - [plotting] minor bugfixes in plotting routines (wrong arguments, pltting issues)
