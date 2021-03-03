@@ -6,6 +6,8 @@ Version 0.3.9
 =============
 - [binning] added `kmeans <skgstat.binning.kmeans>` and `ward <skgstat.binning.ward>` for forming
   non-equidistant lag classes based on a distance matrix clustering
+- [Kriging] Kriging now stores the last interpolated field as `z`. This is the first of a few changes
+  in future releases, which will ultimately add some plotting methods to Kriging.
 
 Version 0.3.8
 =============
