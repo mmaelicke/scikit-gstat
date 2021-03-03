@@ -113,6 +113,7 @@ class OrdinaryKriging:
         # coordinates and semivariance function
         self.coords, self.values = self._get_coordinates_and_values()
         self.gamma_model = self.V.fitted_model
+        self.z = None
 
         # calculation mode; self.range has to be initialized
         self._mode = mode
@@ -302,6 +303,9 @@ class OrdinaryKriging:
         if self.ill_matrix > 0:
             print('Warning: %d kriging matrices were ill-conditioned.'
                   ' The result may not be accurate.' % self.ill_matrix)
+
+        # store the field in the instance itself
+        self.z = np.array(z)
 
         return np.array(z)
 
