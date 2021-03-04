@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.3.10 [RC]
+===================
+- [binning] added a median aggregation option to :func:`ward <skgstat.binning.ward>`. This can be 
+  enabled by setting `binning_agg_func` to `'median'`. The cluster centroids will be derived from 
+  the members median value, instead of mean value.
+
 Version 0.3.9
 =============
 - [binning] added :func:`kmeans <skgstat.binning.kmeans>` and :func:`ward <skgstat.binning.ward>` for forming
