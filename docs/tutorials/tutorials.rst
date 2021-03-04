@@ -15,3 +15,4 @@ while the tutorials are focused on code.
     02_variogram_models
     03_estimators
     04_Plotting
+    05_binning
