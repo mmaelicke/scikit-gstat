@@ -76,7 +76,7 @@ def uniform_count_lags(distances, n, maxlag):
 
 def auto_derived_lags(distances, method_name, maxlag):
     """Derive bins automatically
-    .. vserionadded:: 0.3.8
+    .. versionadded:: 0.3.8
 
     Uses `histogram_bin_edges <numpy.histogram_bin_edges>` to derive the
     lag classes automatically. Supports any method supported by
@@ -170,7 +170,7 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
     return edges, None
 
 
-def ward(distances, n, maxlag):
+def ward(distances, n, maxlag, **kwargs):
     """Agglomerative binning
     .. versionadded:: 0.3.9
 
@@ -207,8 +207,14 @@ def ward(distances, n, maxlag):
     # cluster the filtered distances
     w = AgglomerativeClustering(linkage='ward', n_clusters=n).fit(d.reshape(-1, 1))
 
+    # get the aggregation function
+    if kwargs.get('binning_agg_func', False) == 'median':
+        agg = np.median
+    else:
+        agg = np.mean
+
     # get the centers
-    _centers = np.sort([np.mean(d[np.where(w.labels_ == i)[0]]) for i in np.unique(w.labels_)])
+    _centers = np.sort([agg(d[np.where(w.labels_ == i)[0]]) for i in np.unique(w.labels_)])
 
     # build the upper edges
     bounds = zip([0] + list(_centers)[:-1], _centers)

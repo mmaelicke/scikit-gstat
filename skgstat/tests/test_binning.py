@@ -132,6 +132,16 @@ class TestClusteringBins(unittest.TestCase):
             decimal=1
         )
 
+    def test_ward_median(self):
+        np.random.seed(1312)
+        bins, _ = ward(np.random.gamma(10, 40, 500), 6, None, binning_agg_func='median')
+
+        assert_array_almost_equal(
+            np.array([126.2, 287.8, 354.6, 421.7, 517., 643.1]),
+            bins,
+            decimal=1
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
