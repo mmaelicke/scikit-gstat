@@ -1123,11 +1123,22 @@ class Variogram(object):
 
 
         # Switch the method
+        # wrap the model to include or exclude the nugget
+        if self.use_nugget:
+            def wrapped(*args):
+                return self._model(*args)
+        else:
+            def wrapped(*args):
+                args = list(args)
+                args.append(0)
+                return self._model(*args)
+
         # Trust Region Reflective
         if self.fit_method == 'trf':
             bounds = (0, self.__get_fit_bounds(x, y))
             self.cof, self.cov = curve_fit(
-                self._model,
+#                self._model,
+                wrapped,
                 _x, _y,
                 method='trf',
                 sigma=self.fit_sigma,
@@ -1139,15 +1150,38 @@ class Variogram(object):
         # Levenberg-Marquardt
         elif self.fit_method == 'lm':
             self.cof, self.cov = curve_fit(
-                self.model,
+#                self.model,
+                wrapped,
                 _x, _y,
                 method='lm',
                 sigma=self.fit_sigma,
                 **kwargs
             )
 
+        # manual fitting
+        elif self.fit_method == 'manual':
+            r = kwargs.get('range', self._kwargs.get('fit_range'))
+            s = kwargs.get('sill', self._kwargs.get('fit_sill'))
+
+            # if not given raise an AttributeError
+            if r is None or s is None:
+                raise AttributeError('For manual fitting, you need to pass the \
+                    variogram parameters either to fit or to the Variogram \
+                    instance.\n parameter need to be prefixed with fit_ if \
+                    passed to __init__.')
+            n = kwargs.get('nugget', self._kwargs.get('fit_nugget', 0.0))
+
+            # check if a s parameter is needed
+            if self._model.__name__ in ('stable', 'matern'):
+                s2 = kwargs.get('shape', self._kwargs.get('fit_shape', 2.0))
+
+                # set
+                self.cof = [r, s, n, s2]
+            else:
+                self.cog = [r, s, n]
+
         else:
-            raise ValueError("fit method has to be one of ['trf', 'lm']")
+            raise ValueError("fit method has to be one of ['harmonize', 'trf', 'lm']")
 
     def transform(self, x):
         """Transform
@@ -1384,7 +1418,8 @@ class Variogram(object):
 
         # if use_nugget is True add the nugget
         if self.use_nugget:
-            bounds.append(0.99)
+#            bounds.append(0.99)
+            bounds.append(0.99*np.nanmax(y))
 
         return bounds
 
