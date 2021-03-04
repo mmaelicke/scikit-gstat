@@ -180,6 +180,20 @@ class Variogram(object):
 
             If the `estimator <skgstat.Variogram.estimator>` is set to 
             `'entropy'` this argument sets the percentile to be used.
+        binning_random_state : int, None
+            .. versionadded:: 0.3.9
+
+            If :func:`bin_func <skgstat.Variogram.set_bin_func>` is `'kmeans'`
+            this can overwrite the seed for the initial guess of the cluster
+            centroids. Note, that K-Means is not deterministic and is therefore
+            seeded to 42 here. You can pass `None` to disable this behavior,
+            but use it with care, as you will get different results.
+        binning_agg_func : str
+            .. versionadded:: 0.3.10
+
+            If :func:`bin_func <skgstat.Variogram.set_bin_func>` is `'ward'`
+            this keyword argument can switch from default mean aggregation to
+            median aggregation for calculating the cluster centroids.
 
         """
         # Before we do anything else, make kwargs available
@@ -466,9 +480,9 @@ class Variogram(object):
         using Doane's extension to Sturge's rule [104]_:
 
         .. math::
-            n = 1 + \log_{2}(n) + \log_2(1 + \frac{|g|}{\sigma})
-            g = E[(\frac{x - \mu}{\sigma})^3]
-            \sigma = \sqrt{\frac{6(n - 2)}{(n + 1)(n + 3)}}
+            n = 1 + \log_{2}(s) + \log_2\left(1 + \frac{|g|}{k}\right)
+            g = E\left[\left(\frac{x - \mu_g}{\sigma}\right)^3\right]
+            k = \sqrt{\frac{6(s - 2)}{(s + 1)(s + 3)}}
 
         **`'kmeans'`**: This method will search for `n` clusters in the
         distance matrix. The cluster centroids are used to calculate the
