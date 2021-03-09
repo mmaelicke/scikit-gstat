@@ -416,13 +416,6 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         for x, y in zip(sigs, self.V.fit_sigma):
             self.assertEqual(x, y)
 
-        # test parameter estimated
-        self.V.fit()
-        assert_array_almost_equal(
-            self.V.parameters,
-            [24.008, 17.083, 0.99], decimal=3
-        )
-
     def test_fit_sigma_raises_AttributeError(self):
         self.V.fit_sigma = (0, 1, 2)
 
@@ -456,7 +449,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         # test parameters:
         self.V.fit()
         assert_array_almost_equal(
-            self.V.parameters, [25.077, 17.393, 0.925], decimal=3
+            self.V.parameters, [13., 0.3, 18.], decimal=1
         )
 
     def test_fit_sigma_exp(self):
@@ -469,7 +462,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.7, 1.], decimal=1
+            self.V.parameters, [25., 0.2, 18.5], decimal=1
         )
 
     def test_fit_sigma_sqrt(self):
@@ -482,7 +475,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [23., 17.,  1.], decimal=1
+            self.V.parameters, [19.7, 1.5,  16.4], decimal=1
         )
 
     def test_fit_sigma_sq(self):
@@ -495,7 +488,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+            self.V.parameters, [5.4, 0.1,  18.5], decimal=1
         )
     
     def test_fit_sigma_on_the_fly(self):
@@ -508,7 +501,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+            self.V.parameters, [5.4, 0.1,  18.5], decimal=1
         )
 
     def test_fit_lm(self):
@@ -520,9 +513,11 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )
 
     def test_fitted_model(self):
+        self.V.fit_method = 'trf'
+        self.V.fit_sigma = None
         fun = self.V.fitted_model
 
-        result = [0.99, 7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         assert_array_almost_equal(
             result, list(map(fun, np.arange(0, 20, 5))),
