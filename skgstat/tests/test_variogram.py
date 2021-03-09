@@ -533,15 +533,14 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             self.V.fit(method='unsupported')
 
-        self.assertEqual(
-            "fit method has to be one of ['trf', 'lm']",
-            str(e.exception)
+        self.assertTrue(
+            "fit method has to be one of" in str(e.exception)
         )
-  
+
     def test_implicit_run_fit_fitted_model(self):
         self.V.fit_sigma = None
         self.V.fit_method = 'trf'
-        result = [0.99,  7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # remove cof
         self.V.cof = None
@@ -556,7 +555,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
     def test_implicit_run_fit_transform(self):
         self.V.fit_sigma = None
         self.V.fit_method = 'trf'
-        result = [0.99,  7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # test on transform
         self.V.cof = None
