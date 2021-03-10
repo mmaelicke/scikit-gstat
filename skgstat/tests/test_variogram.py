@@ -505,11 +505,17 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )
 
     def test_fit_lm(self):
-        self.V.fit(method='lm', sigma='sqrt')
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=8, fit_method='lm'
+        )
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [1., 17., 1.], decimal=0
+            V.parameters, [162.3, 0.5, 0.8], decimal=1
         )
 
     def test_fitted_model(self):
