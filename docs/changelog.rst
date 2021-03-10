@@ -7,11 +7,11 @@ Version 0.3.10
 - [binning] added a median aggregation option to :func:`ward <skgstat.binning.ward>`. This can be 
   enabled by setting `binning_agg_func` to `'median'`. The cluster centroids will be derived from 
   the members median value, instead of mean value.
-- [Variogram] added `fit_method='ml' <skgstat.Variogram.fit_method>` - a maximum likelihood fitting 
+- [Variogram] added :func:`fit_method='ml' <skgstat.Variogram.fit_method>` - a maximum likelihood fitting 
   procedure to fit the theoretical variogram to the experimental
-- [Variogram] added `fit_method='manual' <skgstat.Variogram.fit_method>`. This is a manual fitting 
+- [Variogram] added :func:`fit_method='manual' <skgstat.Variogram.fit_method>`. This is a manual fitting 
   method that takes the variogram parameters either at instantiation prefixed by `fit_`, or as 
-  keyword arguments by `fit <skgstat.Variogram.fit>`. 
+  keyword arguments by :func:`fit <skgstat.Variogram.fit>`. 
 - [Variogram] the manual fitting method will preseve the previous parameters, if the Variogram was 
   fitted before and the fitting parameters are not manually overwritten.
 
