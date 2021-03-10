@@ -1107,7 +1107,12 @@ class Variogram(object):
         scipy.optimize.least_squares
 
         """
-        # TODO: the kwargs need to be preserved somehow
+        # store the old cof
+        if self.cof is None:
+            old_params = {}
+        else:
+            old_params = self.describe()
+
         # delete the last cov and cof
         self.cof = None
         self.cov = None
@@ -1144,7 +1149,6 @@ class Variogram(object):
             # set the params
             self.cof = [r, s, n]
             return
-
 
         # Switch the method
         # wrap the model to include or exclude the nugget
@@ -1212,8 +1216,9 @@ class Variogram(object):
 
         # manual fitting
         elif self.fit_method == 'manual':
-            r = kwargs.get('range', self._kwargs.get('fit_range'))
-            s = kwargs.get('sill', self._kwargs.get('fit_sill'))
+            # TODO: here, the Error could only be raises if cof was None so far
+            r = kwargs.get('range', self._kwargs.get('fit_range', old_params.get('effective_range')))
+            s = kwargs.get('sill', self._kwargs.get('fit_sill', old_params.get('sill')))
 
             # if not given raise an AttributeError
             if r is None or s is None:
@@ -1221,13 +1226,16 @@ class Variogram(object):
                     variogram parameters either to fit or to the Variogram \
                     instance.\n parameter need to be prefixed with fit_ if \
                     passed to __init__.')
-            
+
             # get the nugget
-            n = kwargs.get('nugget', self._kwargs.get('fit_nugget', 0.0))
+            n = kwargs.get('nugget', self._kwargs.get('fit_nugget', old_params.get('nugget', 0.0)))
 
             # check if a s parameter is needed
             if self._model.__name__ in ('stable', 'matern'):
-                s2 = kwargs.get('shape', self._kwargs.get('fit_shape', 2.0))
+                if self._model.__name__ == 'stable':
+                    s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('shape',2.0)))
+                if self._model.__name__ == 'matern':
+                    s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('smoothness', 2.0)))
 
                 # set
                 self.cof = [r, s, s2, n]

@@ -637,10 +637,25 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
     def test_manual_raises_missing_params(self):
         with self.assertRaises(AttributeError) as e:
-            self.V.fit_method = 'manual'
-            self.V.fit()
+            Variogram(self.c, self.v, fit_method='manual')
+            self.assertTrue('For manual fitting' in str(e.exception))
 
-            self.assertTrue('For manual fitting' in str(e))      
+    def test_manual_preserve_params(self):
+        V = Variogram(self.c, self.v, fit_method='trf', n_lags=8)
+        params = V.parameters
+
+        # switch fit method
+        V.fit_method = 'manual'
+        V.fit(sill=14)
+
+        # expected output
+        params[1] = 14.
+
+        assert_array_almost_equal(
+            V.parameters,
+            params,
+            decimal=1
+        )      
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
