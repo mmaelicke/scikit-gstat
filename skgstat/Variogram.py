@@ -13,6 +13,7 @@ from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
 from skgstat import plotting
+from skgstat.util import shannon_entropy
 
 
 class Variogram(object):
@@ -869,8 +870,11 @@ class Variogram(object):
         cost function, which divides the residuals by their uncertainty.
 
         When setting fit_sigma, the array of uncertainties itself can be
-        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq']. The
-        parameters described below refer to the setter of this property.
+        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy']. 
+        The parameters described below refer to the setter of this property.
+
+        .. versionchanged:: 0.3.11
+            added the 'entropy' option.
 
         Parameters
         ----------
@@ -889,6 +893,8 @@ class Variogram(object):
                 :math:`w = \sqrt(w_n)`
               * **sigma='sq'**: The residuals get weighted by the function:
                 :math:`w = w_n^2`
+              * **sigma='entropy'**: Calculates the Shannon Entropy as 
+                intrinsic uncertainty of each lag class.
 
         Returns
         -------
@@ -937,9 +943,24 @@ class Variogram(object):
         # squared function of distance
         elif self._fit_sigma == 'sq':
             return (self.bins / np.max(self.bins)) ** 2
+
+        # entropy
+        elif self._fit_sigma == 'entropy':
+            # get the binning using scotts rule
+            bins = np.histogram_bin_edges(self.distance, 'scott')
+
+            # get the maximum entropy
+#            hmax = np.log2(len(self.distance))
+
+            # apply the entropy
+            h = np.asarray([shannon_entropy(grp, bins) for grp in self.lag_classes() if len(grp) > 0])
+            return 1. / h
+
         else:
-            raise ValueError("fit_sigma is not understood. It has to be an " +
-                             "array or one of ['linear', 'exp', 'sqrt', 'sq'].")
+            raise ValueError(
+                "fit_sigma is not understood. It has to be an " +
+                "array or one of ['linear', 'exp', 'sqrt', 'sq', 'entropy']."
+            )
 
     @fit_sigma.setter
     def fit_sigma(self, sigma):
