@@ -2,14 +2,13 @@
 Variogram class
 """
 import copy
-import os
 import warnings
 
 import numpy as np
 from pandas import DataFrame
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, minimize, OptimizeWarning
 from scipy.spatial.distance import pdist, squareform
+from scipy import stats 
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
@@ -118,6 +117,9 @@ class Variogram(object):
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
         fit_method : str
+            .. versionchanged:: 0.3.10
+                Added 'ml' and 'custom'
+
             String identifying the method to be used for fitting the
             theoretical variogram function to the experimental. More info is
             given in the Variogram.fit docs. Can be one of:
@@ -128,6 +130,15 @@ class Variogram(object):
                 * 'trf': Trust Region Reflective function for non-linear
                   constrained problems. The class will set the boundaries
                   itself. This is the default function.
+                * 'ml': Maximum-Likelihood estimation. With the current implementation
+                  only the Nelder-Mead solver for unconstrained problems is
+                  implemented. This will estimate the variogram parameters from
+                  a Gaussian parameter space by minimizing the negative
+                  log-likelihood.
+                * 'manual': Manual fitting. You can set the range, sill and
+                  nugget either directly to the :func:`fit <skgstat.Variogram.fit>`
+                  function, or as `fit_` prefixed keyword arguments on
+                  Variogram instantiation.
 
         fit_sigma : numpy.ndarray, str
             Defaults to None. The sigma is used as measure of uncertainty
@@ -1052,6 +1063,9 @@ class Variogram(object):
         overwritten. All other keyword arguments will be passed to
         scipy.optimize.curve_fit function.
 
+        .. versionchanged:: 0.3.10
+            added 'ml' and 'custom' method.
+
         Parameters
         ----------
         force : bool
@@ -1060,12 +1074,22 @@ class Variogram(object):
             False.
         method : string
             A string identifying one of the implemented fitting procedures.
-            Can be one of ['lm', 'trf']:
+            Can be one of:
 
               * lm: Levenberg-Marquardt algorithms implemented in
                 scipy.optimize.leastsq function.
               * trf: Trust Region Reflective algorithm implemented in
                 scipy.optimize.least_squares(method='trf')
+              * 'ml': Maximum-Likelihood estimation. With the current implementation
+                only the Nelder-Mead solver for unconstrained problems is
+                implemented. This will estimate the variogram parameters from
+                a Gaussian parameter space by minimizing the negative
+                log-likelihood.
+              * 'manual': Manual fitting. You can set the range, sill and
+                nugget either directly to the :func:`fit <skgstat.Variogram.fit>`
+                function, or as `fit_` prefixed keyword arguments on
+                Variogram instantiation.
+
 
         sigma : string, array
             Uncertainty array for the bins. Has to have the same dimension as
@@ -1077,13 +1101,18 @@ class Variogram(object):
 
         See Also
         --------
-        scipy.optimize
+        scipy.optimize.minimize
         scipy.optimize.curve_fit
         scipy.optimize.leastsq
         scipy.optimize.least_squares
 
         """
-        # TODO: the kwargs need to be preserved somehow
+        # store the old cof
+        if self.cof is None:
+            old_params = {}
+        else:
+            old_params = self.describe()
+
         # delete the last cov and cof
         self.cof = None
         self.cov = None
@@ -1121,17 +1150,27 @@ class Variogram(object):
             self.cof = [r, s, n]
             return
 
-
         # Switch the method
+        # wrap the model to include or exclude the nugget
+        if self.use_nugget:
+            def wrapped(*args):
+                return self._model(*args)
+        else:
+            def wrapped(*args):
+                return self._model(*args, 0)
+
+        # get p0
+        bounds = (0, self.__get_fit_bounds(x, y))
+        p0 = np.asarray(bounds[1])
+
         # Trust Region Reflective
         if self.fit_method == 'trf':
-            bounds = (0, self.__get_fit_bounds(x, y))
             self.cof, self.cov = curve_fit(
-                self._model,
+                wrapped,
                 _x, _y,
                 method='trf',
                 sigma=self.fit_sigma,
-                p0=bounds[1],
+                p0=p0,
                 bounds=bounds,
                 **kwargs
             )
@@ -1139,15 +1178,72 @@ class Variogram(object):
         # Levenberg-Marquardt
         elif self.fit_method == 'lm':
             self.cof, self.cov = curve_fit(
-                self.model,
+                wrapped,
                 _x, _y,
                 method='lm',
                 sigma=self.fit_sigma,
+                p0=p0,
                 **kwargs
             )
 
+        # maximum-likelihood
+        elif self.fit_method == 'ml':
+            # check if the probabilities must be weighted
+            if self.fit_sigma is None:
+                sigma = np.ones(self.bins.size)
+            else:
+                sigma = 1 / self.fit_sigma
+
+            # define the loss function to be minimized
+            def ml(params):
+                # predict
+                pred = [wrapped(_, *params) for _ in _x]
+
+                # get the probabilities of _y
+                p = [stats.norm.logpdf(_p, loc=o, scale=1.) for _p, o in zip(pred, _y)]
+
+                # weight the probs
+                return - np.sum(p * sigma)
+
+            # apply maximum likelihood estimation by minimizing ml
+            result = minimize(ml, p0 * 0.5, method='SLSQP', bounds=[(0, _) for _ in p0])
+
+            if not result.success:  # pragma: no cover
+                raise OptimizeWarning('Maximum Likelihood could not estimate parameters.')
+            else:
+                # set the result
+                self.cof = result.x
+
+        # manual fitting
+        elif self.fit_method == 'manual':
+            # TODO: here, the Error could only be raises if cof was None so far
+            r = kwargs.get('range', self._kwargs.get('fit_range', old_params.get('effective_range')))
+            s = kwargs.get('sill', self._kwargs.get('fit_sill', old_params.get('sill')))
+
+            # if not given raise an AttributeError
+            if r is None or s is None:
+                raise AttributeError('For manual fitting, you need to pass the \
+                    variogram parameters either to fit or to the Variogram \
+                    instance.\n parameter need to be prefixed with fit_ if \
+                    passed to __init__.')
+
+            # get the nugget
+            n = kwargs.get('nugget', self._kwargs.get('fit_nugget', old_params.get('nugget', 0.0)))
+
+            # check if a s parameter is needed
+            if self._model.__name__ in ('stable', 'matern'):
+                if self._model.__name__ == 'stable':
+                    s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('shape',2.0)))
+                if self._model.__name__ == 'matern':
+                    s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('smoothness', 2.0)))
+
+                # set
+                self.cof = [r, s, s2, n]
+            else:
+                self.cof = [r, s, n]
+
         else:
-            raise ValueError("fit method has to be one of ['trf', 'lm']")
+            raise ValueError("fit method has to be one of ['trf', 'lm', 'ml', 'custom']")
 
     def transform(self, x):
         """Transform
@@ -1384,7 +1480,7 @@ class Variogram(object):
 
         # if use_nugget is True add the nugget
         if self.use_nugget:
-            bounds.append(0.99)
+            bounds.append(0.99*np.nanmax(y))
 
         return bounds
 

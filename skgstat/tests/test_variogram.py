@@ -416,13 +416,6 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         for x, y in zip(sigs, self.V.fit_sigma):
             self.assertEqual(x, y)
 
-        # test parameter estimated
-        self.V.fit()
-        assert_array_almost_equal(
-            self.V.parameters,
-            [24.008, 17.083, 0.99], decimal=3
-        )
-
     def test_fit_sigma_raises_AttributeError(self):
         self.V.fit_sigma = (0, 1, 2)
 
@@ -456,7 +449,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         # test parameters:
         self.V.fit()
         assert_array_almost_equal(
-            self.V.parameters, [25.077, 17.393, 0.925], decimal=3
+            self.V.parameters, [13., 0.3, 18.], decimal=1
         )
 
     def test_fit_sigma_exp(self):
@@ -469,7 +462,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.7, 1.], decimal=1
+            self.V.parameters, [25., 0.2, 18.5], decimal=1
         )
 
     def test_fit_sigma_sqrt(self):
@@ -482,7 +475,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [23., 17.,  1.], decimal=1
+            self.V.parameters, [19.7, 1.5,  16.4], decimal=1
         )
 
     def test_fit_sigma_sq(self):
@@ -495,7 +488,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+            self.V.parameters, [5.4, 0.1,  18.5], decimal=1
         )
     
     def test_fit_sigma_on_the_fly(self):
@@ -508,21 +501,29 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+            self.V.parameters, [5.4, 0.1,  18.5], decimal=1
         )
 
     def test_fit_lm(self):
-        self.V.fit(method='lm', sigma='sqrt')
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=8, fit_method='lm'
+        )
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [1., 17., 1.], decimal=0
+            V.parameters, [162.3, 0.5, 0.8], decimal=1
         )
 
     def test_fitted_model(self):
+        self.V.fit_method = 'trf'
+        self.V.fit_sigma = None
         fun = self.V.fitted_model
 
-        result = [0.99, 7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         assert_array_almost_equal(
             result, list(map(fun, np.arange(0, 20, 5))),
@@ -533,15 +534,14 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             self.V.fit(method='unsupported')
 
-        self.assertEqual(
-            "fit method has to be one of ['trf', 'lm']",
-            str(e.exception)
+        self.assertTrue(
+            "fit method has to be one of" in str(e.exception)
         )
-  
+
     def test_implicit_run_fit_fitted_model(self):
         self.V.fit_sigma = None
         self.V.fit_method = 'trf'
-        result = [0.99,  7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # remove cof
         self.V.cof = None
@@ -556,7 +556,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
     def test_implicit_run_fit_transform(self):
         self.V.fit_sigma = None
         self.V.fit_method = 'trf'
-        result = [0.99,  7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # test on transform
         self.V.cof = None
@@ -577,6 +577,85 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             [np.NaN, 0.57, 1.01, 1.12, 1.15, 1.15, 1.15, 1.15, 1.21, 1.65],
             decimal=2
         )
+
+    def test_ml_default(self):
+        # load data sample
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=15,
+            fit_method='ml'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, np.array([41.18, 1.2, 0.]), decimal=2
+        )
+
+    def test_ml_sq_sigma(self):
+        # load data sample
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=15,
+            fit_method='ml',
+            fit_sigma='sq'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, np.array([42.72, 1.21, 0.]), decimal=2
+        )
+
+    def test_manual_fit(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            fit_method='manual',
+            model='spherical',
+            fit_range=10.,
+            fit_sill=5.
+        )
+
+        self.assertEqual(V.parameters, [10., 5., 0.0])
+    
+    def test_manual_fit_change(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            fit_method='trf',
+            model='matern',
+        )
+
+        # switch to manual fit
+        V.fit_method = 'manual'
+        V.fit(range=10, sill=5, shape=3)
+
+        self.assertEqual(V.parameters, [10., 5., 3., 0.0])
+
+    def test_manual_raises_missing_params(self):
+        with self.assertRaises(AttributeError) as e:
+            Variogram(self.c, self.v, fit_method='manual')
+            self.assertTrue('For manual fitting' in str(e.exception))
+
+    def test_manual_preserve_params(self):
+        V = Variogram(self.c, self.v, fit_method='trf', n_lags=8)
+        params = V.parameters
+
+        # switch fit method
+        V.fit_method = 'manual'
+        V.fit(sill=14)
+
+        # expected output
+        params[1] = 14.
+
+        assert_array_almost_equal(
+            V.parameters,
+            params,
+            decimal=1
+        )      
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
