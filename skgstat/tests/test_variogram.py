@@ -578,6 +578,70 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             decimal=2
         )
 
+    def test_ml_default(self):
+        # load data sample
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=15,
+            fit_method='ml'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, np.array([41.18, 1.2, 0.]), decimal=2
+        )
+
+    def test_ml_sq_sigma(self):
+        # load data sample
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=15,
+            fit_method='ml',
+            fit_sigma='sq'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, np.array([42.72, 1.21, 0.]), decimal=2
+        )
+
+    def test_manual_fit(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            fit_method='manual',
+            model='spherical',
+            fit_range=10.,
+            fit_sill=5.
+        )
+
+        self.assertEqual(V.parameters, [10., 5., 0.0])
+    
+    def test_manual_fit_change(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            fit_method='trf',
+            model='matern',
+        )
+
+        # switch to manual fit
+        V.fit_method = 'manual'
+        V.fit(range=10, sill=5, shape=3)
+
+        self.assertEqual(V.parameters, [10., 5., 3., 0.0])
+
+    def test_manual_raises_missing_params(self):
+        with self.assertRaises(AttributeError) as e:
+            self.V.fit_method = 'manual'
+            self.V.fit()
+
+            self.assertTrue('For manual fitting' in str(e))      
+
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
     def setUp(self):

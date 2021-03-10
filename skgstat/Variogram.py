@@ -2,15 +2,13 @@
 Variogram class
 """
 import copy
-import os
 import warnings
 
 import numpy as np
 from pandas import DataFrame
-import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit, minimize, OptimizeWarning
 from scipy.spatial.distance import pdist, squareform
-from scipy import stats
+from scipy import stats 
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
@@ -1159,7 +1157,7 @@ class Variogram(object):
 
         # get p0
         bounds = (0, self.__get_fit_bounds(x, y))
-        p0 = bounds[1]
+        p0 = np.asarray(bounds[1])
 
         # Trust Region Reflective
         if self.fit_method == 'trf':
@@ -1186,8 +1184,6 @@ class Variogram(object):
 
         # maximum-likelihood
         elif self.fit_method == 'ml':
-            raise NotImplementedError
-
             # check if the probabilities must be weighted
             if self.fit_sigma is None:
                 sigma = np.ones(self.bins.size)
@@ -1197,19 +1193,18 @@ class Variogram(object):
             # define the loss function to be minimized
             def ml(params):
                 # predict
-                pred = wrapped(_x, *params)
+                pred = [wrapped(_, *params) for _ in _x]
 
                 # get the probabilities of _y
-                p = stats.norm.logpdf(_y, loc=np.mean(pred), scale=np.std(pred))
+                p = [stats.norm.logpdf(_p, loc=o, scale=1.) for _p, o in zip(pred, _y)]
 
                 # weight the probs
                 return - np.sum(p * sigma)
 
             # apply maximum likelihood estimation by minimizing ml
-            # TODO: get the solver from kwargs
-            result = minimize(ml, p0, method='Nelder-Mead')
+            result = minimize(ml, p0 * 0.5, method='SLSQP', bounds=[(0, _) for _ in p0])
 
-            if not result.success: # pragma: no cover
+            if not result.success:  # pragma: no cover
                 raise OptimizeWarning('Maximum Likelihood could not estimate parameters.')
             else:
                 # set the result
@@ -1226,6 +1221,8 @@ class Variogram(object):
                     variogram parameters either to fit or to the Variogram \
                     instance.\n parameter need to be prefixed with fit_ if \
                     passed to __init__.')
+            
+            # get the nugget
             n = kwargs.get('nugget', self._kwargs.get('fit_nugget', 0.0))
 
             # check if a s parameter is needed
@@ -1233,9 +1230,9 @@ class Variogram(object):
                 s2 = kwargs.get('shape', self._kwargs.get('fit_shape', 2.0))
 
                 # set
-                self.cof = [r, s, n, s2]
+                self.cof = [r, s, s2, n]
             else:
-                self.cog = [r, s, n]
+                self.cof = [r, s, n]
 
         else:
             raise ValueError("fit method has to be one of ['trf', 'lm', 'ml', 'custom']")
