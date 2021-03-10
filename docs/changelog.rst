@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 0.3.11
+==============
+- [Variogram] A new method is introduced to calculate fitting weights. Works for all but the manual fit
+  method. By setting :func:`fit_sigma='entropy' <skgstat.Variogram.fit_sigma>`, the fitting weights will
+  be adjusted according to the lag classes' Shannon entropy. That will ignore lag classes of high
+  uncertainty and emphasize lags of low uncertainty.
+
 Version 0.3.10
 ==============
 - [binning] added a median aggregation option to :func:`ward <skgstat.binning.ward>`. This can be 
