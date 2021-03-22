@@ -129,6 +129,40 @@ class TestVariogramArguments(unittest.TestCase):
             decimal=1
         )
 
+    def test_binning_method_stable(self):
+        V = Variogram(self.c, self.v, bin_func='stable_entropy')
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
+            decimal=1
+        )
+
+    def test_binning_method_stable_maxiter(self):
+        # increase maxiter - the result should stay the same
+        V = Variogram(self.c, self.v, bin_func='stable_entropy', binning_maxiter=20000)
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
+            decimal=1
+        )
+
+    def test_binning_method_stable_fix_bins(self):
+        # use 50 bins over the sqrt method - this should change the bins
+        V = Variogram(
+            self.c,
+            self.v,
+            bin_func='stable_entropy',
+            binning_entropy_bins=50
+        )
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.2, 8.6, 12.8, 17.1, 21.2, 25.5, 29.3, 33.2, 37.4, 43.]),
+            decimal=1
+        )
+
     def test_binning_change_nlags(self):
         V = Variogram(self.c, self.v, n_lags=5)
 

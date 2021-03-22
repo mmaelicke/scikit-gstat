@@ -434,9 +434,12 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.8
             added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
-        
+
         .. versionchanged:: 0.3.9
             added 'kmeans', 'ward'
+
+        .. versionchanged:: 0.4.0
+            added 'stable_entropy'
 
         Parameters
         ----------
@@ -452,6 +455,7 @@ class Variogram(object):
                 * 'doane'
                 * 'kmeans'
                 * 'ward'
+                * 'stable_entropy'
 
         Returns
         -------
@@ -506,6 +510,15 @@ class Variogram(object):
         merge pairs of clusters until there are only `n` remaining clusters.
         The merging is done by minimizing the variance for the merged cluster.
 
+        **`'stable_entropy'`** will adjust `n` bin edges by minimizing the
+        absolute differences between each lag's Shannon Entropy. This will
+        lead to uneven bin widths. Each lag class value distribution will be
+        of comparable intrinsic uncertainty from an information theoretic
+        point of view, which makes the semi-variances quite comparable.
+        However, it is not guaranteed, that the binning makes any sense
+        from a geostatistical point of view, as the first lags might be way
+        too wide.
+
         See Also
         --------
         Variogram.bin_func
@@ -533,15 +546,25 @@ class Variogram(object):
         # switch the input
         if bin_func.lower() == 'even':
             self._bin_func = binning.even_width_lags
+
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
+
         elif bin_func.lower() == 'kmeans':
             # define a helper to pass kwargs
             def wrapper(distance, n, maxlag):
                 return binning.kmeans(distance, n, maxlag, **self._kwargs)
             self._bin_func = wrapper
+
         elif bin_func.lower() == 'ward':
             self._bin_func = binning.ward
+
+        elif bin_func.lower() == 'stable_entropy':
+            # define a wrapper
+            def wrapper(distances, n, maxlag):
+                return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
+            self._bin_func = wrapper
+
         elif isinstance(bin_func, str):
             # define a helper wrapper
             def wrapper(distances, n, maxlag):
@@ -549,9 +572,11 @@ class Variogram(object):
 
             self._bin_func = wrapper
             self._n_lags = None
+
         elif callable(bin_func):
             self._bin_func = bin_func
             bin_func = 'custom'
+
         else:
             raise AttributeError('bin_func has to be of type string.')
 

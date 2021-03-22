@@ -8,7 +8,8 @@ from skgstat.binning import (
     uniform_count_lags,
     auto_derived_lags,
     kmeans,
-    ward
+    ward,
+    stable_entropy_lags
 )
 
 
@@ -138,6 +139,19 @@ class TestClusteringBins(unittest.TestCase):
 
         assert_array_almost_equal(
             np.array([126.2, 287.8, 354.6, 421.7, 517., 643.1]),
+            bins,
+            decimal=1
+        )
+
+    def test_stable_entropy(self):
+        np.random.seed(1312)
+        d = np.random.gamma(1500, 40, 100)
+
+        # run
+        bins, _ = stable_entropy_lags(d, 6, None)
+
+        assert_array_almost_equal(
+            np.array([10964.6, 21929.3, 32893.9, 43858.6, 54823.2, 69077.2]),
             bins,
             decimal=1
         )
