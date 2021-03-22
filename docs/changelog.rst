@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.4.0
+=============
+
+- [binning] added `'stable_entropy'` option that will optimize the lag class edges to be of comparable Shannon Entropy.
+
 Version 0.3.11
 ==============
 - [Variogram] A new method is introduced to calculate fitting weights. Works for all but the manual fit
