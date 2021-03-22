@@ -30,7 +30,8 @@ In case you use SciKit-GStat in other software or scientific publications,
 please reference this module. It is published and has a DOI. It can be cited
 as:
 
-  Mirko Mälicke, & Helge David Schneider. (2019, November 25). Scikit-GStat 0.2.7: A scipy flavored geostatistical analysis toolbox written in Python. (Version v.0.2.7). Zenodo. http://doi.org/10.5281/zenodo.3552235
+  Mirko Mälicke, & Helge David Schneider. (2021, March 22). mmaelicke/scikit-gstat: Version 0.4 (Version v.0.4.0). 
+    Zenodo. http://doi.org/10.5281/zenodo.4626536
 
 
 
