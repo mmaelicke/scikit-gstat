@@ -31,7 +31,7 @@ please reference this module. It is published and has a DOI. It can be cited
 as:
 
   Mirko Mälicke, & Helge David Schneider. (2021, March 22). mmaelicke/scikit-gstat: A scipy flavoured geostatistical 
-    variogram analysis toolbox (Version v.0.4.0). Zenodo. http://doi.org/10.5281/zenodo.4626536
+  variogram analysis toolbox (Version v.0.4.0). Zenodo. http://doi.org/10.5281/zenodo.4626536
 
 
 Full Documentation
