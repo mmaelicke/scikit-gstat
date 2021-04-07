@@ -8,7 +8,7 @@ import numpy as np
 from pandas import DataFrame
 from scipy.optimize import curve_fit, minimize, OptimizeWarning
 from scipy.spatial.distance import pdist, squareform
-from scipy import stats 
+from scipy import stats
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
@@ -92,7 +92,7 @@ class Variogram(object):
             scipy.spatial.distance.pdist. Additional parameters are not (yet)
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
-        bin_func : str            
+        bin_func : str
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
             .. versionchanged:: 0.3.9
@@ -190,7 +190,7 @@ class Variogram(object):
         percentile : int
             .. versionadded:: 0.3.7
 
-            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the percentile to be used.
         binning_random_state : int, None
             .. versionadded:: 0.3.9
@@ -426,10 +426,10 @@ class Variogram(object):
         Sets a new binning function to be used. The new binning method is set
         by a string identifying the new function to be used. Can be one of:
         ['even', 'uniform', 'fd', 'sturges', 'scott', 'sqrt', 'doane'].
-        If the number of lag classes should be estimated automatically, it is 
+        If the number of lag classes should be estimated automatically, it is
         recommended to use ' sturges' for small, normal distributed locations
         and 'fd' or 'scott' for large datasets, where 'fd' is more robust to
-        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an 
+        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an
         extension of Sturge's rule for non-normal distributed data.
 
         .. versionchanged:: 0.3.8
@@ -532,14 +532,14 @@ class Variogram(object):
 
         References
         ----------
-        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306. 
+        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306.
             https://doi.org/10.1002/wics.35
-        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502. 
+        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502.
             https://doi.org/10.1002/wics.103
-        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as 
-            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie 
+        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as
+            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie
             und verwandte Gebiete 57.4: 453-476.
-        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications. 
+        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications.
             The American Statistician, 30(4), 181-183.
 
         """
@@ -654,7 +654,7 @@ class Variogram(object):
         # else
         else:
             raise ValueError('n_lags has to be a positive integer')
-        
+
         # if there are no errors, store the passed value
         self._n_lags_passed_value = n
 
@@ -757,14 +757,14 @@ class Variogram(object):
             Return the isotonic harmonized experimental variogram.
             This means, the experimental variogram is monotonic after harmonization.
 
-            The harmonization is done using following Hinterding (2003) using 
+            The harmonization is done using following Hinterding (2003) using
             the PAVA algorithm (Barlow and Bartholomew, 1972).
 
             Returns
             -------
             gamma : numpy.ndarray
                 monotonized experimental variogram
-            
+
             References
             ----------
             Barlow, R., D. Bartholomew, et al. (1972): Statistical Interference Under Order Restrictions.
@@ -803,7 +803,7 @@ class Variogram(object):
             return self._dist_func_name(x)
         else:
             return pdist(X=x, metric=self._dist_func_name)
-    
+
     @dist_function.setter
     def dist_function(self, func):
         self.set_dist_function(func=func)
@@ -895,7 +895,7 @@ class Variogram(object):
         cost function, which divides the residuals by their uncertainty.
 
         When setting fit_sigma, the array of uncertainties itself can be
-        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy']. 
+        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy'].
         The parameters described below refer to the setter of this property.
 
         .. versionchanged:: 0.3.11
@@ -918,7 +918,7 @@ class Variogram(object):
                 :math:`w = \sqrt(w_n)`
               * **sigma='sq'**: The residuals get weighted by the function:
                 :math:`w = w_n^2`
-              * **sigma='entropy'**: Calculates the Shannon Entropy as 
+              * **sigma='entropy'**: Calculates the Shannon Entropy as
                 intrinsic uncertainty of each lag class.
 
         Returns
@@ -1005,9 +1005,9 @@ class Variogram(object):
         need to be updated.
 
         .. note::
-            Updating the kwargs does not force a preprocessing circle. 
-            Any affected intermediate result, that might be cached internally, 
-            will not make use of updated kwargs. Make a call to 
+            Updating the kwargs does not force a preprocessing circle.
+            Any affected intermediate result, that might be cached internally,
+            will not make use of updated kwargs. Make a call to
             :func:`preprocessing(force=True) <skgstat.Variogram.preprocessing>`
             to force a clean re-calculation of the Variogram instance.
 
@@ -1451,10 +1451,10 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.6
             replaced the for-loops with :func:`fromiter <numpy.fromiter>`
-        
+
         .. versionchanged:: 0.3.7
-            makes use of `kwargs <skgstat.Variogram._kwargs>` for 
-            specific estimators now 
+            makes use of `kwargs <skgstat.Variogram._kwargs>` for
+            specific estimators now
 
         Returns
         -------
@@ -1470,7 +1470,7 @@ class Variogram(object):
             # we need to use N -1 as we use the last inclusive
             if isinstance(N, int):
                 N -= 1
-            
+
             bins = np.histogram_bin_edges(self.distance, bins=N)
 
             # define the mapper to the estimator function
@@ -1774,26 +1774,26 @@ class Variogram(object):
         Return a dictionary of the variogram parameters.
 
         .. versionchanged:: 0.3.7
-            The describe now returns all init parameters in as the 
+            The describe now returns all init parameters in as the
             `describe()['params']` key and all keyword arguments as
-            `describe()['kwargs']`. This output can be suppressed 
+            `describe()['kwargs']`. This output can be suppressed
             by setting `short=True`.
-        
+
         Parameters
         ----------
         short : bool
-            If `True`, the `'params'` and `'kwargs'` keys will be 
+            If `True`, the `'params'` and `'kwargs'` keys will be
             omitted. Defaults to `False`.
         flat : bool
             If `True`, the `'params'` and `'kwargs'` nested `dict`s
-            will be distributed to the main `dict` to return a 
+            will be distributed to the main `dict` to return a
             flat `dict`. Defaults to `False`
 
         Returns
         -------
         parameters : dict
             Returns fitting parameters of the theoretical variogram
-            model along with the init parameters of the 
+            model along with the init parameters of the
             `Variogram <skgstat.Variogram>` instance.
 
         """
@@ -1921,6 +1921,12 @@ class Variogram(object):
             self._model.__name__: data}
         ).copy()
 
+    def to_gstools(self, **kwargs):
+        """Instantiate a corresponding GSTools CovModel."""
+        from skgstat.interfaces.gstools import skgstat_to_gstools
+
+        return skgstat_to_gstools(self, **kwargs)
+
     def plot(self, axes=None, grid=True, show=True, hist=True):
         """Variogram Plot
 
@@ -1983,14 +1989,14 @@ class Variogram(object):
         Parameters
         ----------
         ax : matplotlib.Axes, plotly.graph_objects.Figure
-            If None, a new plotting Figure will be created. If given, 
-            it has to be an instance of the used plotting backend, which 
+            If None, a new plotting Figure will be created. If given,
+            it has to be an instance of the used plotting backend, which
             will be used to plot on.
         show : boolean
-            If True (default), the `show` method of the Figure will be 
-            called. Can be set to False to prevent duplicated plots in 
+            If True (default), the `show` method of the Figure will be
+            called. Can be set to False to prevent duplicated plots in
             some environments.
-        
+
         Returns
         -------
         fig : matplotlib.Figure, plotly.graph_objects.Figure
@@ -2044,12 +2050,12 @@ class Variogram(object):
 
             .. note::
                 Right now, this is only supported for ``'plotly'`` backend
-   
+
 
         Returns
         -------
         fig : matplotlib.Figure, plotly.graph_objects.Figure
-            The figure produced by the function. Dependends on the 
+            The figure produced by the function. Dependends on the
             current backend.
 
         """
@@ -2060,7 +2066,7 @@ class Variogram(object):
             return plotting.matplotlib_location_trend(self, axes=axes, show=show, **kwargs)
         elif used_backend == 'plotly':
             return plotting.plotly_location_trend(self, fig=axes, show=show, **kwargs)
-        
+
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
 
