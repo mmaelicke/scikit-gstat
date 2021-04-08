@@ -1374,7 +1374,7 @@ class Variogram(object):
         else:
             _x = self._X
         # else calculate the distances
-        self._dist = self.wrapped_distance_function(self._dist_func, _x)
+        self._dist = self.wrapped_distance_function(self._dist_func_name, _x)
 
     def _calc_diff(self, force=False):
         """Calculates the pairwise differences
