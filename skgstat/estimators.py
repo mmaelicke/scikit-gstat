@@ -8,6 +8,8 @@ import numpy as np
 from scipy.special import binom
 from numba import njit, jit
 
+from skgstat.util import shannon_entropy
+
 
 @njit
 def matheron(x):
@@ -57,9 +59,6 @@ def matheron(x):
        Editions Masson et Cie, 212 S., Paris.
 
     """
-    # convert
-#    x = np.asarray(x)
-
     # prevent ZeroDivisionError
     if x.size == 0:
         return np.nan
@@ -113,9 +112,6 @@ def cressie(x):
 
 
     """
-    # convert
-#    x = np.asarray(x)
-
     # get the length
     n = x.size
 
@@ -179,8 +175,6 @@ def dowd(x):
 
     """
     # convert
-#    x = np.asarray(x)
-
     return 2.198 * np.nanmedian(x)**2
 
 
@@ -234,8 +228,6 @@ def genton(x):
         Math. Geol., 30, 213 - 221.
 
     """
-#    x = np.array(x)
-
     # get length
     n = x.size
 
@@ -290,8 +282,6 @@ def minmax(x):
     numpy.float64
 
     """
-#    x = np.asarray(x)
-
     return (np.nanmax(x) - np.nanmin(x)) / np.nanmean(x)
 
 
@@ -319,8 +309,6 @@ def percentile(x, p=50):
     np.float64
 
     """
-#    x = np.asarray(x)
-
     return np.percentile(x, q=p)
 
 
@@ -356,21 +344,8 @@ def entropy(x, bins=None):
     -----
 
     """
-#    x = np.asarray(x)
-
+    # this is actually a bad idea
     if bins is None:
         bins = 15
 
-    # calculate the histogram
-    count = np.histogram(x, bins=bins)[0]
-
-    # get the probability and add 1e-5 to prevent log2 of -inf
-    p = (count / np.sum(count)) + 1e-5
-
-    # map info to p and return the inner product
-    return np.fromiter(map(info, p), dtype=np.float).dot(p)
-
-
-@njit
-def info(p):
-    return - np.log2(p)
+    return shannon_entropy(x, bins)

@@ -131,6 +131,7 @@ class OrdinaryKriging:
         self.values = values.copy()
         self.coords = coordinates
         self.gamma_model = Variogram.fitted_model_function(**variogram)
+        self.z = None
 
         # calculation mode; self.range has to be initialized
         self._mode = mode
@@ -158,9 +159,8 @@ class OrdinaryKriging:
 
     def dist(self, x):
         return Variogram.wrapped_distance_function(self.dist_metric, x)
-
-    @classmethod
-    def _remove_duplicated_coordinates(cls, coords, values):
+               
+    def _get_coordinates_and_values(self):
         """Extract the coordinates and values
 
         The coordinates array is checked for duplicates and only the
@@ -311,6 +311,9 @@ class OrdinaryKriging:
         if self.ill_matrix > 0:
             print('Warning: %d kriging matrices were ill-conditioned.'
                   ' The result may not be accurate.' % self.ill_matrix)
+
+        # store the field in the instance itself
+        self.z = np.array(z)
 
         return np.array(z)
 

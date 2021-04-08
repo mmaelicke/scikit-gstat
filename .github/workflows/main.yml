@@ -49,8 +49,8 @@ jobs:
           python3 setup.py install
       - name: Install Sphinx requirements
         run: pip3 install -r requirements.rtd.txt
-      - name: Upgrade
-        run: sudo apt update && sudo apt -y upgrade
+#      - name: Upgrade
+#        run: sudo apt update && sudo apt -y upgrade
       - name: Install pdflatex
         run: sudo apt install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
       - name: make HTML & LaTeX docs

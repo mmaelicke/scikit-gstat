@@ -48,6 +48,14 @@ def sum(lags, Vx, Vt):
 
     Notes
     -----
+    This model is implemented like:
+
+    .. math::
+        \gamma (h,t) = \gamma_x (h) + \gamma_t (t)
+    
+    Where :math:`\gamma_x(h)` is the spatial marginal variogram and 
+    :math:`\gamma_t(t)` is the temporal marginal variogram.
+
     It is not a good idea to use this model in almost any case, as it assumes
     the covariance field to be isotropic in space and time direction,
     which will hardly be true. Further, it might not be strictly definite as
@@ -100,6 +108,21 @@ def product(lags, Vx, Vt, Cx, Ct):
     gamma : float
         The semi-variance modeled for the given lags.
 
+    Notes
+    -----
+    The product sum model is implemented following [14]_:
+
+    .. math::
+        \gamma (h,t) = C_x * \gamma_t(t) + C_t * \gamma_x(h) - \gamma_x(h) * \gamma_t(t) 
+    
+    Where :math:`\gamma_x(h)` is the spatial marginal variogram and 
+    :math:`\gamma_t(t)` is the temporal marginal variogram.
+
+    References
+    ----------
+    .. [14] De Cesare, L., Myers, D., and Pose, D. (201b), FORTRAN 77 programs
+       for space-time modeling, Computers & Geoscience 28, 205-212.
+
     """
     h, t = lags
     return Cx * Vt(t) + Ct * Vx(h) - Vx(h) * Vt(t)
@@ -150,7 +173,7 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
     Notes
     -----
     This model implements the product-sum model as suggested by
-    De Cesare et. al [10]_, [11]_:
+    De Cesare et. al [15]_, [16]_:
 
     .. math::
         \gamma_{ST}(h_s, h_t) = [k_1C_T(0) + k_2]*\gamma_S(h_s) +
@@ -158,9 +181,9 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
 
     References
     ----------
-    .. [10] De Cesare, L., Myers, D. and Posa, D. (2001a), Product-sum
+    .. [15] De Cesare, L., Myers, D. and Posa, D. (2001a), Product-sum
        covariance for space-time mdeling, Environmetrics 12, 11-23.
-    .. [11] De Cesare, L., Myers, D., and Pose, D. (201b), FORTRAN 77 programs
+    .. [16] De Cesare, L., Myers, D., and Pose, D. (201b), FORTRAN 77 programs
        for space-time modeling, Computers & Geoscience 28, 205-212.
 
     """

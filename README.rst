@@ -3,15 +3,14 @@ SciKit-GStat
 
 Info: scikit-gstat needs Python >= 3.5!
 
-.. image:: https://img.shields.io/badge/pypi%20package-0.3.0-green.svg
-    :target: https://pypi.org/project/scikit-gstat/0.3.0/
+.. image:: https://img.shields.io/pypi/v/scikit-gstat?color=green&logo=pypi&logoColor=yellow&style=flat-square   :alt: PyPI
+    :target: https://pypi.org/project/scikit-gstat
 
-.. image:: https://img.shields.io/badge/version-0.3.0-green.svg
+.. image:: https://img.shields.io/github/v/release/mmaelicke/scikit-gstat?color=green&logo=github&style=flat-square   :alt: GitHub release (latest by date)
     :target: https://github.com/mmaelicke/scikit-gstat
 
-.. image:: https://travis-ci.org/mmaelicke/scikit-gstat.svg?branch=master
-    :target: https://travis-ci.org/mmaelicke/scikit-gstat
-    :alt: Build Status
+.. image:: https://github.com/mmaelicke/scikit-gstat/workflows/Test%20and%20build%20docs/badge.svg
+    :target: https://github.com/mmaelicke/scikit-gstat/actions
 
 .. image:: https://api.codacy.com/project/badge/Grade/34022fb8b795435b8eeb5431159fa7c6
    :alt: Codacy Badge
@@ -31,8 +30,8 @@ In case you use SciKit-GStat in other software or scientific publications,
 please reference this module. It is published and has a DOI. It can be cited
 as:
 
-  Mirko Mälicke, & Helge David Schneider. (2019, November 25). Scikit-GStat 0.2.7: A scipy flavored geostatistical analysis toolbox written in Python. (Version v.0.2.7). Zenodo. http://doi.org/10.5281/zenodo.3552235
-
+  Mirko Mälicke, & Helge David Schneider. (2021, March 22). mmaelicke/scikit-gstat: A scipy flavoured geostatistical 
+  variogram analysis toolbox (Version v.0.4.0). Zenodo. http://doi.org/10.5281/zenodo.4626536
 
 
 Full Documentation

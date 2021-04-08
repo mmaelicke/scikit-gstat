@@ -1,4 +1,6 @@
 pytest
 pytest-cov
+pytest-depends
 pykrige
 gstools==1.1.*
+plotly

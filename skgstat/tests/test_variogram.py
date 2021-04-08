@@ -7,8 +7,16 @@ import pandas as pd
 from numpy.testing import assert_array_almost_equal
 import matplotlib.pyplot as plt
 
+try:
+    import plotly.graph_objects as go
+    PLOTLY_FOUND = True
+except ImportError:
+    print('No plotly installed. Skip plot tests')
+    PLOTLY_FOUND = False
+
 from skgstat import Variogram
 from skgstat import estimators
+from skgstat import plotting
 
 
 class TestVariogramInstatiation(unittest.TestCase):
@@ -45,13 +53,13 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         for b, e in zip(bins, V.bins):
             self.assertAlmostEqual(b, e, places=2)
-    
+
     def test_unknown_binning_func(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, bin_func='notafunc')
 
         self.assertEqual(
-            'notafunc binning method is not known',
+            "'notafunc' is not a valid estimator for `bins`",
             str(e.exception)
         )
 
@@ -109,6 +117,63 @@ class TestVariogramArguments(unittest.TestCase):
         V.bin_func = 'even'
         assert_array_almost_equal(even, V.bins, decimal=2)
 
+    def test_binning_method_scott(self):
+        V = Variogram(self.c, self.v, bin_func='scott')
+
+        # scott should yield 11 bins here
+        self.assertTrue(V.n_lags == 11)
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.9, 8.6, 12.4, 16.1, 19.9, 23.6, 27.3, 31.1, 34.8, 38.6, 42.3]),
+            decimal=1
+        )
+
+    def test_binning_method_stable(self):
+        V = Variogram(self.c, self.v, bin_func='stable_entropy')
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
+            decimal=1
+        )
+
+    def test_binning_method_stable_maxiter(self):
+        # increase maxiter - the result should stay the same
+        V = Variogram(self.c, self.v, bin_func='stable_entropy', binning_maxiter=20000)
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
+            decimal=1
+        )
+
+    def test_binning_method_stable_fix_bins(self):
+        # use 50 bins over the sqrt method - this should change the bins
+        V = Variogram(
+            self.c,
+            self.v,
+            bin_func='stable_entropy',
+            binning_entropy_bins=50
+        )
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([4.2, 8.6, 12.8, 17.1, 21.2, 25.5, 29.3, 33.2, 37.4, 43.]),
+            decimal=1
+        )
+
+    def test_binning_change_nlags(self):
+        V = Variogram(self.c, self.v, n_lags=5)
+
+        # 5 lags are awaited
+        self.assertTrue(V.n_lags == 5)
+
+        # switch to fd rule
+        V.bin_func = 'fd'
+
+        self.assertTrue(V.n_lags == 13)
+
     def test_set_bins_directly(self):
         V = Variogram(self.c, self.v, n_lags=5)
 
@@ -122,6 +187,36 @@ class TestVariogramArguments(unittest.TestCase):
         # test cov settings
         self.assertIsNone(V.cov)
         self.assertIsNone(V.cof)
+
+    def test_binning_non_string_arg(self):
+        V = Variogram(self.c, self.v, n_lags=8)
+
+        return True
+
+    def test_binning_kmeans_method(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            n_lags=6,
+            bin_func='kmeans',
+            binning_random_state=1306
+        )
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([2.5, 7.7, 12.9, 18.1, 23.7, 30.3]),
+            decimal=1
+        )
+
+    def test_binning_ward_method(self):
+        V = Variogram(self.c, self.v, n_lags=6, bin_func='ward')
+
+        assert_array_almost_equal(
+            V.bins,
+            np.array([2.5,  7.1, 11.1, 16.2, 23., 30.]),
+            decimal=1
+        )
+
 
     def test_estimator_method_setting(self):
         """
@@ -355,13 +450,6 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         for x, y in zip(sigs, self.V.fit_sigma):
             self.assertEqual(x, y)
 
-        # test parameter estimated
-        self.V.fit()
-        assert_array_almost_equal(
-            self.V.parameters,
-            [24.008, 17.083, 0.99], decimal=3
-        )
-
     def test_fit_sigma_raises_AttributeError(self):
         self.V.fit_sigma = (0, 1, 2)
 
@@ -378,10 +466,9 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             self.V.fit_sigma
-            
-        self.assertEqual(
-            str(e.exception),
-            "fit_sigma is not understood. It has to be an array or one of ['linear', 'exp', 'sqrt', 'sq']."
+
+        self.assertTrue(
+            "fit_sigma is not understood." in str(e.exception)
         )
 
     def test_fit_sigma_linear(self):
@@ -395,7 +482,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         # test parameters:
         self.V.fit()
         assert_array_almost_equal(
-            self.V.parameters, [25.077, 17.393, 0.925], decimal=3
+            self.V.parameters, [13., 0.3, 18.], decimal=1
         )
 
     def test_fit_sigma_exp(self):
@@ -408,7 +495,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.7, 1.], decimal=1
+            self.V.parameters, [25., 0.2, 18.5], decimal=1
         )
 
     def test_fit_sigma_sqrt(self):
@@ -421,7 +508,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [23., 17.,  1.], decimal=1
+            self.V.parameters, [19.7, 1.5,  16.4], decimal=1
         )
 
     def test_fit_sigma_sq(self):
@@ -434,9 +521,24 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+            self.V.parameters, [5.4, 0.1,  18.5], decimal=1
         )
-    
+
+    def test_fit_sigma_entropy(self):
+        # load data sample
+        data = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            data[['x', 'y']].values,
+            data.z.values,
+            n_lags=12,
+            fit_method='ml',
+            fit_sigma='entropy'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, [65.9, 1.3, 0], decimal=1
+        )
+
     def test_fit_sigma_on_the_fly(self):
         self.V.fit(sigma='sq')
 
@@ -447,21 +549,29 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [25.3, 17.6,  1.], decimal=1
+            self.V.parameters, [5.4, 0.1,  18.5], decimal=1
         )
 
     def test_fit_lm(self):
-        self.V.fit(method='lm', sigma='sqrt')
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=8, fit_method='lm'
+        )
 
         # test the parameters
         assert_array_almost_equal(
-            self.V.parameters, [1., 17., 1.], decimal=0
+            V.parameters, [162.3, 0.5, 0.8], decimal=1
         )
 
     def test_fitted_model(self):
+        self.V.fit_method = 'trf'
+        self.V.fit_sigma = None
         fun = self.V.fitted_model
 
-        result = [0.99, 7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         assert_array_almost_equal(
             result, list(map(fun, np.arange(0, 20, 5))),
@@ -472,15 +582,14 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             self.V.fit(method='unsupported')
 
-        self.assertEqual(
-            "fit method has to be one of ['trf', 'lm']",
-            str(e.exception)
+        self.assertTrue(
+            "fit method has to be one of" in str(e.exception)
         )
-  
+
     def test_implicit_run_fit_fitted_model(self):
         self.V.fit_sigma = None
         self.V.fit_method = 'trf'
-        result = [0.99,  7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # remove cof
         self.V.cof = None
@@ -495,7 +604,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
     def test_implicit_run_fit_transform(self):
         self.V.fit_sigma = None
         self.V.fit_method = 'trf'
-        result = [0.99,  7.19, 12.53, 16.14]
+        result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # test on transform
         self.V.cof = None
@@ -516,6 +625,85 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             [np.NaN, 0.57, 1.01, 1.12, 1.15, 1.15, 1.15, 1.15, 1.21, 1.65],
             decimal=2
         )
+
+    def test_ml_default(self):
+        # load data sample
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=15,
+            fit_method='ml'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, np.array([41.18, 1.2, 0.]), decimal=2
+        )
+
+    def test_ml_sq_sigma(self):
+        # load data sample
+        df = pd.read_csv(os.path.dirname(__file__) + '/sample.csv')
+        V = Variogram(
+            df[['x', 'y']],
+            df.z.values,
+            use_nugget=True,
+            n_lags=15,
+            fit_method='ml',
+            fit_sigma='sq'
+        )
+
+        assert_array_almost_equal(
+            V.parameters, np.array([42.72, 1.21, 0.]), decimal=2
+        )
+
+    def test_manual_fit(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            fit_method='manual',
+            model='spherical',
+            fit_range=10.,
+            fit_sill=5.
+        )
+
+        self.assertEqual(V.parameters, [10., 5., 0.0])
+    
+    def test_manual_fit_change(self):
+        V = Variogram(
+            self.c,
+            self.v,
+            fit_method='trf',
+            model='matern',
+        )
+
+        # switch to manual fit
+        V.fit_method = 'manual'
+        V.fit(range=10, sill=5, shape=3)
+
+        self.assertEqual(V.parameters, [10., 5., 3., 0.0])
+
+    def test_manual_raises_missing_params(self):
+        with self.assertRaises(AttributeError) as e:
+            Variogram(self.c, self.v, fit_method='manual')
+            self.assertTrue('For manual fitting' in str(e.exception))
+
+    def test_manual_preserve_params(self):
+        V = Variogram(self.c, self.v, fit_method='trf', n_lags=8)
+        params = V.parameters
+
+        # switch fit method
+        V.fit_method = 'manual'
+        V.fit(sill=14)
+
+        # expected output
+        params[1] = 14.
+
+        assert_array_almost_equal(
+            V.parameters,
+            params,
+            decimal=1
+        )      
 
 
 class TestVariogramQaulityMeasures(unittest.TestCase):
@@ -541,7 +729,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
 
         for model, rmse in zip(
                 ['spherical', 'gaussian', 'matern', 'stable'],
-                [3.3705, 3.3707, 3.1548, 3.193]
+                [3.3705, 3.3707, 3.1811, 3.193]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.rmse, rmse, places=4)
@@ -551,7 +739,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
 
         for model, mr in zip(
             ['spherical', 'cubic', 'matern', 'stable'],
-            [2.6803, 2.6803, 2.637, 2.6966]
+            [2.6803, 2.6803, 2.6701, 2.6966]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.mean_residual, mr, places=4)
@@ -580,7 +768,7 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.r, r, places=2)
-    
+
     def test_NS(self):
         V = Variogram(self.c, self.v, n_lags=15, normalize=False)
 
@@ -589,6 +777,34 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
             [0.0206, 0.0206, 0.0206]
         ):
             self.assertAlmostEqual(V.NS, NS, places=4)
+
+    def test_update_kwargs(self):
+        V = Variogram(self.c, self.v, percentile=.3)
+
+        self.assertAlmostEqual(
+            V._kwargs.get('percentile'), 0.3, places=1
+        )
+
+        # change the parameter
+        V.update_kwargs(percentile=0.7)
+
+        self.assertAlmostEqual(
+            V._kwargs.get('percentile'), 0.7, places=1
+        )
+
+    def test_kwargs_setter_in_experimental(self):
+        V = Variogram(self.c, self.v, estimator='percentile')
+
+        # store with p of 50 == median
+        exp = V.experimental
+
+        V.update_kwargs(percentile=25)
+
+        exp2 = V.experimental
+
+        # 25% should be very different from median
+        with self.assertRaises(AssertionError):
+            assert_array_almost_equal(exp, exp2, decimal=2)
 
 
 class TestVariogramMethods(unittest.TestCase):
@@ -665,7 +881,7 @@ class TestVariogramMethods(unittest.TestCase):
         V = self.V.clone()
         
         # test matern
-        param = [42.3, 16.2,  0.1,  0.]
+        param = [42.3, 15.42, 0.11, 0.]
         V.set_model('matern')
         assert_array_almost_equal(V.parameters, param, decimal=2)
     
@@ -770,33 +986,6 @@ class TestVariogramPlots(unittest.TestCase):
 
         fig = V.plot(hist=False, show=False)
         self.assertEqual(len(fig.axes), 1)
-
-    def test_default_scattergram(self):
-        V = Variogram(self.c, self.v, n_lags=5)
-
-        fig = V.scattergram(show=False)
-        ax = fig.axes[0]
-
-        # test just 3 positions of the scatterplot
-        assert_array_almost_equal(
-            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
-            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
-            decimal=True
-        )
-
-    def test_scattergram_on_ax(self):
-        V = Variogram(self.c, self.v, n_lags=5)
-
-        # define figure
-        fig, ax = plt.subplots(1,1)
-        V.scattergram(show=False, ax=ax)
-
-        # test just 3 positions of the scatterplot
-        assert_array_almost_equal(
-            [[12., 9.1], [2.3, 13.3], [13.1, 9.4]],
-            ax.get_children()[2].get_offsets()[[5, 1117, 523]],
-            decimal=True
-        )
     
     def test_location_trend(self):
         # test that the correct amount of axes is produced
@@ -862,6 +1051,100 @@ class TestVariogramPlots(unittest.TestCase):
             len(fig1.axes[0].get_children()),
             len(fig2.axes[0].get_children()) - 1
         )
+
+    def test_variogram_default_describe(self):
+        V = Variogram(self.c, self.v)
+
+        desc = V.describe()
+        self.assertTrue('params' in desc.keys())
+        self.assertTrue('kwargs' in desc.keys())
+
+    def test_variogram_describe_short(self):
+        V = Variogram(self.c, self.v)
+
+        desc = V.describe(short=True)
+        self.assertFalse('params' in desc.keys())
+        self.assertFalse('kwargs' in desc.keys())
+
+
+    def test_variogram_describe_flat(self):
+        V = Variogram(self.c, self.v)
+
+        desc = V.describe(flat=True)
+
+        # test there are no nested dicts
+        self.assertTrue(all([not isinstance(v, dict) for v in desc.values()]))
+
+
+class TestVariogramPlotlyPlots(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (150, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, 150)
+        self.V = Variogram(self.c, self.v)
+
+    def test_plotly_main_plot(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.plot(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+
+    def test_plotly_scattergram(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.scattergram(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+
+    def test_plotly_location_trend(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.location_trend(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+
+    def test_plotly_dd_plot(self):
+        if PLOTLY_FOUND:
+            # switch to plotly
+            plotting.backend('plotly')
+
+            self.assertTrue(
+                isinstance(self.V.distance_difference_plot(show=False), go.Figure)
+            )
+
+            plotting.backend('matplotlib')
+    
+    def test_undefined_backend(self):
+        # force the backend into an undefined state
+        import skgstat
+        skgstat.__backend__ = 'not-a-backend'
+
+        for fname in ('plot', 'scattergram', 'location_trend', 'distance_difference_plot'):
+            with self.assertRaises(ValueError) as e:
+                self.V.plot()
+
+                self.assertEqual(
+                    str(e.exception),
+                    'The plotting backend has an undefined state.'
+                )
+        
+        # make the backend valid again
+        skgstat.__backend__ = 'matplotlib'
 
 
 class TestVariogramPickling(unittest.TestCase):
