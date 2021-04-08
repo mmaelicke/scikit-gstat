@@ -14,6 +14,8 @@ from sklearn.isotonic import IsotonicRegression
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
+from .MetricSpace import MetricSpace, MetricSpacePair
+import scipy.sparse
 
 class Variogram(object):
     """Variogram Class
@@ -210,9 +212,15 @@ class Variogram(object):
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
 
-        # Set coordinates
-        self._X = np.asarray(coordinates)
+        if not isinstance(coordinates, MetricSpace):
+            coordinates = np.asarray(coordinates)
+            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag)
+        else:
+            assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
 
+        # Set coordinates
+        self._X = coordinates
+            
         # pairwise differences
         self._diff = None
 
@@ -223,13 +231,6 @@ class Variogram(object):
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
         self.set_values(values=values, calc_diff=False)
-
-        # distance matrix
-        self._dist = None
-
-        # set distance calculation function
-        self._dist_func_name = None
-        self.set_dist_function(func=dist_func)
 
         # lags and max lag
         self._n_lags_passed_value = n_lags
@@ -292,7 +293,7 @@ class Variogram(object):
         coordinates : numpy.array
 
         """
-        return self._X
+        return self._X.coords
 
     @property
     def values(self):
@@ -368,7 +369,7 @@ class Variogram(object):
 
         """
         # check dimensions
-        if not len(values) == len(self._X):
+        if not len(values) == len(self.coordinates):
             raise ValueError('The length of the values array has to match' +
                              'the length of coordinates')
 
@@ -785,7 +786,7 @@ class Variogram(object):
 
     @property
     def dist_function(self):
-        return self._dist_func_name
+        return self._X.dist_metric
 
     @classmethod
     def wrapped_distance_function(cls, dist_func, x):
@@ -817,38 +818,28 @@ class Variogram(object):
         numpy.array
 
         """
-        # reset the distances and fitting
-        self._dist = None
+        # reset the fitting
         self.cof, self.cov = None, None
 
         if isinstance(func, str):
             if func.lower() == 'rank':
                 raise NotImplementedError
-            else:
-                # if not ranks, it has to be a scipy metric
-                self._dist_func_name = func
-
-        elif callable(func):
-            self._dist_func_name = func
-        else:
+        elif not callable(func):
             raise ValueError('Input not supported. Pass a string or callable.')
 
         # re-calculate distances
-        self._calc_distances()
+        self._X = MetricSpace(self._X.coords, func, self._X.max_dist)
 
     @property
     def distance(self):
-        if self._dist is None:
-            self._calc_distances()
-        return self._dist
-
-    @distance.setter
-    def distance(self, dist_array):
-        self._dist = dist_array
-
+        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+            return self.distance_matrix.data
+        # Turn it back to triangular form not to have duplicates
+        return scipy.spatial.distance.squareform(self.distance_matrix)
+        
     @property
     def distance_matrix(self):
-        return squareform(self.distance)
+        return self._X.dists
 
     @property
     def maxlag(self):
@@ -862,7 +853,7 @@ class Variogram(object):
         # remove bins
         self._bins = None
         self._groups = None
-
+        
         # set new maxlag
         if value is None:
             self._maxlag = None
@@ -1082,7 +1073,6 @@ class Variogram(object):
 
         """
         # call the _calc functions
-        self._calc_distances(force=force)
         self._calc_diff(force=force)
         self._calc_groups(force=force)
 
@@ -1363,18 +1353,6 @@ class Variogram(object):
         loc = dict(model=model)
         exec(code, loc, loc)
         return loc['fitted_model']
-    
-    def _calc_distances(self, force=False):
-        if self._dist is not None and not force:
-            return
-
-        # if self._X is of just one dimension, concat zeros.
-        if self._X.ndim == 1:
-            _x = np.vstack(zip(self._X, np.zeros(len(self._X))))
-        else:
-            _x = self._X
-        # else calculate the distances
-        self._dist = self.wrapped_distance_function(self._dist_func_name, _x)
 
     def _calc_diff(self, force=False):
         """Calculates the pairwise differences
@@ -1831,7 +1809,7 @@ class Variogram(object):
         rdict = dict(
             model=fnname(self._model),
             estimator=fnname(self._estimator),
-            dist_func=fnname(self._dist_func),
+            dist_func=fnname(self.dist_function),
             
             normalized_effective_range=cof[0] * maxlag,
             normalized_sill=cof[1] * maxvar,
@@ -1854,7 +1832,7 @@ class Variogram(object):
             params = dict(
                 estimator=self._estimator.__name__,
                 model=self._model.__name__,
-                dist_func=str(self._dist_func_name),
+                dist_func=str(self.dist_function),
                 bin_func=self._bin_func_name,
                 normalize=self.normalized,
                 fit_method=self.fit_method,
