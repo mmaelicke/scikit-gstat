@@ -126,7 +126,7 @@ class OrdinaryKriging:
             coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
             coordinates = MetricSpace(coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
         else:
-            assert self.dist_metric == coordinates.dist_metri, "Distance metric of variogram differs from distance metric of coordinates"
+            assert self.dist_metric == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
             assert coordinates.max_dist is None or coordinates.max_dist == self.range, "Sparse coordinates must have max_dist == variogram.effective_range"
         self.values = values.copy()
         self.coords = coordinates
