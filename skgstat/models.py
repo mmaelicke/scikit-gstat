@@ -54,7 +54,7 @@ def spherical(h, r, c0, b=0):
     The implementation follows [6]_:
 
     .. math::
-        \gamma = b + C_0 * \left({1.5*\frac{h}{r} - 0.5*\frac{h}{r}^3}\right)
+        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*\frac{h}{a}^3}\right)
 
     if :math:`h < r`, and
 
@@ -117,7 +117,7 @@ def exponential(h, r, c0, b=0):
 
     Notes
     -----
-    The implementation following [7]_ and [8]_ is as:
+    The implementation following [7]_, [9]_ and [8]_ is as:
 
     .. math::
         \gamma = b + C_0 * \left({1 - e^{-\frac{h}{a}}}\right)
@@ -133,6 +133,9 @@ def exponential(h, r, c0, b=0):
 
     .. [8] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
+    
+    .. [9] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
+        United Kingdom: N. p., 1976.
 
     """
     # prepare parameters
@@ -177,7 +180,7 @@ def gaussian(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation follows [9]_:
+    This implementation follows [10]_ and [11]_:
 
     .. math::
 
@@ -194,8 +197,10 @@ def gaussian(h, r, c0, b=0):
     References
     ----------
 
-    .. [9] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+    .. [10] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
+    .. [11] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
+        United Kingdom: N. p., 1976.
 
     """
     # prepare parameters
@@ -237,17 +242,23 @@ def cubic(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation is like:
+    This implementation is taken from [11]_:
 
     .. math::
 
-        \gamma = b + c_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -
+        \gamma = b + C_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -
         \frac{35}{4} * \left(\frac{h^3}{a^3}\right) +
         \frac{7}{2} * \left(\frac{h^5}{a^5}\right) -
         \frac{3}{4} * \left(\frac{h^7}{a^7}\right)}\right]
 
     a is the range parameter. For the cubic function, the effective range and
     range parameter are the same.
+
+    References
+    ----------
+
+    .. [11] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+        geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
     # prepare parameters
@@ -302,7 +313,7 @@ def stable(h, r, c0, s, b=0):
 
     Notes
     -----
-    The implementation is:
+    The implementation is taken from [12]_:
 
     .. math::
         \gamma = b + C_0 * \left({1. - e^{- {\frac{h}{a}}^s}}\right)
@@ -311,6 +322,12 @@ def stable(h, r, c0, s, b=0):
 
     .. math::
         a = \frac{r}{3^{\frac{1}{s}}}
+
+    References
+    ----------
+
+    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+        geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
     # prepare parameters
@@ -329,6 +346,9 @@ def matern(h, r, c0, s, b=0):
     Implementation of the Matérn variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
 
+    .. versionchanged:: 0.3.2
+        a is now r/3 for s <= 0.2 or s >= 10.
+
     Parameters
     ----------
     h : float
@@ -337,7 +357,8 @@ def matern(h, r, c0, s, b=0):
     r : float
         The effective range. Note this is not the range parameter! For the
         Matérn variogram function the range parameter a is defined to be
-        :math:`a = \frac{r}{2}`. The effective range is the lag
+        :math:`a = \frac{r}{2}` and :math:`a = \frac{r}{3}` if s is smaller 
+        than 0.5 or larger than 10. The effective range is the lag
         where 95% of the sill are exceeded. This is needed as the sill is
         only approached asymptotically by Matérn model.
     c0 : float
@@ -363,12 +384,32 @@ def matern(h, r, c0, s, b=0):
 
     Notes
     -----
-    The formula and references will follow.
+    The implementation is taken from [13]_:
+
+    .. math::
+        \gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1} 
+        \Gamma(\upsilon)}\left(\frac{h}{a}\right)^\upsilon K_\upsilon
+        \left(\frac{h}{a}\right)\right)
+
+    a is the range parameter and is calculated from the effective range r as:
+
+    .. math::
+        a = \frac{r}{2}
+
+    References
+    ----------
+    .. [13] Zimmermann, B., Zehe, E., Hartmann, N. K., & Elsenbeer, H. (2008). 
+        Analyzing spatial data: An assessment of assumptions, new methods, and 
+        uncertainty using soil hydraulic data. Water Resources Research, 
+        44(10), 1–18. https://doi.org/10.1029/2007WR006604
 
     """
     # prepare parameters
-    # TODO: depend a on s, for 0.5 should be 3, above 10 should be 3
-    a = r / 2.
+    # depend a on s, for 0.5 should be 3, above 10 should be 3
+    if s >= 10 or s <= 0.5:
+        a = r / 3.
+    else:
+        a = r / 2.
 
     # calculate
     return b + c0 * (1. - (2 / special.gamma(s)) *

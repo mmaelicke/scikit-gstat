@@ -5,6 +5,8 @@ Home
 Welcome to SciKit GStat's documentation!
 ========================================
 
+`Download the docs as PDF <https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf>`_
+
 SciKit-Gstat is a scipy-styled analysis module for geostatistics. It includes
 two base classes :class:`Variogram <skgstat.Variogram>` and
 :class:`DirectionalVariogram <skgstat.DirectionalVariogram>`. Both have a
@@ -55,4 +57,5 @@ as:
     technical/technical
     reference/reference
     changelog
+    PDF <https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf>
 

@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 
 from skgstat.estimators import matheron, cressie, dowd, genton
-from skgstat.estimators import minmax, percentile, entropy, info
+from skgstat.estimators import minmax, percentile, entropy
 
 
 class TestEstimator(unittest.TestCase):
@@ -100,7 +100,7 @@ class TestEstimator(unittest.TestCase):
         np.random.seed(42)
         x = np.random.normal(5, 1, 10000)
 
-        self.assertAlmostEqual(entropy(x, bins=None), 3.01, places=2)
+        self.assertAlmostEqual(entropy(x, bins=None), 3.0, places=2)
 
     def test_entropy_custom_bins(self):
         np.random.seed(123456789)
@@ -109,19 +109,11 @@ class TestEstimator(unittest.TestCase):
         # custom bins
         self.assertAlmostEqual(
             entropy(x, [5, 15, 50, 51, 52, 53, 54, 55, 56, 100, 120, 150]),
-            1.823, places=3
+            1.82, places=2
         )
 
         # default bins
         self.assertAlmostEqual(entropy(x), 2.91, places=2)
-
-    def test_internal_info(self):
-        # extract actual function
-        i = info.py_func
-
-        # test
-        self.assertAlmostEqual(i(0.3), 1.74, places=2)
-        self.assertAlmostEqual(i(0.8), 0.32, places=2)
 
 
 if __name__ == '__main__':

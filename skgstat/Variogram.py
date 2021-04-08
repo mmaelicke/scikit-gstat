@@ -2,17 +2,18 @@
 Variogram class
 """
 import copy
-import os
 import warnings
 
 import numpy as np
 from pandas import DataFrame
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, minimize, OptimizeWarning
 from scipy.spatial.distance import pdist, squareform
+from scipy import stats 
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
+from skgstat import plotting
+from skgstat.util import shannon_entropy
 
 
 class Variogram(object):
@@ -36,7 +37,8 @@ class Variogram(object):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False
+                 verbose=False,
+                 **kwargs,
                  ):
         r"""Variogram Class
 
@@ -90,17 +92,35 @@ class Variogram(object):
             scipy.spatial.distance.pdist. Additional parameters are not (yet)
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
-        bin_func : str
+        bin_func : str            
+            .. versionchanged:: 0.3.8
+                added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+            .. versionchanged:: 0.3.9
+                added 'kmeans', 'ward'
+
             String identifying the binning function used to find lag class
-            edges. At the moment there are two possible values: 'even'
-            (default) or 'uniform'. Even will find n_lags bins of same width
-            in the interval [0,maxlag[. 'uniform' will identfy n_lags bins on
-            the same interval, but with varying edges so that all bins count
-            the same amount of observations.
+            edges. All methods calculate bin edges on the interval [0, maxlag[.
+            Possible values are:
+
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
+                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` as `n_lags`.
+                * `'kmeans'` uses KMeans clustering to well supported bins
+                * `'ward'` uses hierachical clustering to find minimum-variance clusters.
+
+            More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
+
         normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
         fit_method : str
+            .. versionchanged:: 0.3.10
+                Added 'ml' and 'custom'
+
             String identifying the method to be used for fitting the
             theoretical variogram function to the experimental. More info is
             given in the Variogram.fit docs. Can be one of:
@@ -111,6 +131,15 @@ class Variogram(object):
                 * 'trf': Trust Region Reflective function for non-linear
                   constrained problems. The class will set the boundaries
                   itself. This is the default function.
+                * 'ml': Maximum-Likelihood estimation. With the current implementation
+                  only the Nelder-Mead solver for unconstrained problems is
+                  implemented. This will estimate the variogram parameters from
+                  a Gaussian parameter space by minimizing the negative
+                  log-likelihood.
+                * 'manual': Manual fitting. You can set the range, sill and
+                  nugget either directly to the :func:`fit <skgstat.Variogram.fit>`
+                  function, or as `fit_` prefixed keyword arguments on
+                  Variogram instantiation.
 
         fit_sigma : numpy.ndarray, str
             Defaults to None. The sigma is used as measure of uncertainty
@@ -150,7 +179,38 @@ class Variogram(object):
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
+        Keyword Arguments
+        -----------------
+        entropy_bins : int, str
+            .. versionadded:: 0.3.7
+
+            If the `estimator <skgstat.Variogram.estimator>` is set to
+            `'entropy'` this argument sets the number of bins, that should be
+            used for histogram calculation.
+        percentile : int
+            .. versionadded:: 0.3.7
+
+            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            `'entropy'` this argument sets the percentile to be used.
+        binning_random_state : int, None
+            .. versionadded:: 0.3.9
+
+            If :func:`bin_func <skgstat.Variogram.set_bin_func>` is `'kmeans'`
+            this can overwrite the seed for the initial guess of the cluster
+            centroids. Note, that K-Means is not deterministic and is therefore
+            seeded to 42 here. You can pass `None` to disable this behavior,
+            but use it with care, as you will get different results.
+        binning_agg_func : str
+            .. versionadded:: 0.3.10
+
+            If :func:`bin_func <skgstat.Variogram.set_bin_func>` is `'ward'`
+            this keyword argument can switch from default mean aggregation to
+            median aggregation for calculating the cluster centroids.
+
         """
+        # Before we do anything else, make kwargs available
+        self._kwargs = self._validate_kwargs(**kwargs)
+
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -169,10 +229,11 @@ class Variogram(object):
         self._dist = None
 
         # set distance calculation function
-        self._dist_func = None
+        self._dist_func_name = None
         self.set_dist_function(func=dist_func)
 
         # lags and max lag
+        self._n_lags_passed_value = n_lags
         self._n_lags = None
         self.n_lags = n_lags
         self._maxlag = None
@@ -190,6 +251,7 @@ class Variogram(object):
         self.set_model(model_name=model)
 
         # the binning settings
+        self._bin_func_name = None
         self._bin_func = None
         self._groups = None
         self._bins = None
@@ -358,42 +420,168 @@ class Variogram(object):
     def bin_func(self, bin_func):
         self.set_bin_func(bin_func=bin_func)
 
-    def set_bin_func(self, bin_func):
-        """Set binning function
+    def set_bin_func(self, bin_func: str):
+        r"""Set binning function
 
         Sets a new binning function to be used. The new binning method is set
         by a string identifying the new function to be used. Can be one of:
-        ['even', 'uniform'].
+        ['even', 'uniform', 'fd', 'sturges', 'scott', 'sqrt', 'doane'].
+        If the number of lag classes should be estimated automatically, it is 
+        recommended to use ' sturges' for small, normal distributed locations
+        and 'fd' or 'scott' for large datasets, where 'fd' is more robust to
+        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an 
+        extension of Sturge's rule for non-normal distributed data.
+
+        .. versionchanged:: 0.3.8
+            added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+
+        .. versionchanged:: 0.3.9
+            added 'kmeans', 'ward'
+
+        .. versionchanged:: 0.4.0
+            added 'stable_entropy'
 
         Parameters
         ----------
         bin_func : str
             Can be one of:
 
-            * **'even'**: Use skgstat.binning.even_width_lags for using
-              n_lags lags of equal width up to maxlag.
-            * **'uniform'**: Use skgstat.binning.uniform_count_lags for using
-              n_lags lags up to maxlag in which the pairwise differences
-              follow a uniform distribution.
+                * 'even'
+                * 'uniform'
+                * 'fd'
+                * 'sturges'
+                * 'scott'
+                * 'sqrt'
+                * 'doane'
+                * 'kmeans'
+                * 'ward'
+                * 'stable_entropy'
 
         Returns
         -------
         void
+
+        Notes
+        -----
+        **`'even'`**: Use skgstat.binning.even_width_lags for using
+        n_lags lags of equal width up to maxlag.
+
+        **`'uniform'`**: Use skgstat.binning.uniform_count_lags for using
+        n_lags lags up to maxlag in which the pairwise differences
+        follow a uniform distribution.
+
+        **`'sturges'`**: estimates the number of evenly distributed lag
+        classes (n) by Sturges rule [101]_:
+
+        .. math::
+            n = log_2 n + 1
+
+        **`'scott'`**: estimates the lag class widths (h) by Scott's rule [102]_:
+
+        .. math::
+            h = \sigma \frac{24 * \sqrt{\pi}}{n}^{\frac{1}{3}}
+
+        **`'sqrt'`**: estimates the number of lags (n) by the suare-root:
+
+        .. math::
+            n = \sqrt{n}
+
+        **`'fd'`**: estimates the lag class widths (h) using the
+        Freedman Diaconis estimator [103]_:
+
+        .. math::
+            h = 2\frac{IQR}{n^{1/3}}
+
+        **`'doane'`**: estimates the number of evenly distributed lag classes
+        using Doane's extension to Sturge's rule [104]_:
+
+        .. math::
+            n = 1 + \log_{2}(s) + \log_2\left(1 + \frac{|g|}{k}\right)
+            g = E\left[\left(\frac{x - \mu_g}{\sigma}\right)^3\right]
+            k = \sqrt{\frac{6(s - 2)}{(s + 1)(s + 3)}}
+
+        **`'kmeans'`**: This method will search for `n` clusters in the
+        distance matrix. The cluster centroids are used to calculate the
+        upper edges of the lag classes, by setting it to half of the distance
+        between two neighboring clusters. Note: This does not necessarily
+        result in even width bins.
+
+        **`'ward'`** uses a hierachical culstering algorithm to iteratively
+        merge pairs of clusters until there are only `n` remaining clusters.
+        The merging is done by minimizing the variance for the merged cluster.
+
+        **`'stable_entropy'`** will adjust `n` bin edges by minimizing the
+        absolute differences between each lag's Shannon Entropy. This will
+        lead to uneven bin widths. Each lag class value distribution will be
+        of comparable intrinsic uncertainty from an information theoretic
+        point of view, which makes the semi-variances quite comparable.
+        However, it is not guaranteed, that the binning makes any sense
+        from a geostatistical point of view, as the first lags might be way
+        too wide.
 
         See Also
         --------
         Variogram.bin_func
         skgstat.binning.uniform_count_lags
         skgstat.binning.even_width_lags
+        skgstat.binning.auto_derived_lags
+        skgstat.binning.kmeans
+        skgstat.binning.ward
+        sklearn.cluster.KMeans
+        sklearn.cluster.AgglomerativeClustering
+
+        References
+        ----------
+        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306. 
+            https://doi.org/10.1002/wics.35
+        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502. 
+            https://doi.org/10.1002/wics.103
+        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as 
+            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie 
+            und verwandte Gebiete 57.4: 453-476.
+        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications. 
+            The American Statistician, 30(4), 181-183.
 
         """
         # switch the input
         if bin_func.lower() == 'even':
             self._bin_func = binning.even_width_lags
+
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
+
+        elif bin_func.lower() == 'kmeans':
+            # define a helper to pass kwargs
+            def wrapper(distance, n, maxlag):
+                return binning.kmeans(distance, n, maxlag, **self._kwargs)
+            self._bin_func = wrapper
+
+        elif bin_func.lower() == 'ward':
+            self._bin_func = binning.ward
+
+        elif bin_func.lower() == 'stable_entropy':
+            # define a wrapper
+            def wrapper(distances, n, maxlag):
+                return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
+            self._bin_func = wrapper
+
+        elif isinstance(bin_func, str):
+            # define a helper wrapper
+            def wrapper(distances, n, maxlag):
+                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+
+            self._bin_func = wrapper
+            self._n_lags = None
+
+        elif callable(bin_func):
+            self._bin_func = bin_func
+            bin_func = 'custom'
+
         else:
-            raise ValueError('%s binning method is not known' % bin_func)
+            raise AttributeError('bin_func has to be of type string.')
+
+        # store the name
+        self._bin_func_name = bin_func
 
         # reset groups and bins
         self._groups = None
@@ -411,8 +599,14 @@ class Variogram(object):
 
     @property
     def bins(self):
+        # if bins are not calculated, do it
         if self._bins is None:
-            self._bins = self.bin_func(self.distance, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
+
+            # if the binning function returned an N, the n_lags need
+            # to be adjusted directly (not through the setter)
+            if n is not None:
+                self._n_lags = n
 
         return self._bins.copy()
 
@@ -435,6 +629,8 @@ class Variogram(object):
         the grouping index and fitting parameters
 
         """
+        if self._n_lags is None:
+            self._n_lags = len(self.bins)
         return self._n_lags
 
     @n_lags.setter
@@ -458,6 +654,12 @@ class Variogram(object):
         # else
         else:
             raise ValueError('n_lags has to be a positive integer')
+        
+        # if there are no errors, store the passed value
+        self._n_lags_passed_value = n
+
+        # reset the groups
+        self._groups = None
 
         # reset the fitting
         self.cof = None
@@ -594,13 +796,13 @@ class Variogram(object):
 
     @property
     def dist_function(self):
-        return self._dist_func
+        return self._dist_func_name
 
     def _dist_func_wrapper(self, x):
-        if callable(self._dist_func):
-            return self._dist_func(x)
+        if callable(self._dist_func_name):
+            return self._dist_func_name(x)
         else:
-            return pdist(X=x, metric=self._dist_func)
+            return pdist(X=x, metric=self._dist_func_name)
     
     @dist_function.setter
     def dist_function(self, func):
@@ -634,10 +836,10 @@ class Variogram(object):
                 raise NotImplementedError
             else:
                 # if not ranks, it has to be a scipy metric
-                self._dist_func = func
+                self._dist_func_name = func
 
         elif callable(func):
-            self._dist_func = func
+            self._dist_func_name = func
         else:
             raise ValueError('Input not supported. Pass a string or callable.')
 
@@ -693,8 +895,11 @@ class Variogram(object):
         cost function, which divides the residuals by their uncertainty.
 
         When setting fit_sigma, the array of uncertainties itself can be
-        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq']. The
-        parameters described below refer to the setter of this property.
+        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy']. 
+        The parameters described below refer to the setter of this property.
+
+        .. versionchanged:: 0.3.11
+            added the 'entropy' option.
 
         Parameters
         ----------
@@ -713,6 +918,8 @@ class Variogram(object):
                 :math:`w = \sqrt(w_n)`
               * **sigma='sq'**: The residuals get weighted by the function:
                 :math:`w = w_n^2`
+              * **sigma='entropy'**: Calculates the Shannon Entropy as 
+                intrinsic uncertainty of each lag class.
 
         Returns
         -------
@@ -761,9 +968,24 @@ class Variogram(object):
         # squared function of distance
         elif self._fit_sigma == 'sq':
             return (self.bins / np.max(self.bins)) ** 2
+
+        # entropy
+        elif self._fit_sigma == 'entropy':
+            # get the binning using scotts rule
+            bins = np.histogram_bin_edges(self.distance, 'scott')
+
+            # get the maximum entropy
+#            hmax = np.log2(len(self.distance))
+
+            # apply the entropy
+            h = np.asarray([shannon_entropy(grp, bins) for grp in self.lag_classes() if len(grp) > 0])
+            return 1. / h
+
         else:
-            raise ValueError("fit_sigma is not understood. It has to be an " +
-                             "array or one of ['linear', 'exp', 'sqrt', 'sq'].")
+            raise ValueError(
+                "fit_sigma is not understood. It has to be an " +
+                "array or one of ['linear', 'exp', 'sqrt', 'sq', 'entropy']."
+            )
 
     @fit_sigma.setter
     def fit_sigma(self, sigma):
@@ -772,6 +994,42 @@ class Variogram(object):
         # remove fitting parameters
         self.cof = None
         self.cov = None
+
+    def update_kwargs(self, **kwargs):
+        """
+        .. versionadded:: 0.3.7
+
+        Update the keyword arguments of this Variogram instance.
+        The keyword arguments will be validated first and the update the
+        existing kwargs. That means, you can pass only the kwargs, which
+        need to be updated.
+
+        .. note::
+            Updating the kwargs does not force a preprocessing circle. 
+            Any affected intermediate result, that might be cached internally, 
+            will not make use of updated kwargs. Make a call to 
+            :func:`preprocessing(force=True) <skgstat.Variogram.preprocessing>`
+            to force a clean re-calculation of the Variogram instance.
+
+        """
+        old = self._kwargs
+
+        # update the keyword-arguments
+        updated = self._validate_kwargs(**kwargs)
+        old.update(updated)
+
+        self._kwargs = old
+
+    def _validate_kwargs(self, **kwargs):
+        """
+        .. versionadded:: 0.3.7
+
+        This functions actually does nothing right now.
+        It will be used in the future, as soon as the Variogram takes
+        more kwargs. Then, these can be checked here.
+
+        """
+        return kwargs
 
     def lag_groups(self):
         """Lag class groups
@@ -800,17 +1058,17 @@ class Variogram(object):
         Generates an iterator over all lag classes. Can be zipped with
         Variogram.bins to identify the lag.
 
+        .. versionchanged:: 0.3.6
+            yields an empty array for empty lag groups now
+
         Returns
         -------
         iterable
 
         """
         # yield all groups
-        for i in np.unique(self.lag_groups()):
-            if i < 0:
-                continue
-            else:
-                yield self._diff[np.where(self.lag_groups() == i)]
+        for i in range(len(self.bins)):
+            yield self._diff[np.where(self.lag_groups() == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -851,6 +1109,9 @@ class Variogram(object):
         overwritten. All other keyword arguments will be passed to
         scipy.optimize.curve_fit function.
 
+        .. versionchanged:: 0.3.10
+            added 'ml' and 'custom' method.
+
         Parameters
         ----------
         force : bool
@@ -859,12 +1120,22 @@ class Variogram(object):
             False.
         method : string
             A string identifying one of the implemented fitting procedures.
-            Can be one of ['lm', 'trf']:
+            Can be one of:
 
               * lm: Levenberg-Marquardt algorithms implemented in
                 scipy.optimize.leastsq function.
               * trf: Trust Region Reflective algorithm implemented in
                 scipy.optimize.least_squares(method='trf')
+              * 'ml': Maximum-Likelihood estimation. With the current implementation
+                only the Nelder-Mead solver for unconstrained problems is
+                implemented. This will estimate the variogram parameters from
+                a Gaussian parameter space by minimizing the negative
+                log-likelihood.
+              * 'manual': Manual fitting. You can set the range, sill and
+                nugget either directly to the :func:`fit <skgstat.Variogram.fit>`
+                function, or as `fit_` prefixed keyword arguments on
+                Variogram instantiation.
+
 
         sigma : string, array
             Uncertainty array for the bins. Has to have the same dimension as
@@ -876,13 +1147,18 @@ class Variogram(object):
 
         See Also
         --------
-        scipy.optimize
+        scipy.optimize.minimize
         scipy.optimize.curve_fit
         scipy.optimize.leastsq
         scipy.optimize.least_squares
 
         """
-        # TODO: the kwargs need to be preserved somehow
+        # store the old cof
+        if self.cof is None:
+            old_params = {}
+        else:
+            old_params = self.describe()
+
         # delete the last cov and cof
         self.cof = None
         self.cov = None
@@ -920,17 +1196,27 @@ class Variogram(object):
             self.cof = [r, s, n]
             return
 
-
         # Switch the method
+        # wrap the model to include or exclude the nugget
+        if self.use_nugget:
+            def wrapped(*args):
+                return self._model(*args)
+        else:
+            def wrapped(*args):
+                return self._model(*args, 0)
+
+        # get p0
+        bounds = (0, self.__get_fit_bounds(x, y))
+        p0 = np.asarray(bounds[1])
+
         # Trust Region Reflective
         if self.fit_method == 'trf':
-            bounds = (0, self.__get_fit_bounds(x, y))
             self.cof, self.cov = curve_fit(
-                self._model,
+                wrapped,
                 _x, _y,
                 method='trf',
                 sigma=self.fit_sigma,
-                p0=bounds[1],
+                p0=p0,
                 bounds=bounds,
                 **kwargs
             )
@@ -938,15 +1224,72 @@ class Variogram(object):
         # Levenberg-Marquardt
         elif self.fit_method == 'lm':
             self.cof, self.cov = curve_fit(
-                self.model,
+                wrapped,
                 _x, _y,
                 method='lm',
                 sigma=self.fit_sigma,
+                p0=p0,
                 **kwargs
             )
 
+        # maximum-likelihood
+        elif self.fit_method == 'ml':
+            # check if the probabilities must be weighted
+            if self.fit_sigma is None:
+                sigma = np.ones(self.bins.size)
+            else:
+                sigma = 1 / self.fit_sigma
+
+            # define the loss function to be minimized
+            def ml(params):
+                # predict
+                pred = [wrapped(_, *params) for _ in _x]
+
+                # get the probabilities of _y
+                p = [stats.norm.logpdf(_p, loc=o, scale=1.) for _p, o in zip(pred, _y)]
+
+                # weight the probs
+                return - np.sum(p * sigma)
+
+            # apply maximum likelihood estimation by minimizing ml
+            result = minimize(ml, p0 * 0.5, method='SLSQP', bounds=[(0, _) for _ in p0])
+
+            if not result.success:  # pragma: no cover
+                raise OptimizeWarning('Maximum Likelihood could not estimate parameters.')
+            else:
+                # set the result
+                self.cof = result.x
+
+        # manual fitting
+        elif self.fit_method == 'manual':
+            # TODO: here, the Error could only be raises if cof was None so far
+            r = kwargs.get('range', self._kwargs.get('fit_range', old_params.get('effective_range')))
+            s = kwargs.get('sill', self._kwargs.get('fit_sill', old_params.get('sill')))
+
+            # if not given raise an AttributeError
+            if r is None or s is None:
+                raise AttributeError('For manual fitting, you need to pass the \
+                    variogram parameters either to fit or to the Variogram \
+                    instance.\n parameter need to be prefixed with fit_ if \
+                    passed to __init__.')
+
+            # get the nugget
+            n = kwargs.get('nugget', self._kwargs.get('fit_nugget', old_params.get('nugget', 0.0)))
+
+            # check if a s parameter is needed
+            if self._model.__name__ in ('stable', 'matern'):
+                if self._model.__name__ == 'stable':
+                    s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('shape',2.0)))
+                if self._model.__name__ == 'matern':
+                    s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('smoothness', 2.0)))
+
+                # set
+                self.cof = [r, s, s2, n]
+            else:
+                self.cof = [r, s, n]
+
         else:
-            raise ValueError("fit method has to be one of ['trf', 'lm']")
+            raise ValueError("fit method has to be one of ['trf', 'lm', 'ml', 'custom']")
 
     def transform(self, x):
         """Transform
@@ -1102,33 +1445,52 @@ class Variogram(object):
     @property
     def _experimental(self):
         """
+        Calculates the experimental variogram from the current lag classes.
+        It handles the special case of the `'entropy'` and `'percentile'`
+        estimators, which take an additional argument.
+
+        .. versionchanged:: 0.3.6
+            replaced the for-loops with :func:`fromiter <numpy.fromiter>`
+        
+        .. versionchanged:: 0.3.7
+            makes use of `kwargs <skgstat.Variogram._kwargs>` for 
+            specific estimators now 
 
         Returns
         -------
+        experimental : np.ndarray
+            1D array of the experimental variogram values. Has same length
+            as :func:`bins <skgstat.Variogram.bins>`
 
         """
-        # prepare the result array
-        y = np.zeros(len(self.bins), dtype=np.float64)
-
-        # args, can set the bins for entropy
-        # and should set p of percentile, not properly implemented
         if self._estimator.__name__ == 'entropy':
-            bins = np.linspace(
-                np.min(self.distance),
-                np.max(self.distance),
-                50
-            )
-            # apply
-            for i, lag_values in enumerate(self.lag_classes()):
-                y[i] = self._estimator(lag_values, bins=bins)
+            # get the parameter from kwargs, if not set use 50
+            N = self._kwargs.get('entropy_bins', 50)
 
-        # default
+            # we need to use N -1 as we use the last inclusive
+            if isinstance(N, int):
+                N -= 1
+            
+            bins = np.histogram_bin_edges(self.distance, bins=N)
+
+            # define the mapper to the estimator function
+            def mapper(lag_values):
+                return self._estimator(lag_values, bins=bins)
+
+        elif self._estimator.__name__ == 'percentile':
+            if self._kwargs.get('percentile', False):
+                p = self._kwargs.get('percentile')
+
+                def mapper(lag_values):
+                    return self._estimator(lag_values, p=p)
+            else:
+                mapper = self._estimator
+
         else:
-            for i, lag_values in enumerate(self.lag_classes()):
-                y[i] = self._estimator(lag_values)
+            mapper = self._estimator
 
-        # apply
-        return y.copy()
+        # return the mapped result
+        return np.fromiter(map(mapper, self.lag_classes()), dtype=float)
 
     def __get_fit_bounds(self, x, y):
         """
@@ -1164,7 +1526,7 @@ class Variogram(object):
 
         # if use_nugget is True add the nugget
         if self.use_nugget:
-            bounds.append(0.99)
+            bounds.append(0.99*np.nanmax(y))
 
         return bounds
 
@@ -1406,14 +1768,33 @@ class Variogram(object):
 
         return _exp, _model
 
-    def describe(self):
+    def describe(self, short=False, flat=False):
         """Variogram parameters
 
         Return a dictionary of the variogram parameters.
 
+        .. versionchanged:: 0.3.7
+            The describe now returns all init parameters in as the 
+            `describe()['params']` key and all keyword arguments as
+            `describe()['kwargs']`. This output can be suppressed 
+            by setting `short=True`.
+        
+        Parameters
+        ----------
+        short : bool
+            If `True`, the `'params'` and `'kwargs'` keys will be 
+            omitted. Defaults to `False`.
+        flat : bool
+            If `True`, the `'params'` and `'kwargs'` nested `dict`s
+            will be distributed to the main `dict` to return a 
+            flat `dict`. Defaults to `False`
+
         Returns
         -------
-        dict
+        parameters : dict
+            Returns fitting parameters of the theoretical variogram
+            model along with the init parameters of the 
+            `Variogram <skgstat.Variogram>` instance.
 
         """
         # fit, if not already done
@@ -1445,6 +1826,31 @@ class Variogram(object):
             rdict['smoothness'] = cof[2]
         elif self._model.__name__ == 'stable':
             rdict['shape'] = cof[2]
+
+        # add other stuff if not short version requested
+        if not short:
+            kwargs = self._kwargs
+            params = dict(
+                estimator=self._estimator.__name__,
+                model=self._model.__name__,
+                dist_func=str(self._dist_func_name),
+                bin_func=self._bin_func_name,
+                normalize=self.normalized,
+                fit_method=self.fit_method,
+                fit_sigma=self.fit_sigma,
+                use_nugget=self.use_nugget,
+                maxlag=self.maxlag,
+                n_lags=self._n_lags_passed_value,
+                verbose=self.verbose
+            )
+
+            # update or append the params
+            if flat:
+                rdict.update(params)
+                rdict.update(kwargs)
+            else:
+                rdict['params'] = params
+                rdict['kwargs'] = kwargs
 
         # return
         return rdict
@@ -1525,6 +1931,9 @@ class Variogram(object):
         is passed, the hist attribute will be ignored as only the variogram
         will be plotted anyway.
 
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
+
         Parameters
         ----------
         axes : list, tuple, array, AxesSubplot or None
@@ -1549,127 +1958,56 @@ class Variogram(object):
         matplotlib.Figure
 
         """
-        # get the parameters
-        _bins = self.bins
-        _exp = self.experimental
-        x = np.linspace(0, np.nanmax(_bins), 100)  # make the 100 a param?
+        # get the backend
+        used_backend = plotting.backend()
 
-        # do the plotting
-        if axes is None:
-            if hist:
-                fig = plt.figure(figsize=(8, 5))
-                ax1 = plt.subplot2grid((5, 1), (1, 0), rowspan=4)
-                ax2 = plt.subplot2grid((5, 1), (0, 0), sharex=ax1)
-                fig.subplots_adjust(hspace=0)
-            else:
-                fig, ax1 = plt.subplots(1, 1, figsize=(8, 4))
-                ax2 = None
-        elif isinstance(axes, (list, tuple, np.ndarray)):
-            ax1, ax2 = axes
-            fig = ax1.get_figure()
-        else:
-            ax1 = axes
-            ax2 = None
-            fig = ax1.get_figure()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_plot(self, axes=axes, grid=grid, show=show, hist=hist)
+        elif used_backend == 'plotly':
+            return plotting.plotly_variogram_plot(self, fig=axes, grid=grid, show=show, hist=hist)
 
-        # apply the model
-        y = self.transform(x)
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
-        # handle the relative experimental variogram
-        if self.normalized:
-            _bins /= np.nanmax(_bins)
-            y /= np.max(_exp)
-            _exp /= np.nanmax(_exp)
-            x /= np.nanmax(x)
+    def scattergram(self, ax=None, show=True, **kwargs):  # pragma: no cover
+        """Scattergram plot
 
-        # ------------------------
-        # plot Variograms
-        ax1.plot(_bins, _exp, '.b')
-        ax1.plot(x, y, '-g')
+        Groups the values by lags and plots the head and tail values
+        of all point pairs within the groups against each other.
+        This can be used to investigate the distribution of the
+        value residuals.
 
-        # ax limits
-        if self.normalized:
-            ax1.set_xlim([0, 1.05])
-            ax1.set_ylim([0, 1.05])
-        if grid:
-            ax1.grid(False)
-            ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85),
-                       linestyles='dashed')
-        # annotation
-        ax1.axes.set_ylabel('semivariance (%s)' % self._estimator.__name__)
-        ax1.axes.set_xlabel('Lag (-)')
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
 
-        # ------------------------
-        # plot histogram
-        if ax2 is not None and hist:
-            # calc the histogram
-            _count = np.fromiter(
-                (g.size for g in self.lag_classes()), dtype=int
-            )
+        Parameters
+        ----------
+        ax : matplotlib.Axes, plotly.graph_objects.Figure
+            If None, a new plotting Figure will be created. If given, 
+            it has to be an instance of the used plotting backend, which 
+            will be used to plot on.
+        show : boolean
+            If True (default), the `show` method of the Figure will be 
+            called. Can be set to False to prevent duplicated plots in 
+            some environments.
+        
+        Returns
+        -------
+        fig : matplotlib.Figure, plotly.graph_objects.Figure
+            Resulting figure, depending on the plotting backend
+        """
+        # get the backend
+        used_backend = plotting.backend()
 
-            # set the sum of hist bar widths to 70% of the x-axis space
-            w = (np.max(_bins) * 0.7) / len(_count)
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_variogram_scattergram(self, ax=ax, show=show, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_variogram_scattergram(self, fig=ax, show=show, **kwargs)
 
-            # plot
-            ax2.bar(_bins, _count, width=w, align='center', color='red')
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
-            # adjust
-            plt.setp(ax2.axes.get_xticklabels(), visible=False)
-            ax2.axes.set_yticks(ax2.axes.get_yticks()[1:])
-
-            # need a grid?
-            if grid:  #pragma: no cover
-                ax2.grid(False)
-                ax2.vlines(_bins, *ax2.axes.get_ybound(),
-                           colors=(.85, .85, .85), linestyles='dashed')
-
-            # anotate
-            ax2.axes.set_ylabel('N')
-
-        # show the figure
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
-
-    def scattergram(self, ax=None, show=True):
-
-        # create a new plot or use the given
-        if ax is None:
-            fig, ax = plt.subplots(1, 1)
-        else:
-            fig = ax.get_figure()
-
-        tail = np.empty(0)
-        head = tail.copy()
-
-        for h in np.unique(self.lag_groups()):
-            # get the head and tail
-            x, y = np.where(squareform(self.lag_groups()) == h)
-
-            # concatenate
-            tail = np.concatenate((tail, self.values[x]))
-            head = np.concatenate((head, self.values[y]))
-
-        # plot the mean on tail and head
-        ax.vlines(np.mean(tail), np.min(tail), np.max(tail), linestyles='--',
-                  color='red', lw=2)
-        ax.hlines(np.mean(head), np.min(head), np.max(head), linestyles='--',
-                  color='red', lw=2)
-        # plot
-        ax.scatter(tail, head, 10, marker='o', color='orange')
-
-        # annotate
-        ax.set_ylabel('head')
-        ax.set_xlabel('tail')
-
-        # show the figure
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
-
-    def location_trend(self, axes=None, show=True):
+    def location_trend(self, axes=None, show=True, **kwargs):
         """Location Trend plot
 
         Plots the values over each dimension of the coordinates in a scatter
@@ -1677,6 +2015,9 @@ class Variogram(object):
         of the coordinate dimension. If there is a value dependence on the
         location, this would violate the intrinsic hypothesis. This is a
         weaker form of stationarity of second order.
+
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
 
         Parameters
         ----------
@@ -1686,43 +2027,51 @@ class Variogram(object):
             given instances. Note that then length of the list has to match
             the dimeonsionality of the coordinates array. In case 3D
             coordinates are used, three subplots have to be given.
+        show : boolean
+            If True (default), the `show` method of the Figure will be
+            called. Can be set to False to prevent duplicated plots in
+            some environments.
+
+        Keyword Arguments
+        -----------------
+        add_trend_line : bool
+            .. versionadded:: 0.3.5
+
+            If set to `True`, the class will fit a linear model to each
+            coordinate dimension and output the model along with a
+            calculated R². With high R² values, you should consider
+            rejecting the input data, or transforming it.
+
+            .. note::
+                Right now, this is only supported for ``'plotly'`` backend
+   
 
         Returns
         -------
-        matplotlib.Figure
+        fig : matplotlib.Figure, plotly.graph_objects.Figure
+            The figure produced by the function. Dependends on the 
+            current backend.
 
         """
-        N = len(self._X[0])
-        if axes is None:
-            # derive the needed amount of col and row
-            nrow = int(round(np.sqrt(N)))
-            ncol = int(np.ceil(N / nrow))
-            fig, axes = plt.subplots(nrow, ncol, figsize=(ncol * 6 ,nrow * 6))
-        else:
-            if not len(axes) == N:
-                raise ValueError(
-                    'The amount of passed axes does not fit the coordinate' +
-                    ' dimensionality of %d' % N)
-            fig = axes[0].get_figure()
+        # get the backend
+        used_backend = plotting.backend()
 
-        for i in range(N):
-            axes.flatten()[i].plot([_[i] for _ in self._X], self.values, '.r')
-            axes.flatten()[i].set_xlabel('%d-dimension' % (i + 1))
-            axes.flatten()[i].set_ylabel('value')
-
-        # plot the figure and return it
-        plt.tight_layout()
-
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_location_trend(self, axes=axes, show=show, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_location_trend(self, fig=axes, show=show, **kwargs)
+        
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def distance_difference_plot(self, ax=None, plot_bins=True, show=True):
         """Raw distance plot
 
         Plots all absoulte value differences of all point pair combinations
         over their separating distance, without sorting them into a lag.
+
+        .. versionchanged:: 0.4.0
+            This plot can be plotted with the plotly plotting backend
 
         Parameters
         ----------
@@ -1741,40 +2090,16 @@ class Variogram(object):
         matplotlib.pyplot.Figure
 
         """
-        # get all distances
-        _dist = self.distance
+        # get the backend
+        used_backend = plotting.backend()
 
-        # get all differences
-        if self._diff is None:
-            self._calc_diff()
-        _diff = self._diff
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_dd_plot(self, ax=ax, plot_bins=plot_bins, show=show)
+        elif used_backend == 'plotly':
+            return plotting.plotly_dd_plot(self, fig=ax, plot_bins=plot_bins, show=show)
 
-        # create the plot
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8, 6))
-        else:
-            fig = ax.get_figure()
-
-        # plot the bins
-        if plot_bins:
-            _bins = self.bins
-            ax.vlines(_bins, 0, np.max(_diff), linestyle='--', lw=1, color='r')
-
-        # plot
-        ax.scatter(_dist, _diff, 8, color='b', marker='o', alpha=0.5)
-
-        # set limits
-        ax.set_ylim((0, np.max(_diff)))
-        ax.set_xlim((0, np.max(_dist)))
-        ax.set_xlabel('separating distance')
-        ax.set_ylabel('pairwise difference')
-        ax.set_title('Pairwise distance ~ difference')
-
-        # show the plot
-        if show:  # pragma: no cover
-            fig.show()
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def __repr__(self):  # pragma: no cover
         """

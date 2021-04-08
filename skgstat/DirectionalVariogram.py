@@ -2,11 +2,10 @@
 Directional Variogram
 """
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.spatial.distance import squareform, pdist
-import matplotlib.collections
+from scipy.spatial.distance import pdist
 
 from .Variogram import Variogram
+from skgstat import plotting
 
 
 class DirectionalVariogram(Variogram):
@@ -37,7 +36,8 @@ class DirectionalVariogram(Variogram):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 verbose=False
+                 verbose=False,
+                 **kwargs
                  ):
         r"""Variogram Class
 
@@ -91,12 +91,22 @@ class DirectionalVariogram(Variogram):
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
         bin_func : str
+            .. versionchanged:: 0.3.8
+                added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
+            
             String identifying the binning function used to find lag class
-            edges. At the moment there are two possible values: 'even'
-            (default) or 'uniform'. Even will find n_lags bins of same width
-            in the interval [0,maxlag[. 'uniform' will identfy n_lags bins on
-            the same interval, but with varying edges so that all bins count
-            the same amount of observations.
+            edges. All methods calculate bin edges on the interval [0, maxlag[.
+            Possible values are:
+            
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
+                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>`. as `n_lags`.
+
+            More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
         normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
@@ -192,12 +202,31 @@ class DirectionalVariogram(Variogram):
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
+        Keyword Arguments
+        -----------------
+        entropy_bins : int, str
+            .. versionadded:: 0.3.7
+
+            If the `estimator <skgstat.Variogram.estimator>` is set to
+            `'entropy'` this argument sets the number of bins, that should be
+            used for histogram calculation.
+        percentile : int
+            .. versionadded:: 0.3.7
+            
+            If the `estimator <skgstat.Variogram.estimator>` is set to
+            `'entropy'` this argument sets the percentile to be used.
+
         """
+        # Before we do anything else, make kwargs available
+        self._kwargs = self._validate_kwargs(**kwargs)
 
         # FIXME: Call __init__ of baseclass?
+        # No, because the sequence at which the arguments get initialized
+        # does matter. There is way too much transitive dependence, thus
+        # it was easiest to copy the init over.
 
         self._direction_mask_cache = None
-        
+
         # Set coordinates
         self._X = np.asarray(coordinates)
 
@@ -216,7 +245,7 @@ class DirectionalVariogram(Variogram):
         self._dist = None
 
         # set distance calculation function
-        self._dist_func = None
+        self._dist_func_name = None
         self.set_dist_function(func=dist_func)
 
         # Angles and euclidean distances used for direction mask calculation
@@ -329,7 +358,7 @@ class DirectionalVariogram(Variogram):
 
         # for angles, we need Euklidean distance,
         # no matter which distance function is used
-        if self._dist_func == "euclidean":
+        if self._dist_func_name == "euclidean":
             self._euclidean_dist = self._dist
         else:
             self._euclidean_dist = pdist(_x, "euclidean")
@@ -519,7 +548,12 @@ class DirectionalVariogram(Variogram):
             d = self.distance.copy()
             d[np.where(~self._direction_mask())] = np.nan
 
-            self._bins = self.bin_func(d, self.n_lags, self.maxlag)
+            self._bins, n = self.bin_func(d, self._n_lags, self.maxlag)
+
+            # if the binning function returned an N, the n_lags need
+            # to be adjusted directly (not through the setter)
+            if n is not None:
+                self._n_lags = n
 
         return self._bins.copy()
 
@@ -551,7 +585,7 @@ class DirectionalVariogram(Variogram):
             self._direction_mask_cache = self._directional_model(self._angles, self._euclidean_dist)
         return self._direction_mask_cache
 
-    def pair_field(self, ax=None, cmap="gist_rainbow", points='all',add_points=True, alpha=0.3):  # pragma: no cover
+    def pair_field(self, ax=None, cmap="gist_rainbow", points='all', add_points=True, alpha=0.3, **kwargs):  # pragma: no cover
         """
         Plot a pair field.
 
@@ -576,53 +610,13 @@ class DirectionalVariogram(Variogram):
             visualize better. Defaults to ``0.3``.
             
         """
-        # get the direction mask
-        mask = squareform(self._direction_mask())
+        # get the backend
+        used_backend = plotting.backend()
 
-        # build a coordinate meshgrid
-        r = np.arange(len(self._X))
-        x1, x2 = np.meshgrid(r, r)
-        start = self._X[x1[mask]]
-        end = self._X[x2[mask]]
-
-        # handle lesser points
-        if isinstance(points, int):
-            points = [points]
-        if isinstance(points, list):
-            _start, _end = list(), list()
-            for p in self._X[points]:
-                _start.extend(start[np.where(end == p)[0]])
-                _end.extend(end[np.where(end == p)[0]])
-            start = np.array(_start)
-            end = np.array(_end)
-
-        # extract all lines and align colors
-        lines = np.column_stack((start.reshape(len(start), 1, 2), end.reshape(len(end), 1, 2)))
-        #colors = plt.cm.get_cmap(cmap)(x2[mask] / x2[mask].max())
-        colors = plt.cm.get_cmap(cmap)(np.linspace(0, 1, len(lines)))
-        colors[:, 3] = alpha
-
-        # get the figure and ax object
-        if ax is None:
-            fig, ax = plt.subplots(1, 1, figsize=(8,8))
-        else:
-            fig = ax.get_figure()
-
-        # plot
-        lc = matplotlib.collections.LineCollection(lines, colors=colors, linewidths=1)
-        ax.add_collection(lc)
-        
-        # add coordinates
-        if add_points:
-            ax.scatter(self._X[:, 0], self._X[:, 1], 15, c='k')
-            if isinstance(points, list):
-                ax.scatter(self._X[:, 0][points], self._X[:, 1][points], 25, c='r')
-
-        # finish plot
-        ax.autoscale()
-        ax.margins(0.1)
-
-        return fig
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_pair_field(self, ax=ax, cmap=cmap, points=points, add_points=add_points, alpha=alpha, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_pair_field(self, fig=ax, points=points, add_points=add_points, alpha=alpha, **kwargs)       
 
     def _triangle(self, angles, dists):
         r"""Triangular Search Area

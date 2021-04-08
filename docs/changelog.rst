@@ -2,6 +2,111 @@
 Changelog
 =========
 
+Version 0.4.0
+=============
+
+- [binning] added `'stable_entropy'` option that will optimize the lag class edges to be of comparable Shannon Entropy.
+
+Version 0.3.11
+==============
+- [Variogram] A new method is introduced to calculate fitting weights. Works for all but the manual fit
+  method. By setting :func:`fit_sigma='entropy' <skgstat.Variogram.fit_sigma>`, the fitting weights will
+  be adjusted according to the lag classes' Shannon entropy. That will ignore lag classes of high
+  uncertainty and emphasize lags of low uncertainty.
+
+Version 0.3.10
+==============
+- [binning] added a median aggregation option to :func:`ward <skgstat.binning.ward>`. This can be 
+  enabled by setting `binning_agg_func` to `'median'`. The cluster centroids will be derived from 
+  the members median value, instead of mean value.
+- [Variogram] added :func:`fit_method='ml' <skgstat.Variogram.fit_method>` - a maximum likelihood fitting 
+  procedure to fit the theoretical variogram to the experimental
+- [Variogram] added :func:`fit_method='manual' <skgstat.Variogram.fit_method>`. This is a manual fitting 
+  method that takes the variogram parameters either at instantiation prefixed by `fit_`, or as 
+  keyword arguments by :func:`fit <skgstat.Variogram.fit>`. 
+- [Variogram] the manual fitting method will preseve the previous parameters, if the Variogram was 
+  fitted before and the fitting parameters are not manually overwritten.
+
+
+Version 0.3.9
+=============
+- [binning] added :func:`kmeans <skgstat.binning.kmeans>` and :func:`ward <skgstat.binning.ward>` for forming
+  non-equidistant lag classes based on a distance matrix clustering
+- [Kriging] Kriging now stores the last interpolated field as `z`. This is the first of a few changes
+  in future releases, which will ultimately add some plotting methods to Kriging.
+
+Version 0.3.8
+=============
+- [plotting] minor bugfixes in plotting routines (wrong arguments, pltting issues)
+- [docs] added a tutorial about plotting
+- [binning] added :func:`auto_derived_lags <skgstat.binning.auto_derived_lags>` for a variety
+  of different methods that find a good estimate for either the number of lag classes or the 
+  lag class width. These can be used by passing the method name as :func:`bin_func <skgstat.Variogram.set_bin_func>` 
+  parameter: Freedman-Diaconis (`'fd'`), Sturge's rule (`'sturges'`), Scott's rule (`'scott'`) and 
+  Doane's extension to Sturge's rule (`'doane'`). 
+  Uses `histogram_bin_edges <numpy.histogram_bin_edges>` internally.
+
+Version 0.3.7
+=============
+- [Variogram] now accepts arbitary kwargs. These can be used to further specify functional behavior
+  of the class. As of Version `0.3.7` this is used to pass arguments down to the 
+  :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.estimators.percentile>` 
+  estimators.
+- [Variogram] the :func:`describe <skgstat.Variogram.describe>` now adds the 
+  :func:`init <skgstat.Variogram.__init__>` arguments by default to the output. The method can output 
+  the init params as a nested dict inside the output or flatten the output dict.
+
+Version 0.3.6
+=============
+.. warning:: 
+  There is some potential breaking behaviour
+
+- [Variogram] some internal code cleanup. Removed some unnecessary loops
+- [Variogram] setting the :func:`n_lags <skgstat.Variogram.n_lags>` property now correctly forces
+  a recalculation of the lag groupings. So far they were kept untouches, which might result
+  in old experimental variogram values for the changed instance.
+  **This is a potential breaking change**.
+- [Variogram] The :func:`lag_classes <skgstat.Variogram.lag_classes>` generator now yields empty 
+  arrays for unoccupied lag classes. This will result in :class:`NaN <numpy.NaN>` values for the 
+  semi-variance. This is actually a bug-fix.
+  **This is a potential breaking change**
+
+Version 0.3.5
+=============
+- [plotting] The :func:`location_trend <skgstat.Variogram.location_trend>` can now add 
+  trend model lines to the scatter plot for the `'plotly'` backend and calculate the 
+  R² for the trend model.
+- [Variogram] the *internal* attribute holding the name of the current distance function
+  was renamed from `_dict_func` to `_dist_func_name`
+
+Version 0.3.4
+=============
+- [plotting] The :func:`scattergram <skgstat.Variogram.scattergram>` 
+  functions color the plotted points with respect to the lag bin they
+  are originating from. For `matplotlib`, this coloring is suppressed, but can activated by 
+  passing the argument ``scattergram(single_color=False)``.
+
+Version 0.3.3
+=============
+
+- [plotting] a new submodule is introduced: :py:mod:`skgstat.plotting`. This contains all plotting functions. 
+  The plotting behavior is not changed, but using :func:`skgstat.plotting.backend`, the used plotting library
+  can be switched from `matplotlib` to `plotly`
+- [stmodels] some code cleanup
+- [SpaceTimeVariogram] finally can fit the product-sum model to the experimental variogram
+
+Version 0.3.2
+=============
+- [models] Matérn model now adapts effective range to smoothness parameter
+- [models] Matérn model documentation updated
+- [models] some minor updates to references in the docs
+
+Version 0.3.1
+=============
+
+- [Variogram] - internal distance calculations were refactored, to speed things up
+- [Kriging] - internal distance calculations were refactored, to speed things up
+
 Version 0.3.0
 =============
 

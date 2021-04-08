@@ -12,3 +12,4 @@ Code Reference
     estimator
     models
     kriging
+    util

@@ -108,3 +108,7 @@ docs/savefig
 notebooks
 .vscode
 container
+
+# project specific
+Playground.ipynb
+in_progress

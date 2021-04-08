@@ -3,14 +3,11 @@
 """
 import numpy as np
 from scipy.spatial.distance import pdist
-from scipy.ndimage.interpolation import zoom
-from scipy.interpolate import griddata
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import inspect
 
-from skgstat import binning, estimators, Variogram, stmodels
+from skgstat import binning, estimators, Variogram, stmodels, plotting
 
 
 class SpaceTimeVariogram:
@@ -310,6 +307,8 @@ class SpaceTimeVariogram:
 
     @property
     def x_lags(self):
+        if self._x_lags is None:
+            self._x_lags = len(self.xbins)
         return self._x_lags
 
     @x_lags.setter
@@ -334,8 +333,10 @@ class SpaceTimeVariogram:
                 return self.values.shape[1] - 1
             else:
                 raise ValueError("Only 'max' supported as string argument.")
-        else:
-            return self._t_lags
+        elif self._t_lags is None:
+            self._t_lags = len(self.tbins)
+        
+        return self._t_lags
 
     @t_lags.setter
     def t_lags(self, lags):
@@ -403,11 +404,19 @@ class SpaceTimeVariogram:
         skgstat.binning.uniform_count_lags
 
         """
+        adjust_n_lags = False
         # switch the function
         if bin_func.lower() == 'even':
             f = binning.even_width_lags
         elif bin_func.lower() == 'uniform':
             f = binning.uniform_count_lags
+        elif isinstance(bin_func, str):
+            # define a wrapper to pass the name
+            def wrapper(distances, n, maxlag):
+                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+
+            f = wrapper
+            adjust_n_lags = True
         else:
             raise ValueError('%s binning method is not known' % bin_func)
 
@@ -416,15 +425,22 @@ class SpaceTimeVariogram:
             self._xbin_func = f
             self._xbin_func_name = bin_func
 
+            if adjust_n_lags:
+                self._x_lags = None
+
             # update marginal
             self._set_xmarg_params()
 
             # reset
             self._xgroups = None
             self._xbins = None
+
         elif axis.lower() == 'time' or axis.lower() == 't':
             self._tbin_func = f
             self._tbin_func_name = bin_func
+
+            if adjust_n_lags:
+                self._t_lags = None
 
             # update marignal
             self._set_tmarg_params()
@@ -432,6 +448,7 @@ class SpaceTimeVariogram:
             # reset
             self._tgroups = None
             self._tbins = None
+
         else:
             raise ValueError('%s is not a valid axis' % axis)
 
@@ -454,8 +471,12 @@ class SpaceTimeVariogram:
         """
         # check if cached
         if self._xbins is None:
-            self._xbins = self._xbin_func(self.xdistance,
-                                          self.x_lags, self.maxlag)
+            self._xbins, n = self._xbin_func(self.xdistance, self._x_lags, self.maxlag)
+
+            # if n is not None, the binning func overwrote it
+            if n is not None:
+                self._x_lags = n
+
         return self._xbins
 
     @xbins.setter
@@ -492,7 +513,13 @@ class SpaceTimeVariogram:
 
         """
         if self._tbins is None:
-            self._tbins = self._tbin_func(self.tdistance, self.t_lags, None)
+            # this is a bit dumb, but we cannot pass a string as n param
+            tn = self._t_lags if self._t_lags != 'max' else self.t_lags
+            self._tbins, n = self._tbin_func(self.tdistance, tn, None)
+
+            # if n is not None, the binning func overwote it
+            if n is not None:
+                self._t_lags = n
 
         return self._tbins
 
@@ -975,9 +1002,6 @@ class SpaceTimeVariogram:
         # if force, force a clean preprocessing
         self.preprocessing(force=force)
 
-        # This is not finished
-        return
-
         # load the fitting data
         xx, yy = self.meshbins
         z = self.experimental
@@ -997,10 +1021,6 @@ class SpaceTimeVariogram:
         model_args = inspect.getargs(_code_obj).args
         self._model_params = dict()
 
-#        if 'Vx' in model_args:
-#            self._model_params['Vx'] = Vx
-#        if 'Vt' in model_args:
-#            self._model_params['Vt'] = Vt
 
         # fix the sills?
         fix_sills = True    # TODO: Make this a param in __init__
@@ -1022,7 +1042,7 @@ class SpaceTimeVariogram:
             return self._model(lags, Vx, Vt, *args, **self._model_params)
 
         self.cof, self.cov = curve_fit(
-            _model, xdata, ydata, bounds=[0,  np.inf], p0=[1.] * free_args
+            _model, xdata.T, ydata, bounds=[0,  np.inf], p0=[1.] * free_args
         )
 
         return
@@ -1046,9 +1066,12 @@ class SpaceTimeVariogram:
         Vx = self.XMarginal.fitted_model
         Vt = self.TMarginal.fitted_model
 
+        cof = self.cof if self.cof is not None else []
+        params = self._model_params if self._model_params is not None else {}
+
         # define the function
         def model(lags):
-            return func(lags, Vx, Vt, *self.cof, **self._model_params)
+            return func(lags, Vx, Vt, *cof, **params)
 
         return model
 
@@ -1103,7 +1126,7 @@ class SpaceTimeVariogram:
     # ------------------------------------------------------------------------ #
     #                             PLOTTING                                     #
     # ------------------------------------------------------------------------ #
-    def plot(self, kind='scatter', ax=None, **kwargs):
+    def plot(self, kind='scatter', ax=None, **kwargs):  # pragma: no cover
         """Plot the experimental variogram
 
         At the current version the SpaceTimeVariogram class is not capable of
@@ -1167,8 +1190,8 @@ class SpaceTimeVariogram:
         else:
             raise ValueError('kind %s is not a valid value.')
 
-    def scatter(self, ax=None, elev=30, azim=220, c='g',
-                depthshade=True, **kwargs):
+    def scatter(self, ax=None, elev=30, azim=220, c='blue',
+                depthshade=True, **kwargs):  # pragma: no cover
         """3D Scatter Variogram
 
         Plot the experimental variogram into a 3D matplotlib.Figure. The two
@@ -1223,8 +1246,8 @@ class SpaceTimeVariogram:
         return self._plot3d(kind='scatter', ax=ax, elev=elev, azim=azim,
                             c=c, depthshade=depthshade, **kwargs)
 
-    def surface(self, ax=None, elev=30, azim=220, color='g',
-                alpha=0.5, **kwargs):
+    def surface(self, ax=None, elev=30, azim=220, color='blue',
+                alpha=0.5, **kwargs):  # pragma: no cover
         """3D Scatter Variogram
 
         Plot the experimental variogram into a 3D matplotlib.Figure. The two
@@ -1282,44 +1305,20 @@ class SpaceTimeVariogram:
         return self._plot3d(kind='surf', ax=ax, elev=elev, azim=azim,
                             color=color, alpha=alpha, **kwargs)
 
-    def _plot3d(self, kind='scatter', ax=None, elev=30, azim=220, **kwargs):
-        # Create or check the Figure and Axes
-        if ax is not None:
-            if not isinstance(ax, Axes3D):
-                raise ValueError('The passed ax object is not an instance '
-                                 'of mpl_toolkis.mplot3d.Axes3D.')
-            fig = ax.get_figure()
-        else:
-            fig = plt.figure(figsize=kwargs.get('figsize', (10, 10)))
-            ax = fig.add_subplot(111, projection='3d')
+    def _plot3d(self, kind='scatter', ax=None, elev=30, azim=220, **kwargs):  # pragma: no cover
+        # get the backend
+        used_backend = plotting.backend()
 
-        # get the data, spanned over a bin meshgrid
-        xx, yy = self.meshbins
-        z = self.experimental
-        x = xx.flatten()
-        y = yy.flatten()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_plot_3d(self, kind=kind, ax=ax, elev=elev, azim=azim, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_plot_3d(self, kind=kind, fig=ax, **kwargs)
 
-        # plot
-        c = kwargs.get('color', 'g') if 'color' in kwargs else kwargs.get('c', 'g')
-
-        ax.view_init(elev=elev, azim=azim)
-        if kind == 'surf':
-            ax.plot_trisurf(x, y, z, color=c, alpha=kwargs.get('alpha', 0.8))
-        elif kind == 'scatter':
-            ax.scatter(x, y, z, c=c, depthshade=kwargs.get('depthshade', False))
-        else:
-            raise ValueError('%s is not a valid 3D plot' % kind)
-
-        # set the labels
-        ax.set_xlabel('space')
-        ax.set_ylabel('time')
-        ax.set_zlabel('semivariance [%s]' % self.estimator.__name__)
-
-        # return
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def contour(self, ax=None, zoom_factor=100., levels=10, colors='k',
-                linewidths=0.3, method="fast", **kwargs):
+                linewidths=0.3, method="fast", **kwargs):  # pragma: no cover
         """Variogram 2D contour plot
 
         Plot a 2D contour plot of the experimental variogram. The
@@ -1376,7 +1375,7 @@ class SpaceTimeVariogram:
                             linewidths=linewidths, **kwargs)
 
     def contourf(self, ax=None, zoom_factor=100., levels=10,
-                 cmap='RdYlBu_r', method="fast", **kwargs):
+                 cmap='RdYlBu_r', method="fast", **kwargs):  # pragma: no cover
         """Variogram 2D filled contour plot
 
         Plot a 2D filled contour plot of the experimental variogram. The
@@ -1431,68 +1430,20 @@ class SpaceTimeVariogram:
         return self._plot2d(kind='contourf', ax=ax, zoom_factor=zoom_factor,
                             levels=levels, cmap=cmap, method=method, **kwargs)
 
-    def _plot2d(self, kind='contour', ax=None, zoom_factor=100.,
-                levels=10, method="fast", **kwargs):
-        # get or create the figure
-        if ax is not None:
-            fig = ax.get_figure()
-        else:
-            fig, ax = plt.subplots(1, 1, figsize=kwargs.get('figsize', (8, 8)))
+    def _plot2d(self, kind='contour', ax=None, zoom_factor=100., levels=10, method="fast", **kwargs):  # pragma: no cover
+        # get the backend
+        used_backend = plotting.backend()
 
-        # prepare the meshgrid
-        xx, yy = self.meshbins
-        z = self.experimental
-        x = xx.flatten()
-        y = yy.flatten()
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_plot_2d(self, kind=kind, ax=ax, zoom_factor=zoom_factor, level=10, method=method, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_plot_2d(self, kind=kind, fig=ax, **kwargs)
 
-        xxi = zoom(xx, zoom_factor, order=1)
-        yyi = zoom(yy, zoom_factor, order=1)
-
-        # interpolation, either fast or precise
-        if method.lower() == "fast":
-            zi = zoom(z.reshape((self.t_lags, self.x_lags)), zoom_factor,
-                      order=1, prefilter=False)
-        elif method.lower() == "precise":
-            # zoom the meshgrid by linear interpolation
-
-            # interpolate the semivariance
-            zi = griddata((x, y), z, (xxi, yyi), method='linear')
-        else:
-            raise ValueError("method has to be one of ['fast', 'precise']")
-
-        # get the bounds
-        zmin = np.nanmin(zi)
-        zmax = np.nanmax(zi)
-
-        # get the plotting parameters
-        lev = np.linspace(0, zmax, levels)
-        c = kwargs.get('color') if 'color' in kwargs else kwargs.get('c', 'k')
-        cmap = kwargs.get('cmap', 'RdYlBu_r')
-
-        # plot
-        if kind.lower() == 'contour':
-            ax.contour(xxi, yyi, zi, colors=c, levels=lev, vmin=zmin * 1.1,
-                       vmax=zmax * 0.9, linewidths=kwargs.get('linewidths', 0.3)
-                       )
-        elif kind.lower() == 'contourf':
-            C = ax.contourf(xxi, yyi, zi, cmap=cmap, levels=lev, vmin=zmin *
-                                                                      1.1,
-                            vmax=zmax * 0.9)
-            if kwargs.get('colorbar', True):
-                plt.colorbar(C, ax=ax)
-        else:
-            raise ValueError("%s is not a valid 2D plot" % kind)
-
-        # some labels
-        ax.set_xlabel(kwargs.get('xlabel', 'space'))
-        ax.set_ylabel(kwargs.get('ylabel', 'time'))
-        ax.set_xlim(kwargs.get('xlim', (0, self.xbins[-1])))
-        ax.set_ylim(kwargs.get('ylim', (0, self.tbins[-1])))
-
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
 
     def marginals(self, plot=True, axes=None, sharey=True, include_model=False,
-        **kwargs):
+        **kwargs):  # pragma: no cover
         """Plot marginal variograms
 
         Plots the two marginal variograms into a new or existing figure. The
@@ -1505,6 +1456,8 @@ class SpaceTimeVariogram:
         Parameters
         ----------
         plot : bool
+            .. deprecated:: 0.4
+                With version 0.4, this parameter will be removed
             If set to False, no matplotlib.Figure will be returned. Instead a
             tuple of the two marginal experimental variogram values is
             returned.
@@ -1532,64 +1485,21 @@ class SpaceTimeVariogram:
             If plot is True, the matplotlib.Figure will be returned.
 
         """
-        # get the marginal space variogram
-#        vx = self.get_marginal(axis='space', lag=0)
-#        vy = self.get_marginal(axis='time', lag=0)
-        vx = self.XMarginal.experimental
-        vy = self.TMarginal.experimental
-
-        # if no plot is desired, return the experimental variograms
+        # handle plot
         if not plot:
-            return vx, vy
+            raise DeprecationWarning('The plot parameter will be removed.')
+            return (
+                self.XMarginal.experimental,
+                self.TMarginal.experimental
+            )
 
-        # check if an ax needs to be created
-        if axes is None:
-            fig, axes = plt.subplots(1, 2,
-                                     figsize=kwargs.get('figsize', (12, 6)),
-                                     sharey=sharey
-                                     )
-        else:
-            if len(axes) != 2:
-                raise ValueError('axes needs to an array of two AxesSubplot '
-                                 'objects')
-            fig = axes[0].get_figure()
+        # backend
+        used_backend = plotting.backend()
 
-        # plot
-        ax = axes[0]
-        ax2 = axes[1]
-        ax3 = ax2.twinx()
-        ax3.get_shared_y_axes().join(ax3, ax)
+        if used_backend == 'matplotlib':
+            return plotting.matplotlib_marginal(self, axes=axes, sharey=sharey, include_model=include_model, **kwargs)
+        elif used_backend == 'plotly':
+            return plotting.plotly_marginal(self, fig=axes, include_model=include_model, **kwargs)
 
-        if include_model:
-            # transform
-            xx = np.linspace(0, self.xbins[-1], 50)
-            xy = np.linspace(0, self.tbins[-1], 50)
-            y_vx = self.XMarginal.transform(xx)
-            y_vy = self.TMarginal.transform(xy)
-
-            # plot
-            ax.plot(self.xbins, vx, 'Db')
-            ax.plot(xx, y_vx, '-b')
-            ax3.plot(self.tbins, vy, 'Dg')
-            ax3.plot(xy, y_vy, '-g')
-        else:
-            ax.plot(self.xbins, vx, '-ob')
-            ax3.plot(self.tbins, vy, '-og')
-
-        # set labels
-        ax.set_xlabel('distance [spatial]')
-        ax.set_ylabel('semivariance [%s]' % self.estimator.__name__)
-        ax2.set_xlabel('distance [temporal]')
-        if not sharey:
-            ax3.set_ylabel('semivariance [%s]' % self.estimator.__name__)
-
-        # set title and grid
-        ax.set_title('spatial marginal variogram')
-        ax2.set_title('temporal marginal variogram')
-
-        ax.grid(which='major')
-        ax2.grid(which='major')
-        plt.tight_layout()
-
-        # return
-        return fig
+        # if we reach this line, somethings wrong with plotting backend
+        raise ValueError('The plotting backend has an undefined state.')
