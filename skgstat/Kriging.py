@@ -159,8 +159,9 @@ class OrdinaryKriging:
 
     def dist(self, x):
         return Variogram.wrapped_distance_function(self.dist_metric, x)
-               
-    def _get_coordinates_and_values(self):
+    
+    @classmethod
+    def _remove_duplicated_coordinates(cls, coords, values):
         """Extract the coordinates and values
 
         The coordinates array is checked for duplicates and only the
