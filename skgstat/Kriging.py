@@ -102,8 +102,11 @@ class OrdinaryKriging:
         if isinstance(variogram, Variogram):
             if coordinates is None: coordinates = variogram.coordinates
             if values is None: values = variogram.values
-            variogram = variogram.describe()
-
+            variogram_descr = variogram.describe()
+            if variogram_descr["model"] == "harmonize":
+                variogram_descr["model"] = variogram._build_harmonized_model()
+            variogram = variogram_descr
+                
         self.sparse = sparse
         
         # general attributes

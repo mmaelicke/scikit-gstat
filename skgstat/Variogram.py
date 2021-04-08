@@ -1337,8 +1337,7 @@ class Variogram(object):
         harmonize = False
         if not callable(model):
             if model == "harmonize":
-                # FIXME: How do we serialize a harmonized model in describe()?
-                pass
+                raise ValueError("Please supply the actual harmonized model directly")
             else:
                 model = model.lower()
                 model = getattr(models, model)
@@ -1807,7 +1806,7 @@ class Variogram(object):
             return name
         
         rdict = dict(
-            model=fnname(self._model),
+            model=fnname(self._model) if not self._harmonize else "harmonize",
             estimator=fnname(self._estimator),
             dist_func=fnname(self.dist_function),
             
