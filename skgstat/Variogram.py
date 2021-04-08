@@ -246,16 +246,19 @@ class Variogram(object):
         self._estimator = None
         self.set_estimator(estimator_name=estimator)
 
-        # model can be a function or a string
-        self._model = None
-        self.set_model(model_name=model)
-
         # the binning settings
         self._bin_func_name = None
         self._bin_func = None
         self._groups = None
         self._bins = None
         self.set_bin_func(bin_func=bin_func)
+
+        # Needed for harmonized models
+        self.preprocessing(force=True)
+
+        # model can be a function or a string
+        self._model = None
+        self.set_model(model_name=model)
 
         # specify if the lag should be given absolute or relative to the maxlag
         self._normalized = normalize
