@@ -1506,6 +1506,39 @@ class Variogram(object):
         # return the mapped result
         return np.fromiter(map(mapper, self.lag_classes()), dtype=float)
 
+    def get_empirical(self, bin_center=False):
+        """Empirical variogram
+
+        Returns a tuple of dependent and independent sample values, this
+        :class:`Variogram <skgstat.Variogram>` is estimated for.
+        This is a tuple of the current :func:`bins <skgstat.Variogram.bins>`
+        and :func:`experimental <skgstat.Variogram.experimental>`
+        semi-variance values. By default the upper bin edges are used.
+        This can be set to bin center by the `bin_center` argument.
+
+        Parameters
+        ----------
+        bin_center : bool
+            If set to `True`, the center for each distance lag bin is
+            used over the upper limit (default).
+
+        Returns
+        -------
+        bins : numpy.ndarray
+            1D array of :func:`n_lags <skgstat.Variogram.n_lags>`
+            distance lag bins.
+        experimental : numpy.ndarray
+            1D array of :func:`n_lags <skgstat.Variogram.n_lags>`
+            experimental semi-variance values.
+
+        See Also
+        --------
+        Variogram.bins
+        Variogram.experimental
+
+        """
+        raise NotImplementedError
+
     def __get_fit_bounds(self, x, y):
         """
         Return the bounds for parameter space in fitting a variogram model.
