@@ -16,18 +16,17 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
 
     def test_standard_settings(self):
         DV = DirectionalVariogram(self.c, self.v, normalize=True)
-
-        assert_array_almost_equal(
-            DV.parameters, [436., 2706., 0],
-            decimal=0
-        )
+        
+        assert_array_almost_equal(DV.describe()["normalized_effective_range"], 436., decimal=0)
+        assert_array_almost_equal(DV.describe()["normalized_sill"], 2706., decimal=0)
+        assert_array_almost_equal(DV.describe()["normalized_nugget"], 0., decimal=0)
 
     def test_azimuth(self):
         DV = DirectionalVariogram(self.c, self.v, azimuth=-45, normalize=True)
 
-        assert_array_almost_equal(
-            DV.parameters, [23.438, 219.406, 0], decimal=3
-        )
+        assert_array_almost_equal(DV.describe()["normalized_effective_range"], 23.438, decimal=3)
+        assert_array_almost_equal(DV.describe()["normalized_sill"], 219.406, decimal=3)
+        assert_array_almost_equal(DV.describe()["normalized_nugget"], 0., decimal=3)
 
     def test_invalid_azimuth(self):
         with self.assertRaises(ValueError) as e:
@@ -41,10 +40,9 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_tolerance(self):
         DV = DirectionalVariogram(self.c, self.v, tolerance=15, normalize=True)
 
-        assert_array_almost_equal(
-            DV.parameters, [435.7, 2722.1, 0],
-            decimal=1
-        )
+        assert_array_almost_equal(DV.describe()["normalized_effective_range"], 435.7, decimal=1)
+        assert_array_almost_equal(DV.describe()["normalized_sill"], 2722.1, decimal=1)
+        assert_array_almost_equal(DV.describe()["normalized_nugget"], 0., decimal=1)
 
     def test_invalid_tolerance(self):
         with self.assertRaises(ValueError) as e:
@@ -58,7 +56,8 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
     def test_bandwidth(self):
         DV = DirectionalVariogram(self.c, self.v, bandwidth=12, normalize=True)
 
-        for x, y in zip(DV.parameters, [435.733, 2715.865, 0]):
+        for x, y in zip([DV.describe()[name] for name in ("normalized_effective_range", "normalized_sill", "normalized_nugget")],
+                        [435.733, 2715.865, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
     def test_invalid_model(self):
