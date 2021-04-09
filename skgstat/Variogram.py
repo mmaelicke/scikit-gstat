@@ -426,10 +426,10 @@ class Variogram(object):
         Sets a new binning function to be used. The new binning method is set
         by a string identifying the new function to be used. Can be one of:
         ['even', 'uniform', 'fd', 'sturges', 'scott', 'sqrt', 'doane'].
-        If the number of lag classes should be estimated automatically, it is 
+        If the number of lag classes should be estimated automatically, it is
         recommended to use ' sturges' for small, normal distributed locations
         and 'fd' or 'scott' for large datasets, where 'fd' is more robust to
-        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an 
+        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an
         extension of Sturge's rule for non-normal distributed data.
 
         .. versionchanged:: 0.3.8
@@ -440,6 +440,11 @@ class Variogram(object):
 
         .. versionchanged:: 0.4.0
             added 'stable_entropy'
+
+        .. versionchanged:: 0.4.1
+            refactored local wrapper function definition. The wrapper to
+            pass kwargs to the binning functions is now implemented as
+            a instance method, to make it pickleable.
 
         Parameters
         ----------
@@ -550,28 +555,13 @@ class Variogram(object):
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
 
-        elif bin_func.lower() == 'kmeans':
-            # define a helper to pass kwargs
-            def wrapper(distance, n, maxlag):
-                return binning.kmeans(distance, n, maxlag, **self._kwargs)
-            self._bin_func = wrapper
-
-        elif bin_func.lower() == 'ward':
-            self._bin_func = binning.ward
-
-        elif bin_func.lower() == 'stable_entropy':
-            # define a wrapper
-            def wrapper(distances, n, maxlag):
-                return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
-            self._bin_func = wrapper
-
         elif isinstance(bin_func, str):
-            # define a helper wrapper
-            def wrapper(distances, n, maxlag):
-                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+            # remove the n_lags if they will be adjusted on call
+            if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
+                self._n_lags = None
 
-            self._bin_func = wrapper
-            self._n_lags = None
+            # use the wrapper
+            self._bin_func = self._bin_func_wrapper
 
         elif callable(bin_func):
             self._bin_func = bin_func
@@ -588,6 +578,19 @@ class Variogram(object):
         self._bins = None
         self.cof, self.cov = None, None
 
+    def _bin_func_wrapper(self, distances, n, maxlag):
+        if self._bin_func_name.lower() == 'kmeans':
+            return binning.kmeans(distances, n, maxlag, **self._kwargs)
+
+        elif self._bin_func_name.lower() == 'ward':
+            return binning.ward(distances, n, maxlag)
+
+        elif self._bin_func_name.lower() == 'stable_entropy':
+            return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
+
+        else:
+            return binning.auto_derived_lags(distances, self._bin_func_name, maxlag)
+
     @property
     def normalized(self):
         return self._normalized
@@ -602,7 +605,6 @@ class Variogram(object):
         # if bins are not calculated, do it
         if self._bins is None:
             self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
-
             # if the binning function returned an N, the n_lags need
             # to be adjusted directly (not through the setter)
             if n is not None:
