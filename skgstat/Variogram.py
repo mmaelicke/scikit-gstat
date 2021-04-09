@@ -662,7 +662,7 @@ class Variogram(object):
         # else
         else:
             raise ValueError('n_lags has to be a positive integer')
-        
+
         # if there are no errors, store the passed value
         self._n_lags_passed_value = n
 
@@ -702,8 +702,10 @@ class Variogram(object):
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
-                    ('Variogram estimator %s is not understood, please ' +
-                    'provide the function.') % estimator_name
+                    (
+                        'Variogram estimator %s is not understood, please '
+                        'provide the function.'
+                    ) % estimator_name
                 )
         elif callable(estimator_name):
             self._estimator = estimator_name
@@ -746,7 +748,11 @@ class Variogram(object):
                 self._model = self._build_harmonized_model()
             else:
                 raise ValueError(
-                    'The theoretical Variogram function %s is not understood, please provide the function' % model_name)
+                    (
+                        'The theoretical Variogram function %s is not'
+                        ' understood, please provide the function'
+                    ) % model_name
+                )
         else:
             self._model = model_name
 
@@ -811,7 +817,7 @@ class Variogram(object):
             return self._dist_func_name(x)
         else:
             return pdist(X=x, metric=self._dist_func_name)
-    
+
     @dist_function.setter
     def dist_function(self, func):
         self.set_dist_function(func=func)
@@ -1459,10 +1465,10 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.6
             replaced the for-loops with :func:`fromiter <numpy.fromiter>`
-        
+
         .. versionchanged:: 0.3.7
-            makes use of `kwargs <skgstat.Variogram._kwargs>` for 
-            specific estimators now 
+            makes use of `kwargs <skgstat.Variogram._kwargs>` for
+            specific estimators now
 
         Returns
         -------
@@ -1478,7 +1484,7 @@ class Variogram(object):
             # we need to use N -1 as we use the last inclusive
             if isinstance(N, int):
                 N -= 1
-            
+
             bins = np.histogram_bin_edges(self.distance, bins=N)
 
             # define the mapper to the estimator function
