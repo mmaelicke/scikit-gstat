@@ -336,7 +336,7 @@ class TestVariogramArguments(unittest.TestCase):
         V.use_nugget = True
         self.assertEqual(V.use_nugget, True)
         self.assertEqual(V._use_nugget, True)
-        self.assertAlmostEqual(V.describe()['nugget'], 291.28, places=2)
+        self.assertAlmostEqual(V.describe()['normalized_nugget'], 291.28, places=2)
 
     def test_use_nugget_exception(self):
         with self.assertRaises(ValueError) as e:
