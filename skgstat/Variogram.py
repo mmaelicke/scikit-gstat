@@ -1579,7 +1579,7 @@ class Variogram(object):
         # calculate the residuals
         return np.fromiter(
             map(lambda x, y: x - y, model, experimental),
-            np.float
+            float
         )
 
     @property
@@ -1593,7 +1593,7 @@ class Variogram(object):
         -------
         float
         """
-        return np.nanmean(np.fromiter(map(np.abs, self.residuals), np.float))
+        return np.nanmean(np.fromiter(map(np.abs, self.residuals), float))
 
     @property
     def rmse(self):
@@ -1704,10 +1704,10 @@ class Variogram(object):
         my = np.nanmean(model)
 
         # claculate the single pearson correlation terms
-        term1 = np.nansum(np.fromiter(map(lambda x, y: (x-mx) * (y-my), experimental, model), np.float))
+        term1 = np.nansum(np.fromiter(map(lambda x, y: (x-mx) * (y-my), experimental, model), float))
 
-        t2x = np.nansum(np.fromiter(map(lambda x: (x-mx)**2, experimental), np.float))
-        t2y = np.nansum(np.fromiter(map(lambda y: (y-my)**2, model), np.float))
+        t2x = np.nansum(np.fromiter(map(lambda x: (x-mx)**2, experimental), float))
+        t2y = np.nansum(np.fromiter(map(lambda y: (y-my)**2, model), float))
 
         return term1 / (np.sqrt(t2x * t2y))
 
@@ -1722,8 +1722,8 @@ class Variogram(object):
         mx = np.nanmean(experimental)
 
         # calculate the single nash-sutcliffe terms
-        term1 = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), np.float))
-        term2 = np.nansum(np.fromiter(map(lambda x: (x - mx)**2, experimental), np.float))
+        term1 = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), float))
+        term2 = np.nansum(np.fromiter(map(lambda x: (x - mx)**2, experimental), float))
 
         return 1 - (term1 / term2)
 
