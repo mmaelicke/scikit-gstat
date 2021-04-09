@@ -579,6 +579,12 @@ class Variogram(object):
         self.cof, self.cov = None, None
 
     def _bin_func_wrapper(self, distances, n, maxlag):
+        """
+        Wrapper arounf the call of the actual binning method.
+        This is needed to pass keyword arguments to kmeans or 
+        stable_entropy binning methods, and respect the slightly
+        different function signature of auto_derived_lags.
+        """
         if self._bin_func_name.lower() == 'kmeans':
             return binning.kmeans(distances, n, maxlag, **self._kwargs)
 
