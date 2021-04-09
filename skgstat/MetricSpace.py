@@ -51,6 +51,9 @@ class MetricSpace(DistanceMethods):
         self.max_dist = max_dist
         self._tree = None
         self._dists = None
+        # Do a very quick check to see throw exceptions if self.dist_metric is invalid...
+        scipy.spatial.distance.pdist(self.coords[:1,:], metric=self.dist_metric)
+        
 
     @property
     def tree(self):

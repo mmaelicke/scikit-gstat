@@ -214,7 +214,7 @@ class Variogram(object):
 
         if not isinstance(coordinates, MetricSpace):
             coordinates = np.asarray(coordinates)
-            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag)
+            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
         else:
             assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
 
@@ -1625,7 +1625,7 @@ class Variogram(object):
         # get the sum of squares
         rsum = np.nansum(np.fromiter(
             map(lambda x, y: (x - y)**2, experimental, model),
-            np.float
+            float
         ))
 
         return np.sqrt(rsum / len(model))

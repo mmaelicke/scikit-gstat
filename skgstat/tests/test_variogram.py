@@ -289,18 +289,22 @@ class TestVariogramArguments(unittest.TestCase):
     def test_callable_dist_function(self):
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
-        def dfunc(x):
-            return np.ones((len(x), len(x)))
+        def dfunc(u, v):
+            return 1
 
         V.set_dist_function(dfunc)
 
         # test
         self.assertEqual(V.dist_function, dfunc)
         self.assertTrue((V.distance==1).all())
-        self.assertEqual(V.distance.shape, (3, 3))
+        self.assertEqual(V.distance_matrix.shape, (3, 3))
 
     @staticmethod
-    def test_direct_dist_setting():
+    def disabled_test_direct_dist_setting():
+        # Distance can no longer be explicitly set
+        # it would require setting the whole MetricSpace, with a
+        # non-sparse diagonal matrix
+        
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
         V.distance = np.array([0, 0, 100])
@@ -839,8 +843,12 @@ class TestVariogramMethods(unittest.TestCase):
             [0., 11.82, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97],
             decimal=2
         )
-    
-    def test_data_with_force(self):
+
+    def disabled_test_data_with_force(self):
+        # Distance can no longer be explicitly set
+        # it would require setting the whole MetricSpace, with a
+        # non-sparse diagonal matrix
+        
         # should work if _dist is corccupted
         self.V._dist = self.V._dist * 5.
         self.V.cof = None
