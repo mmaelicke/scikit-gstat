@@ -1537,7 +1537,17 @@ class Variogram(object):
         Variogram.experimental
 
         """
-        raise NotImplementedError
+        # get the bins and experimental values
+        bins = self.bins
+        experimental = self.experimental
+
+        # align bin centers
+        if bin_center:
+            # get the bin centers
+            bins = np.substract(bins, np.diff([0] + bins.tolist()) / 2)
+
+        # return
+        return bins, experimental
 
     def __get_fit_bounds(self, x, y):
         """
