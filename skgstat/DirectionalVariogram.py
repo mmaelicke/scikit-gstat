@@ -6,6 +6,7 @@ from scipy.spatial.distance import pdist
 
 from .Variogram import Variogram
 from skgstat import plotting
+from .MetricSpace import MetricSpace, MetricSpacePair
 
 
 class DirectionalVariogram(Variogram):
@@ -227,8 +228,14 @@ class DirectionalVariogram(Variogram):
 
         self._direction_mask_cache = None
 
+        if not isinstance(coordinates, MetricSpace):
+            coordinates = np.asarray(coordinates)
+            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag)
+        else:
+            assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
+        
         # Set coordinates
-        self._X = np.asarray(coordinates)
+        self._X = coordinates
 
         # pairwise difference
         self._diff = None
@@ -310,7 +317,6 @@ class DirectionalVariogram(Variogram):
         self.fit(force=True)
 
     def preprocessing(self, force=False):
-        self._calc_distances(force=force)
         self._calc_direction_mask_data(force)
         self._calc_diff(force=force)
         self._calc_groups(force=force)
@@ -344,24 +350,28 @@ class DirectionalVariogram(Variogram):
         `azimuth <skgstat.DirectionalVariogram.azimuth>`_
 
         """
+
+        # FIXME: This should be optimized for the sparse case (range << bbox(coordinates)),
+        # i.e. use the MetricSpace in self._X
+        
         # check if already calculated
         if self._angles is not None and not force:
             return
 
-        # if self._X is of just one dimension, concat zeros.
-        if self._X.ndim == 1:
-            _x = np.vstack(zip(self._X, np.zeros(len(self._X))))
-        elif self._X.ndim == 2:
-            _x = self._X
+        # if self.coordinates is of just one dimension, concat zeros.
+        if self.coordinates.ndim == 1:
+            _x = np.vstack(zip(self.coordinates, np.zeros(len(self.coordinates))))
+        elif self.coordinates.ndim == 2:
+            _x = self.coordinates
         else:
             raise NotImplementedError('N-dimensional coordinates cannot be handled')
 
         # for angles, we need Euklidean distance,
         # no matter which distance function is used
-        if self._dist_func_name == "euclidean":
-            self._euclidean_dist = self._dist
-        else:
-            self._euclidean_dist = pdist(_x, "euclidean")
+        #if self._dist_func_name == "euclidean":
+        #    self._euclidean_dist = scipy.spatial.distance.squareform(self.distance_matrix)
+        #else:
+        self._euclidean_dist = pdist(_x, "euclidean")
 
         # Calculate the angles
         # (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)
