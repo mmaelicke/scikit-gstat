@@ -608,6 +608,23 @@ class Variogram(object):
 
     @property
     def bins(self):
+        """Distance lag bins
+
+        Independent variable of the the experimental variogram sample.
+        The bins are the upper edges of all calculated distance lag
+        classes. If you need bin centers, use
+        :func:`get_empirical <skgstat.Variogram.get_empirical>`.
+
+        Returns
+        -------
+        bins : numpy.ndarray
+            1D array of the distance lag classes.
+
+        See Also
+        --------
+        Variogram.get_empirical
+
+        """
         # if bins are not calculated, do it
         if self._bins is None:
             self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
@@ -621,7 +638,7 @@ class Variogram(object):
     @bins.setter
     def bins(self, bins):
         # set the new bins
-        self._bins = bins
+        self._bins = np.asarray(bins)
 
         # clean the groups as they are not valid anymore
         self._groups = None
@@ -1544,7 +1561,7 @@ class Variogram(object):
         # align bin centers
         if bin_center:
             # get the bin centers
-            bins = np.substract(bins, np.diff([0] + bins.tolist()) / 2)
+            bins = np.subtract(bins, np.diff([0] + bins.tolist()) / 2)
 
         # return
         return bins, experimental
