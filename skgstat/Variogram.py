@@ -1405,7 +1405,7 @@ class Variogram(object):
 
         # if self._X is of just one dimension, concat zeros.
         if self._X.ndim == 1:
-            _x = np.vstack(zip(self._X, np.zeros(len(self._X))))
+            _x = np.column_stack((self._X, np.zeros(self._X.size)))
         else:
             _x = self._X
         # else calculate the distances
