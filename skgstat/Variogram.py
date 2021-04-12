@@ -212,8 +212,12 @@ class Variogram(object):
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
 
+        self._1d = False
         if not isinstance(coordinates, MetricSpace):
             coordinates = np.asarray(coordinates)
+            if len(coordinates.shape) < 2:
+                coordinates = np.column_stack((coordinates, np.zeros(len(coordinates))))
+                self._1d = True
             coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
         else:
             assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
@@ -303,9 +307,9 @@ class Variogram(object):
         """
         Input coordinates dimensionality.
         """
-        if len(self._X.shape) == 1:
+        if self._1d:
             return 1
-        return self._X.shape[1]
+        return self.coordinates.shape[1]
 
     @property
     def values(self):
