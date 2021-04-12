@@ -867,9 +867,21 @@ class Variogram(object):
     @property
     def distance(self):
         if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
-            return self.distance_matrix.data
+            return self.triangular_distance_matrix.data
         # Turn it back to triangular form not to have duplicates
         return scipy.spatial.distance.squareform(self.distance_matrix)
+
+    @property
+    def triangular_distance_matrix(self):
+        # Like distance_matrix but with zeros below the diagonal...
+        # Only defined if distance_matrix is a sparse matrix
+        assert isinstance(self.distance_matrix, scipy.sparse.spmatrix)
+        m = self.distance_matrix
+        c = m.tocsc()
+        c.data = c.indices
+        rows = c.tocsr()
+        filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr))
+        return m.multiply(filt)    
         
     @property
     def distance_matrix(self):
@@ -1401,9 +1413,26 @@ class Variogram(object):
 
         v = self.values
 
-        # Append a column of zeros to make pdist happy
-        # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
-        self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
+        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+            c = r = self.triangular_distance_matrix
+            if not isinstance(c, scipy.sparse.csr.csr_matrix):
+                c = c.tocsr()
+            if not isinstance(r, scipy.sparse.csc.csc_matrix):
+                r = r.tocsc()
+            Vcol = scipy.sparse.csr_matrix(
+                (self.values[c.indices], c.indices, c.indptr))
+            Vrow = scipy.sparse.csc_matrix(
+                (self.values[r.indices], r.indices, r.indptr)).tocsr()
+            # self._diff will have same shape as self.distances, even
+            # when that's not in diagonal format...
+            # Note: it might be compelling to do np.abs(Vrow -
+            # Vcol).data instead here, but that might optimize away
+            # some zeros, leaving _diff in a different shape
+            self._diff = np.abs(Vrow.data - Vcol.data)
+        else:
+            # Append a column of zeros to make pdist happy
+            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
+            self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
