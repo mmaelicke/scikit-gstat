@@ -15,9 +15,49 @@ except ImportError:
     PLOTLY_FOUND = False
 
 from skgstat import Variogram
+from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
 
+
+class TestSpatiallyCorrelatedData(unittest.TestCase):
+    def setUp(self):
+        # Generate some random but spatially correlated data
+        # with a range of ~20
+        
+        np.random.seed(42)
+        c = np.random.sample((50, 2)) * 60
+        np.random.seed(42)
+        v = np.random.normal(10, 4, 50)
+        
+        V = Variogram(c, v).describe()
+        V["effective_range"] = 20
+        OK = OrdinaryKriging(V, coordinates=c, values=v)
+
+        self.c = np.random.sample((500, 2)) * 60
+        self.v = OK.transform(self.c)
+
+        self.c = self.c[~np.isnan(self.v),:]
+        self.v = self.v[~np.isnan(self.v)]
+
+    def test_dense_maxlag_inf(self):
+        Vdense = Variogram(self.c, self.v)
+        Vsparse = Variogram(self.c, self.v, maxlag=10000000)
+
+        for x, y in zip(Vdense.parameters, Vsparse.parameters):
+            self.assertAlmostEqual(x, y, places=3)
+            
+    def test_sparse_maxlag_50(self):
+        V = Variogram(self.c, self.v, maxlag=50)
+
+        for x, y in zip(V.parameters, [20.264, 6.478, 0]):
+            self.assertAlmostEqual(x, y, places=3)
+            
+    def test_sparse_maxlag_30(self):
+        V = Variogram(self.c, self.v, maxlag=30)
+
+        for x, y in zip(V.parameters, [17.128, 6.068, 0]):
+            self.assertAlmostEqual(x, y, places=3)
 
 class TestVariogramInstatiation(unittest.TestCase):
     def setUp(self):
@@ -29,6 +69,12 @@ class TestVariogramInstatiation(unittest.TestCase):
 
     def test_standard_settings(self):
         V = Variogram(self.c, self.v)
+
+        for x, y in zip(V.parameters, [7.122, 13.966, 0]):
+            self.assertAlmostEqual(x, y, places=3)
+            
+    def test_sparse_standard_settings(self):
+        V = Variogram(self.c, self.v, maxlag=10000)
 
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
