@@ -203,6 +203,7 @@ class SpaceTimeVariogram:
 
         """
         if isinstance(func_name, str):
+            self._xdist_func_name = func_name
             self._xdist_func = lambda x: pdist(x, metric=func_name)
         else:
             raise ValueError('For now only str arguments are supported.')
@@ -241,6 +242,7 @@ class SpaceTimeVariogram:
 
         """
         if isinstance(func_name, str):
+            self._tdist_func_name = func_name
             self._tdist_func = lambda t: pdist(t, metric=func_name)
         else:
             raise ValueError('For now only str arguments are supported.')
@@ -686,7 +688,8 @@ class SpaceTimeVariogram:
             return
 
         # distance
-        self.XMarginal.dist_function = self.xdist_func
+        # FIXME: Handle xdist_func_name vs xdist_func better (like in Variogra.py)
+        self.XMarginal.dist_function = self._xdist_func_name
         self.XMarginal.n_lags = self.x_lags
 
         # binning
@@ -710,7 +713,7 @@ class SpaceTimeVariogram:
             return
 
         # distance
-        self.TMarginal.dist_function = self.tdist_func
+        self.TMarginal.dist_function = self._tdist_func_name
         self.TMarginal.n_lags = self.t_lags
 
         # binning
