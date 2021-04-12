@@ -2,8 +2,13 @@
 Changelog
 =========
 
-Version 0.4.2 [WIP]
-===================
+Version 0.4.3
+=============
+- [Variogram] :func:`dim <skgstat.Variogram.dim>` now returns the spatial dimensionality of the input data.
+- [Variogram] fixed a numpy depreaction warning in `_calc_distances`
+
+Version 0.4.2
+=============
 - [Variogram] :func:`bins <skgstat.Variogram.bins>` now cases manual setted bin edges automatically
   to a :func:`numpy.array`.
 - [Variogram] :func:`get_empirical <skgstat.Variogram.get_empirical>` returns the empirical variogram.
