@@ -14,7 +14,8 @@ from sklearn.isotonic import IsotonicRegression
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
-
+from .MetricSpace import MetricSpace, MetricSpacePair
+import scipy.sparse
 
 class Variogram(object):
     """Variogram Class
@@ -211,9 +212,19 @@ class Variogram(object):
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
 
-        # Set coordinates
-        self._X = np.asarray(coordinates)
+        self._1d = False
+        if not isinstance(coordinates, MetricSpace):
+            coordinates = np.asarray(coordinates)
+            if len(coordinates.shape) < 2:
+                coordinates = np.column_stack((coordinates, np.zeros(len(coordinates))))
+                self._1d = True
+            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
+        else:
+            assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
 
+        # Set coordinates
+        self._X = coordinates
+            
         # pairwise differences
         self._diff = None
 
@@ -224,13 +235,6 @@ class Variogram(object):
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
         self.set_values(values=values, calc_diff=False)
-
-        # distance matrix
-        self._dist = None
-
-        # set distance calculation function
-        self._dist_func_name = None
-        self.set_dist_function(func=dist_func)
 
         # lags and max lag
         self._n_lags_passed_value = n_lags
@@ -246,16 +250,19 @@ class Variogram(object):
         self._estimator = None
         self.set_estimator(estimator_name=estimator)
 
-        # model can be a function or a string
-        self._model = None
-        self.set_model(model_name=model)
-
         # the binning settings
         self._bin_func_name = None
         self._bin_func = None
         self._groups = None
         self._bins = None
         self.set_bin_func(bin_func=bin_func)
+
+        # Needed for harmonized models
+        self.preprocessing(force=True)
+
+        # model can be a function or a string
+        self._model = None
+        self.set_model(model_name=model)
 
         # specify if the lag should be given absolute or relative to the maxlag
         self._normalized = normalize
@@ -293,16 +300,16 @@ class Variogram(object):
         coordinates : numpy.array
 
         """
-        return self._X
+        return self._X.coords
 
     @property
     def dim(self):
         """
         Input coordinates dimensionality.
         """
-        if len(self._X.shape) == 1:
+        if self._1d:
             return 1
-        return self._X.shape[1]
+        return self.coordinates.shape[1]
 
     @property
     def values(self):
@@ -378,7 +385,7 @@ class Variogram(object):
 
         """
         # check dimensions
-        if not len(values) == len(self._X):
+        if not len(values) == len(self.coordinates):
             raise ValueError('The length of the values array has to match' +
                              'the length of coordinates')
 
@@ -757,21 +764,11 @@ class Variogram(object):
         if isinstance(model_name, str):
             # at first reset harmonize
             self._harmonize = False
-            if model_name.lower() == 'spherical':
-                self._model = models.spherical
-            elif model_name.lower() == 'exponential':
-                self._model = models.exponential
-            elif model_name.lower() == 'gaussian':
-                self._model = models.gaussian
-            elif model_name.lower() == 'cubic':
-                self._model = models.cubic
-            elif model_name.lower() == 'stable':
-                self._model = models.stable
-            elif model_name.lower() == 'matern':
-                self._model = models.matern
-            elif model_name.lower() == 'harmonize':
+            if model_name.lower() == 'harmonize':
                 self._harmonize = True
                 self._model = self._build_harmonized_model()
+            elif hasattr(models, model_name.lower()):
+                self._model = getattr(models, model_name.lower())
             else:
                 raise ValueError(
                     (
@@ -840,13 +837,14 @@ class Variogram(object):
 
     @property
     def dist_function(self):
-        return self._dist_func_name
+        return self._X.dist_metric
 
-    def _dist_func_wrapper(self, x):
-        if callable(self._dist_func_name):
-            return self._dist_func_name(x)
+    @classmethod
+    def wrapped_distance_function(cls, dist_func, x):
+        if callable(dist_func):
+            return dist_func(x)
         else:
-            return pdist(X=x, metric=self._dist_func_name)
+            return pdist(X=x, metric=dist_func)
 
     @dist_function.setter
     def dist_function(self, func):
@@ -871,38 +869,40 @@ class Variogram(object):
         numpy.array
 
         """
-        # reset the distances and fitting
-        self._dist = None
+        # reset the fitting
         self.cof, self.cov = None, None
 
         if isinstance(func, str):
             if func.lower() == 'rank':
                 raise NotImplementedError
-            else:
-                # if not ranks, it has to be a scipy metric
-                self._dist_func_name = func
-
-        elif callable(func):
-            self._dist_func_name = func
-        else:
+        elif not callable(func):
             raise ValueError('Input not supported. Pass a string or callable.')
 
         # re-calculate distances
-        self._calc_distances()
+        self._X = MetricSpace(self._X.coords, func, self._X.max_dist)
 
     @property
     def distance(self):
-        if self._dist is None:
-            self._calc_distances()
-        return self._dist
-
-    @distance.setter
-    def distance(self, dist_array):
-        self._dist = dist_array
+        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+            return self.triangular_distance_matrix.data
+        # Turn it back to triangular form not to have duplicates
+        return scipy.spatial.distance.squareform(self.distance_matrix)
 
     @property
+    def triangular_distance_matrix(self):
+        # Like distance_matrix but with zeros below the diagonal...
+        # Only defined if distance_matrix is a sparse matrix
+        assert isinstance(self.distance_matrix, scipy.sparse.spmatrix)
+        m = self.distance_matrix
+        c = m.tocsc()
+        c.data = c.indices
+        rows = c.tocsr()
+        filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr))
+        return m.multiply(filt)    
+        
+    @property
     def distance_matrix(self):
-        return squareform(self.distance)
+        return self._X.dists
 
     @property
     def maxlag(self):
@@ -916,7 +916,7 @@ class Variogram(object):
         # remove bins
         self._bins = None
         self._groups = None
-
+        
         # set new maxlag
         if value is None:
             self._maxlag = None
@@ -1136,7 +1136,6 @@ class Variogram(object):
 
         """
         # call the _calc functions
-        self._calc_distances(force=force)
         self._calc_diff(force=force)
         self._calc_groups(force=force)
 
@@ -1383,33 +1382,39 @@ class Variogram(object):
         # get the pars
         cof = self.cof
 
-        # get the function
-        func = self._model
+        return self.fitted_model_function(self._model, self.cof)
 
-        if self._harmonize:
-            code = """model = lambda x: func(x)"""
+    @classmethod
+    def fitted_model_function(cls, model, cof=None, **kw):
+        if cof is None:
+            # Make sure to keep this synchronized with the output
+            # of describe()!
+            cof = [kw["effective_range"], kw["sill"]]
+            if "smoothness" in kw:
+                cof.append(kw["smoothness"])
+            if "shape" in kw:
+                cof.append(kw["shape"])
+            if kw["nugget"] != 0:
+                cof.append(kw["nugget"])
+
+        harmonize = False
+        if not callable(model):
+            if model == "harmonize":
+                raise ValueError("Please supply the actual harmonized model directly")
+            else:
+                model = model.lower()
+                model = getattr(models, model)
+            
+        if model.__name__ == "harmonize":
+            code = """fitted_model = lambda x: model(x)"""
         else:
-            code = """model = lambda x: func(x, %s)""" % \
+            code = """fitted_model = lambda x: model(x, %s)""" % \
                (', '.join([str(_) for _ in cof]))
 
         # run the code
-        loc = dict(func=func)
+        loc = dict(model=model)
         exec(code, loc, loc)
-        model = loc['model']
-
-        return model
-
-    def _calc_distances(self, force=False):
-        if self._dist is not None and not force:
-            return
-
-        # if self._X is of just one dimension, concat zeros.
-        if self._X.ndim == 1:
-            _x = np.column_stack((self._X, np.zeros(self._X.size)))
-        else:
-            _x = self._X
-        # else calculate the distances
-        self._dist = self._dist_func_wrapper(_x)
+        return loc['fitted_model']
 
     def _calc_diff(self, force=False):
         """Calculates the pairwise differences
@@ -1425,9 +1430,26 @@ class Variogram(object):
 
         v = self.values
 
-        # Append a column of zeros to make pdist happy
-        # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
-        self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
+        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+            c = r = self.triangular_distance_matrix
+            if not isinstance(c, scipy.sparse.csr.csr_matrix):
+                c = c.tocsr()
+            if not isinstance(r, scipy.sparse.csc.csc_matrix):
+                r = r.tocsc()
+            Vcol = scipy.sparse.csr_matrix(
+                (self.values[c.indices], c.indices, c.indptr))
+            Vrow = scipy.sparse.csc_matrix(
+                (self.values[r.indices], r.indices, r.indptr)).tocsr()
+            # self._diff will have same shape as self.distances, even
+            # when that's not in diagonal format...
+            # Note: it might be compelling to do np.abs(Vrow -
+            # Vcol).data instead here, but that might optimize away
+            # some zeros, leaving _diff in a different shape
+            self._diff = np.abs(Vrow.data - Vcol.data)
+        else:
+            # Append a column of zeros to make pdist happy
+            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
+            self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
@@ -1677,7 +1699,7 @@ class Variogram(object):
         # calculate the residuals
         return np.fromiter(
             map(lambda x, y: x - y, model, experimental),
-            np.float
+            float
         )
 
     @property
@@ -1691,7 +1713,7 @@ class Variogram(object):
         -------
         float
         """
-        return np.nanmean(np.fromiter(map(np.abs, self.residuals), np.float))
+        return np.nanmean(np.fromiter(map(np.abs, self.residuals), float))
 
     @property
     def rmse(self):
@@ -1723,7 +1745,7 @@ class Variogram(object):
         # get the sum of squares
         rsum = np.nansum(np.fromiter(
             map(lambda x, y: (x - y)**2, experimental, model),
-            np.float
+            float
         ))
 
         return np.sqrt(rsum / len(model))
@@ -1802,10 +1824,10 @@ class Variogram(object):
         my = np.nanmean(model)
 
         # claculate the single pearson correlation terms
-        term1 = np.nansum(np.fromiter(map(lambda x, y: (x-mx) * (y-my), experimental, model), np.float))
+        term1 = np.nansum(np.fromiter(map(lambda x, y: (x-mx) * (y-my), experimental, model), float))
 
-        t2x = np.nansum(np.fromiter(map(lambda x: (x-mx)**2, experimental), np.float))
-        t2y = np.nansum(np.fromiter(map(lambda y: (y-my)**2, model), np.float))
+        t2x = np.nansum(np.fromiter(map(lambda x: (x-mx)**2, experimental), float))
+        t2y = np.nansum(np.fromiter(map(lambda y: (y-my)**2, model), float))
 
         return term1 / (np.sqrt(t2x * t2y))
 
@@ -1820,8 +1842,8 @@ class Variogram(object):
         mx = np.nanmean(experimental)
 
         # calculate the single nash-sutcliffe terms
-        term1 = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), np.float))
-        term2 = np.nansum(np.fromiter(map(lambda x: (x - mx)**2, experimental), np.float))
+        term1 = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), float))
+        term2 = np.nansum(np.fromiter(map(lambda x: (x - mx)**2, experimental), float))
 
         return 1 - (term1 / term2)
 
@@ -1889,23 +1911,35 @@ class Variogram(object):
             self.fit(force=True)
 
         # scale sill and range
-        if self.normalized:
-            maxlag = np.nanmax(self.bins)
-            maxvar = np.nanmax(self.experimental)
-        else:
-            maxlag = 1.
-            maxvar = 1.
+        maxlag = np.nanmax(self.bins)
+        maxvar = np.nanmax(self.experimental)
 
         # get the fitting coefficents
         cof = self.cof
 
         # build the dict
+
+        def fnname(fn):
+            if callable(fn):
+                name = "%s.%s" % (fn.__module__, fn.__name__)
+            else:
+                name = fn
+            if name.startswith("skgstat."):
+                return name.split(".")[-1]
+            return name
+        
         rdict = dict(
-            name=self._model.__name__,
-            estimator=self._estimator.__name__,
-            effective_range=cof[0] * maxlag,
-            sill=cof[1] * maxvar,
-            nugget=cof[-1] * maxvar if self.use_nugget else 0
+            model=fnname(self._model) if not self._harmonize else "harmonize",
+            estimator=fnname(self._estimator),
+            dist_func=fnname(self.dist_function),
+            
+            normalized_effective_range=cof[0] * maxlag,
+            normalized_sill=cof[1] * maxvar,
+            normalized_nugget=cof[-1] * maxvar if self.use_nugget else 0,
+
+            effective_range=cof[0],
+            sill=cof[1],
+            nugget=cof[-1] if self.use_nugget else 0,
         )
 
         # handle s parameters for matern and stable model
@@ -1920,7 +1954,7 @@ class Variogram(object):
             params = dict(
                 estimator=self._estimator.__name__,
                 model=self._model.__name__,
-                dist_func=str(self._dist_func_name),
+                dist_func=str(self.dist_function),
                 bin_func=self._bin_func_name,
                 normalize=self.normalized,
                 fit_method=self.fit_method,
@@ -2220,7 +2254,7 @@ class Variogram(object):
         _range = np.NaN if 'error' in par else par['effective_range']
         _nugget = np.NaN if 'error' in par else par['nugget']
 
-        s = "{0} Variogram\n".format(par['name'])
+        s = "{0} Variogram\n".format(par['model'])
         s+= "-" * (len(s) - 1) + "\n"
         s+="""Estimator:         %s
         \rEffective Range:   %.2f

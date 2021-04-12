@@ -63,7 +63,7 @@ def __get_trend(variogram, fig, **kwargs):
 
 
 def matplotlib_location_trend(variogram, axes=None, show=True, **kwargs):
-    N = len(variogram._X[0])
+    N = len(variogram.coordinates[0])
 
     # create the figure
     if axes is None:
@@ -81,7 +81,7 @@ def matplotlib_location_trend(variogram, axes=None, show=True, **kwargs):
 
     # plot
     for i in range(N):
-        axes.flatten()[i].plot([_[i] for _ in variogram._X], variogram.values, '.r')
+        axes.flatten()[i].plot([_[i] for _ in variogram.coordinates], variogram.values, '.r')
         axes.flatten()[i].set_xlabel('%d-dimension' % (i + 1))
         axes.flatten()[i].set_ylabel('value')
 
@@ -96,7 +96,7 @@ def matplotlib_location_trend(variogram, axes=None, show=True, **kwargs):
 
 
 def plotly_location_trend(variogram, fig=None, show=True, **kwargs):
-    N = len(variogram._X[0])
+    N = len(variogram.coordinates[0])
     if N <= 3:
         names = ['X', 'Y', 'Z'][:N]
     else:
@@ -115,7 +115,7 @@ def plotly_location_trend(variogram, fig=None, show=True, **kwargs):
 
     # plot
     for i in range(N):
-        y = variogram._X[:, i]
+        y = variogram.coordinates[:, i]
         fig.add_trace(
             GoCls(x=x, y=y, mode='markers', name=names[i])
         )
