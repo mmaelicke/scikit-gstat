@@ -2237,7 +2237,7 @@ class Variogram(object):
         _range = np.NaN if 'error' in par else par['effective_range']
         _nugget = np.NaN if 'error' in par else par['nugget']
 
-        s = "{0} Variogram\n".format(par['name'])
+        s = "{0} Variogram\n".format(par['model'])
         s+= "-" * (len(s) - 1) + "\n"
         s+="""Estimator:         %s
         \rEffective Range:   %.2f
