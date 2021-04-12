@@ -296,6 +296,15 @@ class Variogram(object):
         return self._X
 
     @property
+    def dim(self):
+        """
+        Input coordinates dimensionality.
+        """
+        if len(self._X.shape) == 1:
+            return 1
+        return self._X.shape[1]
+
+    @property
     def values(self):
         """Values property
 
@@ -786,23 +795,27 @@ class Variogram(object):
             """Monotonized Variogram
 
             Return the isotonic harmonized experimental variogram.
-            This means, the experimental variogram is monotonic after harmonization.
+            This means, the experimental variogram is monotonic
+            after harmonization.
 
-            The harmonization is done using following Hinterding (2003) using 
-            the PAVA algorithm (Barlow and Bartholomew, 1972).
+            The harmonization is done using following Hinterding (2003)
+            using the PAVA algorithm (Barlow and Bartholomew, 1972).
 
             Returns
             -------
             gamma : numpy.ndarray
                 monotonized experimental variogram
-            
+
             References
             ----------
-            Barlow, R., D. Bartholomew, et al. (1972): Statistical Interference Under Order Restrictions.
-                John Wiley and Sons, New York.
-            Hiterding, A. (2003): Entwicklung hybrider Interpolationsverfahren für den automatisierten Betrieb am
-                Beispiel meteorologischer Größen. Dissertation, Institut für Geoinformatik, Westphälische
-                Wilhelms-Universität Münster, IfGIprints, Münster. ISBN: 3-936616-12-4
+            Barlow, R., D. Bartholomew, et al. (1972): Statistical
+                Interference Under Order Restrictions. John Wiley
+                and Sons, New York.
+            Hiterding, A. (2003): Entwicklung hybrider Interpolations-
+                verfahren für den automatisierten Betrieb am Beispiel
+                meteorologischer Größen. Dissertation, Institut für
+                Geoinformatik, Westphälische Wilhelms-Universität Münster,
+                IfGIprints, Münster. ISBN: 3-936616-12-4
 
             """
 
