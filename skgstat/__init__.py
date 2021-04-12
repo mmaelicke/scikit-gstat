@@ -6,6 +6,6 @@ from .Kriging import OrdinaryKriging
 from . import interfaces
 
 # set some stuff
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 __author__ = 'Mirko Maelicke <mirko.maelicke@kit.edu>'
 __backend__ = 'matplotlib'

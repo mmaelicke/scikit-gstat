@@ -429,10 +429,10 @@ class Variogram(object):
         Sets a new binning function to be used. The new binning method is set
         by a string identifying the new function to be used. Can be one of:
         ['even', 'uniform', 'fd', 'sturges', 'scott', 'sqrt', 'doane'].
-        If the number of lag classes should be estimated automatically, it is 
+        If the number of lag classes should be estimated automatically, it is
         recommended to use ' sturges' for small, normal distributed locations
         and 'fd' or 'scott' for large datasets, where 'fd' is more robust to
-        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an 
+        outliers. 'sqrt' is by far the fastest estimator. 'doane' is an
         extension of Sturge's rule for non-normal distributed data.
 
         .. versionchanged:: 0.3.8
@@ -443,6 +443,11 @@ class Variogram(object):
 
         .. versionchanged:: 0.4.0
             added 'stable_entropy'
+
+        .. versionchanged:: 0.4.1
+            refactored local wrapper function definition. The wrapper to
+            pass kwargs to the binning functions is now implemented as
+            a instance method, to make it pickleable.
 
         Parameters
         ----------
@@ -553,28 +558,13 @@ class Variogram(object):
         elif bin_func.lower() == 'uniform':
             self._bin_func = binning.uniform_count_lags
 
-        elif bin_func.lower() == 'kmeans':
-            # define a helper to pass kwargs
-            def wrapper(distance, n, maxlag):
-                return binning.kmeans(distance, n, maxlag, **self._kwargs)
-            self._bin_func = wrapper
-
-        elif bin_func.lower() == 'ward':
-            self._bin_func = binning.ward
-
-        elif bin_func.lower() == 'stable_entropy':
-            # define a wrapper
-            def wrapper(distances, n, maxlag):
-                return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
-            self._bin_func = wrapper
-
         elif isinstance(bin_func, str):
-            # define a helper wrapper
-            def wrapper(distances, n, maxlag):
-                return binning.auto_derived_lags(distances, bin_func.lower(), maxlag)
+            # remove the n_lags if they will be adjusted on call
+            if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
+                self._n_lags = None
 
-            self._bin_func = wrapper
-            self._n_lags = None
+            # use the wrapper
+            self._bin_func = self._bin_func_wrapper
 
         elif callable(bin_func):
             self._bin_func = bin_func
@@ -591,6 +581,25 @@ class Variogram(object):
         self._bins = None
         self.cof, self.cov = None, None
 
+    def _bin_func_wrapper(self, distances, n, maxlag):
+        """
+        Wrapper arounf the call of the actual binning method.
+        This is needed to pass keyword arguments to kmeans or 
+        stable_entropy binning methods, and respect the slightly
+        different function signature of auto_derived_lags.
+        """
+        if self._bin_func_name.lower() == 'kmeans':
+            return binning.kmeans(distances, n, maxlag, **self._kwargs)
+
+        elif self._bin_func_name.lower() == 'ward':
+            return binning.ward(distances, n, maxlag)
+
+        elif self._bin_func_name.lower() == 'stable_entropy':
+            return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
+
+        else:
+            return binning.auto_derived_lags(distances, self._bin_func_name, maxlag)
+
     @property
     def normalized(self):
         return self._normalized
@@ -602,10 +611,26 @@ class Variogram(object):
 
     @property
     def bins(self):
+        """Distance lag bins
+
+        Independent variable of the the experimental variogram sample.
+        The bins are the upper edges of all calculated distance lag
+        classes. If you need bin centers, use
+        :func:`get_empirical <skgstat.Variogram.get_empirical>`.
+
+        Returns
+        -------
+        bins : numpy.ndarray
+            1D array of the distance lag classes.
+
+        See Also
+        --------
+        Variogram.get_empirical
+
+        """
         # if bins are not calculated, do it
         if self._bins is None:
             self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
-
             # if the binning function returned an N, the n_lags need
             # to be adjusted directly (not through the setter)
             if n is not None:
@@ -616,7 +641,7 @@ class Variogram(object):
     @bins.setter
     def bins(self, bins):
         # set the new bins
-        self._bins = bins
+        self._bins = np.asarray(bins)
 
         # clean the groups as they are not valid anymore
         self._groups = None
@@ -657,7 +682,7 @@ class Variogram(object):
         # else
         else:
             raise ValueError('n_lags has to be a positive integer')
-        
+
         # if there are no errors, store the passed value
         self._n_lags_passed_value = n
 
@@ -697,8 +722,10 @@ class Variogram(object):
                 self._estimator = estimators.entropy
             else:
                 raise ValueError(
-                    ('Variogram estimator %s is not understood, please ' +
-                    'provide the function.') % estimator_name
+                    (
+                        'Variogram estimator %s is not understood, please '
+                        'provide the function.'
+                    ) % estimator_name
                 )
         elif callable(estimator_name):
             self._estimator = estimator_name
@@ -731,7 +758,11 @@ class Variogram(object):
                 self._model = getattr(models, model_name.lower())
             else:
                 raise ValueError(
-                    'The theoretical Variogram function %s is not understood, please provide the function' % model_name)
+                    (
+                        'The theoretical Variogram function %s is not'
+                        ' understood, please provide the function'
+                    ) % model_name
+                )
         else:
             self._model = model_name
 
@@ -1440,10 +1471,10 @@ class Variogram(object):
 
         .. versionchanged:: 0.3.6
             replaced the for-loops with :func:`fromiter <numpy.fromiter>`
-        
+
         .. versionchanged:: 0.3.7
-            makes use of `kwargs <skgstat.Variogram._kwargs>` for 
-            specific estimators now 
+            makes use of `kwargs <skgstat.Variogram._kwargs>` for
+            specific estimators now
 
         Returns
         -------
@@ -1459,7 +1490,7 @@ class Variogram(object):
             # we need to use N -1 as we use the last inclusive
             if isinstance(N, int):
                 N -= 1
-            
+
             bins = np.histogram_bin_edges(self.distance, bins=N)
 
             # define the mapper to the estimator function
@@ -1480,6 +1511,49 @@ class Variogram(object):
 
         # return the mapped result
         return np.fromiter(map(mapper, self.lag_classes()), dtype=float)
+
+    def get_empirical(self, bin_center=False):
+        """Empirical variogram
+
+        Returns a tuple of dependent and independent sample values, this
+        :class:`Variogram <skgstat.Variogram>` is estimated for.
+        This is a tuple of the current :func:`bins <skgstat.Variogram.bins>`
+        and :func:`experimental <skgstat.Variogram.experimental>`
+        semi-variance values. By default the upper bin edges are used.
+        This can be set to bin center by the `bin_center` argument.
+
+        Parameters
+        ----------
+        bin_center : bool
+            If set to `True`, the center for each distance lag bin is
+            used over the upper limit (default).
+
+        Returns
+        -------
+        bins : numpy.ndarray
+            1D array of :func:`n_lags <skgstat.Variogram.n_lags>`
+            distance lag bins.
+        experimental : numpy.ndarray
+            1D array of :func:`n_lags <skgstat.Variogram.n_lags>`
+            experimental semi-variance values.
+
+        See Also
+        --------
+        Variogram.bins
+        Variogram.experimental
+
+        """
+        # get the bins and experimental values
+        bins = self.bins
+        experimental = self.experimental
+
+        # align bin centers
+        if bin_center:
+            # get the bin centers
+            bins = np.subtract(bins, np.diff([0] + bins.tolist()) / 2)
+
+        # return
+        return bins, experimental
 
     def __get_fit_bounds(self, x, y):
         """
