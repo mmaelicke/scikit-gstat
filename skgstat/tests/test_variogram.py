@@ -33,6 +33,19 @@ class TestVariogramInstatiation(unittest.TestCase):
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
+    def test_input_dimensionality(self):
+        c1d = np.random.normal(0, 1, 100)
+        c3d = np.random.normal(0, 1, size=(100, 3))
+        v = np.random.normal(10, 4, 100)
+
+        # test 1D coords
+        V = Variogram(c1d, v)
+        self.assertTrue(V.dim, 1)
+
+        # test 3D coords
+        V2 = Variogram(c3d, v)
+        self.assertTrue(V.dim, 3)
+
     def test_pass_median_maxlag_on_instantiation(self):
         np.random.seed(1312)
         c = np.random.gamma(5, 1, (50, 2))
