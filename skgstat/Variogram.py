@@ -608,6 +608,23 @@ class Variogram(object):
 
     @property
     def bins(self):
+        """Distance lag bins
+
+        Independent variable of the the experimental variogram sample.
+        The bins are the upper edges of all calculated distance lag
+        classes. If you need bin centers, use
+        :func:`get_empirical <skgstat.Variogram.get_empirical>`.
+
+        Returns
+        -------
+        bins : numpy.ndarray
+            1D array of the distance lag classes.
+
+        See Also
+        --------
+        Variogram.get_empirical
+
+        """
         # if bins are not calculated, do it
         if self._bins is None:
             self._bins, n = self.bin_func(self.distance, self._n_lags, self.maxlag)
@@ -621,7 +638,7 @@ class Variogram(object):
     @bins.setter
     def bins(self, bins):
         # set the new bins
-        self._bins = bins
+        self._bins = np.asarray(bins)
 
         # clean the groups as they are not valid anymore
         self._groups = None
@@ -1505,6 +1522,49 @@ class Variogram(object):
 
         # return the mapped result
         return np.fromiter(map(mapper, self.lag_classes()), dtype=float)
+
+    def get_empirical(self, bin_center=False):
+        """Empirical variogram
+
+        Returns a tuple of dependent and independent sample values, this
+        :class:`Variogram <skgstat.Variogram>` is estimated for.
+        This is a tuple of the current :func:`bins <skgstat.Variogram.bins>`
+        and :func:`experimental <skgstat.Variogram.experimental>`
+        semi-variance values. By default the upper bin edges are used.
+        This can be set to bin center by the `bin_center` argument.
+
+        Parameters
+        ----------
+        bin_center : bool
+            If set to `True`, the center for each distance lag bin is
+            used over the upper limit (default).
+
+        Returns
+        -------
+        bins : numpy.ndarray
+            1D array of :func:`n_lags <skgstat.Variogram.n_lags>`
+            distance lag bins.
+        experimental : numpy.ndarray
+            1D array of :func:`n_lags <skgstat.Variogram.n_lags>`
+            experimental semi-variance values.
+
+        See Also
+        --------
+        Variogram.bins
+        Variogram.experimental
+
+        """
+        # get the bins and experimental values
+        bins = self.bins
+        experimental = self.experimental
+
+        # align bin centers
+        if bin_center:
+            # get the bin centers
+            bins = np.subtract(bins, np.diff([0] + bins.tolist()) / 2)
+
+        # return
+        return bins, experimental
 
     def __get_fit_bounds(self, x, y):
         """

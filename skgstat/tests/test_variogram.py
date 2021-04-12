@@ -817,6 +817,25 @@ class TestVariogramMethods(unittest.TestCase):
 
         self.V = Variogram(self.c, self.v, normalize=False, n_lags=10)
 
+    def test_get_empirical(self):
+        bins = self.V.bins
+        exp = self.V.experimental
+
+        emp_x, emp_y = self.V.get_empirical()
+
+        # test
+        assert_array_almost_equal(bins, emp_x)
+        assert_array_almost_equal(exp, emp_y)
+    
+    def test_get_empirical_center(self):
+        V = Variogram(self.c, self.v)
+
+        # overwrite bins
+        V.bins = [4, 8, 9, 12, 15]
+        emp_x, emp_y = V.get_empirical(bin_center=True)
+
+        assert_array_almost_equal(emp_x, [2., 6., 8.5, 10.5, 13.5])
+
     def test_clone_method(self):
         # copy variogram
         copy = self.V.clone()
