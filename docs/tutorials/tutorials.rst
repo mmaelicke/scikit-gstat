@@ -16,3 +16,4 @@ while the tutorials are focused on code.
     03_estimators
     04_Plotting
     05_binning
+    06_gstools
