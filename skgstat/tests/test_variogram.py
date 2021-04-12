@@ -40,11 +40,11 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         # test 1D coords
         V = Variogram(c1d, v)
-        self.assertTrue(V.dim, 1)
+        self.assertTrue(V.dim == 1)
 
         # test 3D coords
         V2 = Variogram(c3d, v)
-        self.assertTrue(V.dim, 3)
+        self.assertTrue(V2.dim == 3)
 
     def test_pass_median_maxlag_on_instantiation(self):
         np.random.seed(1312)
