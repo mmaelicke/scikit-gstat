@@ -713,14 +713,14 @@ To use the class on only five points, we need to prevent the class from fitting,
 fitting on only 5 points will not work. But this does not affect the orientation calculations.
 Therefore, the :func:`fit <skgstat.DirectionalVariogram.fit>` mehtod is overwritten.
 
-.. iypthon:: python
+.. ipython:: python
     :okwarning:
 
     class TestCls(DirectionalVariogram):
         def fit(*args, **kwargs):
             pass
 
-    DV = TestCls(c, np.random.normal(0,1,len(c))
+    DV = TestCls(c, np.random.normal(0,1,len(c)))
     DV._calc_direction_mask_data()
     np.degrees(DV._angles + np.pi)[:len(c) - 1]
 

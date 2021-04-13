@@ -230,10 +230,13 @@ class DirectionalVariogram(Variogram):
 
         if not isinstance(coordinates, MetricSpace):
             coordinates = np.asarray(coordinates)
-            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
+            coordinates = MetricSpace(coordinates.copy(), dist_func)
+            # FIXME: Currently _direction_mask / _angles / _euclidean_dist don't get correctly calculated for sparse dspaces
+            #coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
         else:
             assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
-        
+            assert coordinates.max_dist is None
+            
         # Set coordinates
         self._X = coordinates
 
