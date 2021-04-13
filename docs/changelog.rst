@@ -2,9 +2,28 @@
 Changelog
 =========
 
+Version 0.4.3
+=============
+- [Variogram] :func:`dim <skgstat.Variogram.dim>` now returns the spatial dimensionality of the input data.
+- [Variogram] fixed a numpy depreaction warning in `_calc_distances`
+
+Version 0.4.2
+=============
+- [Variogram] :func:`bins <skgstat.Variogram.bins>` now cases manual setted bin edges automatically
+  to a :func:`numpy.array`.
+- [Variogram] :func:`get_empirical <skgstat.Variogram.get_empirical>` returns the empirical variogram.
+  That is a tuple of the current :func:`bins <skgstat.Variogram.bins>` and 
+  :func:`experimental <skgstat.Variogram.experimental>` arrays, with the option to move the bin to the
+  lag classes centers.
+
+Version 0.4.1
+=============
+- [Variogram] moved the bin function setting into a wrapper instance method, which was an anonymous lambda before.
+  This makes the Variogram serializable again.
+- [Variogram] a list of pylint errors were solved. Still enough left.
+
 Version 0.4.0
 =============
-
 - [binning] added `'stable_entropy'` option that will optimize the lag class edges to be of comparable Shannon Entropy.
 
 Version 0.3.11

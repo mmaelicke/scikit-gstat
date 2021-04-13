@@ -33,6 +33,19 @@ class TestVariogramInstatiation(unittest.TestCase):
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
+    def test_input_dimensionality(self):
+        c1d = np.random.normal(0, 1, 100)
+        c3d = np.random.normal(0, 1, size=(100, 3))
+        v = np.random.normal(10, 4, 100)
+
+        # test 1D coords
+        V = Variogram(c1d, v)
+        self.assertTrue(V.dim == 1)
+
+        # test 3D coords
+        V2 = Variogram(c3d, v)
+        self.assertTrue(V2.dim == 3)
+
     def test_pass_median_maxlag_on_instantiation(self):
         np.random.seed(1312)
         c = np.random.gamma(5, 1, (50, 2))
@@ -816,6 +829,25 @@ class TestVariogramMethods(unittest.TestCase):
         self.v = np.random.normal(10, 4, 30)
 
         self.V = Variogram(self.c, self.v, normalize=False, n_lags=10)
+
+    def test_get_empirical(self):
+        bins = self.V.bins
+        exp = self.V.experimental
+
+        emp_x, emp_y = self.V.get_empirical()
+
+        # test
+        assert_array_almost_equal(bins, emp_x)
+        assert_array_almost_equal(exp, emp_y)
+    
+    def test_get_empirical_center(self):
+        V = Variogram(self.c, self.v)
+
+        # overwrite bins
+        V.bins = [4, 8, 9, 12, 15]
+        emp_x, emp_y = V.get_empirical(bin_center=True)
+
+        assert_array_almost_equal(emp_x, [2., 6., 8.5, 10.5, 13.5])
 
     def test_clone_method(self):
         # copy variogram
