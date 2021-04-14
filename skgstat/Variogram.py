@@ -14,6 +14,7 @@ from sklearn.isotonic import IsotonicRegression
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
+from skgstat.interfaces.gstools import skgstat_to_gstools
 
 
 class Variogram(object):
@@ -2009,9 +2010,33 @@ class Variogram(object):
         ).copy()
 
     def to_gstools(self, **kwargs):
-        """Instantiate a corresponding GSTools CovModel."""
-        from skgstat.interfaces.gstools import skgstat_to_gstools
+        """
+        Instantiate a corresponding GSTools CovModel.
 
+        By default, this will be an isotropic model.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments forwarded to the instantiated GSTools CovModel.
+            The default parameters 'dim', 'var', 'len_scale', 'nugget',
+            'rescale' and optional shape parameters will be extracted
+            from the given Variogram but they can be overwritten here.
+
+        Raises
+        ------
+        ImportError
+            When GSTools is not installed.
+        ValueError
+            When GSTools version is not v1.3 or greater.
+        ValueError
+            When given Variogram model is not supported ('harmonize').
+
+        Returns
+        -------
+        :any:`CovModel`
+            Corresponding GSTools covmodel.
+        """
         return skgstat_to_gstools(self, **kwargs)
 
     def plot(self, axes=None, grid=True, show=True, hist=True):
