@@ -18,9 +18,8 @@ except:
 
 try:
     import gstools
-    from skgstat.interfaces import gstools as gstools_interface
     GSTOOLS_AVAILABLE = True
-except:
+except ImportError:
     GSTOOLS_AVAILABLE = False  # pragma: no cover
 
 
@@ -33,7 +32,7 @@ class TestVariogramEstimator(unittest.TestCase):
 
     def test_default(self):
         """
-        Test default instantition by comparing the fitted 
+        Test default instantition by comparing the fitted
         bins and experimental variogram values to expected arrays.
 
         """
@@ -45,8 +44,8 @@ class TestVariogramEstimator(unittest.TestCase):
         V = ve_fit.variogram
 
         assert_array_almost_equal(
-            V.bins, 
-            [6.67, 13.35, 20.02, 26.7, 33.37, 40.04, 46.72, 53.39], 
+            V.bins,
+            [6.67, 13.35, 20.02, 26.7, 33.37, 40.04, 46.72, 53.39],
             decimal=2
         )
 
@@ -58,7 +57,7 @@ class TestVariogramEstimator(unittest.TestCase):
 
     def test_predict_func(self):
         """
-        Test predict function. should return the same thing as the 
+        Test predict function. should return the same thing as the
         transform function of the underlying variogram.
 
         """
@@ -78,13 +77,13 @@ class TestVariogramEstimator(unittest.TestCase):
             model=('spherical', 'gaussian', 'exponential', 'matern')
         )
         gs = GridSearchCV(
-            VariogramEstimator(n_lags=15, normalize=False), 
+            VariogramEstimator(n_lags=15, normalize=False),
             parameters,
             cv=3
         )
 
         gs = gs.fit(self.c, self.v)
-        
+
         # Python 3.6 yields 'exponential', while 3.7, 3.8 yield 'gaussian'
         self.assertTrue(gs.best_params_['model'] in ['gaussian', 'exponential'])
 
@@ -97,7 +96,7 @@ class TestVariogramEstimator(unittest.TestCase):
             model=('spherical', 'gaussian', 'exponential', 'matern')
         )
         gs = GridSearchCV(
-            VariogramEstimator(n_lags=15, normalize=False), 
+            VariogramEstimator(n_lags=15, normalize=False),
             parameters,
             cv=5
         )
@@ -118,7 +117,7 @@ class TestPyKrigeInterface(unittest.TestCase):
 
         if not PYKRIGE_AVAILABLE:
             print('PyKrige not found, will skip all pykrige interface tests')
-    
+
     def test_model_interface(self):
         if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
@@ -130,7 +129,7 @@ class TestPyKrigeInterface(unittest.TestCase):
         yi = self.V.transform(xi)
 
         assert_array_almost_equal(yi, model([], xi), decimal=6)
-    
+
     def test_model_interface_from_list(self):
         if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
@@ -189,10 +188,10 @@ class TestPyKrigeInterface(unittest.TestCase):
         # transform should change
         xi = np.arange(1, 20)
         yi = V.transform(xi)
-        
+
         # test changed values
         assert_array_almost_equal(yi, args['variogram_function']([], xi))
-    
+
     def test_as_kwargs_adjust_nlags(self):
         if not PYKRIGE_AVAILABLE:  # pragma: no cover
             return True
@@ -223,7 +222,7 @@ class TestGstoolsInterface(unittest.TestCase):
         if not GSTOOLS_AVAILABLE:  # pragma: no cover
             return True
 
-        model = gstools_interface.gstools_cov_model(self.V, dim=2)
+        model = self.V.to_gstools(dim=2)
 
         assert_array_almost_equal(
             model.variogram(self.xi), self.yi, decimal=2
@@ -233,7 +232,7 @@ class TestGstoolsInterface(unittest.TestCase):
         if not GSTOOLS_AVAILABLE:  # pragma: no cover
             return True
 
-        model = gstools_interface.gstools_cov_model(self.V)
+        model = self.V.to_gstools()
 
         assert_array_almost_equal(
             model.variogram(self.xi), self.yi, decimal=2
