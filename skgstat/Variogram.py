@@ -14,7 +14,7 @@ from sklearn.isotonic import IsotonicRegression
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
-from .MetricSpace import MetricSpace, MetricSpacePair
+from .MetricSpace import MetricSpace, MetricSpacePair, ProbabalisticMetricSpace
 import scipy.sparse
 
 class Variogram(object):
@@ -37,6 +37,7 @@ class Variogram(object):
                  fit_sigma=None,
                  use_nugget=False,
                  maxlag=None,
+                 samples=None,
                  n_lags=10,
                  verbose=False,
                  **kwargs,
@@ -174,6 +175,13 @@ class Variogram(object):
             Note maxlag=0.5 will use half the maximum separating distance,
             this is not the same as 'median', which is the median of all
             separating distances
+        samples : float, int
+            If set to a non-None value point pairs are sampled
+            randomly. Two random subset of all points are chosen, and
+            the distance matrix is calculated only between these two
+            subsets. The size of each subset is set by `samples`: if <
+            1 it specifies a fraction of all points, if >= 1 it
+            specifies the number of points in each subset.
         n_lags : int
             Specify the number of lag classes to be defined by the binning
             function.
@@ -218,9 +226,13 @@ class Variogram(object):
             if len(coordinates.shape) < 2:
                 coordinates = np.column_stack((coordinates, np.zeros(len(coordinates))))
                 self._1d = True
-            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
+            if samples == None:
+                coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
+            else:
+                coordinates = ProbabalisticMetricSpace(
+                    coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None, samples=samples)
         else:
-            assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
+            assert dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
 
         # Set coordinates
         self._X = coordinates
@@ -230,7 +242,7 @@ class Variogram(object):
 
         # set verbosity
         self.verbose = verbose
-
+    
         # set values
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
@@ -897,8 +909,8 @@ class Variogram(object):
         c = m.tocsc()
         c.data = c.indices
         rows = c.tocsr()
-        filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr))
-        return m.multiply(filt)    
+        filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr), m.shape)
+        return m.multiply(filt)
         
     @property
     def distance_matrix(self):

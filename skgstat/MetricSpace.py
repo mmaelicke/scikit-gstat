@@ -66,7 +66,7 @@ class MetricSpace(DistanceMethods):
     def dists(self):
         if self._dists is None:
             if self.max_dist is not None and self.dist_metric == "euclidean":
-                self._dists = self.tree.sparse_distance_matrix(self.tree, self.max_dist, output_type="coo_matrix").tocsr()
+                self._dists = self.ltree.sparse_distance_matrix(self.rtree, self.max_dist, output_type="coo_matrix").tocsr()
             else:
                 self._dists = scipy.spatial.distance.squareform(
                     scipy.spatial.distance.pdist(self.coords, metric=self.dist_metric))
@@ -117,4 +117,71 @@ class MetricSpacePair(DistanceMethods):
                 self._dists = self.ms1.tree.sparse_distance_matrix(self.ms2.tree, self.max_dist, output_type="coo_matrix").tocsr()
             else:
                 self._dists = scipy.spatial.distance.cdist(self.ms1.coords, self.ms2.coords, metric=self.ms1.dist_metric)
+        return self._dists
+
+class ProbabalisticMetricSpace(MetricSpace):
+    """Like MetricSpace but samples the distance pairs only returning a
+       `samples` sized subset. `samples` can either be a fraction of
+       the total number of pairs (float < 1), or an integer count.
+    """
+    
+    def __init__(self, coords, dist_metric="euclidean", max_dist=None, samples=0.5):
+        self.coords = coords.copy()
+        self.dist_metric = dist_metric
+        self.max_dist = max_dist
+        self.samples = samples
+
+        self._lidx = None
+        self._ridx = None
+        self._ltree = None
+        self._rtree = None
+        self._dists = None
+        # Do a very quick check to see throw exceptions if self.dist_metric is invalid...
+        scipy.spatial.distance.pdist(self.coords[:1,:], metric=self.dist_metric)
+
+    @property
+    def sample_count(self):
+        if isinstance(self.samples, int):
+            return self.samples
+        return int(self.samples * len(self.coords))
+        
+    @property
+    def lidx(self):
+        if self._lidx is None:
+            self._lidx = np.random.choice(len(self.coords), size=self.sample_count, replace=False)
+        return self._lidx
+    
+    @property
+    def ridx(self):
+        if self._ridx is None:
+            self._ridx = np.random.choice(len(self.coords), size=self.sample_count, replace=False)
+        return self._ridx
+    
+    @property
+    def ltree(self):
+        assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
+        if self._ltree is None:
+            self._ltree = scipy.spatial.cKDTree(self.coords[self.lidx,:])
+        return self._ltree
+
+    @property
+    def rtree(self):
+        assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
+        if self._rtree is None:
+            self._rtree = scipy.spatial.cKDTree(self.coords[self.ridx,:])
+        return self._rtree
+            
+    @property
+    def dists(self):
+        if self._dists is None:
+            max_dist = self.max_dist
+            if max_dist is None:
+                max_dist = 1 + np.sqrt(((self.coords.max(axis=0) - self.coords.min(axis=0))**2).sum())
+            dists = self.ltree.sparse_distance_matrix(self.rtree, max_dist, output_type="coo_matrix").tocsr()
+            dists.resize((len(self.coords), len(self.coords)))
+            dists.indices = self.lidx[dists.indices]
+            dists = dists.tocsc()
+            dists.indices = self.ridx[dists.indices]
+            dists = dists.tocsr()
+            self._dists = dists
         return self._dists
