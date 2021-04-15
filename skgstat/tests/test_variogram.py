@@ -17,6 +17,7 @@ except ImportError:
 from skgstat import Variogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
+from skgstat import models
 from skgstat import plotting
 
 
@@ -121,6 +122,13 @@ class TestVariogramInstatiation(unittest.TestCase):
             "'notafunc' is not a valid estimator for `bins`",
             str(e.exception)
         )
+
+    def test_invalid_binning_func(self):
+        with self.assertRaises(AttributeError) as e:
+            V = Variogram(self.c, self.v)
+            V.set_bin_func(42)
+        
+        self.assertTrue('of type string' in str(e.exception))
 
     def test_unknown_model(self):
         with self.assertRaises(ValueError) as e:
@@ -975,7 +983,7 @@ class TestVariogramMethods(unittest.TestCase):
         V = self.V.clone()
 
         # test stable
-        param = [42.3 , 15.79, 0.45,  0.]
+        param = [42.3, 15.79, 0.45,  0.]
         V.set_model('stable')
         assert_array_almost_equal(V.parameters, param, decimal=2)
 

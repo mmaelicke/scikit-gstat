@@ -574,22 +574,25 @@ class Variogram(object):
             The American Statistician, 30(4), 181-183.
 
         """
-        # switch the input
-        if bin_func.lower() == 'even':
-            self._bin_func = binning.even_width_lags
+        # handle strings
+        if isinstance(bin_func, str):
+            # switch the input
+            if bin_func.lower() == 'even':
+                self._bin_func = binning.even_width_lags
 
-        elif bin_func.lower() == 'uniform':
-            self._bin_func = binning.uniform_count_lags
+            elif bin_func.lower() == 'uniform':
+                self._bin_func = binning.uniform_count_lags
 
-        elif isinstance(bin_func, str):
             # remove the n_lags if they will be adjusted on call
-            if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
-                self._n_lags = None
+            else:
+                # reset lags for adjusting algorithms
+                if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
+                    self._n_lags = None
 
-            # use the wrapper
-            self._bin_func = self._bin_func_wrapper
+                # use the wrapper for all but even and uniform
+                self._bin_func = self._bin_func_wrapper
 
-        elif callable(bin_func):
+        elif callable(bin_func):  # pragma: no cover
             self._bin_func = bin_func
             bin_func = 'custom'
 
@@ -688,7 +691,7 @@ class Variogram(object):
     def n_lags(self, n):
         # TODO: here accept strings and implement some optimum methods
         # string are not implemented yet
-        if isinstance(n, str):
+        if isinstance(n, str):  # pragma: no cover
             raise NotImplementedError('n_lags string values not implemented')
 
         # n_lags is int
@@ -750,7 +753,7 @@ class Variogram(object):
                         'provide the function.'
                     ) % estimator_name
                 )
-        elif callable(estimator_name):
+        elif callable(estimator_name):  # pragma: no cover
             self._estimator = estimator_name
         else:
             raise ValueError('The estimator has to be a string or callable.')
@@ -786,7 +789,7 @@ class Variogram(object):
                         ' understood, please provide the function'
                     ) % model_name
                 )
-        else:
+        else:  # pragma: no cover
             self._model = model_name
 
     def _build_harmonized_model(self):
@@ -882,7 +885,7 @@ class Variogram(object):
         # reset the fitting
         self.cof, self.cov = None, None
 
-        if isinstance(func, str):
+        if isinstance(func, str):  # pragma: no cover
             if func.lower() == 'rank':
                 raise NotImplementedError
         elif not callable(func):

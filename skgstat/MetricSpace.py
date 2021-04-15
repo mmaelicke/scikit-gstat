@@ -11,8 +11,25 @@ def sparse_dok_get(m, fill_value=np.NaN):
 
 class DistanceMethods(object):
     def find_closest(self, idx, max_dist = None, N = None):
-        """Find the (N) closest points (in the right set) to the point with
+        """find neighbors
+        Find the (N) closest points (in the right set) to the point with
         index idx (in the left set).
+        
+        Parameters
+        ----------
+        idx : int
+            Index of the point that the N closest neighbors
+            are searched for.
+        max_dist : float
+            Maximum distance at which other points are searched
+        N : int
+            Number of points searched.
+
+        Returns
+        -------
+        ridx : numpy.ndarray
+            Indices of the N closeset points to idx
+
         """
         assert self.max_dist is None or max_dist is None or max_dist == self.max_dist, "max_dist specified and max_dist != self.max_dist"
         if max_dist is None: max_dist = self.max_dist
