@@ -43,18 +43,19 @@ class Variogram(object):
                  ):
         r"""Variogram Class
 
-        Note: The directional variogram estimation is not re-implemented yet.
-        Therefore the parameters is-directional, azimuth and tolerance will
-        be ignored at the moment and can be subject to changes.
-
         Parameters
         ----------
-        coordinates : numpy.ndarray
+        coordinates : numpy.ndarray, MetricSpace
+            .. versionchanged:: 0.5.0
+                now accepts MetricSpace
             Array of shape (m, n). Will be used as m observation points of
             n-dimensions. This variogram can be calculated on 1 - n
             dimensional coordinates. In case a 1-dimensional array is passed,
             a second array of same length containing only zeros will be
             stacked to the passed one.
+            For very large datasets, you can use the MetricSpace class, that
+            will only calculate distances within the maximum lag in a 
+            sparse matrix.
         values : numpy.ndarray
             Array of values observed at the given coordinates. The length of
             the values array has to match the m dimension of the coordinates
@@ -212,19 +213,28 @@ class Variogram(object):
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
 
+        # handle the coordinates
         self._1d = False
         if not isinstance(coordinates, MetricSpace):
             coordinates = np.asarray(coordinates)
+
+            # handle 1D coords
             if len(coordinates.shape) < 2:
-                coordinates = np.column_stack((coordinates, np.zeros(len(coordinates))))
+                coordinates = np.column_stack((
+                    coordinates,
+                    np.zeros(len(coordinates))
+                ))
                 self._1d = True
-            coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
-        else:
-            assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
+
+            # handle maxlag for MetricSpace
+            _maxlag = maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None
+            coordinates = MetricSpace(coordinates.copy(), dist_func, _maxlag)
+        elif self.dist_func != coordinates.dist_metric:
+            raise AttributeError("Distance metric of variogram differs from distance metric of coordinates")
 
         # Set coordinates
         self._X = coordinates
-            
+
         # pairwise differences
         self._diff = None
 
@@ -385,13 +395,13 @@ class Variogram(object):
 
         """
         # check dimensions
-        if not len(values) == len(self.coordinates):
+        if not len(values) == len(self.coordinates):  # pragma: no cover
             raise ValueError('The length of the values array has to match' +
                              'the length of coordinates')
 
         # use an array
         _y = np.asarray(values)
-        if not _y.ndim == 1:
+        if not _y.ndim == 1:  # pragma: no cover
             raise ValueError('The values shall be a 1-D array.' +
                              'Multi-dimensional values not supported yet.')
 
