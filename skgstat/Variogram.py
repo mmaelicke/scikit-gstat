@@ -229,7 +229,7 @@ class Variogram(object):
             # handle maxlag for MetricSpace
             _maxlag = maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None
             coordinates = MetricSpace(coordinates.copy(), dist_func, _maxlag)
-        elif self.dist_func != coordinates.dist_metric:
+        elif dist_func != coordinates.dist_metric:
             raise AttributeError("Distance metric of variogram differs from distance metric of coordinates")
 
         # Set coordinates
@@ -903,16 +903,20 @@ class Variogram(object):
 
     @property
     def triangular_distance_matrix(self):
-        # Like distance_matrix but with zeros below the diagonal...
-        # Only defined if distance_matrix is a sparse matrix
-        assert isinstance(self.distance_matrix, scipy.sparse.spmatrix)
+        """
+        Like distance_matrix but with zeros below the diagonal...
+        Only defined if distance_matrix is a sparse matrix
+        """
+        if not isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+            raise RuntimeWarning("Only available for sparse coordinates.")
+
         m = self.distance_matrix
         c = m.tocsc()
         c.data = c.indices
         rows = c.tocsr()
         filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr))
-        return m.multiply(filt)    
-        
+        return m.multiply(filt)
+
     @property
     def distance_matrix(self):
         return self._X.dists
