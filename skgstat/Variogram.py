@@ -53,9 +53,14 @@ class Variogram(object):
             dimensional coordinates. In case a 1-dimensional array is passed,
             a second array of same length containing only zeros will be
             stacked to the passed one.
-            For very large datasets, you can use the MetricSpace class, that
-            will only calculate distances within the maximum lag in a 
-            sparse matrix.
+            For very large datasets, you can set maxlag to only calculate
+            distances within the maximum lag in a sparse matrix.
+            Alternatively you can supply a MetricSpace (optionally with a
+            `max_dist` set for the same effect). This is useful if you're
+            creating many different variograms for different measured
+            parameters that are all measured at the same set of coordinates,
+            as distances will only be calculated once, instead of once per
+            variogram.
         values : numpy.ndarray
             Array of values observed at the given coordinates. The length of
             the values array has to match the m dimension of the coordinates
@@ -563,14 +568,14 @@ class Variogram(object):
 
         References
         ----------
-        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306. 
+        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306.
             https://doi.org/10.1002/wics.35
-        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502. 
+        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502.
             https://doi.org/10.1002/wics.103
-        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as 
-            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie 
-            und verwandte Gebiete 57.4: 453-476.
-        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications. 
+        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the
+            histogram as a density estimator: L 2 theory." Zeitschrift für
+            Wahrscheinlichkeitstheorie und verwandte Gebiete 57.4: 453-476.
+        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications.
             The American Statistician, 30(4), 181-183.
 
         """
