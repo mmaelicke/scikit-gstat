@@ -1,5 +1,5 @@
 from scipy.spatial.distance import pdist, cdist, squareform
-import scipy.sparse
+from scipy import sparse
 import numpy as np
 
 
@@ -39,16 +39,16 @@ class DistanceMethods(object):
                 )
         else:
             max_dist = self.max_dist
-        if isinstance(self.dists, scipy.sparse.spmatrix):
+        if isinstance(self.dists, sparse.spmatrix):
             dists = self.dists.getrow(idx)
         else:
             dists = self.dists[idx, :]
-        if isinstance(dists, scipy.sparse.spmatrix):
+        if isinstance(dists, sparse.spmatrix):
             ridx = np.array([k[1] for k in dists.todok().keys()])
         else:
             ridx = np.where(dists <= max_dist)[0]
         if ridx.size > N:
-            if isinstance(dists, scipy.sparse.spmatrix):
+            if isinstance(dists, sparse.spmatrix):
                 selected_dists = dists[0, ridx].toarray()[0, :]
             else:
                 selected_dists = dists[ridx]
@@ -145,7 +145,7 @@ class MetricSpace(DistanceMethods):
             dist_mat = dist_mat[idx, :][:, idx]
 
         # handle sparse matrix
-        if isinstance(self.dists, scipy.sparse.spmatrix):
+        if isinstance(self.dists, sparse.spmatrix):
             dist_mat = _sparse_dok_get(dist_mat.todok(), np.inf)
             np.fill_diagonal(dist_mat, 0) # Normally set to inf
 
