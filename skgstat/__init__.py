@@ -1,5 +1,4 @@
 from .Variogram import Variogram
-from .VariogramResult import VariogramResult
 from .DirectionalVariogram import DirectionalVariogram
 from .SpaceTimeVariogram import SpaceTimeVariogram
 from .Kriging import OrdinaryKriging
