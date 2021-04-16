@@ -209,7 +209,7 @@ class TestGstoolsInterface(unittest.TestCase):
         self.v = df.z.values
 
         # build variogram
-        self.V = Variogram(self.c, self.v, model='matern', normalize=False, use_nugget=True)
+        self.V = Variogram(self.c, self.v, model='stable', normalize=False, use_nugget=True)
 
         # model data
         self.xi = np.linspace(0, self.V.bins[-1], 100)
@@ -237,6 +237,54 @@ class TestGstoolsInterface(unittest.TestCase):
         assert_array_almost_equal(
             model.variogram(self.xi), self.yi, decimal=2
         )
+
+
+class TestGstoolsAllModels(unittest.TestCase):
+    def setUp(self):
+        # use real sample data in the interface
+        df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'sample.csv'))
+        self.c = df[['x', 'y']].values
+        self.v = df.z.values
+
+        if not GSTOOLS_AVAILABLE:
+            print('GSTools not found, will skip all gstools interface tests')
+
+    def assert_model(self, model: str):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        # build the model
+        V = Variogram(self.c, self.v, model=model, normalize=False)
+        
+        # model data
+        xi = np.linspace(0, V.bins[-1], 100)
+        yi = V.transform(xi)
+
+        model = V.to_gstools()
+
+        assert_array_almost_equal(
+            model.variogram(xi), yi, decimal=2
+        )
+
+    def test_stable_model(self):
+        self.assert_model('stable')
+
+    def test_spherical_model(self):
+        self.assert_model('spherical')
+
+    def test_exponential_model(self):
+        self.assert_model('exponential')
+
+    def test_cubic_model(self):
+        self.assert_model('cubic')
+
+    def test_gaussian_model(self):
+        self.assert_model('gaussian')
+    
+    def test_matern_model(self):
+        self.assert_model('matern')
+
+
 
 
 if __name__ == '__main__':
