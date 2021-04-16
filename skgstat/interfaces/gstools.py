@@ -7,13 +7,6 @@ def stable_rescale(describe):
     return np.power(3, 1 / describe["shape"])
 
 
-def matern_rescale(describe):
-    """Get GSTools rescale parameter from sk-gstat matern model description."""
-    if 0.5 < describe["smoothness"] < 10.0:
-        return 4.0
-    return 6.0
-
-
 MODEL_MAP = dict(
     spherical=dict(gs_cls="Spherical"),
     exponential=dict(gs_cls="Exponential", rescale=3.0),
@@ -23,7 +16,7 @@ MODEL_MAP = dict(
         gs_cls="Stable", arg_map={"alpha": "shape"}, rescale=stable_rescale
     ),
     matern=dict(
-        gs_cls="Matern", arg_map={"nu": "smoothness"}, rescale=matern_rescale
+        gs_cls="Matern", arg_map={"nu": "smoothness"}, rescale=4.0
     ),
 )
 
