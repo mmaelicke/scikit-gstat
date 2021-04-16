@@ -121,20 +121,39 @@ class MetricSpace(DistanceMethods):
         return self._dists
 
     def diagonal(self, idx=None):
-        """Return a diagonal matrix (as per
-        scipy.spatial.distance.squareform), optionally for a subset of
-        the points
-        """        
+        """
+        Return a diagonal matrix (as per
+        :func:`squareform <scipy.spatial.distance.squareform>`),
+        optionally for a subset of the points
+
+        Parameters
+        ----------
+        idx : list
+            list of indices that the diagonal matrix is calculated for.
+
+        Returns
+        -------
+        diagonal : numpy.ndarray
+            squareform matrix of the subset of coordinates
+
+        """
+        # get the dists
         dist_mat = self.dists
+
+        # subset dists if requested
         if idx is not None:
-            dist_mat = dist_mat[idx,:][:,idx]
+            dist_mat = dist_mat[idx, :][:, idx]
+
+        # handle sparse matrix
         if isinstance(self.dists, scipy.sparse.spmatrix):
             dist_mat = _sparse_dok_get(dist_mat.todok(), np.inf)
             np.fill_diagonal(dist_mat, 0) # Normally set to inf
-        return scipy.spatial.distance.squareform(dist_mat)
-    
+
+        return squareform(dist_mat)
+
     def __len__(self):
         return len(self.coords)
+
 
 class MetricSpacePair(DistanceMethods):
     """A MetricSpacePair represents a set of point clouds (MetricSpaces).
@@ -144,8 +163,18 @@ class MetricSpacePair(DistanceMethods):
     have the same distance metric as well as maximum distance.
     """
     def __init__(self, ms1, ms2):
-        assert ms1.dist_metric == ms2.dist_metric, "Both MetricSpaces need to have the same distance metric"
-        assert ms1.max_dist == ms2.max_dist, "Both MetricSpaces need to have the same max_dist"
+        # check input data
+        # same distance metrix
+        if ms1.dist_metric != ms2.dist_metric:
+            raise ValueError(
+                "Both MetricSpaces need to have the same distance metric"
+            )
+
+        # same max_dist setting
+        if ms1.max_dist != ms2.max_dist:
+            raise ValueError(
+                "Both MetricSpaces need to have the same max_dist"
+            )
         self.ms1 = ms1
         self.ms2 = ms2
         self._dists = None
