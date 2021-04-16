@@ -346,9 +346,6 @@ def matern(h, r, c0, s, b=0):
     Implementation of the Matérn variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
 
-    .. versionchanged:: 0.3.2
-        a is now r/3 for s <= 0.2 or s >= 10.
-
     Parameters
     ----------
     h : float
@@ -357,7 +354,7 @@ def matern(h, r, c0, s, b=0):
     r : float
         The effective range. Note this is not the range parameter! For the
         Matérn variogram function the range parameter a is defined to be
-        :math:`a = \frac{r}{2}` and :math:`a = \frac{r}{3}` if s is smaller 
+        :math:`a = \frac{r}{2}` and :math:`a = \frac{r}{3}` if s is smaller
         than 0.5 or larger than 10. The effective range is the lag
         where 95% of the sill are exceeded. This is needed as the sill is
         only approached asymptotically by Matérn model.
@@ -387,7 +384,7 @@ def matern(h, r, c0, s, b=0):
     The implementation is taken from [13]_:
 
     .. math::
-        \gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1} 
+        \gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1}
         \Gamma(\upsilon)}\left(\frac{h}{a}\right)^\upsilon K_\upsilon
         \left(\frac{h}{a}\right)\right)
 
@@ -398,18 +395,14 @@ def matern(h, r, c0, s, b=0):
 
     References
     ----------
-    .. [13] Zimmermann, B., Zehe, E., Hartmann, N. K., & Elsenbeer, H. (2008). 
-        Analyzing spatial data: An assessment of assumptions, new methods, and 
-        uncertainty using soil hydraulic data. Water Resources Research, 
+    .. [13] Zimmermann, B., Zehe, E., Hartmann, N. K., & Elsenbeer, H. (2008).
+        Analyzing spatial data: An assessment of assumptions, new methods, and
+        uncertainty using soil hydraulic data. Water Resources Research,
         44(10), 1–18. https://doi.org/10.1029/2007WR006604
 
     """
     # prepare parameters
-    # depend a on s, for 0.5 should be 3, above 10 should be 3
-    if s >= 10 or s <= 0.5:
-        a = r / 3.
-    else:
-        a = r / 2.
+    a = r / 2.
 
     # calculate
     return b + c0 * (1. - (2 / special.gamma(s)) *
