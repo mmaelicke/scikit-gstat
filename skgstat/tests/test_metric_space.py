@@ -26,7 +26,7 @@ def test_sparse_matrix_no_warning():
     # call triangular_distance_matrix without warning
     V = skg.Variogram(sparse, rvals)
     V.triangular_distance_matrix
-    
+
 
 def test_dense_matrix_warning():
     dense = skg.MetricSpace(rcoords)
@@ -37,3 +37,18 @@ def test_dense_matrix_warning():
         V.triangular_distance_matrix
 
         assert 'Only available' in w.value
+
+
+def test_unkonwn_metric():
+    with pytest.raises(ValueError) as e:
+        skg.MetricSpace(rcoords, dist_metric='foobar')
+
+        assert 'Unknown Distance Metric:' in e.value
+
+
+def test_tree_non_euklidean():
+    with pytest.raises(ValueError) as e:
+        ms = skg.MetricSpace(rcoords, 'cityblock')
+        ms.tree
+
+        assert 'can only be constructed' in e.value

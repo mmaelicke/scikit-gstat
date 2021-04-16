@@ -1,20 +1,21 @@
-import scipy.spatial
-import scipy.spatial.distance
+from scipy.spatial.distance import pdist, squareform
 import scipy.sparse
 import numpy as np
 
-def sparse_dok_get(m, fill_value=np.NaN):
+
+def _sparse_dok_get(m, fill_value=np.NaN):
     mm = np.full(m.shape, fill_value)
     for (x, y), value in m.items():
-        mm[x,y] = value
+        mm[x, y] = value
     return mm
 
+
 class DistanceMethods(object):
-    def find_closest(self, idx, max_dist = None, N = None):
+    def find_closest(self, idx, max_dist=None, N=None):
         """find neighbors
         Find the (N) closest points (in the right set) to the point with
         index idx (in the left set).
-        
+
         Parameters
         ----------
         idx : int
@@ -31,27 +32,34 @@ class DistanceMethods(object):
             Indices of the N closeset points to idx
 
         """
-        assert self.max_dist is None or max_dist is None or max_dist == self.max_dist, "max_dist specified and max_dist != self.max_dist"
-        if max_dist is None: max_dist = self.max_dist
+        if self.max_dist is not None:
+            if max_dist != self.max_dist:
+                raise AttributeError(
+                    "max_dist specified and max_dist != self.max_dist"
+                )
+        else:
+            max_dist = self.max_dist
         if isinstance(self.dists, scipy.sparse.spmatrix):
             dists = self.dists.getrow(idx)
         else:
-            dists = self.dists[idx,:]
+            dists = self.dists[idx, :]
         if isinstance(dists, scipy.sparse.spmatrix):
             ridx = np.array([k[1] for k in dists.todok().keys()])
         else:
             ridx = np.where(dists <= max_dist)[0]
         if ridx.size > N:
             if isinstance(dists, scipy.sparse.spmatrix):
-                selected_dists = dists[0, ridx].toarray()[0,:]
+                selected_dists = dists[0, ridx].toarray()[0, :]
             else:
                 selected_dists = dists[ridx]
             sorted_ridx = np.argsort(selected_dists, kind="stable")
             ridx = ridx[sorted_ridx][:N]
         return ridx
-    
+
+
 class MetricSpace(DistanceMethods):
-    """A MetricSpace represents a point cloud together with a distance
+    """
+    A MetricSpace represents a point cloud together with a distance
     metric and possibly a maximum distance. It efficiently provides
     the distances between each point pair (when shorter than the
     maximum distance).
@@ -68,28 +76,51 @@ class MetricSpace(DistanceMethods):
         self.max_dist = max_dist
         self._tree = None
         self._dists = None
-        # Do a very quick check to see throw exceptions if self.dist_metric is invalid...
-        scipy.spatial.distance.pdist(self.coords[:1,:], metric=self.dist_metric)
-        
+
+        # Check if self.dist_metric is valid
+        try:
+            pdist(self.coords[:1, :], metric=self.dist_metric)
+        except ValueError as e:
+            raise e
 
     @property
     def tree(self):
-        assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
+        # only Euclidean supported
+        if self.dist_metric != "euclidean":
+            raise ValueError((
+                "A coordinate tree can only be constructed "
+                "for an euclidean space"
+            ))
+
+        # if not cached - calculate
         if self._tree is None:
             self._tree = scipy.spatial.cKDTree(self.coords)
+
+        # return
         return self._tree
-            
+
     @property
     def dists(self):
+        # calculate if not cached
         if self._dists is None:
+            # check if max dist is given
             if self.max_dist is not None and self.dist_metric == "euclidean":
-                self._dists = self.tree.sparse_distance_matrix(self.tree, self.max_dist, output_type="coo_matrix").tocsr()
+                self._dists = self.tree.sparse_distance_matrix(
+                    self.tree,
+                    self.max_dist,
+                    output_type="coo_matrix"
+                ).tocsr()
+
+            # otherwise use pdist
             else:
-                self._dists = scipy.spatial.distance.squareform(
-                    scipy.spatial.distance.pdist(self.coords, metric=self.dist_metric))
+                self._dists = squareform(
+                    pdist(self.coords, metric=self.dist_metric)
+                )
+
+        # return
         return self._dists
 
-    def diagonal(self, idx = None):
+    def diagonal(self, idx=None):
         """Return a diagonal matrix (as per
         scipy.spatial.distance.squareform), optionally for a subset of
         the points
@@ -98,7 +129,7 @@ class MetricSpace(DistanceMethods):
         if idx is not None:
             dist_mat = dist_mat[idx,:][:,idx]
         if isinstance(self.dists, scipy.sparse.spmatrix):
-            dist_mat = sparse_dok_get(dist_mat.todok(), np.inf)
+            dist_mat = _sparse_dok_get(dist_mat.todok(), np.inf)
             np.fill_diagonal(dist_mat, 0) # Normally set to inf
         return scipy.spatial.distance.squareform(dist_mat)
     
