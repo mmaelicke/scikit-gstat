@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Versiop 0.4.4
+=============
+- [models] the changes to :func:`matern <skgstat.models.matern>` introduced in `0.3.2` are reversed. 
+  The Matérn model does not adapt the smoothness scaling to effective range anymore, as the behavior was too
+  inconsistent.
+- [interface] minor bugfix of circular import in `variogram_estimator` interface
+- [models] :func:`matern(0, ...) <skgstat.models.matern>` now returns the nugget instead of `numpy.NaN`
+- [models] :func:`stable(0, ...) <skgstat.models.stable>` now returns the nugget instead of `numpy.NaN` or a 
+  `ZeroDivisionError`.
+
 Version 0.4.3
 =============
 - [Variogram] :func:`dim <skgstat.Variogram.dim>` now returns the spatial dimensionality of the input data.
