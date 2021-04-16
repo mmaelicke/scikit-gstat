@@ -1,4 +1,4 @@
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist, cdist, squareform
 import scipy.sparse
 import numpy as np
 
@@ -156,7 +156,8 @@ class MetricSpace(DistanceMethods):
 
 
 class MetricSpacePair(DistanceMethods):
-    """A MetricSpacePair represents a set of point clouds (MetricSpaces).
+    """
+    A MetricSpacePair represents a set of point clouds (MetricSpaces).
     It efficiently provides the distances between each point in one
     point cloud and each point in the other point cloud (when shorter
     than the maximum distance). The two point clouds are required to
@@ -186,12 +187,26 @@ class MetricSpacePair(DistanceMethods):
     @property
     def max_dist(self):
         return self.ms1.max_dist
-        
+
     @property
     def dists(self):
+        # if not cached, calculate
         if self._dists is None:
+            # handle euclidean with max_dist with Tree
             if self.max_dist is not None and self.dist_metric == "euclidean":
-                self._dists = self.ms1.tree.sparse_distance_matrix(self.ms2.tree, self.max_dist, output_type="coo_matrix").tocsr()
+                self._dists = self.ms1.tree.sparse_distance_matrix(
+                    self.ms2.tree,
+                    self.max_dist,
+                    output_type="coo_matrix"
+                ).tocsr()
+
+            # otherwise Tree not possible
             else:
-                self._dists = scipy.spatial.distance.cdist(self.ms1.coords, self.ms2.coords, metric=self.ms1.dist_metric)
+                self._dists = cdist(
+                    self.ms1.coords,
+                    self.ms2.coords,
+                    metric=self.ms1.dist_metric
+                )
+
+        # return
         return self._dists

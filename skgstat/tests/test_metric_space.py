@@ -52,3 +52,27 @@ def test_tree_non_euklidean():
         ms.tree
 
         assert 'can only be constructed' in e.value
+
+
+def test_metric_pair_metrix():
+    c1 = np.random.gamma(100, 4, (300, 2))
+    c2 = np.random.gamma(50, 5, (100, 2))
+    ms1 = skg.MetricSpace(c1, dist_metric='cityblock')
+    ms2 = skg.MetricSpace(c2, dist_metric='euclidean')
+
+    with pytest.raises(ValueError) as e:
+        skg.MetricSpacePair(ms1, ms2)
+
+        assert 'same distance metric' in e.value
+
+
+def test_metric_pair_max_dist():
+    c1 = np.random.gamma(100, 4, (300, 2))
+    c2 = np.random.gamma(50, 5, (100, 2))
+    ms1 = skg.MetricSpace(c1, max_dist=50)
+    ms2 = skg.MetricSpace(c2, max_dist=400)
+
+    with pytest.raises(ValueError) as e:
+        skg.MetricSpacePair(ms1, ms2)
+
+        assert 'same max_dist' in e.value
