@@ -255,7 +255,7 @@ class TestGstoolsAllModels(unittest.TestCase):
 
         # build the model
         V = Variogram(self.c, self.v, model=model, normalize=False)
-        
+
         # model data
         xi = np.linspace(0, V.bins[-1], 100)
         yi = V.transform(xi)
@@ -280,11 +280,9 @@ class TestGstoolsAllModels(unittest.TestCase):
 
     def test_gaussian_model(self):
         self.assert_model('gaussian')
-    
+
     def test_matern_model(self):
         self.assert_model('matern')
-
-
 
 
 if __name__ == '__main__':

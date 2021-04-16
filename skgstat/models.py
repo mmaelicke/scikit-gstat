@@ -281,6 +281,9 @@ def stable(h, r, c0, s, b=0):
     Implementation of the stable variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
 
+    .. versionchanged:: 0.4.4
+        Now returns the nugget at lag 0
+
     Parameters
     ----------
     h : float
@@ -326,10 +329,14 @@ def stable(h, r, c0, s, b=0):
     References
     ----------
 
-    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal
         geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
+    # if s gts too small, we run into a zeroDivision error at lag 0
+    if h == 0:
+        return b
+
     # prepare parameters
     a = r / np.power(3, 1 / s)
 
@@ -345,6 +352,9 @@ def matern(h, r, c0, s, b=0):
 
     Implementation of the Matérn variogram function. Calculates the
     dependent variable for a given lag (h). The nugget (b) defaults to be 0.
+
+    .. versionchanged:: 0.4.4
+        now returns the nugget instead of NaN for lag 0.
 
     Parameters
     ----------
@@ -401,6 +411,8 @@ def matern(h, r, c0, s, b=0):
         44(10), 1–18. https://doi.org/10.1029/2007WR006604
 
     """
+    if h == 0:
+        return b
     # prepare parameters
     a = r / 2.
 

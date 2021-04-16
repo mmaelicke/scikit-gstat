@@ -186,5 +186,6 @@ class TestVariogramDecorator(unittest.TestCase):
         for r, c in zip(res, adder([1, 4, 8], 4)):
             self.assertEqual(r, c)
 
+
 if __name__=='__main__':
     unittest.main()
