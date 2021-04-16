@@ -4,6 +4,7 @@
 import unittest
 
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
 from skgstat.models import spherical, exponential
 from skgstat.models import gaussian, cubic, stable, matern
@@ -159,11 +160,11 @@ class TestModels(unittest.TestCase):
         # extract the actual function
         f = matern.py_func
 
-        result = [34.57, 57.2, 92.16, 98.56, 99.98]
+        result = [24.64, 43.20, 81.68, 94.09, 99.65]
+
         model = list(map(f, self.h, [50]*5, [100]*5, [0.5]*5))
 
-        for r, m in zip(result, model):
-            self.assertAlmostEqual(r, m, places=2)
+        assert_array_almost_equal(result, model, decimal=2)
 
 
 class TestVariogramDecorator(unittest.TestCase):
@@ -184,6 +185,7 @@ class TestVariogramDecorator(unittest.TestCase):
 
         for r, c in zip(res, adder([1, 4, 8], 4)):
             self.assertEqual(r, c)
+
 
 if __name__=='__main__':
     unittest.main()
