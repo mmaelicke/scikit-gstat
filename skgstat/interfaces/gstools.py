@@ -58,18 +58,29 @@ def skgstat_to_gstools(variogram, **kwargs):
     :any:`CovModel`
         Corresponding GSTools covmodel.
     """
+    # try to import gstools and notify user if not installed
     try:
         import gstools as gs
-    except ImportError as exc:
-        raise ImportError("to_gstools: GSTools not installed.") from exc
+    except ImportError as e:
+        raise ImportError("to_gstools: GSTools not installed.") from e
+
+    # at least gstools>=1.3.0 is needed
     if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:
         raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
+
+    # gstolls needs the spatial dimension
     kwargs.setdefault("dim", variogram.dim)
+
+    # extract all needed settings
     describe = variogram.describe()
+
+    # get the theoretical model name
     name = describe["name"]
     if name not in MODEL_MAP:
         raise ValueError("skgstat_to_gstools: model not supported: " + name)
     gs_describe = MODEL_MAP[name]
+
+    # set variogram parameters
     gs_describe.setdefault("rescale", 1.0)
     gs_describe.setdefault("arg_map", dict())
     gs_kwargs = dict(
@@ -77,11 +88,17 @@ def skgstat_to_gstools(variogram, **kwargs):
         len_scale=float(describe["effective_range"]),
         nugget=float(describe["nugget"]),
     )
+
+    # some skgstat models need different rescale
     rescale = gs_describe["rescale"]
     gs_kwargs["rescale"] = rescale(describe) if callable(rescale) else rescale
     arg_map = gs_describe["arg_map"]
     for arg in arg_map:
         gs_kwargs[arg] = float(describe[arg_map[arg]])
+
+    # update the parameters
     gs_kwargs.update(kwargs)
+
+    # get the model and return the CovModel
     gs_model = getattr(gs, gs_describe["gs_cls"])
     return gs_model(**gs_kwargs)
