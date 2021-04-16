@@ -557,6 +557,11 @@ class DirectionalVariogram(Variogram):
 
         return self._bins.copy()
 
+    def to_gstools(self, *args, **kwargs):
+        raise NotImplementedError(
+            "Exporting DirectinalVariogram is currently not supported."
+        )
+
     def _calc_groups(self, force=False):
         super(DirectionalVariogram, self)._calc_groups(force=force)
 
