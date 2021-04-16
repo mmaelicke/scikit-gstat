@@ -2,8 +2,6 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_X_y
 
-from skgstat import Variogram
-
 
 class VariogramEstimator(BaseEstimator):
     def __init__(self,
@@ -68,6 +66,10 @@ class VariogramEstimator(BaseEstimator):
         # add Estimator specific attributes
         self.use_score = use_score
 
+        # This is a workaround due to circular imports
+        from skgstat import Variogram
+        self.VariogramCls = Variogram
+
     def fit(self, X, y):
         """Fit a model
 
@@ -92,7 +94,7 @@ class VariogramEstimator(BaseEstimator):
         X, y = check_X_y(X, y)
 
         # build the model
-        self.variogram = Variogram(
+        self.variogram = self.VariogramCls(
             X, y,
             estimator=self.estimator,
             model=self.model,

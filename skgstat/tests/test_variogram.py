@@ -799,8 +799,8 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, rmse in zip(
-                ['spherical', 'gaussian', 'matern', 'stable'],
-                [3.3705, 3.3707, 3.1811, 3.193]
+                ['spherical', 'gaussian', 'stable'],
+                [3.3705, 3.3707, 3.193]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.rmse, rmse, places=4)
@@ -809,8 +809,8 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, mr in zip(
-            ['spherical', 'cubic', 'matern', 'stable'],
-            [2.6803, 2.6803, 2.6701, 2.6966]
+            ['spherical', 'cubic', 'stable'],
+            [2.6803, 2.6803, 2.6966]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.mean_residual, mr, places=4)
@@ -975,7 +975,7 @@ class TestVariogramMethods(unittest.TestCase):
         V = self.V.clone()
         
         # test matern
-        param = [42.3, 15.42, 0.11, 0.]
+        param = [42.3, 16.2, 0.1, 0.]
         V.set_model('matern')
         assert_array_almost_equal(V.parameters, param, decimal=2)
     
