@@ -1,4 +1,5 @@
 from scipy.spatial.distance import pdist, cdist, squareform
+from scipy.spatial import cKDTree
 from scipy import sparse
 import numpy as np
 
@@ -94,7 +95,7 @@ class MetricSpace(DistanceMethods):
 
         # if not cached - calculate
         if self._tree is None:
-            self._tree = scipy.spatial.cKDTree(self.coords)
+            self._tree = cKDTree(self.coords)
 
         # return
         return self._tree
@@ -147,7 +148,7 @@ class MetricSpace(DistanceMethods):
         # handle sparse matrix
         if isinstance(self.dists, sparse.spmatrix):
             dist_mat = _sparse_dok_get(dist_mat.todok(), np.inf)
-            np.fill_diagonal(dist_mat, 0) # Normally set to inf
+            np.fill_diagonal(dist_mat, 0)  # Normally set to inf
 
         return squareform(dist_mat)
 
