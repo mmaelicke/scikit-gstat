@@ -901,10 +901,12 @@ class Variogram(object):
 
     @property
     def distance(self):
-        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+        # handle sparse matrix
+        if isinstance(self.distance_matrix, sparse.spmatrix):
             return self.triangular_distance_matrix.data
+        
         # Turn it back to triangular form not to have duplicates
-        return scipy.spatial.distance.squareform(self.distance_matrix)
+        return squareform(self.distance_matrix)
 
     @property
     def triangular_distance_matrix(self):
@@ -912,14 +914,14 @@ class Variogram(object):
         Like distance_matrix but with zeros below the diagonal...
         Only defined if distance_matrix is a sparse matrix
         """
-        if not isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+        if not isinstance(self.distance_matrix, sparse.spmatrix):
             raise RuntimeWarning("Only available for sparse coordinates.")
 
         m = self.distance_matrix
         c = m.tocsc()
         c.data = c.indices
         rows = c.tocsr()
-        filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr))
+        filt = sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr))
         return m.multiply(filt)
 
     @property
@@ -1451,17 +1453,21 @@ class Variogram(object):
             return
 
         v = self.values
-
-        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+        
+        # handle sparse matrix
+        if isinstance(self.distance_matrix, sparse.spmatrix):
             c = r = self.triangular_distance_matrix
-            if not isinstance(c, scipy.sparse.csr.csr_matrix):
+            if not isinstance(c, sparse.csr.csr_matrix):
                 c = c.tocsr()
-            if not isinstance(r, scipy.sparse.csc.csc_matrix):
+            if not isinstance(r, sparse.csc.csc_matrix):
                 r = r.tocsc()
-            Vcol = scipy.sparse.csr_matrix(
-                (self.values[c.indices], c.indices, c.indptr))
-            Vrow = scipy.sparse.csc_matrix(
-                (self.values[r.indices], r.indices, r.indptr)).tocsr()
+            Vcol = sparse.csr_matrix(
+                (self.values[c.indices], c.indices, c.indptr)
+            )
+            Vrow = sparse.csc_matrix(
+                (self.values[r.indices], r.indices, r.indptr)
+            ).tocsr()
+
             # self._diff will have same shape as self.distances, even
             # when that's not in diagonal format...
             # Note: it might be compelling to do np.abs(Vrow -
@@ -1471,7 +1477,10 @@ class Variogram(object):
         else:
             # Append a column of zeros to make pdist happy
             # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
-            self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
+            self._diff = pdist(
+                np.column_stack((v, np.zeros(len(v)))),
+                metric="euclidean"
+            )
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
@@ -1953,12 +1962,12 @@ class Variogram(object):
             if name.startswith("skgstat."):
                 return name.split(".")[-1]
             return name
-        
+
         rdict = dict(
             model=fnname(self._model) if not self._harmonize else "harmonize",
             estimator=fnname(self._estimator),
             dist_func=fnname(self.dist_function),
-            
+
             normalized_effective_range=cof[0] * maxlag,
             normalized_sill=cof[1] * maxvar,
             normalized_nugget=cof[-1] * maxvar if self.use_nugget else 0,

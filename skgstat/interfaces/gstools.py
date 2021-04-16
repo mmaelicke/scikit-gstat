@@ -68,7 +68,9 @@ def skgstat_to_gstools(variogram, **kwargs):
     describe = variogram.describe()
 
     # get the theoretical model name
-    name = describe["name"]
+#    name = describe["name"]
+    name = describe['model']
+
     if name not in MODEL_MAP:
         raise ValueError("skgstat_to_gstools: model not supported: " + name)
     gs_describe = MODEL_MAP[name]
