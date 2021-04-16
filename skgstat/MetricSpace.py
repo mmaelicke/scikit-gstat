@@ -66,7 +66,7 @@ class MetricSpace(DistanceMethods):
     def dists(self):
         if self._dists is None:
             if self.max_dist is not None and self.dist_metric == "euclidean":
-                self._dists = self.ltree.sparse_distance_matrix(self.rtree, self.max_dist, output_type="coo_matrix").tocsr()
+                self._dists = self.ltree.sparse_distance_matrix(self.tree, self.max_dist, output_type="coo_matrix").tocsr()
             else:
                 self._dists = scipy.spatial.distance.squareform(
                     scipy.spatial.distance.pdist(self.coords, metric=self.dist_metric))
