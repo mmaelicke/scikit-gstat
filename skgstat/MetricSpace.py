@@ -33,13 +33,15 @@ class DistanceMethods(object):
             Indices of the N closeset points to idx
 
         """
-        if self.max_dist is not None:
-            if max_dist != self.max_dist:
+
+        if max_dist is None:
+            max_dist = self.max_dist
+        else:
+            if self.max_dist is not None and max_dist != self.max_dist:
                 raise AttributeError(
                     "max_dist specified and max_dist != self.max_dist"
                 )
-        else:
-            max_dist = self.max_dist
+        
         if isinstance(self.dists, sparse.spmatrix):
             dists = self.dists.getrow(idx)
         else:
