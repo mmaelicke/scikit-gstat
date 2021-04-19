@@ -46,8 +46,10 @@ class DistanceMethods(object):
             dists = self.dists[idx, :]
         if isinstance(dists, sparse.spmatrix):
             ridx = np.array([k[1] for k in dists.todok().keys()])
-        else:
+        elif max_dist is not None:
             ridx = np.where(dists <= max_dist)[0]
+        else:
+            ridx = np.arange(len(dists))
         if ridx.size > N:
             if isinstance(dists, sparse.spmatrix):
                 selected_dists = dists[0, ridx].toarray()[0, :]
