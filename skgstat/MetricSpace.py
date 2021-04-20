@@ -5,6 +5,14 @@ import numpy as np
 
 
 def _sparse_dok_get(m, fill_value=np.NaN):
+    """Like m.toarray(), but setting empty values to `fill_value`, by
+    default `np.NaN`, rather than 0.0.
+
+    Parameters
+    ----------
+    m : scipy.sparse.dok_matrix
+    fill_value : float
+    """
     mm = np.full(m.shape, fill_value)
     for (x, y), value in m.items():
         mm[x, y] = value
@@ -90,8 +98,8 @@ class MetricSpace(DistanceMethods):
 
     @property
     def tree(self):
-        """A if `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
-        instance of `self.coords`."""
+        """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
+        instance of `self.coords`. Undefined otherwise."""
         
         # only Euclidean supported
         if self.dist_metric != "euclidean":
@@ -111,7 +119,7 @@ class MetricSpace(DistanceMethods):
     def dists(self):
         """A distance matrix of all point pairs. If `self.max_dist` is
         not `None` and `self.dist_metric` is set to `euclidean`, a
-        sparse matrix in scipy CSR format is returned.
+        `scipy.sparse.csr_matrix` sparse matrix is returned.
         """
         # calculate if not cached
         if self._dists is None:
@@ -213,7 +221,7 @@ class MetricSpacePair(DistanceMethods):
     def dists(self):
         """A distance matrix of all point pairs. If `self.max_dist` is
         not `None` and `self.dist_metric` is set to `euclidean`, a
-        sparse matrix in scipy CSR format is returned.
+        `scipy.sparse.csr_matrix` sparse matrix is returned.
         """
         # if not cached, calculate
         if self._dists is None:
