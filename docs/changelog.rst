@@ -2,6 +2,26 @@
 Changelog
 =========
 
+Version 0.5.0
+=============
+- [MetricSpace] A new class :class:`MetricSpace <skgstat.MetricSpace>` was introduced. This class can be passed
+  to any class that accepted coordinates so far. This wrapper can be used to pre-calculate large distance
+  matrices and pass it to a lot of Variograms. 
+- [MetricSpacePair] A new class :class:`MetricSpacePair <skgstat.MetricSpacePair>` was introduced.
+  This is a pair of two :class:`MetricSpaces <skgstat.MetricSpace>` and pre-calculates all distances between
+  the two spaces. This is i.e. used in Kriging to pre-calcualte all distance between the input coordinates and
+  the interpolation grid only once.
+
+Version 0.4.4
+=============
+- [models] the changes to :func:`matern <skgstat.models.matern>` introduced in `0.3.2` are reversed. 
+  The Matérn model does not adapt the smoothness scaling to effective range anymore, as the behavior was too
+  inconsistent.
+- [interface] minor bugfix of circular import in `variogram_estimator` interface
+- [models] :func:`matern(0, ...) <skgstat.models.matern>` now returns the nugget instead of `numpy.NaN`
+- [models] :func:`stable(0, ...) <skgstat.models.stable>` now returns the nugget instead of `numpy.NaN` or a 
+  `ZeroDivisionError`.
+
 Version 0.4.3
 =============
 - [Variogram] :func:`dim <skgstat.Variogram.dim>` now returns the spatial dimensionality of the input data.

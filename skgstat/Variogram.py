@@ -8,14 +8,14 @@ import numpy as np
 from pandas import DataFrame
 from scipy.optimize import curve_fit, minimize, OptimizeWarning
 from scipy.spatial.distance import pdist, squareform
-from scipy import stats 
+from scipy import stats, sparse
 from sklearn.isotonic import IsotonicRegression
 
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
 from .MetricSpace import MetricSpace, MetricSpacePair, ProbabalisticMetricSpace
-import scipy.sparse
+from skgstat.interfaces.gstools import skgstat_to_gstools
 
 class Variogram(object):
     """Variogram Class
@@ -44,18 +44,24 @@ class Variogram(object):
                  ):
         r"""Variogram Class
 
-        Note: The directional variogram estimation is not re-implemented yet.
-        Therefore the parameters is-directional, azimuth and tolerance will
-        be ignored at the moment and can be subject to changes.
-
         Parameters
         ----------
-        coordinates : numpy.ndarray
+        coordinates : numpy.ndarray, MetricSpace
+            .. versionchanged:: 0.5.0
+                now accepts MetricSpace
             Array of shape (m, n). Will be used as m observation points of
             n-dimensions. This variogram can be calculated on 1 - n
             dimensional coordinates. In case a 1-dimensional array is passed,
             a second array of same length containing only zeros will be
             stacked to the passed one.
+            For very large datasets, you can set maxlag to only calculate
+            distances within the maximum lag in a sparse matrix.
+            Alternatively you can supply a MetricSpace (optionally with a
+            `max_dist` set for the same effect). This is useful if you're
+            creating many different variograms for different measured
+            parameters that are all measured at the same set of coordinates,
+            as distances will only be calculated once, instead of once per
+            variogram.
         values : numpy.ndarray
             Array of values observed at the given coordinates. The length of
             the values array has to match the m dimension of the coordinates
@@ -94,7 +100,7 @@ class Variogram(object):
             scipy.spatial.distance.pdist. Additional parameters are not (yet)
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
-        bin_func : str            
+        bin_func : str
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
             .. versionchanged:: 0.3.9
@@ -199,7 +205,7 @@ class Variogram(object):
         percentile : int
             .. versionadded:: 0.3.7
 
-            If the `estimator <skgstat.Variogram.estimator>` is set to 
+            If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the percentile to be used.
         binning_random_state : int, None
             .. versionadded:: 0.3.9
@@ -220,23 +226,30 @@ class Variogram(object):
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
 
+        # handle the coordinates
         self._1d = False
         if not isinstance(coordinates, MetricSpace):
             coordinates = np.asarray(coordinates)
+
+            # handle 1D coords
             if len(coordinates.shape) < 2:
-                coordinates = np.column_stack((coordinates, np.zeros(len(coordinates))))
+                coordinates = np.column_stack((
+                    coordinates,
+                    np.zeros(len(coordinates))
+                ))
                 self._1d = True
+            # handle maxlag for MetricSpace
+            _maxlag = maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None
             if samples == None:
-                coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
+                coordinates = MetricSpace(coordinates.copy(), dist_func, _maxlag)
             else:
-                coordinates = ProbabalisticMetricSpace(
-                    coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None, samples=samples)
-        else:
-            assert dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
+                coordinates = ProbabalisticMetricSpace(coordinates.copy(), dist_func, _maxlag, samples=samples)
+        elif dist_func != coordinates.dist_metric:
+            raise AttributeError("Distance metric of variogram differs from distance metric of coordinates")
 
         # Set coordinates
         self._X = coordinates
-            
+
         # pairwise differences
         self._diff = None
 
@@ -397,13 +410,13 @@ class Variogram(object):
 
         """
         # check dimensions
-        if not len(values) == len(self.coordinates):
+        if not len(values) == len(self.coordinates):  # pragma: no cover
             raise ValueError('The length of the values array has to match' +
                              'the length of coordinates')
 
         # use an array
         _y = np.asarray(values)
-        if not _y.ndim == 1:
+        if not _y.ndim == 1:  # pragma: no cover
             raise ValueError('The values shall be a 1-D array.' +
                              'Multi-dimensional values not supported yet.')
 
@@ -565,33 +578,36 @@ class Variogram(object):
 
         References
         ----------
-        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306. 
+        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306.
             https://doi.org/10.1002/wics.35
-        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502. 
+        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502.
             https://doi.org/10.1002/wics.103
-        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as 
-            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie 
+        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as
+            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie
             und verwandte Gebiete 57.4: 453-476.
-        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications. 
+        .. [104] Doane, D. P. (1976). Aesthetic frequency classifications.
             The American Statistician, 30(4), 181-183.
 
         """
-        # switch the input
-        if bin_func.lower() == 'even':
-            self._bin_func = binning.even_width_lags
+        # handle strings
+        if isinstance(bin_func, str):
+            # switch the input
+            if bin_func.lower() == 'even':
+                self._bin_func = binning.even_width_lags
 
-        elif bin_func.lower() == 'uniform':
-            self._bin_func = binning.uniform_count_lags
+            elif bin_func.lower() == 'uniform':
+                self._bin_func = binning.uniform_count_lags
 
-        elif isinstance(bin_func, str):
             # remove the n_lags if they will be adjusted on call
-            if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
-                self._n_lags = None
+            else:
+                # reset lags for adjusting algorithms
+                if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
+                    self._n_lags = None
 
-            # use the wrapper
-            self._bin_func = self._bin_func_wrapper
+                # use the wrapper for all but even and uniform
+                self._bin_func = self._bin_func_wrapper
 
-        elif callable(bin_func):
+        elif callable(bin_func):  # pragma: no cover
             self._bin_func = bin_func
             bin_func = 'custom'
 
@@ -609,7 +625,7 @@ class Variogram(object):
     def _bin_func_wrapper(self, distances, n, maxlag):
         """
         Wrapper arounf the call of the actual binning method.
-        This is needed to pass keyword arguments to kmeans or 
+        This is needed to pass keyword arguments to kmeans or
         stable_entropy binning methods, and respect the slightly
         different function signature of auto_derived_lags.
         """
@@ -690,7 +706,7 @@ class Variogram(object):
     def n_lags(self, n):
         # TODO: here accept strings and implement some optimum methods
         # string are not implemented yet
-        if isinstance(n, str):
+        if isinstance(n, str):  # pragma: no cover
             raise NotImplementedError('n_lags string values not implemented')
 
         # n_lags is int
@@ -752,7 +768,7 @@ class Variogram(object):
                         'provide the function.'
                     ) % estimator_name
                 )
-        elif callable(estimator_name):
+        elif callable(estimator_name):  # pragma: no cover
             self._estimator = estimator_name
         else:
             raise ValueError('The estimator has to be a string or callable.')
@@ -788,7 +804,7 @@ class Variogram(object):
                         ' understood, please provide the function'
                     ) % model_name
                 )
-        else:
+        else:  # pragma: no cover
             self._model = model_name
 
     def _build_harmonized_model(self):
@@ -884,7 +900,7 @@ class Variogram(object):
         # reset the fitting
         self.cof, self.cov = None, None
 
-        if isinstance(func, str):
+        if isinstance(func, str):  # pragma: no cover
             if func.lower() == 'rank':
                 raise NotImplementedError
         elif not callable(func):
@@ -895,23 +911,29 @@ class Variogram(object):
 
     @property
     def distance(self):
-        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+        # handle sparse matrix
+        if isinstance(self.distance_matrix, sparse.spmatrix):
             return self.triangular_distance_matrix.data
+        
         # Turn it back to triangular form not to have duplicates
-        return scipy.spatial.distance.squareform(self.distance_matrix)
+        return squareform(self.distance_matrix)
 
     @property
     def triangular_distance_matrix(self):
-        # Like distance_matrix but with zeros below the diagonal...
-        # Only defined if distance_matrix is a sparse matrix
-        assert isinstance(self.distance_matrix, scipy.sparse.spmatrix)
+        """
+        Like distance_matrix but with zeros below the diagonal...
+        Only defined if distance_matrix is a sparse matrix
+        """
+        if not isinstance(self.distance_matrix, sparse.spmatrix):
+            raise RuntimeWarning("Only available for sparse coordinates.")
+
         m = self.distance_matrix
         c = m.tocsc()
         c.data = c.indices
         rows = c.tocsr()
-        filt = scipy.sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr), m.shape)
+        filt = sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr), m.shape)
         return m.multiply(filt)
-        
+
     @property
     def distance_matrix(self):
         return self._X.dists
@@ -951,7 +973,7 @@ class Variogram(object):
         cost function, which divides the residuals by their uncertainty.
 
         When setting fit_sigma, the array of uncertainties itself can be
-        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy']. 
+        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy'].
         The parameters described below refer to the setter of this property.
 
         .. versionchanged:: 0.3.11
@@ -974,7 +996,7 @@ class Variogram(object):
                 :math:`w = \sqrt(w_n)`
               * **sigma='sq'**: The residuals get weighted by the function:
                 :math:`w = w_n^2`
-              * **sigma='entropy'**: Calculates the Shannon Entropy as 
+              * **sigma='entropy'**: Calculates the Shannon Entropy as
                 intrinsic uncertainty of each lag class.
 
         Returns
@@ -1061,9 +1083,9 @@ class Variogram(object):
         need to be updated.
 
         .. note::
-            Updating the kwargs does not force a preprocessing circle. 
-            Any affected intermediate result, that might be cached internally, 
-            will not make use of updated kwargs. Make a call to 
+            Updating the kwargs does not force a preprocessing circle.
+            Any affected intermediate result, that might be cached internally,
+            will not make use of updated kwargs. Make a call to
             :func:`preprocessing(force=True) <skgstat.Variogram.preprocessing>`
             to force a clean re-calculation of the Variogram instance.
 
@@ -1441,17 +1463,21 @@ class Variogram(object):
             return
 
         v = self.values
-
-        if isinstance(self.distance_matrix, scipy.sparse.spmatrix):
+        
+        # handle sparse matrix
+        if isinstance(self.distance_matrix, sparse.spmatrix):
             c = r = self.triangular_distance_matrix
-            if not isinstance(c, scipy.sparse.csr.csr_matrix):
+            if not isinstance(c, sparse.csr.csr_matrix):
                 c = c.tocsr()
-            if not isinstance(r, scipy.sparse.csc.csc_matrix):
+            if not isinstance(r, sparse.csc.csc_matrix):
                 r = r.tocsc()
-            Vcol = scipy.sparse.csr_matrix(
-                (self.values[c.indices], c.indices, c.indptr))
-            Vrow = scipy.sparse.csc_matrix(
-                (self.values[r.indices], r.indices, r.indptr)).tocsr()
+            Vcol = sparse.csr_matrix(
+                (self.values[c.indices], c.indices, c.indptr)
+            )
+            Vrow = sparse.csc_matrix(
+                (self.values[r.indices], r.indices, r.indptr)
+            ).tocsr()
+
             # self._diff will have same shape as self.distances, even
             # when that's not in diagonal format...
             # Note: it might be compelling to do np.abs(Vrow -
@@ -1461,7 +1487,10 @@ class Variogram(object):
         else:
             # Append a column of zeros to make pdist happy
             # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
-            self._diff = pdist(np.column_stack((v, np.zeros(len(v)))), metric="euclidean")
+            self._diff = pdist(
+                np.column_stack((v, np.zeros(len(v)))),
+                metric="euclidean"
+            )
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
@@ -1710,8 +1739,7 @@ class Variogram(object):
 
         # calculate the residuals
         return np.fromiter(
-            map(lambda x, y: x - y, model, experimental),
-            float
+            map(lambda x, y: x - y, model, experimental), float
         )
 
     @property
@@ -1756,9 +1784,8 @@ class Variogram(object):
 
         # get the sum of squares
         rsum = np.nansum(np.fromiter(
-            map(lambda x, y: (x - y)**2, experimental, model),
-            float
-        ))
+            map(lambda x, y: (x - y)**2, experimental, model), float)
+        )
 
         return np.sqrt(rsum / len(model))
 
@@ -1835,11 +1862,17 @@ class Variogram(object):
         mx = np.nanmean(experimental)
         my = np.nanmean(model)
 
-        # claculate the single pearson correlation terms
-        term1 = np.nansum(np.fromiter(map(lambda x, y: (x-mx) * (y-my), experimental, model), float))
+        # calculate the single pearson correlation terms
+        term1 = np.nansum(np.fromiter(
+            map(lambda x, y: (x-mx) * (y-my), experimental, model), float
+        ))
 
-        t2x = np.nansum(np.fromiter(map(lambda x: (x-mx)**2, experimental), float))
-        t2y = np.nansum(np.fromiter(map(lambda y: (y-my)**2, model), float))
+        t2x = np.nansum(
+            np.fromiter(map(lambda x: (x-mx)**2, experimental), float)
+        )
+        t2y = np.nansum(
+            np.fromiter(map(lambda y: (y-my)**2, model), float)
+        )
 
         return term1 / (np.sqrt(t2x * t2y))
 
@@ -1895,26 +1928,26 @@ class Variogram(object):
         Return a dictionary of the variogram parameters.
 
         .. versionchanged:: 0.3.7
-            The describe now returns all init parameters in as the 
+            The describe now returns all init parameters in as the
             `describe()['params']` key and all keyword arguments as
-            `describe()['kwargs']`. This output can be suppressed 
+            `describe()['kwargs']`. This output can be suppressed
             by setting `short=True`.
-        
+
         Parameters
         ----------
         short : bool
-            If `True`, the `'params'` and `'kwargs'` keys will be 
+            If `True`, the `'params'` and `'kwargs'` keys will be
             omitted. Defaults to `False`.
         flat : bool
             If `True`, the `'params'` and `'kwargs'` nested `dict`s
-            will be distributed to the main `dict` to return a 
+            will be distributed to the main `dict` to return a
             flat `dict`. Defaults to `False`
 
         Returns
         -------
         parameters : dict
             Returns fitting parameters of the theoretical variogram
-            model along with the init parameters of the 
+            model along with the init parameters of the
             `Variogram <skgstat.Variogram>` instance.
 
         """
@@ -1939,12 +1972,12 @@ class Variogram(object):
             if name.startswith("skgstat."):
                 return name.split(".")[-1]
             return name
-        
+
         rdict = dict(
             model=fnname(self._model) if not self._harmonize else "harmonize",
             estimator=fnname(self._estimator),
             dist_func=fnname(self.dist_function),
-            
+
             normalized_effective_range=cof[0] * maxlag,
             normalized_sill=cof[1] * maxvar,
             normalized_nugget=cof[-1] * maxvar if self.use_nugget else 0,
@@ -2054,6 +2087,36 @@ class Variogram(object):
             self._model.__name__: data}
         ).copy()
 
+    def to_gstools(self, **kwargs):
+        """
+        Instantiate a corresponding GSTools CovModel.
+
+        By default, this will be an isotropic model.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments forwarded to the instantiated GSTools CovModel.
+            The default parameters 'dim', 'var', 'len_scale', 'nugget',
+            'rescale' and optional shape parameters will be extracted
+            from the given Variogram but they can be overwritten here.
+
+        Raises
+        ------
+        ImportError
+            When GSTools is not installed.
+        ValueError
+            When GSTools version is not v1.3 or greater.
+        ValueError
+            When given Variogram model is not supported ('harmonize').
+
+        Returns
+        -------
+        :any:`CovModel`
+            Corresponding GSTools covmodel.
+        """
+        return skgstat_to_gstools(self, **kwargs)
+
     def plot(self, axes=None, grid=True, show=True, hist=True):
         """Variogram Plot
 
@@ -2116,14 +2179,14 @@ class Variogram(object):
         Parameters
         ----------
         ax : matplotlib.Axes, plotly.graph_objects.Figure
-            If None, a new plotting Figure will be created. If given, 
-            it has to be an instance of the used plotting backend, which 
+            If None, a new plotting Figure will be created. If given,
+            it has to be an instance of the used plotting backend, which
             will be used to plot on.
         show : boolean
-            If True (default), the `show` method of the Figure will be 
-            called. Can be set to False to prevent duplicated plots in 
+            If True (default), the `show` method of the Figure will be
+            called. Can be set to False to prevent duplicated plots in
             some environments.
-        
+
         Returns
         -------
         fig : matplotlib.Figure, plotly.graph_objects.Figure
@@ -2177,12 +2240,12 @@ class Variogram(object):
 
             .. note::
                 Right now, this is only supported for ``'plotly'`` backend
-   
+
 
         Returns
         -------
         fig : matplotlib.Figure, plotly.graph_objects.Figure
-            The figure produced by the function. Dependends on the 
+            The figure produced by the function. Dependends on the
             current backend.
 
         """
@@ -2193,7 +2256,7 @@ class Variogram(object):
             return plotting.matplotlib_location_trend(self, axes=axes, show=show, **kwargs)
         elif used_backend == 'plotly':
             return plotting.plotly_location_trend(self, fig=axes, show=show, **kwargs)
-        
+
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
 

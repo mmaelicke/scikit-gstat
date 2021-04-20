@@ -17,6 +17,7 @@ except ImportError:
 from skgstat import Variogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
+from skgstat import models
 from skgstat import plotting
 
 
@@ -121,6 +122,13 @@ class TestVariogramInstatiation(unittest.TestCase):
             "'notafunc' is not a valid estimator for `bins`",
             str(e.exception)
         )
+
+    def test_invalid_binning_func(self):
+        with self.assertRaises(AttributeError) as e:
+            V = Variogram(self.c, self.v)
+            V.set_bin_func(42)
+        
+        self.assertTrue('of type string' in str(e.exception))
 
     def test_unknown_model(self):
         with self.assertRaises(ValueError) as e:
@@ -791,8 +799,8 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, rmse in zip(
-                ['spherical', 'gaussian', 'matern', 'stable'],
-                [3.3705, 3.3707, 3.1811, 3.193]
+                ['spherical', 'gaussian', 'stable'],
+                [3.3705, 3.3707, 3.193]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.rmse, rmse, places=4)
@@ -801,8 +809,8 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, mr in zip(
-            ['spherical', 'cubic', 'matern', 'stable'],
-            [2.6803, 2.6803, 2.6701, 2.6966]
+            ['spherical', 'cubic', 'stable'],
+            [2.6803, 2.6803, 2.6966]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.mean_residual, mr, places=4)
@@ -967,7 +975,7 @@ class TestVariogramMethods(unittest.TestCase):
         V = self.V.clone()
         
         # test matern
-        param = [42.3, 15.42, 0.11, 0.]
+        param = [42.3, 16.2, 0.1, 0.]
         V.set_model('matern')
         assert_array_almost_equal(V.parameters, param, decimal=2)
     
@@ -975,7 +983,7 @@ class TestVariogramMethods(unittest.TestCase):
         V = self.V.clone()
 
         # test stable
-        param = [42.3 , 15.79, 0.45,  0.]
+        param = [42.3, 15.79, 0.45,  0.]
         V.set_model('stable')
         assert_array_almost_equal(V.parameters, param, decimal=2)
 
