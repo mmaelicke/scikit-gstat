@@ -12,4 +12,5 @@ Code Reference
     estimator
     models
     kriging
+    metric_space
     util

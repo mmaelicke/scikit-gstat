@@ -10,7 +10,7 @@ def stvariogram(func):
         if st.ndim == 2:
             new_args = args[1:]
             mapping = map(lambda lags: func(lags, *new_args, **kwargs), st)
-            return np.fromiter(mapping, dtype=np.float)
+            return np.fromiter(mapping, dtype=float)
         else:
             return func(*args, **kwargs)
     return wrapper
@@ -176,8 +176,8 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
     De Cesare et. al [15]_, [16]_:
 
     .. math::
-        \gamma_{ST}(h_s, h_t) = [k_1C_T(0) + k_2]*\gamma_S(h_s) +
-        [k_1C_s(0) + k_3]\gamma_T(h_t) - k_1\gamma_s(h_s) x \gamma_T(h_t)
+        \\gamma_{ST}(h_s, h_t) = [k_1C_T(0) + k_2]*\\gamma_S(h_s) +
+        [k_1C_s(0) + k_3]\\gamma_T(h_t) - k_1\\gamma_s(h_s) x \\gamma_T(h_t)
 
     References
     ----------

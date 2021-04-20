@@ -2,6 +2,7 @@ from .Variogram import Variogram
 from .DirectionalVariogram import DirectionalVariogram
 from .SpaceTimeVariogram import SpaceTimeVariogram
 from .Kriging import OrdinaryKriging
+from .MetricSpace import MetricSpace, MetricSpacePair
 from . import interfaces
 
 # set some stuff

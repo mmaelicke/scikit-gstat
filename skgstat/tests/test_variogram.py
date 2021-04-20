@@ -15,9 +15,50 @@ except ImportError:
     PLOTLY_FOUND = False
 
 from skgstat import Variogram
+from skgstat import OrdinaryKriging
 from skgstat import estimators
+from skgstat import models
 from skgstat import plotting
 
+
+class TestSpatiallyCorrelatedData(unittest.TestCase):
+    def setUp(self):
+        # Generate some random but spatially correlated data
+        # with a range of ~20
+        
+        np.random.seed(42)
+        c = np.random.sample((50, 2)) * 60
+        np.random.seed(42)
+        v = np.random.normal(10, 4, 50)
+        
+        V = Variogram(c, v).describe()
+        V["effective_range"] = 20
+        OK = OrdinaryKriging(V, coordinates=c, values=v)
+
+        self.c = np.random.sample((500, 2)) * 60
+        self.v = OK.transform(self.c)
+
+        self.c = self.c[~np.isnan(self.v),:]
+        self.v = self.v[~np.isnan(self.v)]
+
+    def test_dense_maxlag_inf(self):
+        Vdense = Variogram(self.c, self.v)
+        Vsparse = Variogram(self.c, self.v, maxlag=10000000)
+
+        for x, y in zip(Vdense.parameters, Vsparse.parameters):
+            self.assertAlmostEqual(x, y, places=3)
+            
+    def test_sparse_maxlag_50(self):
+        V = Variogram(self.c, self.v, maxlag=50)
+
+        for x, y in zip(V.parameters, [20.264, 6.478, 0]):
+            self.assertAlmostEqual(x, y, places=3)
+            
+    def test_sparse_maxlag_30(self):
+        V = Variogram(self.c, self.v, maxlag=30)
+
+        for x, y in zip(V.parameters, [17.128, 6.068, 0]):
+            self.assertAlmostEqual(x, y, places=3)
 
 class TestVariogramInstatiation(unittest.TestCase):
     def setUp(self):
@@ -29,6 +70,12 @@ class TestVariogramInstatiation(unittest.TestCase):
 
     def test_standard_settings(self):
         V = Variogram(self.c, self.v)
+
+        for x, y in zip(V.parameters, [7.122, 13.966, 0]):
+            self.assertAlmostEqual(x, y, places=3)
+            
+    def test_sparse_standard_settings(self):
+        V = Variogram(self.c, self.v, maxlag=10000)
 
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
@@ -75,6 +122,13 @@ class TestVariogramInstatiation(unittest.TestCase):
             "'notafunc' is not a valid estimator for `bins`",
             str(e.exception)
         )
+
+    def test_invalid_binning_func(self):
+        with self.assertRaises(AttributeError) as e:
+            V = Variogram(self.c, self.v)
+            V.set_bin_func(42)
+        
+        self.assertTrue('of type string' in str(e.exception))
 
     def test_unknown_model(self):
         with self.assertRaises(ValueError) as e:
@@ -302,18 +356,22 @@ class TestVariogramArguments(unittest.TestCase):
     def test_callable_dist_function(self):
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
-        def dfunc(x):
-            return np.ones((len(x), len(x)))
+        def dfunc(u, v):
+            return 1
 
         V.set_dist_function(dfunc)
 
         # test
         self.assertEqual(V.dist_function, dfunc)
         self.assertTrue((V.distance==1).all())
-        self.assertEqual(V.distance.shape, (3, 3))
+        self.assertEqual(V.distance_matrix.shape, (3, 3))
 
     @staticmethod
-    def test_direct_dist_setting():
+    def disabled_test_direct_dist_setting():
+        # Distance can no longer be explicitly set
+        # it would require setting the whole MetricSpace, with a
+        # non-sparse diagonal matrix
+        
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
         V.distance = np.array([0, 0, 100])
@@ -345,7 +403,7 @@ class TestVariogramArguments(unittest.TestCase):
         V.use_nugget = True
         self.assertEqual(V.use_nugget, True)
         self.assertEqual(V._use_nugget, True)
-        self.assertAlmostEqual(V.describe()['nugget'], 291.28, places=2)
+        self.assertAlmostEqual(V.describe()['normalized_nugget'], 291.28, places=2)
 
     def test_use_nugget_exception(self):
         with self.assertRaises(ValueError) as e:
@@ -871,8 +929,12 @@ class TestVariogramMethods(unittest.TestCase):
             [0., 11.82, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97, 13.97],
             decimal=2
         )
-    
-    def test_data_with_force(self):
+
+    def disabled_test_data_with_force(self):
+        # Distance can no longer be explicitly set
+        # it would require setting the whole MetricSpace, with a
+        # non-sparse diagonal matrix
+        
         # should work if _dist is corccupted
         self.V._dist = self.V._dist * 5.
         self.V.cof = None

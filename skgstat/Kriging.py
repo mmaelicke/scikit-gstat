@@ -13,7 +13,7 @@ from multiprocessing import Pool
 import scipy.spatial.distance
 
 from .Variogram import Variogram
-
+from .MetricSpace import MetricSpace, MetricSpacePair
 
 class LessPointsError(RuntimeError):
     pass
@@ -30,7 +30,6 @@ class IllMatrixError(RuntimeWarning):
 def inv_solve(a, b):
     return inv(a).dot(b)
 
-
 class OrdinaryKriging:
     def __init__(
             self,
@@ -41,7 +40,11 @@ class OrdinaryKriging:
             precision=100,
             solver='inv',
             n_jobs=1,
-            perf=False
+            perf=False,
+            sparse=False,
+            
+            coordinates=None,
+            values=None
     ):
         """Ordinary Kriging routine
 
@@ -88,14 +91,25 @@ class OrdinaryKriging:
             If True, the different parts of the algorithm will record their
             processing time. This is meant to be used for optimization and
             will be removed in a future version. Do not rely on this argument.
+        sparse : bool
+
+        coordinates: numpy.ndarray, MetricSpace
+        values: numpy.ndarray
 
         """
         # store arguments to the instance
-        if not isinstance(variogram, Variogram):
-            raise TypeError('variogram has to be of type skgstat.Variogram.')
 
+        if isinstance(variogram, Variogram):
+            if coordinates is None: coordinates = variogram.coordinates
+            if values is None: values = variogram.values
+            variogram_descr = variogram.describe()
+            if variogram_descr["model"] == "harmonize":
+                variogram_descr["model"] = variogram._build_harmonized_model()
+            variogram = variogram_descr
+                
+        self.sparse = sparse
+        
         # general attributes
-        self.V = variogram
         self._minp = min_points
         self._maxp = max_points
         self.min_points = min_points
@@ -105,14 +119,21 @@ class OrdinaryKriging:
         self.n_jobs = n_jobs
         self.perf = perf
 
-        params = self.V.describe()
-        self.range = params['effective_range']
-        self.nugget = params['nugget']
-        self.sill = params['sill']
-
+        self.range = variogram['effective_range']
+        self.nugget = variogram['nugget']
+        self.sill = variogram['sill']
+        self.dist_metric = variogram["dist_func"]
+        
         # coordinates and semivariance function
-        self.coords, self.values = self._get_coordinates_and_values()
-        self.gamma_model = self.V.fitted_model
+        if not isinstance(coordinates, MetricSpace):
+            coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
+            coordinates = MetricSpace(coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
+        else:
+            assert self.dist_metric == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
+            assert coordinates.max_dist is None or coordinates.max_dist == self.range, "Sparse coordinates must have max_dist == variogram.effective_range"
+        self.values = values.copy()
+        self.coords = coordinates
+        self.gamma_model = Variogram.fitted_model_function(**variogram)
         self.z = None
 
         # calculation mode; self.range has to be initialized
@@ -132,40 +153,28 @@ class OrdinaryKriging:
         self.singular_error = 0
         self.no_points_error = 0
         self.ill_matrix = 0
-
+                
         # performance counter
         if self.perf:
             self.perf_dist = list()
             self.perf_mat = list()
             self.perf_solv = list()
 
-    @property
-    def dist(self):
-        return self.V._dist_func_wrapper
-
-    @property
-    def dist_metric(self):
-        return self.V._dist_func_name
-               
-    def _get_coordinates_and_values(self):
+    def dist(self, x):
+        return Variogram.wrapped_distance_function(self.dist_metric, x)
+    
+    @classmethod
+    def _remove_duplicated_coordinates(cls, coords, values):
         """Extract the coordinates and values
 
-        The coordinates and values array is extracted from the Variogram
-        instance. Additionally, the coordinates array is checked for
-        duplicates and only the first instance of a duplicate is used.
-        Duplicated coordinates would result in duplicated rows in the
-        variogram matrix and make it singular.
-
-        Returns
-        -------
-        coords : numpy.array
-            copy of Variogram.coordines without duplicates
-        values : numpy.array
-            copy of Variogram.values without duplicates
+        The coordinates array is checked for duplicates and only the
+        first instance of a duplicate is used. Duplicated coordinates
+        would result in duplicated rows in the variogram matrix and
+        make it singular.
 
         """
-        c = self.V.coordinates.copy()
-        v = self.V.values.copy()
+        c = coords
+        v = values
 
         _, idx = np.unique(c, axis=0, return_index=True)
 
@@ -260,7 +269,7 @@ class OrdinaryKriging:
 
         Parameters
         ----------
-        x : numpy.array
+        x : numpy.array, MetricSpace
             One 1D array for each coordinate dimension. Typically two or
             three array, x, y, (z) are passed for 2D and 3D Kriging
 
@@ -279,20 +288,23 @@ class OrdinaryKriging:
         if self.perf:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
-        self.transform_coordinates = np.column_stack(x)
-        self.transform_dists = scipy.spatial.distance.cdist(self.transform_coordinates, self.coords, metric=self.dist_metric)
+        if len(x) != 1 or not isinstance(x[0], MetricSpace):
+            self.transform_coords = MetricSpace(np.column_stack(x).copy(), self.dist_metric, self.range if self.sparse else None)
+        else:
+            self.transform_coords = x[0]
+        self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
         
         # DEV: this is dirty, not sure how to do it better at the moment
         self.sigma = np.empty(len(x[0]))
         self.__sigma_index = 0
         # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
-            z = np.fromiter(map(self._estimator, range(len(self.transform_coordinates))), dtype=float)
+            z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
         else:
             def f(idxs):
                 return self._estimator(idxs)
             with Pool(self.n_jobs) as p:
-                z = p.starmap(f, range(len(self.transform_coordinates)))
+                z = p.starmap(f, range(len(self.transform_coords)))
 
         # print warnings
         if self.singular_error > 0:
@@ -389,25 +401,19 @@ class OrdinaryKriging:
         if self.perf:
             t0 = time.time()
 
-        p = self.transform_coordinates[idx,:]
-        dists = self.transform_dists[idx,:]
-        
-        # find all points within the search distance
-        idx = np.where(dists <= self.range)[0]
+        p = self.transform_coords.coords[idx,:]
 
+        idx = self.transform_coords_pair.find_closest(idx, self.range, self._maxp)
+        
         # raise an error if not enough points are found
         if idx.size < self._minp:
             raise LessPointsError
-
-        if idx.size > self._maxp:
-            sorted_idx = np.argsort(dists)
-            idx = sorted_idx[np.isin(sorted_idx, idx)][:self._maxp]
-
+            
         # finally find the points and values
-        in_range = self.coords[idx]
+        in_range = self.coords.coords[idx]
         values = self.values[idx]
-        dist_mat = self.dist(in_range)
-
+        dist_mat = self.coords.diagonal(idx)
+        
         # if performance is tracked, time this step
         if self.perf:
             t1 = time.time()

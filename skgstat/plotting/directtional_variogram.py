@@ -14,7 +14,7 @@ def __calculate_plot_data(variogram, points):
     direction_mask = squareform(variogram._direction_mask())
 
     # build a coordinate meshgrid
-    n = len(variogram._X)
+    n = len(variogram.coordinates)
     r = np.arange(n)
     x1, x2 = np.meshgrid(r, r)
 
@@ -28,8 +28,8 @@ def __calculate_plot_data(variogram, points):
         # use all points
         point_mask = np.ones((n, n), dtype=bool)
 
-    start = variogram._X[x1[direction_mask & point_mask]]
-    end = variogram._X[x2[direction_mask & point_mask]]
+    start = variogram.coordinates[x1[direction_mask & point_mask]]
+    end = variogram.coordinates[x2[direction_mask & point_mask]]
 
     # extract all lines
     lines = np.column_stack((
@@ -68,11 +68,11 @@ def matplotlib_pair_field(
 
     # add coordinates
     if add_points:
-        ax.scatter(variogram._X[:, 0], variogram._X[:, 1], 15, c='k')
+        ax.scatter(variogram.coordinates[:, 0], variogram.coordinates[:, 1], 15, c='k')
         if isinstance(points, list):
             ax.scatter(
-                variogram._X[:, 0][points],
-                variogram._X[:, 1][points],
+                variogram.coordinates[:, 0][points],
+                variogram.coordinates[:, 1][points],
                 25, c='r'
             )
 
@@ -106,8 +106,8 @@ def plotly_pair_field(
 
     # add the coordinates as well
     if add_points:
-        x = variogram._X[:, 0]
-        y = variogram._X[:, 1]
+        x = variogram.coordinates[:, 0]
+        y = variogram.coordinates[:, 1]
         fig.add_trace(
             go.Scatter(
                 x=x, y=y, mode='markers',
