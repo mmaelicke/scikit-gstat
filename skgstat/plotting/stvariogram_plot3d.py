@@ -28,7 +28,7 @@ def __calculate_plot_data(stvariogram, **kwargs):
     # apply the model
     _z = model(lags)
 
-    return xx, yy, z, _xx, _yy, _z
+    return xx.T, yy.T, z, _xx, _yy, _z
 
 
 def matplotlib_plot_3d(stvariogram, kind='scatter', ax=None, elev=30, azim=220, **kwargs):
