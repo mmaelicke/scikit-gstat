@@ -112,7 +112,7 @@ def skgstat_to_krige(variogram, **kwargs):
         Scikit-GStat Variogram instamce
     **kwargs
         Keyword arguments forwarded to GSTools Krige.
-    
+
     Keyword Arguments
     -----------------
     drift_functions : :class:`list` of :any:`callable`, :class:`str` or :class:`int`
@@ -208,7 +208,7 @@ def skgstat_to_krige(variogram, **kwargs):
     model = skgstat_to_gstools(variogram=variogram)
 
     # extract cond_pos and cond_vals
-    cond_pos = zip(*variogram.coordinates)
+    cond_pos = list(zip(*variogram.coordinates))
     cond_vals = variogram.values
 
     # disable the re-fitting of the variogram in gstools
@@ -219,4 +219,3 @@ def skgstat_to_krige(variogram, **kwargs):
 
     # return the class
     return krige
-
