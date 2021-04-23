@@ -54,11 +54,11 @@ def skgstat_to_gstools(variogram, **kwargs):
     # try to import gstools and notify user if not installed
     try:
         import gstools as gs
-    except ImportError as e:
+    except ImportError as e:  # pragma: no cover
         raise ImportError("to_gstools: GSTools not installed.") from e
 
     # at least gstools>=1.3.0 is needed
-    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:
+    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
         raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
 
     # gstolls needs the spatial dimension
@@ -197,11 +197,11 @@ def skgstat_to_krige(variogram, **kwargs):
     # try to import gstools and notify user if not installed
     try:
         import gstools as gs
-    except ImportError as e:
+    except ImportError as e:  # pragma: no cover
         raise ImportError("to_gstools: GSTools not installed.") from e
 
     # at least gstools>=1.3.0 is needed
-    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:
+    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
         raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
 
     # convert variogram to a CovModel
