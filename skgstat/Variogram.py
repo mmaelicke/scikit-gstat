@@ -15,7 +15,7 @@ from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
 from .MetricSpace import MetricSpace
-from skgstat.interfaces.gstools import skgstat_to_gstools
+from skgstat.interfaces.gstools import skgstat_to_gstools, skgstat_to_krige
 
 
 class Variogram(object):
@@ -2108,8 +2108,57 @@ class Variogram(object):
         -------
         :any:`CovModel`
             Corresponding GSTools covmodel.
+
+        Note
+        ----
+        In case you intend to use the
+        :func:`coordinates <skgstat.Variogram.coordinates>`
+        in a GSTools workflow, you need to transpose the coordinate
+        array like:
+
+        >> cond_pos Variogram.coordinates.T
+
         """
         return skgstat_to_gstools(self, **kwargs)
+
+    def to_gs_krige(self, **kwargs):
+        """
+        Instatiate a GSTools Krige class.
+
+        This can only export isotropic models.
+        Note: the `fit_variogram` is always set to `False`
+
+        Parameters
+        ----------
+        variogram : skgstat.Variogram
+            Scikit-GStat Variogram instamce
+        **kwargs
+            Keyword arguments forwarded to GSTools Krige.
+            Refer to :any:`Krige <gstools.krige.Krige>` to
+            learn about all possible options.
+            Note that the `fit_variogram` parameter will
+            always be False.
+
+        Raises
+        ------
+        ImportError
+            When GSTools is not installed.
+        ValueError
+            When GSTools version is not v1.3 or greater.
+        ValueError
+            When given Variogram model is not supported ('harmonize').
+
+        Returns
+        -------
+        :any:`Krige`
+            Instantiated GSTools Krige class.
+
+        See Also
+        --------
+        gstools.Krige
+
+        """
+        return skgstat_to_krige(self, **kwargs)
 
     def plot(self, axes=None, grid=True, show=True, hist=True):
         """Variogram Plot
