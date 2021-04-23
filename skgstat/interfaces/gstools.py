@@ -143,7 +143,7 @@ def skgstat_to_krige(variogram, **kwargs):
 
     See Also
     --------
-    gstools.krige.Krige
+    gstools.Krige
 
     """
     # try to import gstools and notify user if not installed

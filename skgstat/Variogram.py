@@ -2155,7 +2155,7 @@ class Variogram(object):
 
         See Also
         --------
-        gstools.krige.Krige
+        gstools.Krige
 
         """
         return skgstat_to_krige(self, **kwargs)
