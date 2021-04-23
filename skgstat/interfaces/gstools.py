@@ -23,7 +23,7 @@ MODEL_MAP = dict(
 
 def skgstat_to_gstools(variogram, **kwargs):
     """
-    Instantiate a corresponding GSTools CovModel.
+    Instantiate a corresponding GSTools :any:`CovModel <gstools.CovModel>`.
 
     By default, this will be an isotropic model.
 
@@ -48,7 +48,7 @@ def skgstat_to_gstools(variogram, **kwargs):
 
     Returns
     -------
-    :any:`CovModel`
+    model : :any:`CovModel <gstools.CovModel>`
         Corresponding GSTools covmodel.
 
     Note
@@ -138,7 +138,7 @@ def skgstat_to_krige(variogram, **kwargs):
 
     Returns
     -------
-    :any:`Krige`
+    :any:`Krige <gstools.krige.Krige>`
         Instantiated GSTools Krige class.
 
     See Also
