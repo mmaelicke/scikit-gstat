@@ -14,8 +14,9 @@ from sklearn.isotonic import IsotonicRegression
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
-from .MetricSpace import MetricSpace, MetricSpacePair
+from .MetricSpace import MetricSpace
 from skgstat.interfaces.gstools import skgstat_to_gstools, skgstat_to_krige
+
 
 class Variogram(object):
     """Variogram Class
@@ -235,7 +236,10 @@ class Variogram(object):
             _maxlag = maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None
             coordinates = MetricSpace(coordinates.copy(), dist_func, _maxlag)
         elif dist_func != coordinates.dist_metric:
-            raise AttributeError("Distance metric of variogram differs from distance metric of coordinates")
+            raise AttributeError((
+                "Distance metric of variogram differs "
+                "from distance metric of coordinates"
+            ))
 
         # Set coordinates
         self._X = coordinates
