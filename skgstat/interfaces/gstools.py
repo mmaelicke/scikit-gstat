@@ -50,6 +50,16 @@ def skgstat_to_gstools(variogram, **kwargs):
     -------
     :any:`CovModel`
         Corresponding GSTools covmodel.
+
+    Note
+    ----
+    In case you intend to use the
+    :func:`coordinates <skgstat.Variogram.coordinates>`
+    in a GSTools workflow, you need to transpose the coordinate
+    array like:
+
+    >> cond_pos Variogram.coordinates.T
+
     """
     # try to import gstools and notify user if not installed
     try:
@@ -112,66 +122,10 @@ def skgstat_to_krige(variogram, **kwargs):
         Scikit-GStat Variogram instamce
     **kwargs
         Keyword arguments forwarded to GSTools Krige.
-
-    Keyword Arguments
-    -----------------
-    drift_functions : :class:`list` of :any:`callable`, :class:`str` or :class:`int`
-        Either a list of callable functions, an integer representing
-        the polynomial order of the drift or one of the following strings:
-
-            * "linear" : regional linear drift (equals order=1)
-            * "quadratic" : regional quadratic drift (equals order=2)
-
-    ext_drift : :class:`numpy.ndarray` or :any:`None`, optional
-        the external drift values at the given cond. positions.
-    mean : :class:`float`, optional
-        mean value used to shift normalized conditioning data.
-        Could also be a callable. The default is None.
-    normalizer : :any:`None` or :any:`Normalizer`, optional
-        Normalizer to be applied to the input data to gain normality.
-        The default is None.
-    trend : :any:`None` or :class:`float` or :any:`callable`, optional
-        A callable trend function. Should have the signiture: f(x, [y, z, ...])
-        This is used for detrended kriging, where the trended is subtracted
-        from the conditions before kriging is applied.
-        This can be used for regression kriging, where the trend function
-        is determined by an external regression algorithm.
-        If no normalizer is applied, this behaves equal to 'mean'.
-        The default is None.
-    unbiased : :class:`bool`, optional
-        Whether the kriging weights should sum up to 1, so the estimator
-        is unbiased. If unbiased is `False` and no drifts are given,
-        this results in simple kriging.
-        Default: True
-    exact : :class:`bool`, optional
-        Whether the interpolator should reproduce the exact input values.
-        If `False`, `cond_err` is interpreted as measurement error
-        at the conditioning points and the result will be more smooth.
-        Default: False
-    cond_err : :class:`str`, :class :class:`float` or :class:`list`, optional
-        The measurement error at the conditioning points.
-        Either "nugget" to apply the model-nugget, a single value applied to
-        all points or an array with individual values for each point.
-        The "exact=True" variant only works with "cond_err='nugget'".
-        Default: "nugget"
-    pseudo_inv : :class:`bool`, optional
-        Whether the kriging system is solved with the pseudo inverted
-        kriging matrix. If `True`, this leads to more numerical stability
-        and redundant points are averaged. But it can take more time.
-        Default: True
-    pseudo_inv_type : :class:`str` or :any:`callable`, optional
-        Here you can select the algorithm to compute the pseudo-inverse matrix:
-
-            * `"pinv"`: use `pinv` from `scipy` which uses `lstsq`
-            * `"pinv2"`: use `pinv2` from `scipy` which uses `SVD`
-            * `"pinvh"`: use `pinvh` from `scipy` which uses eigen-values
-
-        If you want to use another routine to invert the kriging matrix,
-        you can pass a callable which takes a matrix and returns the inverse.
-        Default: `"pinv"`
-    fit_normalizer : :class:`bool`, optional
-        Wheater to fit the data-normalizer to the given conditioning data.
-        Default: False
+        Refer to :any:`Krige <gstools.krige.Krige>` to
+        learn about all possible options.
+        Note that the `fit_variogram` parameter will
+        always be False.
 
     Raises
     ------
@@ -187,11 +141,9 @@ def skgstat_to_krige(variogram, **kwargs):
     :any:`Krige`
         Instantiated GSTools Krige class.
 
-    Note
-    ----
-    The documentation for the keyword Arguments is directly
-    taken from gstools==1.3.0 documentation. If you are running
-    a more recent version, the arguments might differ.
+    See Also
+    --------
+    gstools.krige.Krige
 
     """
     # try to import gstools and notify user if not installed
@@ -208,7 +160,7 @@ def skgstat_to_krige(variogram, **kwargs):
     model = skgstat_to_gstools(variogram=variogram)
 
     # extract cond_pos and cond_vals
-    cond_pos = list(zip(*variogram.coordinates))
+    cond_pos = variogram.coordinates.T
     cond_vals = variogram.values
 
     # disable the re-fitting of the variogram in gstools

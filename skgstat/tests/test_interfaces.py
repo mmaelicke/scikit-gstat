@@ -307,7 +307,7 @@ class TestGstoolsKrige(unittest.TestCase):
         sk_res = ok.transform(x, y)
 
         # get the gstools Krige class
-        krige = self.V.to_krige()
+        krige = self.V.to_gs_krige()
         gs_res, _ = krige.structured([x, y])
 
         # test
