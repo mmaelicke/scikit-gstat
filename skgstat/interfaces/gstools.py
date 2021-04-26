@@ -23,7 +23,7 @@ MODEL_MAP = dict(
 
 def skgstat_to_gstools(variogram, **kwargs):
     """
-    Instantiate a corresponding GSTools CovModel.
+    Instantiate a corresponding GSTools :any:`CovModel <gstools.CovModel>`.
 
     By default, this will be an isotropic model.
 
@@ -48,17 +48,27 @@ def skgstat_to_gstools(variogram, **kwargs):
 
     Returns
     -------
-    :any:`CovModel`
+    model : :any:`CovModel <gstools.CovModel>`
         Corresponding GSTools covmodel.
+
+    Note
+    ----
+    In case you intend to use the
+    :func:`coordinates <skgstat.Variogram.coordinates>`
+    in a GSTools workflow, you need to transpose the coordinate
+    array like:
+
+    >> cond_pos Variogram.coordinates.T
+
     """
     # try to import gstools and notify user if not installed
     try:
         import gstools as gs
-    except ImportError as e:
+    except ImportError as e:  # pragma: no cover
         raise ImportError("to_gstools: GSTools not installed.") from e
 
     # at least gstools>=1.3.0 is needed
-    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:
+    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
         raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
 
     # gstolls needs the spatial dimension
@@ -97,3 +107,67 @@ def skgstat_to_gstools(variogram, **kwargs):
     # get the model and return the CovModel
     gs_model = getattr(gs, gs_describe["gs_cls"])
     return gs_model(**gs_kwargs)
+
+
+def skgstat_to_krige(variogram, **kwargs):
+    """
+    Instatiate a GSTools Krige class.
+
+    This can only export isotropic models.
+    Note: the `fit_variogram` is always set to `False`
+
+    Parameters
+    ----------
+    variogram : skgstat.Variogram
+        Scikit-GStat Variogram instamce
+    **kwargs
+        Keyword arguments forwarded to GSTools Krige.
+        Refer to :any:`Krige <gstools.krige.Krige>` to
+        learn about all possible options.
+        Note that the `fit_variogram` parameter will
+        always be False.
+
+    Raises
+    ------
+    ImportError
+        When GSTools is not installed.
+    ValueError
+        When GSTools version is not v1.3 or greater.
+    ValueError
+        When given Variogram model is not supported ('harmonize').
+
+    Returns
+    -------
+    :any:`Krige <gstools.krige.Krige>`
+        Instantiated GSTools Krige class.
+
+    See Also
+    --------
+    gstools.Krige
+
+    """
+    # try to import gstools and notify user if not installed
+    try:
+        import gstools as gs
+    except ImportError as e:  # pragma: no cover
+        raise ImportError("to_gstools: GSTools not installed.") from e
+
+    # at least gstools>=1.3.0 is needed
+    if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
+        raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
+
+    # convert variogram to a CovModel
+    model = skgstat_to_gstools(variogram=variogram)
+
+    # extract cond_pos and cond_vals
+    cond_pos = variogram.coordinates.T
+    cond_vals = variogram.values
+
+    # disable the re-fitting of the variogram in gstools
+    kwargs['fit_variogram'] = False
+
+    # instantiate the Krige class
+    krige = gs.krige.Krige(model, cond_pos, cond_vals, **kwargs)
+
+    # return the class
+    return krige
