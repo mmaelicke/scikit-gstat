@@ -315,7 +315,14 @@ class ProbabalisticMetricSpace(MetricSpace):
     def ltree(self):
         """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
         instance of the left sample of `self.coords`. Undefined otherwise."""
-        assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
+
+        # only Euclidean supported
+        if self.dist_metric != "euclidean":
+            raise ValueError((
+                "A coordinate tree can only be constructed "
+                "for an euclidean space"
+            ))
+        
         if self._ltree is None:
             self._ltree = cKDTree(self.coords[self.lidx,:])
         return self._ltree
@@ -324,7 +331,14 @@ class ProbabalisticMetricSpace(MetricSpace):
     def rtree(self):
         """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
         instance of the right sample of `self.coords`. Undefined otherwise."""
-        assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
+        
+        # only Euclidean supported
+        if self.dist_metric != "euclidean":
+            raise ValueError((
+                "A coordinate tree can only be constructed "
+                "for an euclidean space"
+            ))
+        
         if self._rtree is None:
             self._rtree = cKDTree(self.coords[self.ridx,:])
         return self._rtree
