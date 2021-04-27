@@ -84,6 +84,18 @@ class MetricSpace(DistanceMethods):
     """
 
     def __init__(self, coords, dist_metric="euclidean", max_dist=None):
+        """ProbabalisticMetricSpace class
+
+        Parameters
+        ----------
+        coords : numpy.ndarray
+            Coordinate array of shape (Npoints, Ndim)
+        dist_metric : str
+            Distance metric names as used by scipy.spatial.distance.pdist
+        max_dist : float
+            Maximum distance between points after which the distance
+            is considered infinite and not calculated.
+        """
         self.coords = coords.copy()
         self.dist_metric = dist_metric
         self.max_dist = max_dist
@@ -251,6 +263,21 @@ class ProbabalisticMetricSpace(MetricSpace):
     """
     
     def __init__(self, coords, dist_metric="euclidean", max_dist=None, samples=0.5):
+        """ProbabalisticMetricSpace class
+
+        Parameters
+        ----------
+        coords : numpy.ndarray
+            Coordinate array of shape (Npoints, Ndim)
+        dist_metric : str
+            Distance metric names as used by scipy.spatial.distance.pdist
+        max_dist : float
+            Maximum distance between points after which the distance
+            is considered infinite and not calculated.
+        samples : float, int
+            Number of samples (int) or fraction of coords to sample (float < 1).
+        """
+        
         self.coords = coords.copy()
         self.dist_metric = dist_metric
         self.max_dist = max_dist
@@ -272,18 +299,22 @@ class ProbabalisticMetricSpace(MetricSpace):
         
     @property
     def lidx(self):
+        """The sampled indices into `self.coords` for the left sample."""
         if self._lidx is None:
             self._lidx = np.random.choice(len(self.coords), size=self.sample_count, replace=False)
         return self._lidx
     
     @property
     def ridx(self):
+        """The sampled indices into `self.coords` for the right sample."""
         if self._ridx is None:
             self._ridx = np.random.choice(len(self.coords), size=self.sample_count, replace=False)
         return self._ridx
     
     @property
     def ltree(self):
+        """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
+        instance of the left sample of `self.coords`. Undefined otherwise."""
         assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
         if self._ltree is None:
             self._ltree = cKDTree(self.coords[self.lidx,:])
@@ -291,6 +322,8 @@ class ProbabalisticMetricSpace(MetricSpace):
 
     @property
     def rtree(self):
+        """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
+        instance of the right sample of `self.coords`. Undefined otherwise."""
         assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
         if self._rtree is None:
             self._rtree = cKDTree(self.coords[self.ridx,:])
@@ -298,6 +331,8 @@ class ProbabalisticMetricSpace(MetricSpace):
             
     @property
     def dists(self):
+        """A distance matrix of the sampled point pairs as a
+        `scipy.sparse.csr_matrix` sparse matrix. """
         if self._dists is None:
             max_dist = self.max_dist
             if max_dist is None:
