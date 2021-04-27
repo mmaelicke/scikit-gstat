@@ -6,7 +6,7 @@ import pandas as pd
 from numpy.testing import assert_array_almost_equal
 from sklearn.model_selection import GridSearchCV
 
-from skgstat import Variogram
+from skgstat import Variogram, OrdinaryKriging
 from skgstat.interfaces import VariogramEstimator
 
 try:
@@ -283,6 +283,39 @@ class TestGstoolsAllModels(unittest.TestCase):
 
     def test_matern_model(self):
         self.assert_model('matern')
+
+
+class TestGstoolsKrige(unittest.TestCase):
+    def setUp(self):
+        # use real sample data in the interface
+        df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'sample.csv'))
+        self.c = df[['x', 'y']].values
+        self.v = df.z.values
+
+        # build variogram
+        self.V = Variogram(self.c[1:], self.v[1:], model='stable', normalize=False, use_nugget=False)
+
+    def test_ordinary(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        x = np.array([self.c[0][0]])
+        y = np.array([self.c[0][1]])
+
+        # run ordinary kriging with skgstat
+        ok = OrdinaryKriging(self.V, min_points=3)
+        sk_res = ok.transform(x, y)
+
+        # get the gstools Krige class
+        krige = self.V.to_gs_krige()
+        gs_res, _ = krige.structured([x, y])
+
+        # test
+        assert_array_almost_equal(
+            sk_res.flatten(),
+            gs_res.flatten(),
+            decimal=1
+        )
 
 
 if __name__ == '__main__':

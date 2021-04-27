@@ -5,6 +5,14 @@ import numpy as np
 
 
 def _sparse_dok_get(m, fill_value=np.NaN):
+    """Like m.toarray(), but setting empty values to `fill_value`, by
+    default `np.NaN`, rather than 0.0.
+
+    Parameters
+    ----------
+    m : scipy.sparse.dok_matrix
+    fill_value : float
+    """
     mm = np.full(m.shape, fill_value)
     for (x, y), value in m.items():
         mm[x, y] = value
@@ -90,6 +98,9 @@ class MetricSpace(DistanceMethods):
 
     @property
     def tree(self):
+        """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
+        instance of `self.coords`. Undefined otherwise."""
+        
         # only Euclidean supported
         if self.dist_metric != "euclidean":
             raise ValueError((
@@ -106,6 +117,10 @@ class MetricSpace(DistanceMethods):
 
     @property
     def dists(self):
+        """A distance matrix of all point pairs. If `self.max_dist` is
+        not `None` and `self.dist_metric` is set to `euclidean`, a
+        `scipy.sparse.csr_matrix` sparse matrix is returned.
+        """
         # calculate if not cached
         if self._dists is None:
             # check if max dist is given
@@ -169,6 +184,15 @@ class MetricSpacePair(DistanceMethods):
     have the same distance metric as well as maximum distance.
     """
     def __init__(self, ms1, ms2):
+        """
+        Parameters
+        ----------
+        ms1 : MetricSpace
+        ms2 : MetricSpace
+
+        Note: `ms1` and `ms2` need to have the same `max_dist` and
+        `distance_metric`.
+        """ 
         # check input data
         # same distance metrix
         if ms1.dist_metric != ms2.dist_metric:
@@ -195,6 +219,10 @@ class MetricSpacePair(DistanceMethods):
 
     @property
     def dists(self):
+        """A distance matrix of all point pairs. If `self.max_dist` is
+        not `None` and `self.dist_metric` is set to `euclidean`, a
+        `scipy.sparse.csr_matrix` sparse matrix is returned.
+        """
         # if not cached, calculate
         if self._dists is None:
             # handle euclidean with max_dist with Tree

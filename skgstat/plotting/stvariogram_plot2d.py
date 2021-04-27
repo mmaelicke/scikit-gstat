@@ -18,7 +18,7 @@ def matplotlib_plot_2d(stvariogram, kind='contour', ax=None, zoom_factor=100., l
 
     # prepare the meshgrid
     xx, yy = stvariogram.meshbins
-    z = stvariogram.experimental
+    z = stvariogram.experimental.T
     x = xx.flatten()
     y = yy.flatten()
 
@@ -67,7 +67,7 @@ def plotly_plot_2d(stvariogram, kind='contour', fig=None, **kwargs):
     # get base data
     x = stvariogram.xbins
     y = stvariogram.tbins
-    z = stvariogram.experimental.reshape((len(x), len(y)))
+    z = stvariogram.experimental.reshape((len(x), len(y))).T
 
     # get settings
     showlabels = kwargs.get('showlabels', True)
