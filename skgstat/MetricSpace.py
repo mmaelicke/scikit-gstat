@@ -336,7 +336,7 @@ class ProbabalisticMetricSpace(MetricSpace):
         if self._dists is None:
             max_dist = self.max_dist
             if max_dist is None:
-                max_dist = 1 + np.sqrt(((self.coords.max(axis=0) - self.coords.min(axis=0))**2).sum())
+                max_dist = np.finfo(float).max
             dists = self.ltree.sparse_distance_matrix(self.rtree, max_dist, output_type="coo_matrix").tocsr()
             dists.resize((len(self.coords), len(self.coords)))
             dists.indices = self.ridx[dists.indices]
