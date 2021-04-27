@@ -1241,6 +1241,43 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
         skgstat.__backend__ = 'matplotlib'
 
 
+
+class TestSampling(unittest.TestCase):
+    def setUp(self):
+        self.data = pd.read_csv(os.path.dirname(__file__) + '/pan_sample.csv')
+        
+    def test_full_vs_full_sample(self):
+        np.random.seed(42)
+        Vf = Variogram(
+            self.data[['x', 'y']].values,
+            self.data.z.values).describe()
+
+        np.random.seed(42)
+        Vs = Variogram(
+            self.data[['x', 'y']].values,
+            self.data.z.values, samples=len(self.data)).describe()
+
+        self.assertAlmostEqual(Vf["normalized_effective_range"], Vs["normalized_effective_range"], delta = Vf["normalized_effective_range"] / 10)
+        self.assertAlmostEqual(Vf["effective_range"], Vs["effective_range"], delta = Vf["effective_range"] / 10)
+        self.assertAlmostEqual(Vf["sill"], Vs["sill"], delta = Vf["sill"] / 10)
+
+    def test_samples(self):
+        np.random.seed(42)
+        Vf = Variogram(
+            self.data[['x', 'y']].values,
+            self.data.z.values, samples=len(self.data)).describe()
+
+        for sample_size in np.linspace(0.5, 1., 10):
+            np.random.seed(42)
+            Vs = Variogram(
+                self.data[['x', 'y']].values,
+                self.data.z.values, samples=sample_size).describe()
+        
+            self.assertAlmostEqual(Vf["normalized_effective_range"], Vs["normalized_effective_range"], delta = Vf["normalized_effective_range"] / 5)
+            self.assertAlmostEqual(Vf["effective_range"], Vs["effective_range"], delta = Vf["effective_range"] / 5)
+            self.assertAlmostEqual(Vf["sill"], Vs["sill"], delta = Vf["sill"] / 5)
+
+        
 class TestVariogramPickling(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
