@@ -234,7 +234,7 @@ class ProbabalisticMetricSpace(MetricSpace):
         self._rtree = None
         self._dists = None
         # Do a very quick check to see throw exceptions if self.dist_metric is invalid...
-        scipy.spatial.distance.pdist(self.coords[:1,:], metric=self.dist_metric)
+        pdist(self.coords[:1,:], metric=self.dist_metric)
 
     @property
     def sample_count(self):
@@ -258,14 +258,14 @@ class ProbabalisticMetricSpace(MetricSpace):
     def ltree(self):
         assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
         if self._ltree is None:
-            self._ltree = scipy.spatial.cKDTree(self.coords[self.lidx,:])
+            self._ltree = cKDTree(self.coords[self.lidx,:])
         return self._ltree
 
     @property
     def rtree(self):
         assert self.dist_metric == "euclidean", "A coordinate tree can only be constructed for an euclidean space"
         if self._rtree is None:
-            self._rtree = scipy.spatial.cKDTree(self.coords[self.ridx,:])
+            self._rtree = cKDTree(self.coords[self.ridx,:])
         return self._rtree
             
     @property
@@ -276,9 +276,9 @@ class ProbabalisticMetricSpace(MetricSpace):
                 max_dist = 1 + np.sqrt(((self.coords.max(axis=0) - self.coords.min(axis=0))**2).sum())
             dists = self.ltree.sparse_distance_matrix(self.rtree, max_dist, output_type="coo_matrix").tocsr()
             dists.resize((len(self.coords), len(self.coords)))
-            dists.indices = self.lidx[dists.indices]
-            dists = dists.tocsc()
             dists.indices = self.ridx[dists.indices]
+            dists = dists.tocsc()
+            dists.indices = self.lidx[dists.indices]
             dists = dists.tocsr()
             self._dists = dists
         return self._dists
