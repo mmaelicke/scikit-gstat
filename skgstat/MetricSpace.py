@@ -49,7 +49,7 @@ class DistanceMethods(object):
                 raise AttributeError(
                     "max_dist specified and max_dist != self.max_dist"
                 )
-        
+
         if isinstance(self.dists, sparse.spmatrix):
             dists = self.dists.getrow(idx)
         else:
@@ -112,7 +112,6 @@ class MetricSpace(DistanceMethods):
     def tree(self):
         """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
         instance of `self.coords`. Undefined otherwise."""
-        
         # only Euclidean supported
         if self.dist_metric != "euclidean":
             raise ValueError((
@@ -204,7 +203,7 @@ class MetricSpacePair(DistanceMethods):
 
         Note: `ms1` and `ms2` need to have the same `max_dist` and
         `distance_metric`.
-        """ 
+        """
         # check input data
         # same distance metrix
         if ms1.dist_metric != ms2.dist_metric:
@@ -256,13 +255,20 @@ class MetricSpacePair(DistanceMethods):
         # return
         return self._dists
 
+
 class ProbabalisticMetricSpace(MetricSpace):
     """Like MetricSpace but samples the distance pairs only returning a
        `samples` sized subset. `samples` can either be a fraction of
        the total number of pairs (float < 1), or an integer count.
     """
-    
-    def __init__(self, coords, dist_metric="euclidean", max_dist=None, samples=0.5, rnd=None):
+    def __init__(
+            self,
+            coords,
+            dist_metric="euclidean",
+            max_dist=None,
+            samples=0.5,
+            rnd=None
+        ):
         """ProbabalisticMetricSpace class
 
         Parameters
@@ -279,7 +285,6 @@ class ProbabalisticMetricSpace(MetricSpace):
         rnd : numpy.random.RandomState, int
             Random state to use for the sampling.
         """
-        
         self.coords = coords.copy()
         self.dist_metric = dist_metric
         self.max_dist = max_dist
@@ -290,35 +295,36 @@ class ProbabalisticMetricSpace(MetricSpace):
             self.rnd = rnd
         else:
             self.rnd = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(rnd)))
-        
+
         self._lidx = None
         self._ridx = None
         self._ltree = None
         self._rtree = None
         self._dists = None
-        # Do a very quick check to see throw exceptions if self.dist_metric is invalid...
-        pdist(self.coords[:1,:], metric=self.dist_metric)
+        # Do a very quick check to see throw exceptions 
+        # if self.dist_metric is invalid...
+        pdist(self.coords[:1, :], metric=self.dist_metric)
 
     @property
     def sample_count(self):
         if isinstance(self.samples, int):
             return self.samples
         return int(self.samples * len(self.coords))
-        
+
     @property
     def lidx(self):
         """The sampled indices into `self.coords` for the left sample."""
         if self._lidx is None:
             self._lidx = self.rnd.choice(len(self.coords), size=self.sample_count, replace=False)
         return self._lidx
-    
+
     @property
     def ridx(self):
         """The sampled indices into `self.coords` for the right sample."""
         if self._ridx is None:
             self._ridx = self.rnd.choice(len(self.coords), size=self.sample_count, replace=False)
         return self._ridx
-    
+
     @property
     def ltree(self):
         """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
@@ -330,27 +336,27 @@ class ProbabalisticMetricSpace(MetricSpace):
                 "A coordinate tree can only be constructed "
                 "for an euclidean space"
             ))
-        
+
         if self._ltree is None:
-            self._ltree = cKDTree(self.coords[self.lidx,:])
+            self._ltree = cKDTree(self.coords[self.lidx, :])
         return self._ltree
 
     @property
     def rtree(self):
         """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
         instance of the right sample of `self.coords`. Undefined otherwise."""
-        
+
         # only Euclidean supported
         if self.dist_metric != "euclidean":
             raise ValueError((
                 "A coordinate tree can only be constructed "
                 "for an euclidean space"
             ))
-        
+
         if self._rtree is None:
-            self._rtree = cKDTree(self.coords[self.ridx,:])
+            self._rtree = cKDTree(self.coords[self.ridx, :])
         return self._rtree
-            
+
     @property
     def dists(self):
         """A distance matrix of the sampled point pairs as a
@@ -359,7 +365,11 @@ class ProbabalisticMetricSpace(MetricSpace):
             max_dist = self.max_dist
             if max_dist is None:
                 max_dist = np.finfo(float).max
-            dists = self.ltree.sparse_distance_matrix(self.rtree, max_dist, output_type="coo_matrix").tocsr()
+            dists = self.ltree.sparse_distance_matrix(
+                self.rtree,
+                max_dist,
+                output_type="coo_matrix"
+            ).tocsr()
             dists.resize((len(self.coords), len(self.coords)))
             dists.indices = self.ridx[dists.indices]
             dists = dists.tocsc()

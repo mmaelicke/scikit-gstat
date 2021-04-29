@@ -213,7 +213,7 @@ class DirectionalVariogram(Variogram):
             used for histogram calculation.
         percentile : int
             .. versionadded:: 0.3.7
-            
+
             If the `estimator <skgstat.Variogram.estimator>` is set to
             `'entropy'` this argument sets the percentile to be used.
 
@@ -232,11 +232,11 @@ class DirectionalVariogram(Variogram):
             coordinates = np.asarray(coordinates)
             coordinates = MetricSpace(coordinates.copy(), dist_func)
             # FIXME: Currently _direction_mask / _angles / _euclidean_dist don't get correctly calculated for sparse dspaces
-            #coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
+            # coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None)
         else:
             assert self.dist_func == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
             assert coordinates.max_dist is None
-            
+
         # Set coordinates
         self._X = coordinates
 
@@ -250,7 +250,7 @@ class DirectionalVariogram(Variogram):
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
         self.set_values(values=values, calc_diff=False)
-        
+
         # distance matrix
         self._dist = None
 
@@ -356,7 +356,7 @@ class DirectionalVariogram(Variogram):
 
         # FIXME: This should be optimized for the sparse case (range << bbox(coordinates)),
         # i.e. use the MetricSpace in self._X
-        
+
         # check if already calculated
         if self._angles is not None and not force:
             return
@@ -371,9 +371,9 @@ class DirectionalVariogram(Variogram):
 
         # for angles, we need Euklidean distance,
         # no matter which distance function is used
-        #if self._dist_func_name == "euclidean":
+        # if self._dist_func_name == "euclidean":
         #    self._euclidean_dist = scipy.spatial.distance.squareform(self.distance_matrix)
-        #else:
+        # else:
         self._euclidean_dist = pdist(_x, "euclidean")
 
         # Calculate the angles

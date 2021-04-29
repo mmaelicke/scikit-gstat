@@ -84,7 +84,7 @@ def auto_derived_lags(distances, method_name, maxlag):
     Uses `histogram_bin_edges <numpy.histogram_bin_edges>` to derive the
     lag classes automatically. Supports any method supported by
     `histogram_bin_edges <numpy.histogram_bin_edges>`. It is recommended
-    to use `'stuges'`, `'doane'` or `'fd'`.
+    to use `'sturges'`, `'doane'` or `'fd'`.
 
     Parameters
     ----------
