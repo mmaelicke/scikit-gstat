@@ -2,6 +2,24 @@
 Changelog
 =========
 
+Version 0.5.3
+=============
+- [MetricSpace] new class :class:`ProbabilisticMetricSpace <skgstat.MetricSpace.ProbabilisticMetricSpace>` that
+  extends the metric space by a stochastic element to draw samples from the input data, instead of using 
+  the full dataset.
+
+Version 0.5.2
+=============
+- [interface] new interface function added: :func:`to_gs_krige <skgstat.Variogram.to_gs_krige>`. This interface
+  will return a :any:`gs.Krige <gstools.Krige>` instance from the fitted variogram.
+- some typos were corrected
+- some code refactored (mainly linting errors)
+
+Version 0.5.1
+=============
+- [plotting] the spatio-temporal 2D and 3D plots now label the axis correctly. 
+- [plotting] fixed swapped plotting axes for spatio-temporal plots.
+
 Version 0.5.0
 =============
 - [MetricSpace] A new class :class:`MetricSpace <skgstat.MetricSpace>` was introduced. This class can be passed
