@@ -262,7 +262,7 @@ class ProbabalisticMetricSpace(MetricSpace):
        the total number of pairs (float < 1), or an integer count.
     """
     
-    def __init__(self, coords, dist_metric="euclidean", max_dist=None, samples=0.5):
+    def __init__(self, coords, dist_metric="euclidean", max_dist=None, samples=0.5, rnd=None):
         """ProbabalisticMetricSpace class
 
         Parameters
@@ -276,13 +276,21 @@ class ProbabalisticMetricSpace(MetricSpace):
             is considered infinite and not calculated.
         samples : float, int
             Number of samples (int) or fraction of coords to sample (float < 1).
+        rnd : numpy.random.RandomState, int
+            Random state to use for the sampling.
         """
         
         self.coords = coords.copy()
         self.dist_metric = dist_metric
         self.max_dist = max_dist
         self.samples = samples
-
+        if rnd is None:
+            self.rnd = np.random
+        elif isinstance(rnd, np.random.RandomState):
+            self.rnd = rnd
+        else:
+            self.rnd = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(rnd)))
+        
         self._lidx = None
         self._ridx = None
         self._ltree = None
@@ -301,14 +309,14 @@ class ProbabalisticMetricSpace(MetricSpace):
     def lidx(self):
         """The sampled indices into `self.coords` for the left sample."""
         if self._lidx is None:
-            self._lidx = np.random.choice(len(self.coords), size=self.sample_count, replace=False)
+            self._lidx = self.rnd.choice(len(self.coords), size=self.sample_count, replace=False)
         return self._lidx
     
     @property
     def ridx(self):
         """The sampled indices into `self.coords` for the right sample."""
         if self._ridx is None:
-            self._ridx = np.random.choice(len(self.coords), size=self.sample_count, replace=False)
+            self._ridx = self.rnd.choice(len(self.coords), size=self.sample_count, replace=False)
         return self._ridx
     
     @property

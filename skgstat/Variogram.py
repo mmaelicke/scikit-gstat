@@ -243,7 +243,8 @@ class Variogram(object):
             if samples == None:
                 coordinates = MetricSpace(coordinates.copy(), dist_func, _maxlag)
             else:
-                coordinates = ProbabalisticMetricSpace(coordinates.copy(), dist_func, _maxlag, samples=samples)
+                coordinates = ProbabalisticMetricSpace(coordinates.copy(), dist_func, _maxlag, samples=samples,
+                                                       rnd=self._kwargs.get("binning_random_state", None))
         elif dist_func != coordinates.dist_metric:
             raise AttributeError((
                 "Distance metric of variogram differs "
