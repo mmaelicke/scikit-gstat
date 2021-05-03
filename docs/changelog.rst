@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.5.4
+=============
+- [util] added a new `cross_validation` utility module to cross-validate variograms with leave-one-out Kriging 
+  cross validations.
+
 Version 0.5.3
 =============
 - [MetricSpace] new class :class:`ProbabilisticMetricSpace <skgstat.MetricSpace.ProbabilisticMetricSpace>` that
