@@ -126,7 +126,7 @@ class TestVariogramEstimator(unittest.TestCase):
         )
         gs_nocv = gs_nocv.fit(c, v)
         self.assertEqual(gs_nocv.best_params_['bin_func'], 'sqrt')
-        
+
         # based on cross-validation
         gs = GridSearchCV(
             VariogramEstimator(model='exponential', maxlag=100, n_lags=25, cross_n=50, cross_validate=True, use_score='mae'),
