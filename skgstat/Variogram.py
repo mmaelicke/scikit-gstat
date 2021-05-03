@@ -1,6 +1,7 @@
 """
 Variogram class
 """
+from typing import Literal
 import copy
 import warnings
 
@@ -1925,6 +1926,51 @@ class Variogram(object):
         _model = self.transform(_bin)
 
         return _exp, _model
+
+    def cross_validate(
+        self,
+        method: Literal['jacknife'] = 'jacknife',
+        n: int = None,
+        metric: Literal['rmse', 'mae', 'mse'] = 'rmse',
+        seed=None
+    ) -> float:
+        """
+        Cross validation of the variogram model by means of Kriging.
+        Right now, this function can only utilize a jacknife (leave-one-out)
+        cross validation and will only use the builtin OrdinaryKriging
+        method (not yet the to_gs_krige interface).
+
+        Parameters
+        ----------
+        method : str
+            Right now, 'jacknife' is the only possible input.
+        n : int
+            The number of points to be included into the cross-validation.
+            If None (default), all points will be used.
+        metric : str
+            Metric used for cross-validation. 
+            Can be root mean square error (rmse), mean squared error (mse)
+            or mean absolute error (mae).
+        seed : int
+            If n is not None, the random selection of input data for the
+            cross-validation can be seeded.
+        
+        Returns
+        -------
+        metric : float
+            The cross-validation result as specified above.
+
+        See Also
+        --------
+        skgstat.util.cross_validation.jacknife
+        """
+        # not sure how to solve the circular import here
+        from skgstat.util import cross_validation
+
+        if method == 'jacknife':
+            return cross_validation.jacknife(self, n=n, metric=metric, seed=seed)
+        else:
+            raise AttributeError(f"A method '{method}' is not implemented.")
 
     def describe(self, short=False, flat=False):
         """Variogram parameters
