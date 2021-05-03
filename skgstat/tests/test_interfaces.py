@@ -9,6 +9,10 @@ from sklearn.model_selection import GridSearchCV
 from skgstat import Variogram, OrdinaryKriging
 from skgstat.interfaces import VariogramEstimator
 
+def get_sample() -> pd.DataFrame:
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'pan_sample.csv'))
+    return df
+
 try:
     import pykrige
     from skgstat.interfaces import pykrige as pykrige_interface
@@ -84,7 +88,7 @@ class TestVariogramEstimator(unittest.TestCase):
 
         gs = gs.fit(self.c, self.v)
 
-        # Python 3.6 yields 'exponential', while 3.7, 3.8 yield 'gaussian'
+        # Python 3.6 yields 'exponential', while 3.7, 3.8 yield 'gaussian' - this is so stupid
         self.assertTrue(gs.best_params_['model'] in ['gaussian', 'exponential'])
 
     def test_find_best_model_future_cv(self):
@@ -104,6 +108,33 @@ class TestVariogramEstimator(unittest.TestCase):
         gs = gs.fit(self.c, self.v)
 
         self.assertEqual(gs.best_params_['model'], 'exponential')
+
+    def test_cross_validation_option(self):
+        df = get_sample()
+        c = df[['x', 'y']].values
+        v = df.z.values
+
+        parameters = dict(
+            bin_func=('even', 'scott', 'sqrt')
+        )
+
+        # based on model fit
+        gs_nocv = GridSearchCV(
+            VariogramEstimator(model='exponential', maxlag=100, n_lags=25, cross_n=50),
+            parameters,
+            cv=3
+        )
+        gs_nocv = gs_nocv.fit(c, v)
+        self.assertEqual(gs_nocv.best_params_['bin_func'], 'sqrt')
+        
+        # based on cross-validation
+        gs = GridSearchCV(
+            VariogramEstimator(model='exponential', maxlag=100, n_lags=25, cross_n=50, cross_validate=True, use_score='mae'),
+            parameters,
+            cv=3
+        )
+        gs = gs.fit(c, v)
+        self.assertEqual(gs.best_params_['bin_func'], 'even')
 
 
 class TestPyKrigeInterface(unittest.TestCase):
