@@ -1,4 +1,3 @@
-from typing import Literal
 import numpy as np
 from itertools import cycle
 
@@ -23,7 +22,7 @@ def _interpolate(idx: int, variogram) -> float:
 def jacknife(
     variogram,
     n: int = None,
-    metric: Literal['rmse', 'mse'] = 'rmse',
+    metric: str = 'rmse',
     seed=None
 ) -> float:
     """

@@ -1,7 +1,6 @@
 """
 Variogram class
 """
-from typing import Literal
 import copy
 import warnings
 
@@ -1929,9 +1928,9 @@ class Variogram(object):
 
     def cross_validate(
         self,
-        method: Literal['jacknife'] = 'jacknife',
+        method: str = 'jacknife',
         n: int = None,
-        metric: Literal['rmse', 'mae', 'mse'] = 'rmse',
+        metric: str = 'rmse',
         seed=None
     ) -> float:
         """
@@ -1954,7 +1953,7 @@ class Variogram(object):
         seed : int
             If n is not None, the random selection of input data for the
             cross-validation can be seeded.
-        
+
         Returns
         -------
         metric : float
