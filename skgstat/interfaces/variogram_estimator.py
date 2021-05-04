@@ -16,7 +16,8 @@ class VariogramEstimator(BaseEstimator):
                  maxlag=None,
                  n_lags=10,
                  verbose=False,
-                 use_score='rmse'
+                 use_score='rmse',
+                 **kwargs
                  ):
         r"""VariogramEstimator class
 
