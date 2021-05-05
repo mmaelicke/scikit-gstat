@@ -17,6 +17,7 @@ class VariogramEstimator(BaseEstimator):
                  n_lags=10,
                  verbose=False,
                  use_score='rmse',
+                 cross_validate=False,
                  **kwargs
                  ):
         r"""VariogramEstimator class
@@ -28,15 +29,34 @@ class VariogramEstimator(BaseEstimator):
         :class:`Variogram <skgstat.Variogram>` class.
         Refer to the documentation there.
 
-        The only parameter specific to the Estimator class is the `score`
-        attribute.
+        The only parameter specific to the Estimator class is the `use_score`
+        attribute. This can be the root mean squared error (rmse), mean squared
+        error (mse) or mean absoulte error (mae). The Estimater can either calculate
+        the score based on the model fit (model ~ experimental) or using a
+        leave-one-out cross-validation of a OrdinaryKriging using the model
+
+        .. versionchanged:: 0.5.4
+            Uses ['rmse', 'mse', 'mae'] as scores exclusesively now.
+            Therefore, either the fit of the Variogram or a cross validation
+            can be used for scoring
 
         Parameters
         ----------
-        score : str
+        use_score : str
             Scoring parameter to assess the Variogram fitting quality.
             Defaults to `'rmse'`, the Root mean squared error.
-            Can be changed to ``['r2', 'residuals']``.
+            Can be changed to `['mse', 'mae']`.
+        cross_validate : bool
+            .. versionadded:: 0.5.4
+            If True, the score will be calculate from a cross-validation of
+            the variogram model in OrdinaryKriging, rather than the model fit.
+
+        Keyword Arguments
+        -----------------
+        cross_n : int
+            .. versionadded:: 0.5.4
+            If not None, this is the amount of points (and iterations) used in
+            cross valiation. Does not have any effect if `cross_validate=False`.
 
         Note
         ----
@@ -66,6 +86,8 @@ class VariogramEstimator(BaseEstimator):
 
         # add Estimator specific attributes
         self.use_score = use_score
+        self.cross_validate = cross_validate
+        self._kwargs = kwargs
 
         # This is a workaround due to circular imports
         from skgstat import Variogram
@@ -135,13 +157,18 @@ class VariogramEstimator(BaseEstimator):
         """
         return np.fromiter(map(self._model_func_, X.flatten()), dtype=float)
 
-    def score(self, X, y=None):
+    def score(self, X=None, y=None):
         """Fit score
+        .. versionchanged:: 0.5.4
+            Can now use cross-validated scores
 
-        Score based on the fitting.
+        Score ('rmse', 'mse', 'mae') based on the fitting.
 
         """
-        # TODO: maybe I have to create a new V, fitted to X,y here?
-
-        # return the score
-        return getattr(self.variogram, self.use_score)
+        if self.cross_validate:
+            # check if a n was given
+            n = self._kwargs.get('cross_n')
+            return self.variogram.cross_validate(n=n, metric=self.use_score)
+        else:
+            # return the score
+            return getattr(self.variogram, self.use_score)

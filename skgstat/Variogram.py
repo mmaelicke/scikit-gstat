@@ -17,6 +17,7 @@ from skgstat.util import shannon_entropy
 from .MetricSpace import MetricSpace, MetricSpacePair, ProbabalisticMetricSpace
 from skgstat.interfaces.gstools import skgstat_to_gstools, skgstat_to_krige
 
+
 class Variogram(object):
     """Variogram Class
 
@@ -1467,7 +1468,7 @@ class Variogram(object):
             return
 
         v = self.values
-        
+
         # handle sparse matrix
         if isinstance(self.distance_matrix, sparse.spmatrix):
             c = r = self.triangular_distance_matrix
@@ -1794,6 +1795,71 @@ class Variogram(object):
         return np.sqrt(rsum / len(model))
 
     @property
+    def mse(self):
+        r"""RMSE
+
+        Calculate the Mean squared error between the experimental
+        variogram and the theoretical model values at corresponding lags.
+        Can be used as a fitting quality measure.
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.residuals
+
+        Notes
+        -----
+        The MSE is implemented like:
+
+        .. math::
+            MSE = \frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}
+
+        """
+        # get the deviations
+        experimental, model = self.model_deviations()
+
+        # get the mean
+        mse = np.mean(np.power(np.subtract(experimental, model), 2))
+
+        return mse
+
+    @property
+    def mae(self):
+        r"""RMSE
+
+        Calculate the Mean absolute error between the experimental
+        variogram and the theoretical model values at corresponding lags.
+        Can be used as a fitting quality measure.
+
+        Returns
+        -------
+        float
+
+        See Also
+        --------
+        Variogram.residuals
+
+        Notes
+        -----
+        The MAE is implemented like:
+
+        .. math::
+            MAE = \frac{\sum_{i=0}^{i=N(x)} |x-y|}{N(x)}
+
+        """
+        # get the deviations
+        experimental, model = self.model_deviations()
+
+        # get the mean
+        mae = np.mean(np.abs(np.subtract(experimental, model)))
+
+        return mae
+
+
+    @property
     def nrmse(self):
         r"""NRMSE
 
@@ -1925,6 +1991,51 @@ class Variogram(object):
         _model = self.transform(_bin)
 
         return _exp, _model
+
+    def cross_validate(
+        self,
+        method: str = 'jacknife',
+        n: int = None,
+        metric: str = 'rmse',
+        seed=None
+    ) -> float:
+        """
+        Cross validation of the variogram model by means of Kriging.
+        Right now, this function can only utilize a jacknife (leave-one-out)
+        cross validation and will only use the builtin OrdinaryKriging
+        method (not yet the to_gs_krige interface).
+
+        Parameters
+        ----------
+        method : str
+            Right now, 'jacknife' is the only possible input.
+        n : int
+            The number of points to be included into the cross-validation.
+            If None (default), all points will be used.
+        metric : str
+            Metric used for cross-validation. 
+            Can be root mean square error (rmse), mean squared error (mse)
+            or mean absolute error (mae).
+        seed : int
+            If n is not None, the random selection of input data for the
+            cross-validation can be seeded.
+
+        Returns
+        -------
+        metric : float
+            The cross-validation result as specified above.
+
+        See Also
+        --------
+        skgstat.util.cross_validation.jacknife
+        """
+        # not sure how to solve the circular import here
+        from skgstat.util import cross_validation
+
+        if method == 'jacknife':
+            return cross_validation.jacknife(self, n=n, metric=metric, seed=seed)
+        else:
+            raise AttributeError(f"A method '{method}' is not implemented.")
 
     def describe(self, short=False, flat=False):
         """Variogram parameters

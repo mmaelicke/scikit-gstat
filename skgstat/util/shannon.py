@@ -22,7 +22,7 @@ def shannon_entropy(x, bins):
     Returns
     -------
     h : float
-        Shannon Entropy of x given bins.
+        Shannon Entropy of x, given bins.
     """
     # histogram
     c, _ = np.histogram(x, bins=bins)

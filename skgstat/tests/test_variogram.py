@@ -17,7 +17,6 @@ except ImportError:
 from skgstat import Variogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
-from skgstat import models
 from skgstat import plotting
 
 
@@ -59,6 +58,7 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
 
         for x, y in zip(V.parameters, [17.128, 6.068, 0]):
             self.assertAlmostEqual(x, y, places=3)
+
 
 class TestVariogramInstatiation(unittest.TestCase):
     def setUp(self):
@@ -848,6 +848,16 @@ class TestVariogramQaulityMeasures(unittest.TestCase):
             [0.0206, 0.0206, 0.0206]
         ):
             self.assertAlmostEqual(V.NS, NS, places=4)
+        
+    def test_mae(self):
+        V = Variogram(self.c, self.v, n_lags=15)
+
+        self.assertAlmostEqual(V.mae, 3.91, places=2)
+
+    def test_mse(self):
+        V = Variogram(self.c, self.v, n_lags=15)
+
+        self.assertAlmostEqual(np.sqrt(V.mse), V.rmse, places=6)
 
     def test_update_kwargs(self):
         V = Variogram(self.c, self.v, percentile=.3)
