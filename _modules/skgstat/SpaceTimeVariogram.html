@@ -1,0 +1,1718 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>skgstat.SpaceTimeVariogram &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../reference/reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for skgstat.SpaceTimeVariogram</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+
+<span class="kn">from</span> <span class="nn">skgstat</span> <span class="kn">import</span> <span class="n">binning</span><span class="p">,</span> <span class="n">estimators</span><span class="p">,</span> <span class="n">Variogram</span><span class="p">,</span> <span class="n">stmodels</span><span class="p">,</span> <span class="n">plotting</span>
+
+
+<div class="viewcode-block" id="SpaceTimeVariogram"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram">[docs]</a><span class="k">class</span> <span class="nc">SpaceTimeVariogram</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SpaceTimeVariogram.__init__"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">coordinates</span><span class="p">,</span>
+                 <span class="n">values</span><span class="p">,</span>
+                 <span class="n">xdist_func</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+                 <span class="n">tdist_func</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+                 <span class="n">x_lags</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">t_lags</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span>
+                 <span class="n">maxlag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">xbins</span><span class="o">=</span><span class="s1">&#39;even&#39;</span><span class="p">,</span>
+                 <span class="n">tbins</span><span class="o">=</span><span class="s1">&#39;even&#39;</span><span class="p">,</span>
+                 <span class="n">estimator</span><span class="o">=</span><span class="s1">&#39;matheron&#39;</span><span class="p">,</span>
+                 <span class="n">use_nugget</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">model</span><span class="o">=</span><span class="s1">&#39;product-sum&#39;</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+                 <span class="p">):</span>
+        <span class="c1"># set coordinates array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span>
+
+        <span class="c1"># combined pairwise differences</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set verbosity, not implemented yet</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="c1"># set attributes to be fulled during calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_values</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="c1"># distance matrix for space and time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xdist</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tdist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set distance calculation functions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xdist_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tdist_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_xdist_func</span><span class="p">(</span><span class="n">func_name</span><span class="o">=</span><span class="n">xdist_func</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tdist_func</span><span class="p">(</span><span class="n">func_name</span><span class="o">=</span><span class="n">tdist_func</span><span class="p">)</span>
+
+        <span class="c1"># lags and max lag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_lags</span> <span class="o">=</span> <span class="n">x_lags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_lags</span> <span class="o">=</span> <span class="n">t_lags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxlag</span> <span class="o">=</span> <span class="n">maxlag</span>
+
+        <span class="c1"># estimator settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_estimator</span><span class="p">(</span><span class="n">estimator_name</span><span class="o">=</span><span class="n">estimator</span><span class="p">)</span>
+
+        <span class="c1"># initialize binning arrays</span>
+        <span class="c1"># space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xbin_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xbin_func_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_bin_func</span><span class="p">(</span><span class="n">bin_func</span><span class="o">=</span><span class="n">xbins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;space&#39;</span><span class="p">)</span>
+
+        <span class="c1"># time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tbin_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tbin_func_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_bin_func</span><span class="p">(</span><span class="n">bin_func</span><span class="o">=</span><span class="n">tbins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+
+        <span class="c1"># set nugget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_nugget</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_nugget</span> <span class="o">=</span> <span class="n">use_nugget</span>
+
+        <span class="c1"># set the model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># _x and values are set, build the marginal Variogram objects</span>
+        <span class="c1"># marginal space variogram</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_XMarginal</span><span class="p">()</span>
+
+        <span class="c1"># marginal time variogram</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_TMarginal</span><span class="p">()</span></div>
+
+        <span class="c1"># fit the model with forced preprocessing</span>
+        <span class="c1">#self.fit(force=True)</span>
+
+    <span class="c1"># ----------------------------------------------------------------------- #</span>
+    <span class="c1">#                        ATTRIBUTE SETTING                                #</span>
+    <span class="c1"># ----------------------------------------------------------------------- #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Values</span>
+
+<span class="sd">        The SpaceTimeVariogram stores (and needs) the observations as a two</span>
+<span class="sd">        dimensional array. The first axis (rows) need to match the coordinate</span>
+<span class="sd">        array, but instead of containing one value for each location,</span>
+<span class="sd">        the values shall contain a time series per location.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        values : numpy.array</span>
+<span class="sd">            Returns a two dimensional array of all observations. The first</span>
+<span class="sd">            dimension (rows) matches the coordinate array and the second axis</span>
+<span class="sd">            contains the time series for each observation point.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.set_values"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.set_values">[docs]</a>    <span class="k">def</span> <span class="nf">set_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set new values</span>
+
+<span class="sd">        The values should be an (m, n) array with m matching the size of</span>
+<span class="sd">        coordinates first  dimension and n is the time dimension.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : in case n &lt;= 1 or values are not an array of correct</span>
+<span class="sd">            dimensionality</span>
+<span class="sd">        AttributeError : in case values cannot be converted to a numpy.array</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="c1"># check dtype</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="ow">and</span>
+                 <span class="n">values</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">int</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;values cannot be converted to a proper &#39;</span>
+                                 <span class="s1">&#39;(m,n) shaped array.&#39;</span><span class="p">)</span>
+        <span class="c1"># check shape</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The values shape do not match coordinates.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A SpaceTimeVariogram needs more than one &#39;</span>
+                             <span class="s1">&#39;observation on the time axis.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># save new values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="n">values</span>
+
+        <span class="c1"># dismiss the pairwise differences, and lags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># recreate the space marginal variogram</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_XMarginal</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_TMarginal</span><span class="p">()</span></div>
+
+    <span class="nd">@values</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_values</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_values</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">new_values</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">xdist_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xdist_func</span>
+
+    <span class="nd">@xdist_func</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">xdist_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_xdist_func</span><span class="p">(</span><span class="n">func_name</span><span class="o">=</span><span class="n">func</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.set_xdist_func"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.set_xdist_func">[docs]</a>    <span class="k">def</span> <span class="nf">set_xdist_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set new space distance function</span>
+
+<span class="sd">        Set a new function for calculating the distance matrix in the space</span>
+<span class="sd">        dimension. At the moment only strings are supported. Will be passed</span>
+<span class="sd">        to scipy.spatical.distance.pdist as &#39;metric&#39; attribute.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func_name : str</span>
+<span class="sd">            The name of the function used to calculate the pairwise distances.</span>
+<span class="sd">            Will be passed to scipy.spatial.distance.pdist as the &#39;metric&#39;</span>
+<span class="sd">            attribute.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : in case a non-string argument is passed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xdist_func_name</span> <span class="o">=</span> <span class="n">func_name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xdist_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pdist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">func_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;For now only str arguments are supported.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># reset the distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xdist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tdist_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tdist_func</span>
+
+    <span class="nd">@tdist_func</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tdist_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tdist_func</span><span class="p">(</span><span class="n">func_name</span><span class="o">=</span><span class="n">func</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.set_tdist_func"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.set_tdist_func">[docs]</a>    <span class="k">def</span> <span class="nf">set_tdist_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set new space distance function</span>
+
+<span class="sd">        Set a new function for calculating the distance matrix in the space</span>
+<span class="sd">        dimension. At the moment only strings are supported. Will be passed</span>
+<span class="sd">        to scipy.spatical.distance.pdist as &#39;metric&#39; attribute.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func_name : str</span>
+<span class="sd">            The name of the function used to calculate the pairwise distances.</span>
+<span class="sd">            Will be passed to scipy.spatial.distance.pdist as the &#39;metric&#39;</span>
+<span class="sd">            attribute.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : in case a non-string argument is passed.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tdist_func_name</span> <span class="o">=</span> <span class="n">func_name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tdist_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">pdist</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">func_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;For now only str arguments are supported.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># reset the distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tdist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Distance matrices</span>
+
+<span class="sd">        Returns both the space and time distance matrix. This property is</span>
+<span class="sd">        equivalent to two separate calls of</span>
+<span class="sd">        :func:`xdistance &lt;skgstat.SpaceTimeVariogram.xdistance&gt;` and</span>
+<span class="sd">        :func:`tdistance &lt;skgstat.SpaceTimeVariogram.tdistance&gt;`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        distance matrices : (numpy.array, numpy.array)</span>
+<span class="sd">            Returns a tuple of the two distance matrices in space and time.</span>
+<span class="sd">            Each distance matrix is a flattened upper triangle of the</span>
+<span class="sd">            distance matrix squareform in row orientation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdistance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tdistance</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">xdistance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Distance matrix (space)</span>
+
+<span class="sd">        Return the upper triangle of the squareform pairwise distance matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xdistance : numpy.array</span>
+<span class="sd">            1D-array of the upper triangle of a squareform representation of</span>
+<span class="sd">            the distance matrix.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__calc_xdist</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xdist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tdistance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Time distance</span>
+
+<span class="sd">        Returns a distance matrix containing the distance of all observation</span>
+<span class="sd">        points in time. The time &#39;coordiantes&#39; are created from the values</span>
+<span class="sd">        multidimensional array, where the second dimension is assumed to be</span>
+<span class="sd">        time. The unit will be time steps.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tdistance : numpy.array</span>
+<span class="sd">            1D-array of the upper triangle of a squareform representation of</span>
+<span class="sd">            the distance matrix.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__calc_tdist</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tdist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">x_lags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xbins</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span>
+
+    <span class="nd">@x_lags</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">x_lags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lags</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Only integers are supported as lag counts.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># set new value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="n">lags</span>
+
+        <span class="c1"># reset bins and groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">t_lags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only &#39;max&#39; supported as string argument.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tbins</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span>
+
+    <span class="nd">@t_lags</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">t_lags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lags</span><span class="p">):</span>
+        <span class="c1"># set new value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="n">lags</span>
+
+        <span class="c1"># reset bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">maxlag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span>
+
+    <span class="nd">@maxlag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">maxlag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># reset fitting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="c1"># remove binning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set the new value</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;median&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdistance</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;mean&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdistance</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdistance</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.set_bin_func"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.set_bin_func">[docs]</a>    <span class="k">def</span> <span class="nf">set_bin_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bin_func</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set binning function</span>
+
+<span class="sd">        Set a new binning function to either the space or time axis. Both axes</span>
+<span class="sd">        support the methods: [&#39;even&#39;, &#39;uniform&#39;]:</span>
+
+<span class="sd">        * **&#39;even&#39;**, create even width bins</span>
+<span class="sd">        * **&#39;uniform&#39;**, create bins of uniform distribution</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bin_func : str</span>
+<span class="sd">            Sepcifies the function to be loaded. Can be either &#39;even&#39; or</span>
+<span class="sd">            &#39;uniform&#39;.</span>
+<span class="sd">        axis : str</span>
+<span class="sd">            Specifies the axis to be used for binning. Can be either &#39;space&#39; or</span>
+<span class="sd">            &#39;time&#39;, or one of the two shortcuts &#39;s&#39; and &#39;t&#39;</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        skgstat.binning.even_width_lags</span>
+<span class="sd">        skgstat.binning.uniform_count_lags</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">adjust_n_lags</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># switch the function</span>
+        <span class="k">if</span> <span class="n">bin_func</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;even&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">binning</span><span class="o">.</span><span class="n">even_width_lags</span>
+        <span class="k">elif</span> <span class="n">bin_func</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;uniform&#39;</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">binning</span><span class="o">.</span><span class="n">uniform_count_lags</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bin_func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># define a wrapper to pass the name</span>
+            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">maxlag</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">binning</span><span class="o">.</span><span class="n">auto_derived_lags</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">bin_func</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">maxlag</span><span class="p">)</span>
+
+            <span class="n">f</span> <span class="o">=</span> <span class="n">wrapper</span>
+            <span class="n">adjust_n_lags</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> binning method is not known&#39;</span> <span class="o">%</span> <span class="n">bin_func</span><span class="p">)</span>
+
+        <span class="c1"># switch the axis</span>
+        <span class="k">if</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;space&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xbin_func</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xbin_func_name</span> <span class="o">=</span> <span class="n">bin_func</span>
+
+            <span class="k">if</span> <span class="n">adjust_n_lags</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># update marginal</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span>
+
+            <span class="c1"># reset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">elif</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tbin_func</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tbin_func_name</span> <span class="o">=</span> <span class="n">bin_func</span>
+
+            <span class="k">if</span> <span class="n">adjust_n_lags</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># update marignal</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span>
+
+            <span class="c1"># reset</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> is not a valid axis&#39;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="c1"># reset fitting params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">xbins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Spatial binning</span>
+
+<span class="sd">        Returns the bin edges over the spatial axis. These can be used to</span>
+<span class="sd">        align the spatial lag class grouping to actual distance lags. The</span>
+<span class="sd">        length of the array matches the number of spatial lag classes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bins : numpy.array</span>
+<span class="sd">            Returns the edges of the current spatial binning.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check if cached</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xbin_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdistance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxlag</span><span class="p">)</span>
+
+            <span class="c1"># if n is not None, the binning func overwrote it</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="n">n</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span>
+
+    <span class="nd">@xbins</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">xbins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_x_lags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xbins</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_bin_func</span><span class="p">(</span><span class="n">bin_func</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;space&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;bin value cannot be parsed.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># reset the groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tbins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Temporal binning</span>
+
+<span class="sd">        Returns the bin edges over the temporal axis. These can be used to</span>
+<span class="sd">        align the temporal lag class grouping to actual time lags. The length of</span>
+<span class="sd">        the array matches the number of temporal lag classes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bins : numpy.array</span>
+<span class="sd">            Returns the edges of the current temporal binning.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># this is a bit dumb, but we cannot pass a string as n param</span>
+            <span class="n">tn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">!=</span> <span class="s1">&#39;max&#39;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lags</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tbin_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tdistance</span><span class="p">,</span> <span class="n">tn</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="c1"># if n is not None, the binning func overwote it</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="n">n</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span>
+
+    <span class="nd">@tbins</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tbins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bins</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="n">bins</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_t_lags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tbins</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bins</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_bin_func</span><span class="p">(</span><span class="n">bin_func</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;bin value cannot be parsed.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># reset the groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">meshbins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xbins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbins</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">use_nugget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_nugget</span>
+
+    <span class="nd">@use_nugget</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">use_nugget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nugget</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nugget</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;use_nugget has to be a boolean value.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_nugget</span> <span class="o">=</span> <span class="n">nugget</span>
+
+        <span class="c1"># update marginals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span>
+
+    <span class="nd">@estimator</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_estimator</span><span class="p">(</span><span class="n">estimator_name</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator_name</span><span class="p">):</span>
+        <span class="c1"># reset the fitting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">estimator_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;matheron&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">matheron</span>
+            <span class="k">elif</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cressie&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">cressie</span>
+            <span class="k">elif</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dowd&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">dowd</span>
+            <span class="k">elif</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;genton&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">genton</span>
+            <span class="k">elif</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;minmax&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">minmax</span>
+            <span class="k">elif</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;percentile&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">percentile</span>
+            <span class="k">elif</span> <span class="n">estimator_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;entropy&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimators</span><span class="o">.</span><span class="n">entropy</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="p">(</span><span class="s1">&#39;Variogram estimator </span><span class="si">%s</span><span class="s1"> is not understood, please&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39;provide the function.&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">estimator_name</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">estimator_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="n">estimator_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The estimator has to be a string or callable.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># update marignal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+
+    <span class="nd">@model</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.set_model"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set space-time model</span>
+
+<span class="sd">        Set a new space-time model. It has to be either a callable of correct</span>
+<span class="sd">        signature or a string identifying one of the predefined models</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_name : str, callable</span>
+<span class="sd">            Either a callable of correct signature or a valid model name.</span>
+<span class="sd">            Valid names are:</span>
+
+<span class="sd">            * sum</span>
+<span class="sd">            * product</span>
+<span class="sd">            * product-sum</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># reset fitting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;sum&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">stmodels</span><span class="o">.</span><span class="n">sum</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;product&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">stmodels</span><span class="o">.</span><span class="n">product</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;product-sum&#39;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;product_sum&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">stmodels</span><span class="o">.</span><span class="n">product_sum</span>
+        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">model_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;model_name has to be a string or callable.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.create_XMarginal"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.create_XMarginal">[docs]</a>    <span class="k">def</span> <span class="nf">create_XMarginal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an instance of skgstat.Variogram for the space marginal variogram</span>
+<span class="sd">        by arranging the coordinates and values and infer parameters from</span>
+<span class="sd">        this SpaceTimeVariogram instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span> <span class="o">=</span> <span class="n">Variogram</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_xmarg_params</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.create_TMarginal"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.create_TMarginal">[docs]</a>    <span class="k">def</span> <span class="nf">create_TMarginal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an instance of skgstat.Variogram for the time marginal variogram</span>
+<span class="sd">        by arranging the coordinates and values and infer parameters from</span>
+<span class="sd">        this SpaceTimeVariogram instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span> <span class="o">=</span> <span class="n">Variogram</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">coords</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_values</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_tmarg_params</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_xmarg_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the parameters for the space marginal variogram with any</span>
+<span class="sd">        parameter that can be inferred from the current SpaceTimeVariogram</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if not marginal variogram is set, return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># distance</span>
+        <span class="c1"># FIXME: Handle xdist_func_name vs xdist_func better (like in Variogra.py)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">dist_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xdist_func_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lags</span>
+
+        <span class="c1"># binning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">bin_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xbin_func_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">maxlag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxlag</span>
+
+        <span class="c1"># nugget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">use_nugget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_nugget</span>
+        <span class="c1"># estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="k">def</span> <span class="nf">_set_tmarg_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the parameters for the time marginal variogram with any</span>
+<span class="sd">        parameter that can be inferred from the current SpaceTimeVariogram</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if no marginal variogram is set, return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">dist_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tdist_func_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_lags</span>
+
+        <span class="c1"># binning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">bin_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tbin_func_name</span>
+
+        <span class="c1"># nugget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">use_nugget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_nugget</span>
+        <span class="c1"># estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+    <span class="c1">#                         PRE-PROCESSING                                   #</span>
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+<div class="viewcode-block" id="SpaceTimeVariogram.lag_groups"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.lag_groups">[docs]</a>    <span class="k">def</span> <span class="nf">lag_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Lag class group mask array</span>
+
+<span class="sd">        Returns a mask array for the given axis (either &#39;space&#39; or &#39;time&#39;).</span>
+<span class="sd">        It will have as amany elements as the respective distance matrices.</span>
+<span class="sd">        **Unlike the base Variogram class, it does not mask the array of</span>
+<span class="sd">        pairwise differences.**. It will mask the distance matrix of the</span>
+<span class="sd">        respective axis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axis : str</span>
+<span class="sd">            Can either be &#39;space&#39; or &#39;time&#39;. Specifies the axis the mask array</span>
+<span class="sd">            shall be returned for.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        masK_array : numpy.array</span>
+<span class="sd">            mask array that identifies the lag class group index for each pair</span>
+<span class="sd">            of points on the given axis.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;axis has to be of type string.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># space axis</span>
+        <span class="k">if</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;space&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calc_group</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span>
+
+        <span class="c1"># time axis</span>
+        <span class="k">elif</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_calc_group</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;axis has to be one of &#39;space&#39;, &#39;time&#39;.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.lag_classes"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.lag_classes">[docs]</a>    <span class="k">def</span> <span class="nf">lag_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iterator over all lag classes</span>
+
+<span class="sd">        Returns an iterator over all lag classes by aligning all time lags</span>
+<span class="sd">        over all space lags. This means that it will yield all time lag groups</span>
+<span class="sd">        for a space lag of index 0 at first and then iterate the space lags.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        iterator</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># are differences already calculated</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_calc_diff</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># get the group masking arrays</span>
+        <span class="n">xgrp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag_groups</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;space&#39;</span><span class="p">)</span>
+        <span class="n">tgrp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag_groups</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">diff_select</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">xgrp</span> <span class="o">==</span> <span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tgrp</span> <span class="o">==</span> <span class="n">t</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># iterate</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_lags</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lags</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">diff_select</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_experimental</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO: fix this</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;entropy&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="c1"># this might</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="k">for</span> <span class="n">vals</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lag_classes</span><span class="p">()),</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">z</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">experimental</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Experimental Variogram</span>
+
+<span class="sd">        Returns an experimental variogram for the given data. The</span>
+<span class="sd">        semivariances are arranged over the spatial binning as defined in</span>
+<span class="sd">        SpaceTimeVariogram.xbins and temporal binning defined in</span>
+<span class="sd">        SpaceTimeVariogram.tbins.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        variogram : numpy.ndarray</span>
+<span class="sd">            Returns an two dimensional array of semivariances over space on</span>
+<span class="sd">            the first axis and time over the second axis.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_experimental</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__calc_xdist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate distance in space</span>
+
+<span class="sd">        Use :func:`xdist_func &lt;skgstat.SpaceTimeVariogram.xdist_func&gt;` to</span>
+<span class="sd">        calculate the pairwise space distance matrix. The calculation will be</span>
+<span class="sd">        cached and not recalculated. The recalculation can be forced setting</span>
+<span class="sd">        ``force=True``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force : bool</span>
+<span class="sd">            If True, an eventually cached version of the distance matrix</span>
+<span class="sd">            will be deleted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xdist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdist_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_X</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__calc_tdist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate distance in time</span>
+
+<span class="sd">        Use :func:`tdist_func &lt;skgstat.SpaceTimeVariogram.tdist_func&gt;` to</span>
+<span class="sd">        calculate the pairwise time distance matrix. The calculation will be</span>
+<span class="sd">        cached and not recalculated. The recalculation can be forced setting</span>
+<span class="sd">        ``force=True``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force : bool</span>
+<span class="sd">            If True, an eventually cached version of the distance matrix</span>
+<span class="sd">            will be deleted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tdist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">force</span><span class="p">:</span>
+            <span class="c1"># extract the timestamps</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tdist_func</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_calc_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate pairwise differences</span>
+
+<span class="sd">        Calculate the the pairwise differences for all space lag and</span>
+<span class="sd">        time lag class combinations. The result is stored in the</span>
+<span class="sd">        SpaceTimeVariogram._diff matrix, which has the form (m, n) with m</span>
+<span class="sd">        the size of the space distance array and n the size of the time</span>
+<span class="sd">        distance array.</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force : bool</span>
+<span class="sd">            If True, any calculated and cached result will be deleted and a</span>
+<span class="sd">            clean calculation will be performed.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This is a Python only implementation that can get quite slow as any</span>
+<span class="sd">        added obervation on the space or time axis will increase the matrix</span>
+<span class="sd">        dimension by one. It is also slow as 4 loops are needed to loop the</span>
+<span class="sd">        matrix. I am evaluating at the moment if the function performs better</span>
+<span class="sd">        using numpys vectorizations or by implementing a Cython, Fortran,</span>
+<span class="sd">        Rust lib that can do the heavy stuff.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the force</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># get size of distance matrices</span>
+        <span class="n">xn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdistance</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">tn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tdistance</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># get outer and inner iterators</span>
+        <span class="n">outer</span><span class="p">,</span> <span class="n">inner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># prepare TODO: here the Fortran, Rust, whatever calc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">xn</span><span class="p">,</span> <span class="n">tn</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="n">xidx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">outer</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">xj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">outer</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">xi</span> <span class="o">&lt;</span> <span class="n">xj</span><span class="p">:</span>
+                    <span class="n">tidx</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">ti</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inner</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">tj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inner</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">ti</span> <span class="o">&lt;</span> <span class="n">tj</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span><span class="p">[</span><span class="n">xidx</span><span class="p">][</span><span class="n">tidx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">xi</span><span class="p">,</span> <span class="n">ti</span><span class="p">]</span> <span class="o">-</span> <span class="n">v</span><span class="p">[</span><span class="n">xj</span><span class="p">,</span> <span class="n">tj</span><span class="p">])</span>
+                                <span class="n">tidx</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">xidx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">_calc_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate lag class grouping</span>
+
+<span class="sd">        Calculate a lag class grouping mask array for the given axis. The</span>
+<span class="sd">        axis can be either &#39;space&#39; or &#39;time&#39;. The result will be cached</span>
+<span class="sd">        either in the _sgroups (space) or _tgroups (time) array will match</span>
+<span class="sd">        the respective distance matrix. The group value indicates the lag</span>
+<span class="sd">        class index for the matching point pair.</span>
+<span class="sd">        If force is False (default) and the groups have been calculated,</span>
+<span class="sd">        no new calculation will be started.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axis : str</span>
+<span class="sd">            Can be either &#39;space&#39; for the space lag grouping or &#39;time&#39; for</span>
+<span class="sd">            the temporal lag grouping.</span>
+<span class="sd">        force : bool</span>
+<span class="sd">            If True, any present cached grouping array will be overwritten.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        void</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># switch the axis</span>
+        <span class="k">if</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;space&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span>
+            <span class="n">grp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;x&#39;</span>
+        <span class="k">elif</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+            <span class="n">grp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;t&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Axis </span><span class="si">%s</span><span class="s1"> is not supported&#39;</span> <span class="o">%</span> <span class="n">axis</span><span class="p">)</span>
+
+        <span class="c1"># check the force</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span> <span class="ow">and</span> <span class="n">grp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># copy the arrays</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">bins&#39;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">distance&#39;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">)</span>
+
+        <span class="c1"># set all groups to -1</span>
+        <span class="n">grp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># go for the classification</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bounds</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">bins</span><span class="p">),</span> <span class="n">bins</span><span class="p">)):</span>
+            <span class="n">grp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">d</span> <span class="o">&gt;</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span> <span class="o">&lt;=</span> <span class="n">bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">]))]</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="c1"># save</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_</span><span class="si">%s</span><span class="s1">groups&#39;</span> <span class="o">%</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.preprocessing"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.preprocessing">[docs]</a>    <span class="k">def</span> <span class="nf">preprocessing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Preprocessing</span>
+
+<span class="sd">        Start all necessary calculation jobs needed to derive an experimental</span>
+<span class="sd">        variogram. This hasto be present before the model fitting can be done.</span>
+<span class="sd">        The force parameter will make all calculation functions to delete all</span>
+<span class="sd">        cached intermediate results and make a clean calculation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force : bool</span>
+<span class="sd">            If True, all cached intermediate results will be deleted and a</span>
+<span class="sd">            clean calculation will be done.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># recalculate distances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__calc_xdist</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__calc_tdist</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_diff</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_group</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;space&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_group</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span></div>
+
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+    <span class="c1">#                              FITTING                                     #</span>
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># delete the last cov and cof</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># if force, force a clean preprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preprocessing</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+
+        <span class="c1"># load the fitting data</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">meshbins</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experimental</span>
+
+        <span class="c1"># remove NaN values</span>
+        <span class="n">ydata</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">z</span><span class="p">))]</span>
+        <span class="n">_xx</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">z</span><span class="p">))[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">_yy</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">z</span><span class="p">))[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">_xx</span><span class="p">,</span> <span class="n">_yy</span><span class="p">))</span>
+
+        <span class="c1"># get the marginal variogram functions</span>
+        <span class="n">Vx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">fitted_model</span>
+        <span class="n">Vt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">fitted_model</span>
+
+        <span class="c1"># get the params of the model</span>
+        <span class="n">_code_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">__wrapped__</span><span class="o">.</span><span class="vm">__code__</span>
+        <span class="n">model_args</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargs</span><span class="p">(</span><span class="n">_code_obj</span><span class="p">)</span><span class="o">.</span><span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+
+        <span class="c1"># fix the sills?</span>
+        <span class="n">fix_sills</span> <span class="o">=</span> <span class="kc">True</span>    <span class="c1"># TODO: Make this a param in __init__</span>
+        <span class="k">if</span> <span class="n">fix_sills</span> <span class="ow">and</span> <span class="s1">&#39;Cx&#39;</span> <span class="ow">in</span> <span class="n">model_args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span><span class="p">[</span><span class="s1">&#39;Cx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">describe</span><span class="p">()[</span><span class="s1">&#39;sill&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">fix_sills</span> <span class="ow">and</span> <span class="s1">&#39;Ct&#39;</span> <span class="ow">in</span> <span class="n">model_args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span><span class="p">[</span><span class="s1">&#39;Ct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">describe</span><span class="p">()[</span><span class="s1">&#39;sill&#39;</span><span class="p">]</span>
+
+        <span class="c1"># are there parameters left to fit?</span>
+        <span class="n">free_args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_args</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">free_args</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># no params left</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">return</span>
+
+        <span class="c1"># wrap the model</span>
+        <span class="k">def</span> <span class="nf">_model</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">Vx</span><span class="p">,</span> <span class="n">Vt</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span>
+            <span class="n">_model</span><span class="p">,</span> <span class="n">xdata</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span>  <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="n">p0</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">]</span> <span class="o">*</span> <span class="n">free_args</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fitted_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if not model not fitted, fit it</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># get the model func</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+
+        <span class="c1"># get the marginal Variograms</span>
+        <span class="n">Vx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">fitted_model</span>
+        <span class="n">Vt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">fitted_model</span>
+
+        <span class="n">cof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="c1"># define the function</span>
+        <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">lags</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">Vx</span><span class="p">,</span> <span class="n">Vt</span><span class="p">,</span> <span class="o">*</span><span class="n">cof</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+    <span class="c1">#                              RESULTS                                     #</span>
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+<div class="viewcode-block" id="SpaceTimeVariogram.get_marginal"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.get_marginal">[docs]</a>    <span class="k">def</span> <span class="nf">get_marginal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Marginal Variogram</span>
+
+<span class="sd">        Returns the marginal experimental variogram of axis for the given lag</span>
+<span class="sd">        on the other axis. Axis can either be &#39;space&#39; or &#39;time&#39;. The parameter</span>
+<span class="sd">        lag specifies the index of the desired lag class on the other axis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        axis : str</span>
+<span class="sd">            The axis a marginal variogram shall be calculated for. Can either</span>
+<span class="sd">            be &#39; space&#39; or &#39;time&#39;.</span>
+<span class="sd">        lag : int</span>
+<span class="sd">            Index of the lag class group on the other axis to be used. In case</span>
+<span class="sd">            this is 0, this is often considered to be *the* marginal variogram</span>
+<span class="sd">            of the axis.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        variogram : numpy.array</span>
+<span class="sd">            Marginal variogram of the given axis</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the axis</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;axis has to be of type string.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;space&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;s&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_member</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">lag</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_lags</span><span class="p">)),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;time&#39;</span> <span class="ow">or</span> <span class="n">axis</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_member</span><span class="p">(</span><span class="n">lag</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_lags</span><span class="p">)),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;axis can either be &#39;space&#39; or &#39;time&#39;.&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_member</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xlag</span><span class="p">,</span> <span class="n">tlag</span><span class="p">):</span>
+        <span class="n">x_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xgroups</span> <span class="o">==</span> <span class="n">xlag</span>
+        <span class="n">t_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tgroups</span> <span class="o">==</span> <span class="n">tlag</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x_idxs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]][:,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">t_idxs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+    <span class="c1">#                             PLOTTING                                     #</span>
+    <span class="c1"># ------------------------------------------------------------------------ #</span>
+<div class="viewcode-block" id="SpaceTimeVariogram.plot"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;Plot the experimental variogram</span>
+
+<span class="sd">        At the current version the SpaceTimeVariogram class is not capable of</span>
+<span class="sd">        modeling a spe-time variogram function, therefore all plots will only</span>
+<span class="sd">        show the experimental variogram.</span>
+<span class="sd">        As the experimental space-time semivariance is depending on a space</span>
+<span class="sd">        and a time lag, one would basically need a 3D scatter plot, which is</span>
+<span class="sd">        the default plot. However, 3D plots can be, especially for scientific</span>
+<span class="sd">        usage, a bit problematic. Therefore the plot function can plot a</span>
+<span class="sd">        variety of 3D and 2D plots.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kind : str</span>
+<span class="sd">            Has to be one of:</span>
+
+<span class="sd">            * **scatter**</span>
+<span class="sd">            * **surface**</span>
+<span class="sd">            * **contour**</span>
+<span class="sd">            * **contourf**</span>
+<span class="sd">            * **matrix**</span>
+<span class="sd">            * **marginals**</span>
+
+<span class="sd">        ax : matplotlib.AxesSubplot, mpl_toolkits.mplot3d.Axes3D, None</span>
+<span class="sd">            If None, the function will create a new figure and suitable Axes.</span>
+<span class="sd">            Else, the Axes object can be passed to plot the variogram into an</span>
+<span class="sd">            existing figure. In this case, one has to pass the correct type</span>
+<span class="sd">            of Axes, whether it&#39;s a 3D or 2D kind of a plot.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            All keyword arguments are passed down to the actual plotting</span>
+<span class="sd">            function. Refer to their documentation for a more detailed</span>
+<span class="sd">            description.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.Figure</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        SpaceTimeVariogram.scatter</span>
+<span class="sd">        SpaceTimeVariogram.surface</span>
+<span class="sd">        SpaceTimeVariogram.marginals</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># switch the plot kind</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;kind has to be of type string.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;scatter&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;surf&#39;</span> <span class="ow">or</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;surface&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;contour&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;contourf&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;matrix&#39;</span> <span class="ow">or</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;mat&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="k">elif</span> <span class="n">kind</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;marginals&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;kind </span><span class="si">%s</span><span class="s1"> is not a valid value.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.scatter"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.scatter">[docs]</a>    <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">220</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+                <span class="n">depthshade</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;3D Scatter Variogram</span>
+
+<span class="sd">        Plot the experimental variogram into a 3D matplotlib.Figure. The two</span>
+<span class="sd">        variogram axis (space, time) will span a meshgrid over the x and y axis</span>
+<span class="sd">        and the semivariance will be plotted as z value over the respective</span>
+<span class="sd">        space and time lag coordinate.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax : mpl_toolkits.mplot3d.Axes3D, None</span>
+<span class="sd">            If ax is None (default), a new Figure and Axes instance will be</span>
+<span class="sd">            created. If ax is given, this instance will be used for the plot.</span>
+<span class="sd">        elev : int</span>
+<span class="sd">            The elevation of the 3D plot, which is a rotation over the xy-plane.</span>
+<span class="sd">        azim : int</span>
+<span class="sd">            The azimuth of the 3D plot, which is a rotation over the z-axis.</span>
+<span class="sd">        c : str</span>
+<span class="sd">            Color of the scatter points, will be passed to the matplotlib</span>
+<span class="sd">            ``c`` argument. The function also accepts ``color`` as an alias.</span>
+<span class="sd">        depthshade : bool</span>
+<span class="sd">            If True, the scatter points will change their color according to</span>
+<span class="sd">            the distance from the viewport for illustration reasons.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            Other kwargs accepted are only ``color`` as an alias for ``c``</span>
+<span class="sd">            and ``figsize``, if ax is None. Anything else will be ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.Figure</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        In case an ax shall be passed to the function, note that this plot</span>
+<span class="sd">        requires an AxesSubplot, that is capable of creating a 3D plot. This</span>
+<span class="sd">        can be done like:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from mpl_toolkits.mplot3d import Axes3D</span>
+<span class="sd">            import matplotlib.pyplot as plt</span>
+<span class="sd">            fig = plt.figure()</span>
+<span class="sd">            ax = fig.add_subplot(111, projection=&#39;3d&#39;)</span>
+
+<span class="sd">            # STV is an instance of SpaceTimeVariogram</span>
+<span class="sd">            STV.scatter(ax=ax)</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        SpaceTimeVariogram.surface</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot3d</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="n">azim</span><span class="p">,</span>
+                            <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">depthshade</span><span class="o">=</span><span class="n">depthshade</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.surface"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.surface">[docs]</a>    <span class="k">def</span> <span class="nf">surface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">220</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;3D Scatter Variogram</span>
+
+<span class="sd">        Plot the experimental variogram into a 3D matplotlib.Figure. The two</span>
+<span class="sd">        variogram axis (space, time) will span a meshgrid over the x and y axis</span>
+<span class="sd">        and the semivariance will be plotted as z value over the respective</span>
+<span class="sd">        space and time lag coordinate. Unlike</span>
+<span class="sd">        :func:`scatter &lt;skgstat.SpaceTimeVariogram.scatter&gt;` the semivariance</span>
+<span class="sd">        will not be scattered as points but rather as a surface plot. The</span>
+<span class="sd">        surface is approximated by (Delauney) triangulation of the z-axis.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax : mpl_toolkits.mplot3d.Axes3D, None</span>
+<span class="sd">            If ax is None (default), a new Figure and Axes instance will be</span>
+<span class="sd">            created. If ax is given, this instance will be used for the plot.</span>
+<span class="sd">        elev : int</span>
+<span class="sd">            The elevation of the 3D plot, which is a rotation over the xy-plane.</span>
+<span class="sd">        azim : int</span>
+<span class="sd">            The azimuth of the 3D plot, which is a rotation over the z-axis.</span>
+<span class="sd">        color : str</span>
+<span class="sd">            Color of the scatter points, will be passed to the matplotlib</span>
+<span class="sd">            ``color`` argument. The function also accepts ``c`` as an alias.</span>
+<span class="sd">        alpha : float</span>
+<span class="sd">            Sets the transparency of the surface as 0 &lt;= alpha &lt;= 1, with 0</span>
+<span class="sd">            being completely transparent.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            Other kwargs accepted are only ``color`` as an alias for ``c``</span>
+<span class="sd">            and ``figsize``, if ax is None. Anything else will be ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.Figure</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        In case an ax shall be passed to the function, note that this plot</span>
+<span class="sd">        requires an AxesSubplot, that is capable of creating a 3D plot. This</span>
+<span class="sd">        can be done like:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from mpl_toolkits.mplot3d import Axes3D</span>
+<span class="sd">            import matplotlib.pyplot as plt</span>
+<span class="sd">            fig = plt.figure()</span>
+<span class="sd">            ax = fig.add_subplot(111, projection=&#39;3d&#39;)</span>
+
+<span class="sd">            # STV is an instance of SpaceTimeVariogram</span>
+<span class="sd">            STV.surface(ax=ax)</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        SpaceTimeVariogram.scatter</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot3d</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;surf&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="n">azim</span><span class="p">,</span>
+                            <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_plot3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="mi">220</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="c1"># get the backend</span>
+        <span class="n">used_backend</span> <span class="o">=</span> <span class="n">plotting</span><span class="o">.</span><span class="n">backend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;matplotlib&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">matplotlib_plot_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">elev</span><span class="o">=</span><span class="n">elev</span><span class="p">,</span> <span class="n">azim</span><span class="o">=</span><span class="n">azim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;plotly&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">plotly_plot_3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># if we reach this line, somethings wrong with plotting backend</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The plotting backend has an undefined state.&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.contour"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.contour">[docs]</a>    <span class="k">def</span> <span class="nf">contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zoom_factor</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span>
+                <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;fast&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;Variogram 2D contour plot</span>
+
+<span class="sd">        Plot a 2D contour plot of the experimental variogram. The</span>
+<span class="sd">        experimental semi-variance values are spanned over a space - time lag</span>
+<span class="sd">        meshgrid. This grid is (linear) interpolated onto the given</span>
+<span class="sd">        resolution for visual reasons. Then, contour lines are caluclated</span>
+<span class="sd">        from the denser grid. Their number can be specified by *levels*.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax : matplotlib.AxesSubplot, None</span>
+<span class="sd">            If None a new matplotlib.Figure will be created, otherwise the</span>
+<span class="sd">            plot will be rendered into the given subplot.</span>
+<span class="sd">        zoom_factor : float</span>
+<span class="sd">            The experimental variogram will be interpolated onto a regular</span>
+<span class="sd">            grid for visual reasons. The density of this plot can be set by</span>
+<span class="sd">            zoom_factor. A factor of 10 will enlarge each of the axes by 10.</span>
+<span class="sd">            Higher zoom_factors result in smoother contours, but are</span>
+<span class="sd">            expansive in calculation time.</span>
+<span class="sd">        levels : int</span>
+<span class="sd">            Number of levels to be formed for finding contour lines. More</span>
+<span class="sd">            levels result in more detailed plots, but are expansive in terms</span>
+<span class="sd">            of calculation time.</span>
+<span class="sd">        colors : str, list</span>
+<span class="sd">            Will be passed down to matplotlib.pyplot.contour as *c* parameter.</span>
+<span class="sd">        linewidths : float, list</span>
+<span class="sd">            Will be passed down to matplotlib.pyplot.contour as *linewidths*</span>
+<span class="sd">            parameter.</span>
+<span class="sd">        method : str</span>
+<span class="sd">            The method used for densifying the meshgrid. Can be one of</span>
+<span class="sd">            &#39;fast&#39; or &#39;precise&#39;. Fast will use the scipy.ndimage.zoom method</span>
+<span class="sd">            to incresae the node density. This is fast, but cannot</span>
+<span class="sd">            interpolate *behind* any NaN occurance. &#39;Precise&#39; performs an</span>
+<span class="sd">            actual linear interpolation between the nodes using</span>
+<span class="sd">            scipy.interpolate.griddata. This takes more time, but the result</span>
+<span class="sd">            is less smoothed out.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            Other arguments that can be specific to *contour* or *contourf*</span>
+<span class="sd">            type. Accepts *xlabel*, *ylabel*, *xlim* and *ylim* as of this</span>
+<span class="sd">            writing.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.Figure</span>
+<span class="sd">            The Figure object used for rendering the contour plot.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        SpaceTimeVariogram.contourf</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot2d</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;contour&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">zoom_factor</span><span class="o">=</span><span class="n">zoom_factor</span><span class="p">,</span>
+                            <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                            <span class="n">linewidths</span><span class="o">=</span><span class="n">linewidths</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.contourf"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.contourf">[docs]</a>    <span class="k">def</span> <span class="nf">contourf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zoom_factor</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;fast&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;Variogram 2D filled contour plot</span>
+
+<span class="sd">        Plot a 2D filled contour plot of the experimental variogram. The</span>
+<span class="sd">        experimental semi-variance values are spanned over a space - time lag</span>
+<span class="sd">        meshgrid. This grid is (linear) interpolated onto the given</span>
+<span class="sd">        resolution for visual reasons. Then, contour lines are caluclated</span>
+<span class="sd">        from the denser grid. Their number can be specified by *levels*.</span>
+<span class="sd">        Finally, each contour region is filled with a color supplied by the</span>
+<span class="sd">        specified *cmap*.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax : matplotlib.AxesSubplot, None</span>
+<span class="sd">            If None a new matplotlib.Figure will be created, otherwise the</span>
+<span class="sd">            plot will be rendered into the given subplot.</span>
+<span class="sd">        zoom_factor : float</span>
+<span class="sd">            The experimental variogram will be interpolated onto a regular</span>
+<span class="sd">            grid for visual reasons. The density of this plot can be set by</span>
+<span class="sd">            zoom_factor. A factor of 10 will enlarge each of the axes by 10.</span>
+<span class="sd">            Higher zoom_factors result in smoother contours, but are</span>
+<span class="sd">            expansive in calculation time.</span>
+<span class="sd">        levels : int</span>
+<span class="sd">            Number of levels to be formed for finding contour lines. More</span>
+<span class="sd">            levels result in more detailed plots, but are expansive in terms</span>
+<span class="sd">            of calculation time.</span>
+<span class="sd">        cmap : str</span>
+<span class="sd">            Will be passed down to matplotlib.pyplot.contourf as *cmap*</span>
+<span class="sd">            parameter. Can be any valid color range supported by matplotlib.</span>
+<span class="sd">        method : str</span>
+<span class="sd">            The method used for densifying the meshgrid. Can be one of</span>
+<span class="sd">            &#39;fast&#39; or &#39;precise&#39;. Fast will use the scipy.ndimage.zoom method</span>
+<span class="sd">            to incresae the node density. This is fast, but cannot</span>
+<span class="sd">            interpolate *behind* any NaN occurance. &#39;Precise&#39; performs an</span>
+<span class="sd">            actual linear interpolation between the nodes using</span>
+<span class="sd">            scipy.interpolate.griddata. This takes more time, but the result</span>
+<span class="sd">            is less smoothed out.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            Other arguments that can be specific to *contour* or *contourf*</span>
+<span class="sd">            type. Accepts *xlabel*, *ylabel*, *xlim* and *ylim* as of this</span>
+<span class="sd">            writing.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : matplotlib.Figure</span>
+<span class="sd">            The Figure object used for rendering the contour plot.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        SpaceTimeVariogram.contour</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plot2d</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;contourf&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">zoom_factor</span><span class="o">=</span><span class="n">zoom_factor</span><span class="p">,</span>
+                            <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_plot2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;contour&#39;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zoom_factor</span><span class="o">=</span><span class="mf">100.</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;fast&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="c1"># get the backend</span>
+        <span class="n">used_backend</span> <span class="o">=</span> <span class="n">plotting</span><span class="o">.</span><span class="n">backend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;matplotlib&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">matplotlib_plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">zoom_factor</span><span class="o">=</span><span class="n">zoom_factor</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;plotly&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">plotly_plot_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># if we reach this line, somethings wrong with plotting backend</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The plotting backend has an undefined state.&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpaceTimeVariogram.marginals"><a class="viewcode-back" href="../../reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram.marginals">[docs]</a>    <span class="k">def</span> <span class="nf">marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">include_model</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;Plot marginal variograms</span>
+
+<span class="sd">        Plots the two marginal variograms into a new or existing figure. The</span>
+<span class="sd">        space marginal variogram is defined to be the variogram of temporal</span>
+<span class="sd">        lag class 0, while the time marginal variogram uses only spatial lag</span>
+<span class="sd">        class 0. In case the expected variability is not of same magnitude,</span>
+<span class="sd">        the sharey parameter should be set to ``False`` in order to use</span>
+<span class="sd">        separated y-axes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        plot : bool</span>
+<span class="sd">            .. deprecated:: 0.4</span>
+<span class="sd">                With version 0.4, this parameter will be removed</span>
+<span class="sd">            If set to False, no matplotlib.Figure will be returned. Instead a</span>
+<span class="sd">            tuple of the two marginal experimental variogram values is</span>
+<span class="sd">            returned.</span>
+<span class="sd">        axes : list</span>
+<span class="sd">            Is either ``None`` to create a new matplotlib.Figure. Otherwise</span>
+<span class="sd">            it has to be a list of two matplotlib.AxesSubplot instances,</span>
+<span class="sd">            which will then be used for plotting.</span>
+<span class="sd">        sharey : bool</span>
+<span class="sd">            If True (default), the two marginal variograms will share their</span>
+<span class="sd">            y-axis to increase comparability. Should be set to False in the</span>
+<span class="sd">            variances are of different magnitude.</span>
+<span class="sd">        include_model : bool</span>
+<span class="sd">            If True, the marginal variogram models fitted to the respective</span>
+<span class="sd">            axis are included into the plot.</span>
+<span class="sd">        kwargs : dict</span>
+<span class="sd">            Only kwargs accepted is  ``figsize``, if ax is None.</span>
+<span class="sd">            Anything else will be ignored.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        variograms : tuple</span>
+<span class="sd">            If plot is False, a tuple of numpy.arrays are returned. These are</span>
+<span class="sd">            the two experimental marginal variograms.</span>
+<span class="sd">        plots : matplotlib.Figure</span>
+<span class="sd">            If plot is True, the matplotlib.Figure will be returned.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># handle plot</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">DeprecationWarning</span><span class="p">(</span><span class="s1">&#39;The plot parameter will be removed.&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">XMarginal</span><span class="o">.</span><span class="n">experimental</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">TMarginal</span><span class="o">.</span><span class="n">experimental</span>
+            <span class="p">)</span>
+
+        <span class="c1"># backend</span>
+        <span class="n">used_backend</span> <span class="o">=</span> <span class="n">plotting</span><span class="o">.</span><span class="n">backend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;matplotlib&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">matplotlib_marginal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="n">sharey</span><span class="p">,</span> <span class="n">include_model</span><span class="o">=</span><span class="n">include_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;plotly&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">plotly_marginal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">axes</span><span class="p">,</span> <span class="n">include_model</span><span class="o">=</span><span class="n">include_model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># if we reach this line, somethings wrong with plotting backend</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The plotting backend has an undefined state.&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

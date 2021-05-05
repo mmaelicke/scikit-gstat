@@ -1,0 +1,972 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>skgstat.DirectionalVariogram &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../reference/reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for skgstat.DirectionalVariogram</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Directional Variogram</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
+
+<span class="kn">from</span> <span class="nn">.Variogram</span> <span class="kn">import</span> <span class="n">Variogram</span>
+<span class="kn">from</span> <span class="nn">skgstat</span> <span class="kn">import</span> <span class="n">plotting</span>
+<span class="kn">from</span> <span class="nn">.MetricSpace</span> <span class="kn">import</span> <span class="n">MetricSpace</span><span class="p">,</span> <span class="n">MetricSpacePair</span>
+
+
+<div class="viewcode-block" id="DirectionalVariogram"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram">[docs]</a><span class="k">class</span> <span class="nc">DirectionalVariogram</span><span class="p">(</span><span class="n">Variogram</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;DirectionalVariogram Class</span>
+
+<span class="sd">    Calculates a variogram of the separating distances in the given</span>
+<span class="sd">    coordinates and relates them to one of the semi-variance measures of the</span>
+<span class="sd">    given dependent values.</span>
+
+<span class="sd">    The direcitonal version of a Variogram will only form paris of points</span>
+<span class="sd">    that share a specified spatial relationship.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DirectionalVariogram.__init__"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">coordinates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">estimator</span><span class="o">=</span><span class="s1">&#39;matheron&#39;</span><span class="p">,</span>
+                 <span class="n">model</span><span class="o">=</span><span class="s1">&#39;spherical&#39;</span><span class="p">,</span>
+                 <span class="n">dist_func</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+                 <span class="n">bin_func</span><span class="o">=</span><span class="s1">&#39;even&#39;</span><span class="p">,</span>
+                 <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">fit_method</span><span class="o">=</span><span class="s1">&#39;trf&#39;</span><span class="p">,</span>
+                 <span class="n">fit_sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">directional_model</span><span class="o">=</span><span class="s1">&#39;triangle&#39;</span><span class="p">,</span>
+                 <span class="n">azimuth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">tolerance</span><span class="o">=</span><span class="mf">45.0</span><span class="p">,</span>
+                 <span class="n">bandwidth</span><span class="o">=</span><span class="s1">&#39;q33&#39;</span><span class="p">,</span>
+                 <span class="n">use_nugget</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">maxlag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">n_lags</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span>
+                 <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Variogram Class</span>
+
+<span class="sd">        Directional Variogram. The calculation is not performant and not</span>
+<span class="sd">        tested yet.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinates : numpy.ndarray</span>
+<span class="sd">            Array of shape (m, n). Will be used as m observation points of</span>
+<span class="sd">            n-dimensions. This variogram can be calculated on 1 - n</span>
+<span class="sd">            dimensional coordinates. In case a 1-dimensional array is passed,</span>
+<span class="sd">            a second array of same length containing only zeros will be</span>
+<span class="sd">            stacked to the passed one.</span>
+<span class="sd">        values : numpy.ndarray</span>
+<span class="sd">            Array of values observed at the given coordinates. The length of</span>
+<span class="sd">            the values array has to match the m dimension of the coordinates</span>
+<span class="sd">            array. Will be used to calculate the dependent variable of the</span>
+<span class="sd">            variogram.</span>
+<span class="sd">        estimator : str, callable</span>
+<span class="sd">            String identifying the semi-variance estimator to be used.</span>
+<span class="sd">            Defaults to the Matheron estimator. Possible values are:</span>
+
+<span class="sd">              * matheron        [Matheron, default]</span>
+<span class="sd">              * cressie         [Cressie-Hawkins]</span>
+<span class="sd">              * dowd            [Dowd-Estimator]</span>
+<span class="sd">              * genton          [Genton]</span>
+<span class="sd">              * minmax          [MinMax Scaler]</span>
+<span class="sd">              * entropy         [Shannon Entropy]</span>
+
+<span class="sd">            If a callable is passed, it has to accept an array of absoulte</span>
+<span class="sd">            differences, aligned to the 1D distance matrix (flattened upper</span>
+<span class="sd">            triangle) and return a scalar, that converges towards small</span>
+<span class="sd">            values for similarity (high covariance).</span>
+<span class="sd">        model : str</span>
+<span class="sd">            String identifying the theoretical variogram function to be used</span>
+<span class="sd">            to describe the experimental variogram. Can be one of:</span>
+
+<span class="sd">              * spherical       [Spherical, default]</span>
+<span class="sd">              * exponential     [Exponential]</span>
+<span class="sd">              * gaussian        [Gaussian]</span>
+<span class="sd">              * cubic           [Cubic]</span>
+<span class="sd">              * stable          [Stable model]</span>
+<span class="sd">              * matern          [Matérn model]</span>
+<span class="sd">              * nugget          [nugget effect variogram]</span>
+
+<span class="sd">        dist_func : str</span>
+<span class="sd">            String identifying the distance function. Defaults to</span>
+<span class="sd">            &#39;euclidean&#39;. Can be any metric accepted by</span>
+<span class="sd">            scipy.spatial.distance.pdist. Additional parameters are not (yet)</span>
+<span class="sd">            passed through to pdist. These are accepted by pdist for some of</span>
+<span class="sd">            the metrics. In these cases the default values are used.</span>
+<span class="sd">        bin_func : str</span>
+<span class="sd">            .. versionchanged:: 0.3.8</span>
+<span class="sd">                added &#39;fd&#39;, &#39;sturges&#39;, &#39;scott&#39;, &#39;sqrt&#39;, &#39;doane&#39;</span>
+<span class="sd">            </span>
+<span class="sd">            String identifying the binning function used to find lag class</span>
+<span class="sd">            edges. All methods calculate bin edges on the interval [0, maxlag[.</span>
+<span class="sd">            Possible values are:</span>
+<span class="sd">            </span>
+<span class="sd">                * `&#39;even&#39;` (default) finds `n_lags` same width bins</span>
+<span class="sd">                * `&#39;uniform&#39;` forms `n_lags` bins of same data count</span>
+<span class="sd">                * `&#39;fd&#39;` applies Freedman-Diaconis estimator to find `n_lags`</span>
+<span class="sd">                * `&#39;sturges&#39;` applies Sturge&#39;s rule to find `n_lags`.</span>
+<span class="sd">                * `&#39;scott&#39;` applies Scott&#39;s rule to find `n_lags`</span>
+<span class="sd">                * `&#39;doane&#39;` applies Doane&#39;s extension to Sturge&#39;s rule to find `n_lags`</span>
+<span class="sd">                * `&#39;sqrt&#39;` uses the square-root of :func:`distance &lt;skgstat.Variogram.distance&gt;`. as `n_lags`.</span>
+
+<span class="sd">            More details are given in the documentation for :func:`set_bin_func &lt;skgstat.Variogram.set_bin_func&gt;`.</span>
+<span class="sd">        normalize : bool</span>
+<span class="sd">            Defaults to False. If True, the independent and dependent</span>
+<span class="sd">            variable will be normalized to the range [0,1].</span>
+<span class="sd">        fit_method : str</span>
+<span class="sd">            String identifying the method to be used for fitting the</span>
+<span class="sd">            theoretical variogram function to the experimental. More info is</span>
+<span class="sd">            given in the Variogram.fit docs. Can be one of:</span>
+
+<span class="sd">                * &#39;lm&#39;: Levenberg-Marquardt algorithm for unconstrained</span>
+<span class="sd">                  problems. This is the faster algorithm, yet is the fitting of</span>
+<span class="sd">                  a variogram not unconstrianed.</span>
+<span class="sd">                * &#39;trf&#39;: Trust Region Reflective function for non-linear</span>
+<span class="sd">                  constrained problems. The class will set the boundaries</span>
+<span class="sd">                  itself. This is the default function.</span>
+
+<span class="sd">        fit_sigma : numpy.ndarray, str</span>
+<span class="sd">            Defaults to None. The sigma is used as measure of uncertainty</span>
+<span class="sd">            during variogram fit. If fit_sigma is an array, it has to hold</span>
+<span class="sd">            n_lags elements, giving the uncertainty for all lags classes. If</span>
+<span class="sd">            fit_sigma is None (default), it will give no weight to any lag.</span>
+<span class="sd">            Higher values indicate higher uncertainty and will lower the</span>
+<span class="sd">            influcence of the corresponding lag class for the fit.</span>
+<span class="sd">            If fit_sigma is a string, a pre-defined function of separating</span>
+<span class="sd">            distance will be used to fill the array. Can be one of:</span>
+
+<span class="sd">                * &#39;linear&#39;: Linear loss with distance. Small bins will have</span>
+<span class="sd">                  higher impact.</span>
+<span class="sd">                * &#39;exp&#39;: The weights decrease by a e-function of distance</span>
+<span class="sd">                * &#39;sqrt&#39;: The weights decrease by the squareroot of distance</span>
+<span class="sd">                * &#39;sq&#39;: The weights decrease by the squared distance.</span>
+
+<span class="sd">            More info is given in the Variogram.fit_sigma documentation.</span>
+<span class="sd">        directional_model : string, function</span>
+<span class="sd">            The model used for selecting all points fulfilling the</span>
+<span class="sd">            directional constraint of the Variogram. A predefined</span>
+<span class="sd">            model can be selected by passing the model name as string.</span>
+<span class="sd">            Optionally a callable accepting the difference vectors</span>
+<span class="sd">            between points in polar form as angles and distances and</span>
+<span class="sd">            returning a mask array can be passed. In this case, the</span>
+<span class="sd">            azimuth, tolerance and bandwidth has to be incorporated by</span>
+<span class="sd">            hand into the model.</span>
+
+<span class="sd">                * &#39;compass&#39;: includes points in the direction of the</span>
+<span class="sd">                  azimuth at given tolerance. The bandwidth parameter will be</span>
+<span class="sd">                  ignored.</span>
+<span class="sd">                * &#39;triangle&#39;: constructs a triangle with an angle of</span>
+<span class="sd">                  tolerance at the point of interest and union an rectangle</span>
+<span class="sd">                  parallel to azimuth, once the hypotenuse length reaches</span>
+<span class="sd">                  bandwidth.</span>
+<span class="sd">                * &#39;circle&#39;: constructs a half circle touching the point of</span>
+<span class="sd">                  interest, dislocating the center at the distance of</span>
+<span class="sd">                  bandwidth in the direction of azimuth. The half circle is</span>
+<span class="sd">                  union with an rectangle parallel to azimuth.</span>
+
+<span class="sd">            Visual representations, usage hints and implementation specifics</span>
+<span class="sd">            are given in the documentation.</span>
+<span class="sd">        azimuth : float</span>
+<span class="sd">            The azimuth of the directional dependence for this Variogram,</span>
+<span class="sd">            given as an angle in **degree**. The East of the coordinate</span>
+<span class="sd">            plane is set to be at 0° and is counted clockwise to 180° and</span>
+<span class="sd">            counter-clockwise to -180°. Only Points lying in the azimuth of a</span>
+<span class="sd">            specific point will be used for forming point pairs.</span>
+<span class="sd">        tolerance : float</span>
+<span class="sd">            The tolerance is given as an angle in **degree**- Points being</span>
+<span class="sd">            dislocated from the exact azimuth by half the tolerance will be</span>
+<span class="sd">            accepted as well. It&#39;s half the tolerance as the point may be</span>
+<span class="sd">            dislocated in the positive and negative direction from the azimuth.</span>
+<span class="sd">        bandwidth : float</span>
+<span class="sd">            Maximum tolerance acceptable in **coordinate units**, which is</span>
+<span class="sd">            usually meter. Points at higher distances may be far dislocated</span>
+<span class="sd">            from the azimuth in terms of coordinate distance, as the</span>
+<span class="sd">            tolerance is defined as an angle. THe bandwidth defines a maximum</span>
+<span class="sd">            width for the search window. It will be perpendicular to and</span>
+<span class="sd">            bisected by the azimuth.</span>
+<span class="sd">        use_nugget : bool</span>
+<span class="sd">            Defaults to False. If True, a nugget effet will be added to all</span>
+<span class="sd">            Variogram.models as a third (or fourth) fitting parameter. A</span>
+<span class="sd">            nugget is essentially the y-axis interception of the theoretical</span>
+<span class="sd">            variogram function.</span>
+<span class="sd">        maxlag : float, str</span>
+<span class="sd">            Can specify the maximum lag distance directly by giving a value</span>
+<span class="sd">            larger than 1. The binning function will not find any lag class</span>
+<span class="sd">            with an edge larger than maxlag. If 0 &lt; maxlag &lt; 1, then maxlag</span>
+<span class="sd">            is relative and maxlag * max(Variogram.distance) will be used.</span>
+<span class="sd">            In case maxlag is a string it has to be one of &#39;median&#39;, &#39;mean&#39;.</span>
+<span class="sd">            Then the median or mean of all Variogram.distance will be used.</span>
+<span class="sd">            Note maxlag=0.5 will use half the maximum separating distance,</span>
+<span class="sd">            this is not the same as &#39;median&#39;, which is the median of all</span>
+<span class="sd">            separating distances</span>
+<span class="sd">        n_lags : int</span>
+<span class="sd">            Specify the number of lag classes to be defined by the binning</span>
+<span class="sd">            function.</span>
+<span class="sd">        verbose : bool</span>
+<span class="sd">            Set the Verbosity of the class. Not Implemented yet.</span>
+
+<span class="sd">        Keyword Arguments</span>
+<span class="sd">        -----------------</span>
+<span class="sd">        entropy_bins : int, str</span>
+<span class="sd">            .. versionadded:: 0.3.7</span>
+
+<span class="sd">            If the `estimator &lt;skgstat.Variogram.estimator&gt;` is set to</span>
+<span class="sd">            `&#39;entropy&#39;` this argument sets the number of bins, that should be</span>
+<span class="sd">            used for histogram calculation.</span>
+<span class="sd">        percentile : int</span>
+<span class="sd">            .. versionadded:: 0.3.7</span>
+
+<span class="sd">            If the `estimator &lt;skgstat.Variogram.estimator&gt;` is set to</span>
+<span class="sd">            `&#39;entropy&#39;` this argument sets the percentile to be used.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Before we do anything else, make kwargs available</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_kwargs</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># FIXME: Call __init__ of baseclass?</span>
+        <span class="c1"># No, because the sequence at which the arguments get initialized</span>
+        <span class="c1"># does matter. There is way too much transitive dependence, thus</span>
+        <span class="c1"># it was easiest to copy the init over.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">MetricSpace</span><span class="p">):</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">MetricSpace</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dist_func</span><span class="p">)</span>
+            <span class="c1"># FIXME: Currently _direction_mask / _angles / _euclidean_dist don&#39;t get correctly calculated for sparse dspaces</span>
+            <span class="c1"># coordinates = MetricSpace(coordinates.copy(), dist_func, maxlag if maxlag and not isinstance(maxlag, str) and maxlag &gt;= 1 else None)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_func</span> <span class="o">==</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">dist_metric</span><span class="p">,</span> <span class="s2">&quot;Distance metric of variogram differs from distance metric of coordinates&quot;</span>
+            <span class="k">assert</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">max_dist</span> <span class="ow">is</span> <span class="kc">None</span>
+
+        <span class="c1"># Set coordinates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_X</span> <span class="o">=</span> <span class="n">coordinates</span>
+
+        <span class="c1"># pairwise difference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_diff</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set verbosity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="c1"># set values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_values</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># calc_diff = False here, because it will be calculated by fit() later</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_values</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">calc_diff</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># distance matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># set distance calculation function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dist_func_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_dist_function</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">dist_func</span><span class="p">)</span>
+
+        <span class="c1"># Angles and euclidean distances used for direction mask calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_dist</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># lags and max lag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_lags</span> <span class="o">=</span> <span class="n">n_lags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxlag</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxlag</span> <span class="o">=</span> <span class="n">maxlag</span>
+
+        <span class="c1"># estimator can be function or a string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_estimator</span><span class="p">(</span><span class="n">estimator_name</span><span class="o">=</span><span class="n">estimator</span><span class="p">)</span>
+
+        <span class="c1"># model can be function or a string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="c1"># azimuth direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_azimuth</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span> <span class="o">=</span> <span class="n">azimuth</span>
+
+        <span class="c1"># azimuth tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+
+        <span class="c1"># tolerance bandwidth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bandwidth</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span> <span class="o">=</span> <span class="n">bandwidth</span>
+
+        <span class="c1"># set the directional model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_directional_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_directional_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="n">directional_model</span><span class="p">)</span>
+
+        <span class="c1"># the binning settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bin_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_bin_func</span><span class="p">(</span><span class="n">bin_func</span><span class="o">=</span><span class="n">bin_func</span><span class="p">)</span>
+
+        <span class="c1"># specify if the lag should be given absolute or relative to the maxlag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_normalized</span> <span class="o">=</span> <span class="n">normalize</span>
+
+        <span class="c1"># set the fitting method and sigma array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_method</span> <span class="o">=</span> <span class="n">fit_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_sigma</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_sigma</span> <span class="o">=</span> <span class="n">fit_sigma</span>
+
+        <span class="c1"># set if nugget effect shall be used</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_nugget</span> <span class="o">=</span> <span class="n">use_nugget</span>
+
+        <span class="c1"># set attributes to be filled during calculation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cof</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># settings, not reachable by init (not yet)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache_experimental</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># do the preprocessing and fitting upon initialization</span>
+        <span class="c1"># Note that fit() calls preprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DirectionalVariogram.preprocessing"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram.preprocessing">[docs]</a>    <span class="k">def</span> <span class="nf">preprocessing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_direction_mask_data</span><span class="p">(</span><span class="n">force</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_diff</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_groups</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DirectionalVariogram._calc_direction_mask_data"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram._calc_direction_mask_data">[docs]</a>    <span class="k">def</span> <span class="nf">_calc_direction_mask_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate directional mask data.</span>
+<span class="sd">        For this, the angle between the vector between the two</span>
+<span class="sd">        points, and east (see comment about self.azimuth) is calculated.</span>
+<span class="sd">        The result is stored in self._angles and contains the angle of each</span>
+<span class="sd">        point pair vector to the x-axis in radians.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        force : bool</span>
+<span class="sd">            If True, a new calculation of all angles is forced, even if they</span>
+<span class="sd">            are already in the cache.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The masked data is in radias, while azimuth is given in degrees.</span>
+<span class="sd">        For the Vector between a point pair A,B :math:`\overrightarrow{AB}=u` and the</span>
+<span class="sd">        x-axis, represented by vector :math:`\overrightarrow{e} = [1,0]`, the angle</span>
+<span class="sd">        :math:`\Theta` is calculated like:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            cos(\Theta) = \frac{u \circ e}{|e| \cdot |[1,0]|}</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        `azimuth &lt;skgstat.DirectionalVariogram.azimuth&gt;`_</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># FIXME: This should be optimized for the sparse case (range &lt;&lt; bbox(coordinates)),</span>
+        <span class="c1"># i.e. use the MetricSpace in self._X</span>
+
+        <span class="c1"># check if already calculated</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angles</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># if self.coordinates is of just one dimension, concat zeros.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">))))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;N-dimensional coordinates cannot be handled&#39;</span><span class="p">)</span>
+
+        <span class="c1"># for angles, we need Euklidean distance,</span>
+        <span class="c1"># no matter which distance function is used</span>
+        <span class="c1"># if self._dist_func_name == &quot;euclidean&quot;:</span>
+        <span class="c1">#    self._euclidean_dist = scipy.spatial.distance.squareform(self.distance_matrix)</span>
+        <span class="c1"># else:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_dist</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">_x</span><span class="p">,</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the angles</span>
+        <span class="c1"># (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)</span>
+        <span class="c1"># cos(v) = (a - b).[1,0] / ||a - b||</span>
+        <span class="c1"># cos(v) = (a.[1,0] - b.[1,0]) / ||a - b||</span>
+        <span class="n">scalar</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_x</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">)</span>
+        <span class="n">pos_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">scalar</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_dist</span><span class="p">)</span>
+
+        <span class="c1"># cos(v) for [2,1] and [2, -1] is the same,</span>
+        <span class="c1"># but v is not (v vs -v), fix that.</span>
+        <span class="n">ydiff</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])])</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">)</span>
+
+        <span class="c1"># store the angle or negative angle, depending on the</span>
+        <span class="c1"># amount of the x coordinate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ydiff</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos_angles</span><span class="p">,</span> <span class="o">-</span><span class="n">pos_angles</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">azimuth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Direction azimuth</span>
+
+<span class="sd">        Main direction for te selection of points in the formation of point</span>
+<span class="sd">        pairs. East of the coordinate plane is defined to be 0° and then the</span>
+<span class="sd">        azimuth is set clockwise up to 180°and count-clockwise to -180°.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angle : float</span>
+<span class="sd">            New azimuth angle in **degree**.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : in case angle &lt; -180° or angle &gt; 180</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_azimuth</span>
+
+    <span class="nd">@azimuth</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">azimuth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">180</span> <span class="ow">or</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The azimuth is an angle in degree and has to &#39;</span>
+                             <span class="s1">&#39;meet -180 &lt;= angle &lt;= 180&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_azimuth</span> <span class="o">=</span> <span class="n">angle</span>
+
+        <span class="c1"># reset groups and mask cache on azimuth change</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Azimuth tolerance</span>
+
+<span class="sd">         Tolerance angle of how far a point can be off the azimuth for being</span>
+<span class="sd">         still counted as directional. A tolerance angle will be applied to</span>
+<span class="sd">         the azimuth angle symmetrically.</span>
+
+<span class="sd">         Parameters</span>
+<span class="sd">         ----------</span>
+<span class="sd">         angle : float</span>
+<span class="sd">             New tolerance angle in **degree**. Has to meet 0 &lt;= angle &lt;= 360.</span>
+
+<span class="sd">         Raises</span>
+<span class="sd">         ------</span>
+<span class="sd">         ValueError : in case angle &lt; 0 or angle &gt; 360</span>
+
+<span class="sd">         &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tolerance</span>
+
+    <span class="nd">@tolerance</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">angle</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">360</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The tolerance is an angle in degree and has to &#39;</span>
+                             <span class="s1">&#39;meet 0 &lt;= angle &lt;= 360&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tolerance</span> <span class="o">=</span> <span class="n">angle</span>
+
+        <span class="c1"># reset groups and mask on tolerance change</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bandwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Tolerance bandwidth</span>
+
+<span class="sd">        New bandwidth parameter. As the tolerance from azimuth is given as an</span>
+<span class="sd">        angle, point pairs at high distances can be far off the azimuth in</span>
+<span class="sd">        coordinate distance. The bandwidth limits this distance and has the</span>
+<span class="sd">        unnit of the coordinate system.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        width : float</span>
+<span class="sd">            Positive coordinate distance.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : in case width is negative</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bandwidth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bandwidth</span>
+
+    <span class="nd">@bandwidth</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bandwidth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+        <span class="c1"># check if quantiles is given</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># TODO document and handle more exceptions</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">width</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bandwidth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">width</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The bandwidth cannot be negative.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The bandwidth is larger than the maximum separating &#39;</span>
+                  <span class="s1">&#39;distance. Thus it will have no effect.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bandwidth</span> <span class="o">=</span> <span class="n">width</span>
+
+        <span class="c1"># reset groups and direction mask cache on bandwidth change</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="DirectionalVariogram.set_directional_model"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram.set_directional_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_directional_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set new directional model</span>
+
+<span class="sd">        The model used for selecting all points fulfilling the</span>
+<span class="sd">        directional constraint of the Variogram. A predefined model</span>
+<span class="sd">        can be selected by passing the model name as string.</span>
+<span class="sd">        Optionally a callable accepting the difference vectors between</span>
+<span class="sd">        points in polar form as angles and distances and returning a</span>
+<span class="sd">        mask array can be passed. In this case, the azimuth, tolerance</span>
+<span class="sd">        and bandwidth has to be incorporated by hand into the model.</span>
+<span class="sd">        The predefined options are:</span>
+
+<span class="sd">        * &#39;compass&#39;: includes points in the direction of the azimuth at given</span>
+<span class="sd">          tolerance. The bandwidth parameter will be ignored.</span>
+<span class="sd">        * &#39;triangle&#39;: constructs a triangle with an angle of tolerance at the</span>
+<span class="sd">          point of interest and union an rectangle parallel to azimuth,</span>
+<span class="sd">          once the hypotenuse length reaches bandwidth.</span>
+<span class="sd">        * &#39;circle&#39;: constructs a half circle touching the point of interest,</span>
+<span class="sd">          dislocating the center at the distance of bandwidth in the</span>
+<span class="sd">          direction of azimuth. The half circle is union with an rectangle</span>
+<span class="sd">          parallel to azimuth.</span>
+
+<span class="sd">        Visual representations, usage hints and implementation specifics</span>
+<span class="sd">        are given in the documentation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_name : string, callable</span>
+<span class="sd">            The name of the predefined model (string) or a function</span>
+<span class="sd">            that accepts angle and distance arrays and returns a mask</span>
+<span class="sd">            array.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># handle predefined models</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;compass&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_directional_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compass</span>
+            <span class="k">elif</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;triangle&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_directional_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_triangle</span>
+            <span class="k">elif</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;circle&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_directional_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_circle</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> is not a valid model.&#39;</span> <span class="o">%</span> <span class="n">model_name</span><span class="p">)</span>
+
+        <span class="c1"># handle callable</span>
+        <span class="k">elif</span> <span class="n">callable</span><span class="p">(</span><span class="n">model_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_directional_model</span> <span class="o">=</span> <span class="n">model_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The directional model has to be identified by a &#39;</span>
+                             <span class="s1">&#39;model name, or it has to be the search area &#39;</span>
+                             <span class="s1">&#39;itself&#39;</span><span class="p">)</span>
+
+        <span class="c1"># reset the groups as the directional model changed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># get the distances</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask</span><span class="p">())]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_func</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_lags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxlag</span><span class="p">)</span>
+
+            <span class="c1"># if the binning function returned an N, the n_lags need</span>
+            <span class="c1"># to be adjusted directly (not through the setter)</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_n_lags</span> <span class="o">=</span> <span class="n">n</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bins</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DirectionalVariogram.to_gstools"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram.to_gstools">[docs]</a>    <span class="k">def</span> <span class="nf">to_gstools</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;Exporting DirectinalVariogram is currently not supported.&quot;</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_calc_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DirectionalVariogram</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_calc_groups</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+
+        <span class="c1"># set to outside maxlag group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask</span><span class="p">())]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+<span class="c1">#    @jit</span>
+<div class="viewcode-block" id="DirectionalVariogram._direction_mask"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram._direction_mask">[docs]</a>    <span class="k">def</span> <span class="nf">_direction_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Directional Mask</span>
+
+<span class="sd">        Array aligned to self.distance masking all point pairs which shall be</span>
+<span class="sd">        ignored for binning and grouping. The one dimensional array contains</span>
+<span class="sd">        all row-wise point pair combinations from the upper or lower triangle</span>
+<span class="sd">        of the distance matrix in case either of both is directional.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mask : numpy.array</span>
+<span class="sd">            Array aligned to self.distance giving for each point pair</span>
+<span class="sd">            combination a boolean value whether the point are directional or</span>
+<span class="sd">            not.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">force</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_directional_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_angles</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_euclidean_dist</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_direction_mask_cache</span></div>
+
+<div class="viewcode-block" id="DirectionalVariogram.pair_field"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram.pair_field">[docs]</a>    <span class="k">def</span> <span class="nf">pair_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gist_rainbow&quot;</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot a pair field.</span>
+
+<span class="sd">        Plot a network graph for all point pairs that fulfill the direction</span>
+<span class="sd">        filter and lie within each others search area.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ax : matplotlib.Subplot</span>
+<span class="sd">            A matplotlib Axes object to plot the pair field onto.</span>
+<span class="sd">            If ``None``, a new new matplotlib figure will be created.</span>
+<span class="sd">        cmap : string</span>
+<span class="sd">            Any color-map name that is supported by matplotlib</span>
+<span class="sd">        points : &#39;all&#39;, int, list</span>
+<span class="sd">            If not ``&#39;all&#39;``, only the given coordinate (int) or </span>
+<span class="sd">            list of coordinates (list) will be plotted. Recommended, if</span>
+<span class="sd">            the input data is quite large.</span>
+<span class="sd">        add_points : bool</span>
+<span class="sd">            If True (default) The coordinates will be added as black points.</span>
+<span class="sd">        alpha : float</span>
+<span class="sd">            Alpha value for the colors to make overlapping vertices</span>
+<span class="sd">            visualize better. Defaults to ``0.3``.</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the backend</span>
+        <span class="n">used_backend</span> <span class="o">=</span> <span class="n">plotting</span><span class="o">.</span><span class="n">backend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;matplotlib&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">matplotlib_pair_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="n">add_points</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">used_backend</span> <span class="o">==</span> <span class="s1">&#39;plotly&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">plotting</span><span class="o">.</span><span class="n">plotly_pair_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span> <span class="n">add_points</span><span class="o">=</span><span class="n">add_points</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>       </div>
+
+<div class="viewcode-block" id="DirectionalVariogram._triangle"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram._triangle">[docs]</a>    <span class="k">def</span> <span class="nf">_triangle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">dists</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Triangular Search Area</span>
+
+<span class="sd">        Construct a triangular bounded search area for building directional</span>
+<span class="sd">        dependent point pairs. The Search Area will be located onto the</span>
+<span class="sd">        current point of interest and the local x-axis is rotated onto the</span>
+<span class="sd">        azimuth angle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angles, dists : numpy.array</span>
+<span class="sd">            Vectors between point pairs in polar form (angle relative</span>
+<span class="sd">            to east in radians, length in coordinate space units)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mask : numpy.array(bool)</span>
+<span class="sd">            Point pair mask, indexed as the results of</span>
+<span class="sd">            scipy.spatial.distance.pdist are.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+
+<span class="sd">        .. code-block:: text</span>
+
+<span class="sd">                 C</span>
+<span class="sd">                /|\</span>
+<span class="sd">             a / | \ a</span>
+<span class="sd">              /__|h_\</span>
+<span class="sd">             A   c   B</span>
+
+<span class="sd">        The point of interest is C and c is the bandwidth. The angle at C</span>
+<span class="sd">        (gamma) is the tolerance. From this, a and then h can be calculated.</span>
+<span class="sd">        When rotated into the local coordinate system, the two points needed</span>
+<span class="sd">        to build the search area A,B are A := (h, 1/2 c) and B:= (h, -1/2 c)</span>
+
+<span class="sd">        a can be calculated like:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            a = \frac{c}{2 * sin\left(\frac{\gamma}{2}\right)}</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        DirectionalVariogram._compass</span>
+<span class="sd">        DirectionalVariogram._circle</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">absdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">angles</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span><span class="p">))</span>
+        <span class="n">absdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">absdiff</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">absdiff</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">absdiff</span><span class="p">)</span>
+        <span class="n">absdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">absdiff</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">absdiff</span><span class="p">,</span> <span class="n">absdiff</span><span class="p">)</span>
+
+        <span class="n">in_tol</span> <span class="o">=</span> <span class="n">absdiff</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">in_band</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dists</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">angles</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span><span class="p">))))</span>
+
+        <span class="k">return</span> <span class="n">in_tol</span> <span class="o">&amp;</span> <span class="n">in_band</span></div>
+
+    <span class="k">def</span> <span class="nf">_circle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">dists</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Circular Search Area</span>
+
+<span class="sd">        Construct a half-circled bounded search area for building directional</span>
+<span class="sd">        dependent point pairs. The Search Area will be located onto the</span>
+<span class="sd">        current point of interest and the local x-axis is rotated onto the</span>
+<span class="sd">        azimuth angle.</span>
+<span class="sd">        The radius of the half-circle is set to half the bandwidth.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angles, dists : numpy.array</span>
+<span class="sd">            Vectors between point pairs in polar form (angle relative</span>
+<span class="sd">            to east in radians, length in coordinate space units)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mask : numpy.array(bool)</span>
+<span class="sd">            Point pair mask, indexed as the results of</span>
+<span class="sd">            scipy.spatial.distance.pdist are.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : In case the DirectionalVariogram.bandwidth is None or 0.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        DirectionalVariogram._triangle</span>
+<span class="sd">        DirectionalVariogram._compass</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="DirectionalVariogram._compass"><a class="viewcode-back" href="../../reference/directionalvariogram.html#skgstat.DirectionalVariogram._compass">[docs]</a>    <span class="k">def</span> <span class="nf">_compass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angles</span><span class="p">,</span> <span class="n">dists</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compass direction direction mask</span>
+
+<span class="sd">        Construct a search area for building directional dependent point</span>
+<span class="sd">        pairs. The compass search area will **not** be bounded by the</span>
+<span class="sd">        bandwidth. It will include all point pairs at the azimuth direction</span>
+<span class="sd">        with a given tolerance. The Search Area will be located onto the</span>
+<span class="sd">        current point of interest and the local x-axis is rotated onto the</span>
+<span class="sd">        azimuth angle.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        angles, dists : numpy.array</span>
+<span class="sd">            Vectors between point pairs in polar form (angle relative</span>
+<span class="sd">            to east in radians, length in coordinate space units)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mask : numpy.array(bool)</span>
+<span class="sd">            Point pair mask, indexed as the results of</span>
+<span class="sd">            scipy.spatial.distance.pdist are.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        DirectionalVariogram._triangle</span>
+<span class="sd">        DirectionalVariogram._circle</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">absdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">angles</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">azimuth</span><span class="p">))</span>
+        <span class="n">absdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">absdiff</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">absdiff</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">absdiff</span><span class="p">)</span>
+        <span class="n">absdiff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">absdiff</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">absdiff</span><span class="p">,</span> <span class="n">absdiff</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">absdiff</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span></div></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

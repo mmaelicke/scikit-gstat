@@ -1,0 +1,729 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>skgstat.Kriging &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../reference/reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for skgstat.Kriging</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The kriging module offers only an Ordinary Kriging routine (OK) that can be</span>
+<span class="sd">used together with the skgstat.Variogram class. The usage of the class is</span>
+<span class="sd">inspired by the scipy.interpolate classes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">squareform</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">solve</span> <span class="k">as</span> <span class="n">scipy_solve</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">solve</span> <span class="k">as</span> <span class="n">numpy_solve</span><span class="p">,</span> <span class="n">LinAlgError</span><span class="p">,</span> <span class="n">inv</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
+<span class="kn">import</span> <span class="nn">scipy.spatial.distance</span>
+
+<span class="kn">from</span> <span class="nn">.Variogram</span> <span class="kn">import</span> <span class="n">Variogram</span>
+<span class="kn">from</span> <span class="nn">.MetricSpace</span> <span class="kn">import</span> <span class="n">MetricSpace</span><span class="p">,</span> <span class="n">MetricSpacePair</span>
+
+<span class="k">class</span> <span class="nc">LessPointsError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">SingularMatrixError</span><span class="p">(</span><span class="n">LinAlgError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">IllMatrixError</span><span class="p">(</span><span class="ne">RuntimeWarning</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">inv_solve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">inv</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OrdinaryKriging"><a class="viewcode-back" href="../../reference/kriging.html#skgstat.OrdinaryKriging">[docs]</a><span class="k">class</span> <span class="nc">OrdinaryKriging</span><span class="p">:</span>
+<div class="viewcode-block" id="OrdinaryKriging.__init__"><a class="viewcode-back" href="../../reference/kriging.html#skgstat.OrdinaryKriging.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">variogram</span><span class="p">,</span>
+            <span class="n">min_points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+            <span class="n">max_points</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;exact&#39;</span><span class="p">,</span>
+            <span class="n">precision</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;inv&#39;</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">perf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            
+            <span class="n">coordinates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ordinary Kriging routine</span>
+
+<span class="sd">        Ordinary kriging estimator derived from the given</span>
+<span class="sd">        `Variogram &lt;skgstat.Variogram&gt;` class. To calculate estimations for</span>
+<span class="sd">        unobserved locations, an instance of this class can either be called,</span>
+<span class="sd">        or the `OrdinaryKriging.transform` method can be used.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variogram : Variogram</span>
+<span class="sd">            Variogram used to build the kriging matrix. Make sure that this</span>
+<span class="sd">            instance is describing the spatial dependence in the data well,</span>
+<span class="sd">            otherwise the kriging estimation will most likely produce bad</span>
+<span class="sd">            estimations.</span>
+<span class="sd">        min_points : int</span>
+<span class="sd">            Minimum amount of points, that have to lie within the variogram&#39;s</span>
+<span class="sd">            range. In case not enough points are available, the estimation</span>
+<span class="sd">            will be rejected and a null value will be estimated.</span>
+<span class="sd">        max_points : int</span>
+<span class="sd">            Maximum amount of points, that will be considered for the</span>
+<span class="sd">            estimation of one unobserved location. In case more points are</span>
+<span class="sd">            available within the variogram&#39;s range, only the `max_points`</span>
+<span class="sd">            closest will be used for estimation. Note that the kriging matrix</span>
+<span class="sd">            will be an max_points x max_points matrix and large numbers do</span>
+<span class="sd">            significantly increase the calculation time.</span>
+<span class="sd">        mode : str</span>
+<span class="sd">            Has to be one of &#39;exact&#39; or &#39;estimate&#39;. In exact mode (default)</span>
+<span class="sd">            the variogram matrix will be calculated from scratch in each</span>
+<span class="sd">            iteration. This gives an exact solution, but it is also slower.</span>
+<span class="sd">            In estimate mode, a set of semivariances is pre-calculated and</span>
+<span class="sd">            the closest value will be used. This is significantly faster,</span>
+<span class="sd">            but the estimation quality is dependent on the given precision.</span>
+<span class="sd">        precision : int</span>
+<span class="sd">            Only needed if `mode=&#39;estimate&#39;`. This is the number of</span>
+<span class="sd">            pre-calculated in-range semivariances. If chosen too low,</span>
+<span class="sd">            the estimation will be off, if too high the performance gain is</span>
+<span class="sd">            limited.</span>
+<span class="sd">        solver : str</span>
+<span class="sd">            Do not change this argument</span>
+<span class="sd">        n_jobs : int</span>
+<span class="sd">            Number of processes to be started in multiprocessing.</span>
+<span class="sd">        perf : bool</span>
+<span class="sd">            If True, the different parts of the algorithm will record their</span>
+<span class="sd">            processing time. This is meant to be used for optimization and</span>
+<span class="sd">            will be removed in a future version. Do not rely on this argument.</span>
+<span class="sd">        sparse : bool</span>
+
+<span class="sd">        coordinates: numpy.ndarray, MetricSpace</span>
+<span class="sd">        values: numpy.ndarray</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># store arguments to the instance</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variogram</span><span class="p">,</span> <span class="n">Variogram</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">coordinates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="n">variogram</span><span class="o">.</span><span class="n">coordinates</span>
+            <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">values</span> <span class="o">=</span> <span class="n">variogram</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">variogram_descr</span> <span class="o">=</span> <span class="n">variogram</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">variogram_descr</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;harmonize&quot;</span><span class="p">:</span>
+                <span class="n">variogram_descr</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">variogram</span><span class="o">.</span><span class="n">_build_harmonized_model</span><span class="p">()</span>
+            <span class="n">variogram</span> <span class="o">=</span> <span class="n">variogram_descr</span>
+                
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparse</span> <span class="o">=</span> <span class="n">sparse</span>
+        
+        <span class="c1"># general attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minp</span> <span class="o">=</span> <span class="n">min_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxp</span> <span class="o">=</span> <span class="n">max_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_points</span> <span class="o">=</span> <span class="n">min_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_points</span> <span class="o">=</span> <span class="n">max_points</span>
+
+        <span class="c1"># general settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perf</span> <span class="o">=</span> <span class="n">perf</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">range</span> <span class="o">=</span> <span class="n">variogram</span><span class="p">[</span><span class="s1">&#39;effective_range&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nugget</span> <span class="o">=</span> <span class="n">variogram</span><span class="p">[</span><span class="s1">&#39;nugget&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sill</span> <span class="o">=</span> <span class="n">variogram</span><span class="p">[</span><span class="s1">&#39;sill&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dist_metric</span> <span class="o">=</span> <span class="n">variogram</span><span class="p">[</span><span class="s2">&quot;dist_func&quot;</span><span class="p">]</span>
+        
+        <span class="c1"># coordinates and semivariance function</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">MetricSpace</span><span class="p">):</span>
+            <span class="n">coordinates</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_duplicated_coordinates</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">MetricSpace</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_metric</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparse</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_metric</span> <span class="o">==</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">dist_metric</span><span class="p">,</span> <span class="s2">&quot;Distance metric of variogram differs from distance metric of coordinates&quot;</span>
+            <span class="k">assert</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">max_dist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">max_dist</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">,</span> <span class="s2">&quot;Sparse coordinates must have max_dist == variogram.effective_range&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">coordinates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma_model</span> <span class="o">=</span> <span class="n">Variogram</span><span class="o">.</span><span class="n">fitted_model_function</span><span class="p">(</span><span class="o">**</span><span class="n">variogram</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># calculation mode; self.range has to be initialized</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="n">precision</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prec_dist</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prec_g</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="n">precision</span>
+
+        <span class="c1"># solver settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span> <span class="o">=</span> <span class="n">solver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solve</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">solver</span>
+
+        <span class="c1"># initialize error counter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singular_error</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_points_error</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ill_matrix</span> <span class="o">=</span> <span class="mi">0</span>
+                
+        <span class="c1"># performance counter</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perf_dist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perf_mat</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perf_solv</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Variogram</span><span class="o">.</span><span class="n">wrapped_distance_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dist_metric</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_remove_duplicated_coordinates</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Extract the coordinates and values</span>
+
+<span class="sd">        The coordinates array is checked for duplicates and only the</span>
+<span class="sd">        first instance of a duplicate is used. Duplicated coordinates</span>
+<span class="sd">        would result in duplicated rows in the variogram matrix and</span>
+<span class="sd">        make it singular.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">coords</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">values</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># sort the index to preserve initial order, if no duplicates were found</span>
+        <span class="n">idx</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">c</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minp</span>
+
+    <span class="nd">@min_points</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">min_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># check the value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;min_points has to be an integer.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;min_points can</span><span class="se">\&#39;</span><span class="s1">t be negative.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxp</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;min_points can</span><span class="se">\&#39;</span><span class="s1">t be larger than max_points.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minp</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxp</span>
+
+    <span class="nd">@max_points</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">max_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># check the value</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;max_points has to be an integer.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;max_points can</span><span class="se">\&#39;</span><span class="s1">t be negative.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minp</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;max_points can</span><span class="se">\&#39;</span><span class="s1">t be smaller than min_points.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxp</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span>
+
+    <span class="nd">@mode</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;exact&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prec_g</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prec_dist</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;estimate&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_precalculate_matrix</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;mode has to be one of &#39;exact&#39;, &#39;estimate&#39;.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">precision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span>
+
+    <span class="nd">@precision</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">precision</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;precision has to be of type int&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The precision has be be &gt; 1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precision</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precalculate_matrix</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span>
+
+    <span class="nd">@solver</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;numpy&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solve</span> <span class="o">=</span> <span class="n">numpy_solve</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;scipy&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solve</span> <span class="o">=</span> <span class="n">scipy_solve</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;inv&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_solve</span> <span class="o">=</span> <span class="n">inv_solve</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;solver has to be [&#39;inv&#39;, &#39;numpy&#39;, &#39;scipy&#39;]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_solver</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="OrdinaryKriging.transform"><a class="viewcode-back" href="../../reference/kriging.html#skgstat.OrdinaryKriging.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Kriging</span>
+
+<span class="sd">        returns an estimation of the observable for the given unobserved</span>
+<span class="sd">        locations. Each coordinate dimension should be a 1D array.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : numpy.array, MetricSpace</span>
+<span class="sd">            One 1D array for each coordinate dimension. Typically two or</span>
+<span class="sd">            three array, x, y, (z) are passed for 2D and 3D Kriging</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Z : numpy.array</span>
+<span class="sd">            Array of estimates</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># reset the internal error counters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singular_error</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_points_error</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ill_matrix</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># reset the internal performance counter</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perf_dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf_mat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf_solv</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">MetricSpace</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform_coords</span> <span class="o">=</span> <span class="n">MetricSpace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_metric</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparse</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform_coords</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_coords_pair</span> <span class="o">=</span> <span class="n">MetricSpacePair</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+        
+        <span class="c1"># DEV: this is dirty, not sure how to do it better at the moment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sigma_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># if multi-core, than here</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_coords</span><span class="p">))),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">idxs</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimator</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+                <span class="n">z</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_coords</span><span class="p">)))</span>
+
+        <span class="c1"># print warnings</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">singular_error</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: </span><span class="si">%d</span><span class="s1"> kriging matrices were singular.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">singular_error</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_points_error</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: for </span><span class="si">%d</span><span class="s1"> locations, not enough neighbors were &#39;</span>
+                  <span class="s1">&#39;found within the range.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_points_error</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ill_matrix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: </span><span class="si">%d</span><span class="s1"> kriging matrices were ill-conditioned.&#39;</span>
+                  <span class="s1">&#39; The result may not be accurate.&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">ill_matrix</span><span class="p">)</span>
+
+        <span class="c1"># store the field in the instance itself</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_estimator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Estimation wrapper</span>
+
+<span class="sd">        Wrapper around OrdinaryKriging._krige function to build the point of</span>
+<span class="sd">        interest for arbitrary number of dimensions. SingularMatrixError and</span>
+<span class="sd">        LessPointsError are handled and the error counters are increased. In</span>
+<span class="sd">        both cases numpy.NaN will be used as estimate.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">z</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_krige</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SingularMatrixError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singular_error</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">except</span> <span class="n">LessPointsError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">no_points_error</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">except</span> <span class="n">IllMatrixError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ill_matrix</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="c1"># TODO: This is a side-effect and I need to re-design this part:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__sigma_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sigma_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">z</span>
+
+    <span class="k">def</span> <span class="nf">_krige</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Algorithm</span>
+
+<span class="sd">        Kriging algorithm for one point. This is the place, where the</span>
+<span class="sd">        algorithm shall be changed and optimized.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        idx : int</span>
+<span class="sd">            Index into self.transform_* arrays for an unobserved location</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        SingularMatrixError:</span>
+<span class="sd">            Raised if the kriging matrix is singular and therefore the</span>
+<span class="sd">            equation system cannot be solved.</span>
+<span class="sd">        LessPointsError:</span>
+<span class="sd">            Raised if there are not the required minimum of points within the</span>
+<span class="sd">            variogram&#39;s radius.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">        ------</span>
+
+<span class="sd">        Z is calculated as follows:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \hat{Z} = \sum_i(w_i * z_i)</span>
+<span class="sd">        </span>
+<span class="sd">        where :math:`w_i` is the calulated kriging weight for the i-th point </span>
+<span class="sd">        and :math:`z_i` is the observed value at that point.</span>
+
+<span class="sd">        The kriging variance :math:`\sigma^2` (sigma) is calculate as follows:</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            \sigma^2 = \sum_i(w_i * \gamma(p_0 - p_i)) + \lambda</span>
+
+<span class="sd">        where :math:`w_i` is again the weight, :math:`\gamma(p_0 - p_i)` is </span>
+<span class="sd">        the semivairance of the distance between the unobserved location and </span>
+<span class="sd">        the i-th observation. :math:`\lamda` is the Lagrange multiplier needed</span>
+<span class="sd">        to minimize the estimation error.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Z : float</span>
+<span class="sd">            estimated value at p</span>
+<span class="sd">        sigma : float</span>
+<span class="sd">            kriging variance :math:`\sigma^2` for p.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf</span><span class="p">:</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_coords</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">idx</span><span class="p">,:]</span>
+
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_coords_pair</span><span class="o">.</span><span class="n">find_closest</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxp</span><span class="p">)</span>
+        
+        <span class="c1"># raise an error if not enough points are found</span>
+        <span class="k">if</span> <span class="n">idx</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minp</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LessPointsError</span>
+            
+        <span class="c1"># finally find the points and values</span>
+        <span class="n">in_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">dist_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        
+        <span class="c1"># if performance is tracked, time this step</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf</span><span class="p">:</span>
+            <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perf_dist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+
+        <span class="c1"># OLD ALGORITHM</span>
+        <span class="c1"># a = np.ones((len(in_range) + 1, len(in_range) + 1))</span>
+
+        <span class="c1"># fill; TODO: this can be done faster</span>
+        <span class="c1">#for i in range(len(in_range)):</span>
+        <span class="c1">#    for j in range(len(in_range)):</span>
+        <span class="c1">#        a[i, j] = self.V.compiled_model(dist_mat[i ,j])</span>
+        <span class="c1"># the outermost elements are all 1, except the last one</span>
+        <span class="c1">#a[-1, -1] = 0</span>
+
+        <span class="c1"># build the kriging Matrix; needs N + 1 dimensionality</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;exact&#39;</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_matrix</span><span class="p">(</span><span class="n">dist_mat</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_estimate_matrix</span><span class="p">(</span><span class="n">dist_mat</span><span class="p">)</span>
+
+            <span class="c1"># add row a column of 1&#39;s</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">in_range</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">squareform</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># add lagrange multiplier</span>
+        <span class="n">a</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf</span><span class="p">:</span>
+            <span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">perf_mat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span>
+
+        <span class="c1"># build the matrix of solutions A</span>
+        <span class="n">_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">p</span><span class="p">],</span> <span class="n">in_range</span><span class="p">))</span>
+        <span class="n">_dists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">_p</span><span class="p">)[:</span><span class="nb">len</span><span class="p">(</span><span class="n">_p</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">_g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_model</span><span class="p">(</span><span class="n">_dists</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">_g</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># solve the system</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;Matrix is singular.&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SingularMatrixError</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">except</span> <span class="ne">RuntimeWarning</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;Ill-conditioned matrix&#39;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">IllMatrixError</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">w</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[DEBUG]: print variogram matrix and distance matrix:&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">_dists</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">perf</span><span class="p">:</span>
+                <span class="n">t3</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">perf_solv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t3</span> <span class="o">-</span> <span class="n">t2</span><span class="p">)</span>
+
+        <span class="c1"># calculate Kriging variance</span>
+        <span class="c1"># sigma is the weights times the semi-variance to p0 </span>
+        <span class="c1"># plus the lagrange factor </span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">b</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">l</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">l</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># calculate Z</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">l</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="c1"># return</span>
+        <span class="k">return</span> <span class="n">Z</span><span class="p">,</span> <span class="n">sigma</span>
+
+    <span class="k">def</span> <span class="nf">_build_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">):</span>
+        <span class="c1"># calculate the upper matrix</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_model</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_precalculate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># pre-calculated distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prec_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
+
+        <span class="c1"># pre-calculate semivariance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prec_g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prec_dist</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_estimate_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">):</span>
+        <span class="c1"># transform to the &#39;precision-space&#39;, which matches with the index</span>
+        <span class="n">dist_n</span> <span class="o">=</span> <span class="p">((</span><span class="n">distance_matrix</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="c1"># create the gamma array</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">dist_n</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># find all indices inside and outside the range</span>
+        <span class="n">out_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dist_n</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">in_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dist_n</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># all semivariances outside are set to sill,</span>
+        <span class="c1"># the inside are estimated from the precompiled</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">out_</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill</span>
+        <span class="n">g</span><span class="p">[</span><span class="n">in_</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prec_g</span><span class="p">[</span><span class="n">dist_n</span><span class="p">[</span><span class="n">in_</span><span class="p">]]</span>
+
+        <span class="k">return</span> <span class="n">g</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

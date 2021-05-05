@@ -1,0 +1,457 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet" />
+  <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="#">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="reference/reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#welcome-to-scikit-gstat-s-documentation">
+   Welcome to SciKit GStat’s documentation!
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-to-cite">
+   How to cite
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="home">
+<h1>Home<a class="headerlink" href="#home" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="welcome-to-scikit-gstat-s-documentation">
+<h2>Welcome to SciKit GStat’s documentation!<a class="headerlink" href="#welcome-to-scikit-gstat-s-documentation" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">Download the docs as PDF</a></p>
+<p>SciKit-Gstat is a scipy-styled analysis module for geostatistics. It includes
+two base classes <a class="reference internal" href="reference/variogram.html#skgstat.Variogram" title="skgstat.Variogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variogram</span></code></a> and
+<a class="reference internal" href="reference/directionalvariogram.html#skgstat.DirectionalVariogram" title="skgstat.DirectionalVariogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">DirectionalVariogram</span></code></a>. Both have a
+very similar interface and can compute experimental variograms and model
+variograms. The module makes use of a rich selection of semi-variance
+estimators and variogram model functions, while being extensible at the same
+time.</p>
+<p>With version 0.2.4, the class
+<a class="reference internal" href="reference/spacetimevariogram.html#skgstat.SpaceTimeVariogram" title="skgstat.SpaceTimeVariogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpaceTimeVariogram</span></code></a> has been added. It
+computes space-time experimental variogram. However, space-time modeling is
+not implemented yet.</p>
+<p>With version 0.25, the class <code class="xref py py-class docutils literal notranslate"><span class="pre">OrdinaryKriging</span></code> has been added. It is working and can be used. However, it
+is not documented, the arguments might still change, multiprocessing is not
+implemented and the krige algorithm is not yet very efficient.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Scikit-gstat was rewritten in major parts. Most of the changes are internal,
+but the attributes and behaviour of the <cite>Variogram</cite> has also changed
+substantially.
+A detailed description of the new versions usage will follow. The last
+version of the old Variogram class, 0.1.8, is kept in the <cite>version-0.1.8</cite>
+branch on GitHub, but not developed any further. It is not compatible to
+the current version.</p>
+</div>
+</div>
+<div class="section" id="how-to-cite">
+<h2>How to cite<a class="headerlink" href="#how-to-cite" title="Permalink to this headline">¶</a></h2>
+<p>In case you use SciKit-GStat in other software or scientific publications,
+please reference this module. It is published and has a DOI. It can be cited
+as:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Mirko Mälicke, Helge David Schneider, Sebastian Müller, &amp; Egil Möller. (2021, April 20).</dt><dd><p>mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox
+(Version v0.5.0). Zenodo. <a class="reference external" href="http://doi.org/10.5281/zenodo.4704356">http://doi.org/10.5281/zenodo.4704356</a></p>
+</dd>
+</dl>
+</div></blockquote>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#pypi">PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#github">GitHub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#note">Note</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#load-the-class-and-data">Load the class and data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#plot">Plot</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="userguide/userguide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="userguide/introduction.html">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide/introduction.html#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/introduction.html#what-is-geostatistics">What is geostatistics?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/introduction.html#geostatistical-tools">Geostatistical Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/introduction.html#how-to-use-this-guide">How to use this Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide/variogram.html">Variography</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide/variogram.html#the-variogram">The variogram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/variogram.html#when-direction-matters">When direction matters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide/kriging.html">Interpolation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide/kriging.html#spatial-interpolation">Spatial interpolation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/kriging.html#using-a-spatial-model">Using a spatial model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/kriging.html#kriging-equation-system">Kriging equation system</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/kriging.html#kriging-error">Kriging error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide/kriging.html#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/01_getting_started.html">1 - Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/01_getting_started.html#What-you-will-learn-in-this-tutorial">What you will learn in this tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/02_variogram_models.html">2 - Variogram Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_variogram_models.html#2.1-Load-data">2.1 Load data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_variogram_models.html#2.2-Comparing-theoretical-models">2.2 Comparing theoretical models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/02_variogram_models.html#2.3-Using-less-observations">2.3 Using less observations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/03_estimators.html">3 - Semi-variance Estimators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_estimators.html#3.1-Load-data">3.1 Load data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_estimators.html#3.2-Comparing-estimators">3.2 Comparing estimators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_estimators.html#3.3-Alternative-estimators">3.3 Alternative estimators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/03_estimators.html#3.4-References">3.4 References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/04_Plotting.html">4. Plotting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/04_Plotting.html#4.1-Load-Data">4.1 Load Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/04_Plotting.html#4.2-Backend">4.2 Backend</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/04_Plotting.html#4.3-Variogram">4.3 Variogram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/04_Plotting.html#4.4-Directional-Variogram">4.4 Directional Variogram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/04_Plotting.html#4.5-ST-Variogram">4.5 ST Variogram</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/05_binning.html">5 - Lag classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/05_binning.html#5.1-Sample-data">5.1 Sample data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/05_binning.html#5.2-Lag-class-binning---fixed-N">5.2 Lag class binning - fixed <code class="docutils literal notranslate"><span class="pre">N</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/05_binning.html#5.3-Lag-class-binning---adjustable-N">5.3 Lag class binning - adjustable <code class="docutils literal notranslate"><span class="pre">N</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/05_binning.html#5.4-Variograms">5.4 Variograms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/06_gstools.html">6 - GSTools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/06_gstools.html#6.1-get_empirical">6.1 <code class="docutils literal notranslate"><span class="pre">get_empirical</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/06_gstools.html#6.2-to_gstools">6.2 <code class="docutils literal notranslate"><span class="pre">to_gstools</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/06_gstools.html#6.3-to_gs_krige">6.3 <code class="docutils literal notranslate"><span class="pre">to_gs_krige</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="technical/technical.html">Technical Notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="technical/fitting.html">Fitting a theoretical model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="technical/fitting.html#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/fitting.html#default-fit">Default fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/fitting.html#constrained-fit">Constrained fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/fitting.html#distance-weighted-fit">Distance weighted fit</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="technical/direction.html">Directional Variograms</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="technical/direction.html#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/direction.html#understanding-search-area">Understanding Search Area</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/direction.html#id1">Directional variograms</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="technical/estimate_kriging.html">Kriging estimate mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="technical/estimate_kriging.html#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/estimate_kriging.html#why-not-calculate">Why not calculate?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technical/estimate_kriging.html#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/reference.html">Code Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference/variogram.html">Variogram Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/directionalvariogram.html">DirectionalVariogram Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/spacetimevariogram.html">SpaceTimeVariogram class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/estimator.html">Estimator Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#matheron">Matheron</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#cressie">Cressie</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#dowd">Dowd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#genton">Genton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#shannon-entropy">Shannon Entropy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#minmax">MinMax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/estimator.html#percentile">Percentile</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/models.html">Variogram models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/models.html#spherical-model">Spherical model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models.html#exponential-model">Exponential model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models.html#gaussian-model">Gaussian model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models.html#cubic-model">Cubic model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models.html#stable-model">Stable model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/models.html#matern-model">Matérn model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/kriging.html">Kriging Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/metric_space.html">MetricSpace - Coordinate representation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/metric_space.html#metricspace">MetricSpace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/metric_space.html#metricspacepair">MetricSpacePair</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/util.html">Utility Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/util.html#shannon-entropy">Shannon Entropy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/util.html#cross-validation">Cross Validation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-5-4">Version 0.5.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-5-3">Version 0.5.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-5-2">Version 0.5.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-5-1">Version 0.5.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-5-0">Version 0.5.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-4-4">Version 0.4.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-4-3">Version 0.4.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-4-2">Version 0.4.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-4-1">Version 0.4.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-4-0">Version 0.4.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-11">Version 0.3.11</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-10">Version 0.3.10</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-9">Version 0.3.9</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-8">Version 0.3.8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-7">Version 0.3.7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-6">Version 0.3.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-5">Version 0.3.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-4">Version 0.3.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-3">Version 0.3.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-2">Version 0.3.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-1">Version 0.3.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-3-0">Version 0.3.0</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-8">Version 0.2.8</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-7">Version 0.2.7</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-6">Version 0.2.6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-5">Version 0.2.5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-4">Version 0.2.4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-3">Version 0.2.3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-2">Version 0.2.2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-1">Version 0.2.1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#version-0-2-0">Version 0.2.0</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">PDF</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='right-next' id="next-link" href="install.html" title="next page">Installation</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

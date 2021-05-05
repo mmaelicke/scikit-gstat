@@ -1,0 +1,652 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Variogram models &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Kriging Class" href="kriging.html" />
+    <link rel="prev" title="Estimator Functions" href="estimator.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <p class="caption">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="variogram.html">
+   Variogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="directionalvariogram.html">
+   DirectionalVariogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="spacetimevariogram.html">
+   SpaceTimeVariogram class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="estimator.html">
+   Estimator Functions
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Variogram models
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="kriging.html">
+   Kriging Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="metric_space.html">
+   MetricSpace - Coordinate representation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="util.html">
+   Utility Functions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#spherical-model">
+   Spherical model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#exponential-model">
+   Exponential model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#gaussian-model">
+   Gaussian model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cubic-model">
+   Cubic model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#stable-model">
+   Stable model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#matern-model">
+   Matérn model
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="variogram-models">
+<h1>Variogram models<a class="headerlink" href="#variogram-models" title="Permalink to this headline">¶</a></h1>
+<p>Scikit-GStat implements different theoretical variogram functions. These
+model functions expect a single lag value or an array of lag values as input
+data. Each function has at least a parameter <cite>a</cite> for the effective range and
+a parameter <cite>c0</cite> for the sill. The nugget parameter <cite>b</cite> is optinal and will
+be set to <span class="math notranslate nohighlight">\(b:=0\)</span> if not given.</p>
+<div class="section" id="spherical-model">
+<h2>Spherical model<a class="headerlink" href="#spherical-model" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.models.spherical">
+<code class="sig-prename descclassname"><span class="pre">skgstat.models.</span></code><code class="sig-name descname"><span class="pre">spherical</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/models.html#spherical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.models.spherical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spherical Variogram function</p>
+<p>Implementation of the spherical variogram function. Calculates the
+dependent variable for a given lag (h). The nugget (b) defaults to be 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Specifies the lag of separating distances that the dependent variable
+shall be calculated for. It has to be a positive real number.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The effective range. Note this is not the range parameter! However,
+for the spherical variogram the range and effective range are the same.</p></li>
+<li><p><strong>c0</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The sill of the variogram, where it will flatten out. The function
+will not return a value higher than C0 + b.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The nugget of the variogram. This is the value of independent
+variable at the distance of zero. This is usually attributed to
+non-spatial variance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gamma</strong> – Unlike in most variogram function formulas, which define the function
+for <span class="math notranslate nohighlight">\(2*\gamma\)</span>, this function will return <span class="math notranslate nohighlight">\(\gamma\)</span> only.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The implementation follows <a class="footnote-reference brackets" href="#id2" id="id1">6</a>:</p>
+<div class="math notranslate nohighlight">
+\[\gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*\frac{h}{a}^3}\right)\]</div>
+<p>if <span class="math notranslate nohighlight">\(h &lt; r\)</span>, and</p>
+<div class="math notranslate nohighlight">
+\[\gamma = b + C_0\]</div>
+<p>else. r is the effective range, which is in case of the spherical
+variogram just a.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">6</a></span></dt>
+<dd><p>Burgess, T. M., &amp; Webster, R. (1980). Optimal interpolation
+and isarithmic mapping of soil properties. I.The semi-variogram and
+punctual kriging. Journal of Soil and Science, 31(2), 315–331,
+<a class="reference external" href="http://doi.org/10.1111/j.1365-2389.1980.tb02084.x">http://doi.org/10.1111/j.1365-2389.1980.tb02084.x</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="exponential-model">
+<h2>Exponential model<a class="headerlink" href="#exponential-model" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.models.exponential">
+<code class="sig-prename descclassname"><span class="pre">skgstat.models.</span></code><code class="sig-name descname"><span class="pre">exponential</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/models.html#exponential"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.models.exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exponential Variogram function</p>
+<p>Implementation of the exponential variogram function. Calculates the
+dependent variable for a given lag (h). The nugget (b) defaults to be 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Specifies the lag of separating distances that the dependent variable
+shall be calculated for. It has to be a positive real number.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The effective range. Note this is not the range parameter! For the
+exponential variogram function the range parameter a is defined to be
+<span class="math notranslate nohighlight">\(a=\frac{r}{3}\)</span>. The effective range is the lag where 95% of the
+sill are exceeded. This is needed as the sill is only approached
+asymptotically by an exponential function.</p></li>
+<li><p><strong>c0</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The sill of the variogram, where it will flatten out. The function
+will not return a value higher than C0 + b.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The nugget of the variogram. This is the value of independent
+variable at the distance of zero. This is usually attributed to
+non-spatial variance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gamma</strong> – Unlike in most variogram function formulas, which define the function
+for <span class="math notranslate nohighlight">\(2*\gamma\)</span>, this function will return <span class="math notranslate nohighlight">\(\gamma\)</span> only.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The implementation following <a class="footnote-reference brackets" href="#id6" id="id3">7</a>, <a class="footnote-reference brackets" href="#id8" id="id4">9</a> and <a class="footnote-reference brackets" href="#id7" id="id5">8</a> is as:</p>
+<div class="math notranslate nohighlight">
+\[\gamma = b + C_0 * \left({1 - e^{-\frac{h}{a}}}\right)\]</div>
+<p>a is the range parameter, that can be calculated from the
+effective range r as: <span class="math notranslate nohighlight">\(a = \frac{r}{3}\)</span>.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id3">7</a></span></dt>
+<dd><p>Cressie, N. (1993): Statistics for spatial data.
+Wiley Interscience.</p>
+</dd>
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id5">8</a></span></dt>
+<dd><p>Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+Uncertainty. Wiley Interscience.</p>
+</dd>
+<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id4">9</a></span></dt>
+<dd><p>Journel, A G, and Huijbregts, C J. Mining geostatistics.
+United Kingdom: N. p., 1976.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="gaussian-model">
+<h2>Gaussian model<a class="headerlink" href="#gaussian-model" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.models.gaussian">
+<code class="sig-prename descclassname"><span class="pre">skgstat.models.</span></code><code class="sig-name descname"><span class="pre">gaussian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/models.html#gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.models.gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian Variogram function</p>
+<p>Implementation of the Gaussian variogram function. Calculates the
+dependent variable for a given lag (h). The nugget (b) defaults to be 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Specifies the lag of separating distances that the dependent variable
+shall be calculated for. It has to be a positive real number.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The effective range. Note this is not the range parameter! For the
+exponential variogram function the range parameter a is defined to be
+<span class="math notranslate nohighlight">\(a=\frac{r}{3}\)</span>. The effetive range is the lag where 95% of the
+sill are exceeded. This is needed as the sill is only approached
+asymptotically by an exponential function.</p></li>
+<li><p><strong>c0</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The sill of the variogram, where it will flatten out. The function
+will not return a value higher than C0 + b.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The nugget of the variogram. This is the value of independent
+variable at the distance of zero. This is usually attributed to
+non-spatial variance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gamma</strong> – Unlike in most variogram function formulas, which define the function
+for <span class="math notranslate nohighlight">\(2*\gamma\)</span>, this function will return <span class="math notranslate nohighlight">\(\gamma\)</span> only.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This implementation follows <a class="footnote-reference brackets" href="#id11" id="id9">10</a> and <a href="#id19"><span class="problematic" id="id10">[11]_</span></a>:</p>
+<div class="math notranslate nohighlight">
+\[\gamma = b + c_0 * \left({1 - e^{-\frac{h^2}{a^2}}}\right)\]</div>
+<p>a is the range parameter, that can be calculated from the
+effective range r as:</p>
+<div class="math notranslate nohighlight">
+\[a = \frac{r}{2}\]</div>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id9">10</a></span></dt>
+<dd><p>Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
+Uncertainty. Wiley Interscience.</p>
+</dd>
+<dt class="label" id="id12"><span class="brackets">11</span></dt>
+<dd><p>Journel, A G, and Huijbregts, C J. Mining geostatistics.
+United Kingdom: N. p., 1976.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="cubic-model">
+<h2>Cubic model<a class="headerlink" href="#cubic-model" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.models.cubic">
+<code class="sig-prename descclassname"><span class="pre">skgstat.models.</span></code><code class="sig-name descname"><span class="pre">cubic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/models.html#cubic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.models.cubic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cubic Variogram function</p>
+<p>Implementation of the Cubic variogram function. Calculates the
+dependent variable for a given lag (h). The nugget (b) defaults to be 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Specifies the lag of separating distances that the dependent variable
+shall be calculated for. It has to be a positive real number.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The effective range. Note this is not the range parameter! However,
+for the cubic variogram the range and effective range are the same.</p></li>
+<li><p><strong>c0</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The sill of the variogram, where it will flatten out. The function
+will not return a value higher than C0 + b.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The nugget of the variogram. This is the value of independent
+variable at the distance of zero. This is usually attributed to
+non-spatial variance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gamma</strong> – Unlike in most variogram function formulas, which define the function
+for <span class="math notranslate nohighlight">\(2*\gamma\)</span>, this function will return <span class="math notranslate nohighlight">\(\gamma\)</span> only.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This implementation is taken from <a href="#id20"><span class="problematic" id="id13">[11]_</span></a>:</p>
+<div class="math notranslate nohighlight">
+\[\gamma = b + C_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -
+\frac{35}{4} * \left(\frac{h^3}{a^3}\right) +
+\frac{7}{2} * \left(\frac{h^5}{a^5}\right) -
+\frac{3}{4} * \left(\frac{h^7}{a^7}\right)}\right]\]</div>
+<p>a is the range parameter. For the cubic function, the effective range and
+range parameter are the same.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id14"><span class="brackets">11</span></dt>
+<dd><p>Montero, J.-M., Mateu, J., &amp; others. (2015). Spatial and spatio-temporal
+geostatistical modeling and kriging (Vol. 998). John Wiley &amp; Sons.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="stable-model">
+<h2>Stable model<a class="headerlink" href="#stable-model" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.models.stable">
+<code class="sig-prename descclassname"><span class="pre">skgstat.models.</span></code><code class="sig-name descname"><span class="pre">stable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/models.html#stable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.models.stable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stable Variogram function</p>
+<p>Implementation of the stable variogram function. Calculates the
+dependent variable for a given lag (h). The nugget (b) defaults to be 0.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.4: </span>Now returns the nugget at lag 0</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Specifies the lag of separating distances that the dependent variable
+shall be calculated for. It has to be a positive real number.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The effective range. Note this is not the range parameter! For the
+stable variogram function the range parameter a is defined to be
+<span class="math notranslate nohighlight">\(a = \frac{r}{3^{\frac{1}{s}}}\)</span>. The effective range is the lag
+where 95% of the sill are exceeded. This is needed as the sill is
+only approached asymptotically by the e-function part of the stable
+model.</p></li>
+<li><p><strong>c0</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The sill of the variogram, where it will flatten out. The function
+will not return a value higher than C0 + b.</p></li>
+<li><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Shape parameter. For s &lt;= 2 the model will be shaped more like a
+exponential or spherical model, for s &gt; 2 it will be shaped most like
+a Gaussian function.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The nugget of the variogram. This is the value of independent
+variable at the distance of zero. This is usually attributed to
+non-spatial variance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gamma</strong> – Unlike in most variogram function formulas, which define the function
+for <span class="math notranslate nohighlight">\(2*\gamma\)</span>, this function will return <span class="math notranslate nohighlight">\(\gamma\)</span> only.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The implementation is taken from <a class="footnote-reference brackets" href="#id16" id="id15">12</a>:</p>
+<div class="math notranslate nohighlight">
+\[\gamma = b + C_0 * \left({1. - e^{- {\frac{h}{a}}^s}}\right)\]</div>
+<p>a is the range parameter and is calculated from the effective range r as:</p>
+<div class="math notranslate nohighlight">
+\[a = \frac{r}{3^{\frac{1}{s}}}\]</div>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id16"><span class="brackets"><a class="fn-backref" href="#id15">12</a></span></dt>
+<dd><p>Montero, J.-M., Mateu, J., &amp; others. (2015). Spatial and spatio-temporal
+geostatistical modeling and kriging (Vol. 998). John Wiley &amp; Sons.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="matern-model">
+<h2>Matérn model<a class="headerlink" href="#matern-model" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.models.matern">
+<code class="sig-prename descclassname"><span class="pre">skgstat.models.</span></code><code class="sig-name descname"><span class="pre">matern</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/models.html#matern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.models.matern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matérn Variogram function</p>
+<p>Implementation of the Matérn variogram function. Calculates the
+dependent variable for a given lag (h). The nugget (b) defaults to be 0.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.4: </span>now returns the nugget instead of NaN for lag 0.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Specifies the lag of separating distances that the dependent variable
+shall be calculated for. It has to be a positive real number.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The effective range. Note this is not the range parameter! For the
+Matérn variogram function the range parameter a is defined to be
+<span class="math notranslate nohighlight">\(a = \frac{r}{2}\)</span> and <span class="math notranslate nohighlight">\(a = \frac{r}{3}\)</span> if s is smaller
+than 0.5 or larger than 10. The effective range is the lag
+where 95% of the sill are exceeded. This is needed as the sill is
+only approached asymptotically by Matérn model.</p></li>
+<li><p><strong>c0</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The sill of the variogram, where it will flatten out. The function
+will not return a value higher than C0 + b.</p></li>
+<li><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Smoothness parameter. The smoothness parameter can shape a smooth or
+rough variogram function. A value of 0.5 will yield the exponential
+function, while a smoothness of +inf is exactly the Gaussian model.
+Typically a value of 10 is close enough to Gaussian shape to simulate
+its behaviour. Low values are considered to be ‘smooth’, while larger
+values are considered to describe a ‘rough’ random field.</p></li>
+<li><p><strong>b</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The nugget of the variogram. This is the value of independent
+variable at the distance of zero. This is usually attributed to
+non-spatial variance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gamma</strong> – Unlike in most variogram function formulas, which define the function
+for <span class="math notranslate nohighlight">\(2*\gamma\)</span>, this function will return <span class="math notranslate nohighlight">\(\gamma\)</span> only.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The implementation is taken from <a class="footnote-reference brackets" href="#id18" id="id17">13</a>:</p>
+<div class="math notranslate nohighlight">
+\[\gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1}
+\Gamma(\upsilon)}\left(\frac{h}{a}\right)^\upsilon K_\upsilon
+\left(\frac{h}{a}\right)\right)\]</div>
+<p>a is the range parameter and is calculated from the effective range r as:</p>
+<div class="math notranslate nohighlight">
+\[a = \frac{r}{2}\]</div>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id18"><span class="brackets"><a class="fn-backref" href="#id17">13</a></span></dt>
+<dd><p>Zimmermann, B., Zehe, E., Hartmann, N. K., &amp; Elsenbeer, H. (2008).
+Analyzing spatial data: An assessment of assumptions, new methods, and
+uncertainty using soil hydraulic data. Water Resources Research,
+44(10), 1–18. <a class="reference external" href="https://doi.org/10.1029/2007WR006604">https://doi.org/10.1029/2007WR006604</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="estimator.html" title="previous page">Estimator Functions</a>
+    <a class='right-next' id="next-link" href="kriging.html" title="next page">Kriging Class</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

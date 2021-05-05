@@ -1,0 +1,1660 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Variogram Class &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DirectionalVariogram Class" href="directionalvariogram.html" />
+    <link rel="prev" title="Code Reference" href="reference.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <p class="caption">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Variogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="directionalvariogram.html">
+   DirectionalVariogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="spacetimevariogram.html">
+   SpaceTimeVariogram class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="estimator.html">
+   Estimator Functions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="models.html">
+   Variogram models
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="kriging.html">
+   Kriging Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="metric_space.html">
+   MetricSpace - Coordinate representation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="util.html">
+   Utility Functions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="variogram-class">
+<h1>Variogram Class<a class="headerlink" href="#variogram-class" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="skgstat.Variogram">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">skgstat.</span></code><code class="sig-name descname"><span class="pre">Variogram</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'matheron'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spherical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'even'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'trf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nugget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxlag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram Class</p>
+<p>Calculates a variogram of the separating distances in the given
+coordinates and relates them to one of the semi-variance measures of
+the given dependent values.</p>
+<dl class="py method">
+<dt id="skgstat.Variogram.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'matheron'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spherical'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'even'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'trf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nugget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxlag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram Class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coordinates</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em>, </em><a class="reference internal" href="metric_space.html#skgstat.MetricSpace" title="skgstat.MetricSpace"><em>MetricSpace</em></a>) – <div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.5.0: </span>now accepts MetricSpace</p>
+</div>
+<p>Array of shape (m, n). Will be used as m observation points of
+n-dimensions. This variogram can be calculated on 1 - n
+dimensional coordinates. In case a 1-dimensional array is passed,
+a second array of same length containing only zeros will be
+stacked to the passed one.
+For very large datasets, you can set maxlag to only calculate
+distances within the maximum lag in a sparse matrix.
+Alternatively you can supply a MetricSpace (optionally with a
+<cite>max_dist</cite> set for the same effect). This is useful if you’re
+creating many different variograms for different measured
+parameters that are all measured at the same set of coordinates,
+as distances will only be calculated once, instead of once per
+variogram.</p>
+</p></li>
+<li><p><strong>values</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of values observed at the given coordinates. The length of
+the values array has to match the m dimension of the coordinates
+array. Will be used to calculate the dependent variable of the
+variogram.</p></li>
+<li><p><strong>estimator</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><em>callable</em>) – <p>String identifying the semi-variance estimator to be used.
+Defaults to the Matheron estimator. Possible values are:</p>
+<blockquote>
+<div><ul>
+<li><p>matheron        [Matheron, default]</p></li>
+<li><p>cressie         [Cressie-Hawkins]</p></li>
+<li><p>dowd            [Dowd-Estimator]</p></li>
+<li><p>genton          [Genton]</p></li>
+<li><p>minmax          [MinMax Scaler]</p></li>
+<li><p>entropy         [Shannon Entropy]</p></li>
+</ul>
+</div></blockquote>
+<p>If a callable is passed, it has to accept an array of absoulte
+differences, aligned to the 1D distance matrix (flattened upper
+triangle) and return a scalar, that converges towards small
+values for similarity (high covariance).</p>
+</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <p>String identifying the theoretical variogram function to be used
+to describe the experimental variogram. Can be one of:</p>
+<blockquote>
+<div><ul>
+<li><p>spherical       [Spherical, default]</p></li>
+<li><p>exponential     [Exponential]</p></li>
+<li><p>gaussian        [Gaussian]</p></li>
+<li><p>cubic           [Cubic]</p></li>
+<li><p>stable          [Stable model]</p></li>
+<li><p>matern          [Matérn model]</p></li>
+<li><p>nugget          [nugget effect variogram]</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>dist_func</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – String identifying the distance function. Defaults to
+‘euclidean’. Can be any metric accepted by
+scipy.spatial.distance.pdist. Additional parameters are not (yet)
+passed through to pdist. These are accepted by pdist for some of
+the metrics. In these cases the default values are used.</p></li>
+<li><p><strong>bin_func</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.8: </span>added ‘fd’, ‘sturges’, ‘scott’, ‘sqrt’, ‘doane’</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.9: </span>added ‘kmeans’, ‘ward’</p>
+</div>
+<p>String identifying the binning function used to find lag class
+edges. All methods calculate bin edges on the interval [0, maxlag[.
+Possible values are:</p>
+<blockquote>
+<div><ul>
+<li><p><cite>’even’</cite> (default) finds <cite>n_lags</cite> same width bins</p></li>
+<li><p><cite>’uniform’</cite> forms <cite>n_lags</cite> bins of same data count</p></li>
+<li><p><cite>’fd’</cite> applies Freedman-Diaconis estimator to find <cite>n_lags</cite></p></li>
+<li><p><cite>’sturges’</cite> applies Sturge’s rule to find <cite>n_lags</cite>.</p></li>
+<li><p><cite>’scott’</cite> applies Scott’s rule to find <cite>n_lags</cite></p></li>
+<li><p><cite>’doane’</cite> applies Doane’s extension to Sturge’s rule to find <cite>n_lags</cite></p></li>
+<li><p><cite>’sqrt’</cite> uses the square-root of <code class="xref py py-func docutils literal notranslate"><span class="pre">distance</span></code> as <cite>n_lags</cite>.</p></li>
+<li><p><cite>’kmeans’</cite> uses KMeans clustering to well supported bins</p></li>
+<li><p><cite>’ward’</cite> uses hierachical clustering to find minimum-variance clusters.</p></li>
+</ul>
+</div></blockquote>
+<p>More details are given in the documentation for <a class="reference internal" href="#skgstat.Variogram.set_bin_func" title="skgstat.Variogram.set_bin_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_bin_func</span></code></a>.</p>
+</p></li>
+<li><p><strong>normalize</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Defaults to False. If True, the independent and dependent
+variable will be normalized to the range [0,1].</p></li>
+<li><p><strong>fit_method</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.10: </span>Added ‘ml’ and ‘custom’</p>
+</div>
+<p>String identifying the method to be used for fitting the
+theoretical variogram function to the experimental. More info is
+given in the Variogram.fit docs. Can be one of:</p>
+<blockquote>
+<div><ul>
+<li><p>’lm’: Levenberg-Marquardt algorithm for unconstrained
+problems. This is the faster algorithm, yet is the fitting of
+a variogram not unconstrianed.</p></li>
+<li><p>’trf’: Trust Region Reflective function for non-linear
+constrained problems. The class will set the boundaries
+itself. This is the default function.</p></li>
+<li><p>’ml’: Maximum-Likelihood estimation. With the current implementation
+only the Nelder-Mead solver for unconstrained problems is
+implemented. This will estimate the variogram parameters from
+a Gaussian parameter space by minimizing the negative
+log-likelihood.</p></li>
+<li><p>’manual’: Manual fitting. You can set the range, sill and
+nugget either directly to the <a class="reference internal" href="#skgstat.Variogram.fit" title="skgstat.Variogram.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit</span></code></a>
+function, or as <cite>fit_</cite> prefixed keyword arguments on
+Variogram instantiation.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>fit_sigma</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <p>Defaults to None. The sigma is used as measure of uncertainty
+during variogram fit. If fit_sigma is an array, it has to hold
+n_lags elements, giving the uncertainty for all lags classes. If
+fit_sigma is None (default), it will give no weight to any lag.
+Higher values indicate higher uncertainty and will lower the
+influcence of the corresponding lag class for the fit.
+If fit_sigma is a string, a pre-defined function of separating
+distance will be used to fill the array. Can be one of:</p>
+<blockquote>
+<div><ul>
+<li><p>’linear’: Linear loss with distance. Small bins will have
+higher impact.</p></li>
+<li><p>’exp’: The weights decrease by a e-function of distance</p></li>
+<li><p>’sqrt’: The weights decrease by the squareroot of distance</p></li>
+<li><p>’sq’: The weights decrease by the squared distance.</p></li>
+</ul>
+</div></blockquote>
+<p>More info is given in the Variogram.fit_sigma documentation.</p>
+</p></li>
+<li><p><strong>use_nugget</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Defaults to False. If True, a nugget effet will be added to all
+Variogram.models as a third (or fourth) fitting parameter. A
+nugget is essentially the y-axis interception of the theoretical
+variogram function.</p></li>
+<li><p><strong>maxlag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Can specify the maximum lag distance directly by giving a value
+larger than 1. The binning function will not find any lag class
+with an edge larger than maxlag. If 0 &lt; maxlag &lt; 1, then maxlag
+is relative and maxlag * max(Variogram.distance) will be used.
+In case maxlag is a string it has to be one of ‘median’, ‘mean’.
+Then the median or mean of all Variogram.distance will be used.
+Note maxlag=0.5 will use half the maximum separating distance,
+this is not the same as ‘median’, which is the median of all
+separating distances</p></li>
+<li><p><strong>samples</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – If set to a non-None value point pairs are sampled
+randomly. Two random subset of all points are chosen, and
+the distance matrix is calculated only between these two
+subsets. The size of each subset is set by <cite>samples</cite>: if &lt;
+1 it specifies a fraction of all points, if &gt;= 1 it
+specifies the number of points in each subset.</p></li>
+<li><p><strong>n_lags</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Specify the number of lag classes to be defined by the binning
+function.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Set the Verbosity of the class. Not Implemented yet.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>entropy_bins</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <div class="versionadded">
+<p><span class="versionmodified added">New in version 0.3.7.</span></p>
+</div>
+<p>If the <cite>estimator &lt;skgstat.Variogram.estimator&gt;</cite> is set to
+<cite>‘entropy’</cite> this argument sets the number of bins, that should be
+used for histogram calculation.</p>
+</p></li>
+<li><p><strong>percentile</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – <div class="versionadded">
+<p><span class="versionmodified added">New in version 0.3.7.</span></p>
+</div>
+<p>If the <cite>estimator &lt;skgstat.Variogram.estimator&gt;</cite> is set to
+<cite>‘entropy’</cite> this argument sets the percentile to be used.</p>
+</p></li>
+<li><p><strong>binning_random_state</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – <div class="versionadded">
+<p><span class="versionmodified added">New in version 0.3.9.</span></p>
+</div>
+<p>If <a class="reference internal" href="#skgstat.Variogram.set_bin_func" title="skgstat.Variogram.set_bin_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">bin_func</span></code></a> is <cite>‘kmeans’</cite>
+this can overwrite the seed for the initial guess of the cluster
+centroids. Note, that K-Means is not deterministic and is therefore
+seeded to 42 here. You can pass <cite>None</cite> to disable this behavior,
+but use it with care, as you will get different results.</p>
+</p></li>
+<li><p><strong>binning_agg_func</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <div class="versionadded">
+<p><span class="versionmodified added">New in version 0.3.10.</span></p>
+</div>
+<p>If <a class="reference internal" href="#skgstat.Variogram.set_bin_func" title="skgstat.Variogram.set_bin_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">bin_func</span></code></a> is <cite>‘ward’</cite>
+this keyword argument can switch from default mean aggregation to
+median aggregation for calculating the cluster centroids.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.NS">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">NS</span></code><a class="headerlink" href="#skgstat.Variogram.NS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nash Sutcliffe efficiency of the fitted Variogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.bin_func">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">bin_func</span></code><a class="headerlink" href="#skgstat.Variogram.bin_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Binning function</p>
+<p>Returns an instance of the function used for binning the separating
+distances into the given amount of bins. Both functions use the same
+signature of func(distances, n, maxlag).</p>
+<p>The setter of this property utilizes the Variogram.set_bin_func to
+set a new function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>binning_function</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>function</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.set_bin_func" title="skgstat.Variogram.set_bin_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.set_bin_func</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.bins">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">bins</span></code><a class="headerlink" href="#skgstat.Variogram.bins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance lag bins</p>
+<p>Independent variable of the the experimental variogram sample.
+The bins are the upper edges of all calculated distance lag
+classes. If you need bin centers, use
+<a class="reference internal" href="#skgstat.Variogram.get_empirical" title="skgstat.Variogram.get_empirical"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_empirical</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>bins</strong> – 1D array of the distance lag classes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.get_empirical" title="skgstat.Variogram.get_empirical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.get_empirical</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.clone">
+<code class="sig-name descname"><span class="pre">clone</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.clone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deep copy of self</p>
+<p>Return a deep copy of self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#skgstat.Variogram" title="skgstat.Variogram">Variogram</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.coordinates">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">coordinates</span></code><a class="headerlink" href="#skgstat.Variogram.coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coordinates property</p>
+<p>Array of observation locations the variogram is build for. This
+property has no setter. If you want to change the coordinates,
+use a new Variogram instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>coordinates</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.cross_validate">
+<code class="sig-name descname"><span class="pre">cross_validate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><span class="pre">str</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'jacknife'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><span class="pre">str</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'rmse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><span class="pre">float</span></a><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.cross_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.cross_validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cross validation of the variogram model by means of Kriging.
+Right now, this function can only utilize a jacknife (leave-one-out)
+cross validation and will only use the builtin OrdinaryKriging
+method (not yet the to_gs_krige interface).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Right now, ‘jacknife’ is the only possible input.</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The number of points to be included into the cross-validation.
+If None (default), all points will be used.</p></li>
+<li><p><strong>metric</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Metric used for cross-validation.
+Can be root mean square error (rmse), mean squared error (mse)
+or mean absolute error (mae).</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – If n is not None, the random selection of input data for the
+cross-validation can be seeded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>metric</strong> – The cross-validation result as specified above.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="util.html#skgstat.util.cross_validation.jacknife" title="skgstat.util.cross_validation.jacknife"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.util.cross_validation.jacknife</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.data">
+<code class="sig-name descname"><span class="pre">data</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Theoretical variogram function</p>
+<p>Calculate the experimental variogram and apply the binning. On
+success, the variogram model will be fitted and applied to n lag
+values. Returns the lags and the calculated semi-variance values.
+If force is True, a clean preprocessing and fitting run will be
+executed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>integer</em>) – length of the lags array to be used for fitting. Defaults to 100,
+which will be fine for most plots</p></li>
+<li><p><strong>force</strong> (<em>boolean</em>) – If True, the preprocessing and fitting will be executed as a
+clean run. This will force all intermediate results to be
+recalculated. Defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>variogram</strong> – first element is the created lags array
+second element are the calculated semi-variance values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.describe">
+<code class="sig-name descname"><span class="pre">describe</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">short</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.describe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram parameters</p>
+<p>Return a dictionary of the variogram parameters.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.7: </span>The describe now returns all init parameters in as the
+<cite>describe()[‘params’]</cite> key and all keyword arguments as
+<cite>describe()[‘kwargs’]</cite>. This output can be suppressed
+by setting <cite>short=True</cite>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>short</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If <cite>True</cite>, the <cite>‘params’</cite> and <cite>‘kwargs’</cite> keys will be
+omitted. Defaults to <cite>False</cite>.</p></li>
+<li><p><strong>flat</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If <cite>True</cite>, the <cite>‘params’</cite> and <cite>‘kwargs’</cite> nested <cite>dict`s
+will be distributed to the main `dict</cite> to return a
+flat <cite>dict</cite>. Defaults to <cite>False</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>parameters</strong> – Returns fitting parameters of the theoretical variogram
+model along with the init parameters of the
+<cite>Variogram &lt;skgstat.Variogram&gt;</cite> instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.dim">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dim</span></code><a class="headerlink" href="#skgstat.Variogram.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input coordinates dimensionality.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.distance_difference_plot">
+<code class="sig-name descname"><span class="pre">distance_difference_plot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.distance_difference_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.distance_difference_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raw distance plot</p>
+<p>Plots all absoulte value differences of all point pair combinations
+over their separating distance, without sorting them into a lag.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.0: </span>This plot can be plotted with the plotly plotting backend</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a><em>, </em><em>AxesSubplot</em>) – If None, a new matplotlib.Figure will be created. In case a
+Figure was already created, pass the Subplot to use as ax argument.</p></li>
+<li><p><strong>plot_bins</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True (default) the bin edges will be included into the plot.</p></li>
+<li><p><strong>show</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True (default), the show method of the Figure will be called
+before returning the Figure. Can be set to False, to avoid
+doubled figure rendering in Jupyter notebooks.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.pyplot.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.experimental">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">experimental</span></code><a class="headerlink" href="#skgstat.Variogram.experimental" title="Permalink to this definition">¶</a></dt>
+<dd><p>Experimental Variogram</p>
+<p>Array of experimental (empirical) semivariance values. The array
+length will be aligned to Variogram.bins. The current
+Variogram.estimator has been used to calculate the values. Depending
+on the setting of Variogram.harmonize (True | False), either
+Variogram._experimental or Variogram.isotonic will be returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>vario</strong> – Array of the experimental semi-variance values aligned to
+Variogram.bins.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram._experimental</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.isotonic</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.fit">
+<code class="sig-name descname"><span class="pre">fit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the variogram</p>
+<p>The fit function will fit the theoretical variogram function to the
+experimental. The preprocessed distance matrix, pairwise differences
+and binning will not be recalculated, if already done. This could be
+forced by setting the force parameter to true.</p>
+<p>In case you call fit function directly, with method or sigma,
+the parameters set on Variogram object instantiation will get
+overwritten. All other keyword arguments will be passed to
+scipy.optimize.curve_fit function.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.10: </span>added ‘ml’ and ‘custom’ method.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>force</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If set to True, a clean preprocessing of the distance matrix,
+pairwise differences and the binning will be forced. Default is
+False.</p></li>
+<li><p><strong>method</strong> (<em>string</em>) – <p>A string identifying one of the implemented fitting procedures.
+Can be one of:</p>
+<blockquote>
+<div><ul>
+<li><p>lm: Levenberg-Marquardt algorithms implemented in
+scipy.optimize.leastsq function.</p></li>
+<li><p>trf: Trust Region Reflective algorithm implemented in
+scipy.optimize.least_squares(method=’trf’)</p></li>
+<li><p>’ml’: Maximum-Likelihood estimation. With the current implementation
+only the Nelder-Mead solver for unconstrained problems is
+implemented. This will estimate the variogram parameters from
+a Gaussian parameter space by minimizing the negative
+log-likelihood.</p></li>
+<li><p>’manual’: Manual fitting. You can set the range, sill and
+nugget either directly to the <a class="reference internal" href="#skgstat.Variogram.fit" title="skgstat.Variogram.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit</span></code></a>
+function, or as <cite>fit_</cite> prefixed keyword arguments on
+Variogram instantiation.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>sigma<span class="classifier">string, array</span></dt><dd><p>Uncertainty array for the bins. Has to have the same dimension as
+self.bins. Refer to Variogram.fit_sigma for more information.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>void</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html#scipy.optimize.minimize" title="(in SciPy v1.6.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.optimize.minimize</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html#scipy.optimize.curve_fit" title="(in SciPy v1.6.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.optimize.curve_fit</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html#scipy.optimize.leastsq" title="(in SciPy v1.6.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.optimize.leastsq</span></code></a>, <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html#scipy.optimize.least_squares" title="(in SciPy v1.6.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.optimize.least_squares</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.fit_sigma">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fit_sigma</span></code><a class="headerlink" href="#skgstat.Variogram.fit_sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fitting Uncertainty</p>
+<p>Set or calculate an array of observation uncertainties aligned to the
+Variogram.bins. These will be used to weight the observations in the
+cost function, which divides the residuals by their uncertainty.</p>
+<p>When setting fit_sigma, the array of uncertainties itself can be
+given, or one of the strings: [‘linear’, ‘exp’, ‘sqrt’, ‘sq’, ‘entropy’].
+The parameters described below refer to the setter of this property.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.11: </span>added the ‘entropy’ option.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sigma</strong> (<em>string</em><em>, </em><em>array</em>) – <p>Sigma can either be an array of discrete uncertainty values,
+which have to align to the Variogram.bins, or of type string.
+Then, the weights for fitting are calculated as a function of
+(lag) distance.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>sigma=’linear’</strong>: The residuals get weighted by the lag
+distance normalized to the maximum lag distance, denoted as
+<span class="math notranslate nohighlight">\(w_n\)</span></p></li>
+<li><p><strong>sigma=’exp’</strong>: The residuals get weighted by the function:
+<span class="math notranslate nohighlight">\(w = e^{1 / w_n}\)</span></p></li>
+<li><p><strong>sigma=’sqrt’</strong>: The residuals get weighted by the function:
+<span class="math notranslate nohighlight">\(w = \sqrt(w_n)\)</span></p></li>
+<li><p><strong>sigma=’sq’</strong>: The residuals get weighted by the function:
+<span class="math notranslate nohighlight">\(w = w_n^2\)</span></p></li>
+<li><p><strong>sigma=’entropy’</strong>: Calculates the Shannon Entropy as
+intrinsic uncertainty of each lag class.</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>void</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The cost function is defined as:</p>
+<div class="math notranslate nohighlight">
+\[chisq = \sum {\frac{r}{\sigma}}^2\]</div>
+<p>where r are the residuals between the experimental variogram and the
+modeled values for the same lag. Following this function,
+small values will increase the influence of that residual, while a very
+large sigma will cause the observation to be ignored.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html#scipy.optimize.curve_fit" title="(in SciPy v1.6.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.optimize.curve_fit</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.fitted_model">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fitted_model</span></code><a class="headerlink" href="#skgstat.Variogram.fitted_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fitted Model</p>
+<p>Returns a callable that takes a distance value and returns a
+semivariance. This model is fitted to the current Variogram
+parameters. The function will be interpreted at return time with the
+parameters hard-coded into the function code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>model</strong> – The current semivariance model fitted to the current Variogram
+model parameters.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.get_empirical">
+<code class="sig-name descname"><span class="pre">get_empirical</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bin_center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.get_empirical"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.get_empirical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empirical variogram</p>
+<p>Returns a tuple of dependent and independent sample values, this
+<a class="reference internal" href="#skgstat.Variogram" title="skgstat.Variogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variogram</span></code></a> is estimated for.
+This is a tuple of the current <a class="reference internal" href="#skgstat.Variogram.bins" title="skgstat.Variogram.bins"><code class="xref py py-func docutils literal notranslate"><span class="pre">bins</span></code></a>
+and <a class="reference internal" href="#skgstat.Variogram.experimental" title="skgstat.Variogram.experimental"><code class="xref py py-func docutils literal notranslate"><span class="pre">experimental</span></code></a>
+semi-variance values. By default the upper bin edges are used.
+This can be set to bin center by the <cite>bin_center</cite> argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bin_center</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If set to <cite>True</cite>, the center for each distance lag bin is
+used over the upper limit (default).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>bins</strong> (<em>numpy.ndarray</em>) – 1D array of <a class="reference internal" href="#skgstat.Variogram.n_lags" title="skgstat.Variogram.n_lags"><code class="xref py py-func docutils literal notranslate"><span class="pre">n_lags</span></code></a>
+distance lag bins.</p></li>
+<li><p><strong>experimental</strong> (<em>numpy.ndarray</em>) – 1D array of <a class="reference internal" href="#skgstat.Variogram.n_lags" title="skgstat.Variogram.n_lags"><code class="xref py py-func docutils literal notranslate"><span class="pre">n_lags</span></code></a>
+experimental semi-variance values.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.bins" title="skgstat.Variogram.bins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.bins</span></code></a>, <a class="reference internal" href="#skgstat.Variogram.experimental" title="skgstat.Variogram.experimental"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.experimental</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.lag_classes">
+<code class="sig-name descname"><span class="pre">lag_classes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.lag_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.lag_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the lag classes</p>
+<p>Generates an iterator over all lag classes. Can be zipped with
+Variogram.bins to identify the lag.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.6: </span>yields an empty array for empty lag groups now</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iterable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.lag_groups">
+<code class="sig-name descname"><span class="pre">lag_groups</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.lag_groups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.lag_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lag class groups</p>
+<p>Retuns a mask array with as many elements as self._diff has,
+identifying the lag class group for each pairwise difference. Can be
+used to extract all pairwise values within the same lag bin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.lag_classes" title="skgstat.Variogram.lag_classes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.lag_classes</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.location_trend">
+<code class="sig-name descname"><span class="pre">location_trend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.location_trend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.location_trend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Location Trend plot</p>
+<p>Plots the values over each dimension of the coordinates in a scatter
+plot. This will visually show correlations between the values and any
+of the coordinate dimension. If there is a value dependence on the
+location, this would violate the intrinsic hypothesis. This is a
+weaker form of stationarity of second order.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.0: </span>This plot can be plotted with the plotly plotting backend</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – Can be None (default) or a list of matplotlib.AxesSubplots. If a
+list is passed, the location trend plots will be plotted on the
+given instances. Note that then length of the list has to match
+the dimeonsionality of the coordinates array. In case 3D
+coordinates are used, three subplots have to be given.</p></li>
+<li><p><strong>show</strong> (<em>boolean</em>) – If True (default), the <cite>show</cite> method of the Figure will be
+called. Can be set to False to prevent duplicated plots in
+some environments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Keyword Arguments</dt>
+<dd class="field-even"><p><strong>add_trend_line</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – <div class="versionadded">
+<p><span class="versionmodified added">New in version 0.3.5.</span></p>
+</div>
+<p>If set to <cite>True</cite>, the class will fit a linear model to each
+coordinate dimension and output the model along with a
+calculated R². With high R² values, you should consider
+rejecting the input data, or transforming it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Right now, this is only supported for <code class="docutils literal notranslate"><span class="pre">'plotly'</span></code> backend</p>
+</div>
+</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>fig</strong> – The figure produced by the function. Dependends on the
+current backend.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib.Figure, plotly.graph_objects.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.mae">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mae</span></code><a class="headerlink" href="#skgstat.Variogram.mae" title="Permalink to this definition">¶</a></dt>
+<dd><p>RMSE</p>
+<p>Calculate the Mean absolute error between the experimental
+variogram and the theoretical model values at corresponding lags.
+Can be used as a fitting quality measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.residuals" title="skgstat.Variogram.residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.residuals</span></code></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The MAE is implemented like:</p>
+<div class="math notranslate nohighlight">
+\[MAE = \frac{\sum_{i=0}^{i=N(x)} |x-y|}{N(x)}\]</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.mean_residual">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mean_residual</span></code><a class="headerlink" href="#skgstat.Variogram.mean_residual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mean Model residuals</p>
+<p>Calculates the mean, absoulte deviations between the experimental
+variogram and theretical model values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.model_deviations">
+<code class="sig-name descname"><span class="pre">model_deviations</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.model_deviations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.model_deviations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model Deviations</p>
+<p>Calculate the deviations between the experimental variogram and the
+recalculated values for the same bins using the fitted theoretical
+variogram function. Can be utilized to calculate a quality measure
+for the variogram fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>deviations</strong> – first element is the experimental variogram
+second element are the corresponding values of the theoretical
+model.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.mse">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mse</span></code><a class="headerlink" href="#skgstat.Variogram.mse" title="Permalink to this definition">¶</a></dt>
+<dd><p>RMSE</p>
+<p>Calculate the Mean squared error between the experimental
+variogram and the theoretical model values at corresponding lags.
+Can be used as a fitting quality measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.residuals" title="skgstat.Variogram.residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.residuals</span></code></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The MSE is implemented like:</p>
+<div class="math notranslate nohighlight">
+\[MSE = \frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}\]</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.n_lags">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">n_lags</span></code><a class="headerlink" href="#skgstat.Variogram.n_lags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of lag bins</p>
+<p>Pass the number of lag bins to be used on
+this Variogram instance. This will reset
+the grouping index and fitting parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.nrmse">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">nrmse</span></code><a class="headerlink" href="#skgstat.Variogram.nrmse" title="Permalink to this definition">¶</a></dt>
+<dd><p>NRMSE</p>
+<p>Calculate the normalized root mean squared error between the
+experimental variogram and the theoretical model values at
+corresponding lags. Can be used as a fitting quality measure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.residuals" title="skgstat.Variogram.residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.residuals</span></code></a>, <a class="reference internal" href="#skgstat.Variogram.rmse" title="skgstat.Variogram.rmse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.rmse</span></code></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The NRMSE is implemented as:</p>
+<div class="math notranslate nohighlight">
+\[NRMSE = \frac{RMSE}{mean(y)}\]</div>
+<p>where RMSE is Variogram.rmse and y is Variogram.experimental</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.nrmse_r">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">nrmse_r</span></code><a class="headerlink" href="#skgstat.Variogram.nrmse_r" title="Permalink to this definition">¶</a></dt>
+<dd><p>NRMSE</p>
+<p>Alternative normalized root mean squared error between the
+experimental variogram and the theoretical model values at
+corresponding lags. Can be used as a fitting quality measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.rmse" title="skgstat.Variogram.rmse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.rmse</span></code></a>, <a class="reference internal" href="#skgstat.Variogram.nrmse" title="skgstat.Variogram.nrmse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.nrmse</span></code></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>Unlike Variogram.nrmse, nrmse_r is not normalized to the mean of y,
+but the differece of the maximum y to its mean:</p>
+<div class="math notranslate nohighlight">
+\[NRMSE_r = \frac{RMSE}{max(y) - mean(y)}\]</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.parameters">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">parameters</span></code><a class="headerlink" href="#skgstat.Variogram.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract just the variogram parameters range, sill and nugget from the self.describe return</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.plot">
+<code class="sig-name descname"><span class="pre">plot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram Plot</p>
+<p>Plot the experimental variogram, the fitted theoretical function and
+an histogram for the lag classes. The axes attribute can be used to
+pass a list of AxesSubplots or a single instance to the plot
+function. Then these Subplots will be used. If only a single instance
+is passed, the hist attribute will be ignored as only the variogram
+will be plotted anyway.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.0: </span>This plot can be plotted with the plotly plotting backend</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>, </em><em>array</em><em>, </em><em>AxesSubplot</em><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If None, the plot function will create a new matplotlib figure.
+Otherwise a single instance or a list of AxesSubplots can be
+passed to be used. If a single instance is passed, the hist
+attribute will be ignored.</p></li>
+<li><p><strong>grid</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Defaults to True. If True a custom grid will be drawn through
+the lag class centers</p></li>
+<li><p><strong>show</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Defaults to True. If True, the show method of the passed or
+created matplotlib Figure will be called before returning the
+Figure. This should be set to False, when used in a Notebook,
+as a returned Figure object will be plotted anyway.</p></li>
+<li><p><strong>hist</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – Defaults to True. If False, the creation of a histogram for the
+lag classes will be suppressed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.preprocessing">
+<code class="sig-name descname"><span class="pre">preprocessing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.preprocessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.preprocessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocessing function</p>
+<p>Prepares all input data for the fit and transform functions. Namely,
+the distances are calculated and the value differences. Then the
+binning is set up and bin edges are calculated. If any of the listed
+subsets are already prepared, their processing is skipped. This
+behaviour can be changed by the force parameter. This will cause a
+clean preprocessing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>force</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If set to True, all preprocessing data sets will be deleted. Use
+it in case you need a clean preprocessing.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>void</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.r">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">r</span></code><a class="headerlink" href="#skgstat.Variogram.r" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pearson correlation of the fitted Variogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.residuals">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">residuals</span></code><a class="headerlink" href="#skgstat.Variogram.residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model residuals</p>
+<p>Calculate the model residuals defined as the differences between the
+experimental variogram and the theoretical model values at
+corresponding lag values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.rmse">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">rmse</span></code><a class="headerlink" href="#skgstat.Variogram.rmse" title="Permalink to this definition">¶</a></dt>
+<dd><p>RMSE</p>
+<p>Calculate the Root Mean squared error between the experimental
+variogram and the theoretical model values at corresponding lags.
+Can be used as a fitting quality measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.residuals" title="skgstat.Variogram.residuals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.residuals</span></code></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>The RMSE is implemented like:</p>
+<div class="math notranslate nohighlight">
+\[RMSE = \sqrt{\frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}}\]</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.scattergram">
+<code class="sig-name descname"><span class="pre">scattergram</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.scattergram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.scattergram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scattergram plot</p>
+<p>Groups the values by lags and plots the head and tail values
+of all point pairs within the groups against each other.
+This can be used to investigate the distribution of the
+value residuals.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.0: </span>This plot can be plotted with the plotly plotting backend</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.Axes</em><em>, </em><em>plotly.graph_objects.Figure</em>) – If None, a new plotting Figure will be created. If given,
+it has to be an instance of the used plotting backend, which
+will be used to plot on.</p></li>
+<li><p><strong>show</strong> (<em>boolean</em>) – If True (default), the <cite>show</cite> method of the Figure will be
+called. Can be set to False to prevent duplicated plots in
+some environments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fig</strong> – Resulting figure, depending on the plotting backend</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure, plotly.graph_objects.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.set_bin_func">
+<code class="sig-name descname"><span class="pre">set_bin_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bin_func</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.set_bin_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.set_bin_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set binning function</p>
+<p>Sets a new binning function to be used. The new binning method is set
+by a string identifying the new function to be used. Can be one of:
+[‘even’, ‘uniform’, ‘fd’, ‘sturges’, ‘scott’, ‘sqrt’, ‘doane’].
+If the number of lag classes should be estimated automatically, it is
+recommended to use ‘ sturges’ for small, normal distributed locations
+and ‘fd’ or ‘scott’ for large datasets, where ‘fd’ is more robust to
+outliers. ‘sqrt’ is by far the fastest estimator. ‘doane’ is an
+extension of Sturge’s rule for non-normal distributed data.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.8: </span>added ‘fd’, ‘sturges’, ‘scott’, ‘sqrt’, ‘doane’</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.3.9: </span>added ‘kmeans’, ‘ward’</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.0: </span>added ‘stable_entropy’</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.4.1: </span>refactored local wrapper function definition. The wrapper to
+pass kwargs to the binning functions is now implemented as
+a instance method, to make it pickleable.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>bin_func</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <p>Can be one of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>’even’</p></li>
+<li><p>’uniform’</p></li>
+<li><p>’fd’</p></li>
+<li><p>’sturges’</p></li>
+<li><p>’scott’</p></li>
+<li><p>’sqrt’</p></li>
+<li><p>’doane’</p></li>
+<li><p>’kmeans’</p></li>
+<li><p>’ward’</p></li>
+<li><p>’stable_entropy’</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>void</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p><strong>`’even’`</strong>: Use skgstat.binning.even_width_lags for using
+n_lags lags of equal width up to maxlag.</p>
+<p><strong>`’uniform’`</strong>: Use skgstat.binning.uniform_count_lags for using
+n_lags lags up to maxlag in which the pairwise differences
+follow a uniform distribution.</p>
+<p><strong>`’sturges’`</strong>: estimates the number of evenly distributed lag
+classes (n) by Sturges rule <a class="footnote-reference brackets" href="#id5" id="id1">101</a>:</p>
+<div class="math notranslate nohighlight">
+\[n = log_2 n + 1\]</div>
+<p><strong>`’scott’`</strong>: estimates the lag class widths (h) by Scott’s rule <a class="footnote-reference brackets" href="#id6" id="id2">102</a>:</p>
+<div class="math notranslate nohighlight">
+\[h = \sigma \frac{24 * \sqrt{\pi}}{n}^{\frac{1}{3}}\]</div>
+<p><strong>`’sqrt’`</strong>: estimates the number of lags (n) by the suare-root:</p>
+<div class="math notranslate nohighlight">
+\[n = \sqrt{n}\]</div>
+<p><strong>`’fd’`</strong>: estimates the lag class widths (h) using the
+Freedman Diaconis estimator <a class="footnote-reference brackets" href="#id7" id="id3">103</a>:</p>
+<div class="math notranslate nohighlight">
+\[h = 2\frac{IQR}{n^{1/3}}\]</div>
+<p><strong>`’doane’`</strong>: estimates the number of evenly distributed lag classes
+using Doane’s extension to Sturge’s rule <a class="footnote-reference brackets" href="#id8" id="id4">104</a>:</p>
+<div class="math notranslate nohighlight">
+\[n = 1 + \log_{2}(s) + \log_2\left(1 + \frac{|g|}{k}\right)
+g = E\left[\left(\frac{x - \mu_g}{\sigma}\right)^3\right]
+k = \sqrt{\frac{6(s - 2)}{(s + 1)(s + 3)}}\]</div>
+<p><strong>`’kmeans’`</strong>: This method will search for <cite>n</cite> clusters in the
+distance matrix. The cluster centroids are used to calculate the
+upper edges of the lag classes, by setting it to half of the distance
+between two neighboring clusters. Note: This does not necessarily
+result in even width bins.</p>
+<p><strong>`’ward’`</strong> uses a hierachical culstering algorithm to iteratively
+merge pairs of clusters until there are only <cite>n</cite> remaining clusters.
+The merging is done by minimizing the variance for the merged cluster.</p>
+<p><strong>`’stable_entropy’`</strong> will adjust <cite>n</cite> bin edges by minimizing the
+absolute differences between each lag’s Shannon Entropy. This will
+lead to uneven bin widths. Each lag class value distribution will be
+of comparable intrinsic uncertainty from an information theoretic
+point of view, which makes the semi-variances quite comparable.
+However, it is not guaranteed, that the binning makes any sense
+from a geostatistical point of view, as the first lags might be way
+too wide.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.bin_func" title="skgstat.Variogram.bin_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.bin_func</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.uniform_count_lags</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.even_width_lags</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.auto_derived_lags</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.kmeans</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.ward</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn.cluster.KMeans</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">sklearn.cluster.AgglomerativeClustering</span></code></p>
+</div>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id1">101</a></span></dt>
+<dd><p>Scott, D.W. (2009), Sturges’ rule. WIREs Comp Stat, 1: 303-306.
+<a class="reference external" href="https://doi.org/10.1002/wics.35">https://doi.org/10.1002/wics.35</a></p>
+</dd>
+<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id2">102</a></span></dt>
+<dd><p>Scott, D.W. (2010), Scott’s rule. WIREs Comp Stat, 2: 497-502.
+<a class="reference external" href="https://doi.org/10.1002/wics.103">https://doi.org/10.1002/wics.103</a></p>
+</dd>
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id3">103</a></span></dt>
+<dd><p>Freedman, David, and Persi Diaconis  (1981), “On the histogram as
+a density estimator: L 2 theory.” Zeitschrift für Wahrscheinlichkeitstheorie
+und verwandte Gebiete 57.4: 453-476.</p>
+</dd>
+<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id4">104</a></span></dt>
+<dd><p>Doane, D. P. (1976). Aesthetic frequency classifications.
+The American Statistician, 30(4), 181-183.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.set_dist_function">
+<code class="sig-name descname"><span class="pre">set_dist_function</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.set_dist_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.set_dist_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set distance function</p>
+<p>Set the function used for distance calculation. func can either be a
+callable or a string. The ranked distance function is not implemented
+yet. strings will be forwarded to the scipy.spatial.distance.pdist
+function as the metric argument.
+If func is a callable, it has to return the upper triangle of the
+distance matrix as a flat array (Like the pdist function).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>string</em><em>, </em><em>callable</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.set_model">
+<code class="sig-name descname"><span class="pre">set_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.set_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.set_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set model as the new theoretical variogram function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.set_values">
+<code class="sig-name descname"><span class="pre">set_values</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.set_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.set_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new values</p>
+<p>Will set the passed array as new value array. This array has to be of
+same length as the first axis of the coordinates array. The Variogram
+class does only accept one dimensional arrays.
+On success all fitting parameters are deleted and the pairwise
+differences are recalculated.
+Raises :py:class:<a href="#id9"><span class="problematic" id="id10">`</span></a>ValueError`s on shape mismatches and a Warning</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>void</p>
+</dd>
+</dl>
+<p>:raises ValueError : raised if the values array shape does not match the: coordinates array, or more than one dimension given
+:raises Warning : raised if all input values are the same:</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.values" title="skgstat.Variogram.values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.values</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.to_DataFrame">
+<code class="sig-name descname"><span class="pre">to_DataFrame</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.to_DataFrame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.to_DataFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram DataFrame</p>
+<p>Returns the fitted theoretical variogram as a pandas.DataFrame
+instance. The n and force parameter control the calaculation,
+refer to the data funciton for more info.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>integer</em>) – length of the lags array to be used for fitting. Defaults to 100,
+which will be fine for most plots</p></li>
+<li><p><strong>force</strong> (<em>boolean</em>) – If True, the preprocessing and fitting will be executed as a
+clean run. This will force all intermediate results to be
+recalculated. Defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.2.4)">pandas.DataFrame</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.data" title="skgstat.Variogram.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.data</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.to_gs_krige">
+<code class="sig-name descname"><span class="pre">to_gs_krige</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.to_gs_krige"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.to_gs_krige" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instatiate a GSTools Krige class.</p>
+<p>This can only export isotropic models.
+Note: the <cite>fit_variogram</cite> is always set to <cite>False</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variogram</strong> (<a class="reference internal" href="#skgstat.Variogram" title="skgstat.Variogram"><em>skgstat.Variogram</em></a>) – Scikit-GStat Variogram instamce</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments forwarded to GSTools Krige.
+Refer to <a class="reference external" href="https://geostat-framework.readthedocs.io/projects/gstools/en/latest/generated/gstools.krige.Krige.html#gstools.krige.Krige" title="(in GSTools v1.3.0rc3.dev42)"><code class="xref any docutils literal notranslate"><span class="pre">Krige</span></code></a> to
+learn about all possible options.
+Note that the <cite>fit_variogram</cite> parameter will
+always be False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ImportError" title="(in Python v3.6)"><strong>ImportError</strong></a> – When GSTools is not installed.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – When GSTools version is not v1.3 or greater.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – When given Variogram model is not supported (‘harmonize’).</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Instantiated GSTools Krige class.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref any docutils literal notranslate"><span class="pre">Krige</span></code></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">gstools.Krige</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.to_gstools">
+<code class="sig-name descname"><span class="pre">to_gstools</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.to_gstools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.to_gstools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate a corresponding GSTools CovModel.</p>
+<p>By default, this will be an isotropic model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> – Keyword arguments forwarded to the instantiated GSTools CovModel.
+The default parameters ‘dim’, ‘var’, ‘len_scale’, ‘nugget’,
+‘rescale’ and optional shape parameters will be extracted
+from the given Variogram but they can be overwritten here.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ImportError" title="(in Python v3.6)"><strong>ImportError</strong></a> – When GSTools is not installed.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – When GSTools version is not v1.3 or greater.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#ValueError" title="(in Python v3.6)"><strong>ValueError</strong></a> – When given Variogram model is not supported (‘harmonize’).</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Corresponding GSTools covmodel.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><code class="xref any docutils literal notranslate"><span class="pre">CovModel</span></code></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In case you intend to use the
+<a class="reference internal" href="#skgstat.Variogram.coordinates" title="skgstat.Variogram.coordinates"><code class="xref py py-func docutils literal notranslate"><span class="pre">coordinates</span></code></a>
+in a GSTools workflow, you need to transpose the coordinate
+array like:</p>
+<p>&gt;&gt; cond_pos Variogram.coordinates.T</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.transform">
+<code class="sig-name descname"><span class="pre">transform</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform</p>
+<p>Transform a given set of lag values to the theoretical variogram
+function using the actual fitting and preprocessing parameters in
+this Variogram instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.array</em>) – Array of lag values to be used as model input for the fitted
+theoretical variogram model</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.triangular_distance_matrix">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">triangular_distance_matrix</span></code><a class="headerlink" href="#skgstat.Variogram.triangular_distance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like distance_matrix but with zeros below the diagonal…
+Only defined if distance_matrix is a sparse matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.update_kwargs">
+<code class="sig-name descname"><span class="pre">update_kwargs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/Variogram.html#Variogram.update_kwargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.Variogram.update_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><div class="versionadded">
+<p><span class="versionmodified added">New in version 0.3.7.</span></p>
+</div>
+<p>Update the keyword arguments of this Variogram instance.
+The keyword arguments will be validated first and the update the
+existing kwargs. That means, you can pass only the kwargs, which
+need to be updated.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Updating the kwargs does not force a preprocessing circle.
+Any affected intermediate result, that might be cached internally,
+will not make use of updated kwargs. Make a call to
+<a class="reference internal" href="#skgstat.Variogram.preprocessing" title="skgstat.Variogram.preprocessing"><code class="xref py py-func docutils literal notranslate"><span class="pre">preprocessing(force=True)</span></code></a>
+to force a clean re-calculation of the Variogram instance.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.value_matrix">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">value_matrix</span></code><a class="headerlink" href="#skgstat.Variogram.value_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value matrix</p>
+<p>Returns a matrix of pairwise differences in absolute values. The
+matrix will have the shape (m, m) with m = len(Variogram.values).
+Note that Variogram.values holds the values themselves, while the
+value_matrix consists of their pairwise differences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>values</strong> – Matrix of pairwise absolute differences of the values.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.matrix.html#numpy.matrix" title="(in NumPy v1.20)">numpy.matrix</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram._diff</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.Variogram.values">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">values</span></code><a class="headerlink" href="#skgstat.Variogram.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Values property</p>
+<p>Array of observations, the variogram is build for. The setter of this
+property utilizes the Variogram.set_values function for setting new
+arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>values</strong></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.Variogram.set_values" title="skgstat.Variogram.set_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Variogram.set_values</span></code></a></p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="reference.html" title="previous page">Code Reference</a>
+    <a class='right-next' id="next-link" href="directionalvariogram.html" title="next page">DirectionalVariogram Class</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

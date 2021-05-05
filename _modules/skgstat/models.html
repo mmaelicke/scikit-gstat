@@ -1,0 +1,633 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>skgstat.models &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../reference/reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for skgstat.models</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">special</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+
+
+<span class="k">def</span> <span class="nf">variogram</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+            <span class="n">new_args</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">mapping</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="o">*</span><span class="n">new_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<div class="viewcode-block" id="spherical"><a class="viewcode-back" href="../../reference/models.html#skgstat.models.spherical">[docs]</a><span class="nd">@variogram</span>
+<span class="nd">@jit</span>
+<span class="k">def</span> <span class="nf">spherical</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Spherical Variogram function</span>
+
+<span class="sd">    Implementation of the spherical variogram function. Calculates the</span>
+<span class="sd">    dependent variable for a given lag (h). The nugget (b) defaults to be 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : float</span>
+<span class="sd">        Specifies the lag of separating distances that the dependent variable</span>
+<span class="sd">        shall be calculated for. It has to be a positive real number.</span>
+<span class="sd">    r : float</span>
+<span class="sd">        The effective range. Note this is not the range parameter! However,</span>
+<span class="sd">        for the spherical variogram the range and effective range are the same.</span>
+<span class="sd">    c0 : float</span>
+<span class="sd">        The sill of the variogram, where it will flatten out. The function</span>
+<span class="sd">        will not return a value higher than C0 + b.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        The nugget of the variogram. This is the value of independent</span>
+<span class="sd">        variable at the distance of zero. This is usually attributed to</span>
+<span class="sd">        non-spatial variance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gamma : numpy.float64</span>
+<span class="sd">        Unlike in most variogram function formulas, which define the function</span>
+<span class="sd">        for :math:`2*\gamma`, this function will return :math:`\gamma` only.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    The implementation follows [6]_:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*\frac{h}{a}^3}\right)</span>
+
+<span class="sd">    if :math:`h &lt; r`, and</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \gamma = b + C_0</span>
+
+<span class="sd">    else. r is the effective range, which is in case of the spherical</span>
+<span class="sd">    variogram just a.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    .. [6] Burgess, T. M., &amp; Webster, R. (1980). Optimal interpolation</span>
+<span class="sd">       and isarithmic mapping of soil properties. I.The semi-variogram and</span>
+<span class="sd">       punctual kriging. Journal of Soil and Science, 31(2), 315–331,</span>
+<span class="sd">       http://doi.org/10.1111/j.1365-2389.1980.tb02084.x</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># prepare parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="mf">1.</span>
+
+    <span class="k">if</span> <span class="n">h</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="p">((</span><span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">a</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">h</span> <span class="o">/</span> <span class="n">a</span><span class="p">)</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span></div>
+
+
+<div class="viewcode-block" id="exponential"><a class="viewcode-back" href="../../reference/models.html#skgstat.models.exponential">[docs]</a><span class="nd">@variogram</span>
+<span class="nd">@jit</span>
+<span class="k">def</span> <span class="nf">exponential</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exponential Variogram function</span>
+
+<span class="sd">    Implementation of the exponential variogram function. Calculates the</span>
+<span class="sd">    dependent variable for a given lag (h). The nugget (b) defaults to be 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : float</span>
+<span class="sd">        Specifies the lag of separating distances that the dependent variable</span>
+<span class="sd">        shall be calculated for. It has to be a positive real number.</span>
+<span class="sd">    r : float</span>
+<span class="sd">        The effective range. Note this is not the range parameter! For the</span>
+<span class="sd">        exponential variogram function the range parameter a is defined to be</span>
+<span class="sd">        :math:`a=\frac{r}{3}`. The effective range is the lag where 95% of the</span>
+<span class="sd">        sill are exceeded. This is needed as the sill is only approached</span>
+<span class="sd">        asymptotically by an exponential function.</span>
+<span class="sd">    c0 : float</span>
+<span class="sd">        The sill of the variogram, where it will flatten out. The function</span>
+<span class="sd">        will not return a value higher than C0 + b.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        The nugget of the variogram. This is the value of independent</span>
+<span class="sd">        variable at the distance of zero. This is usually attributed to</span>
+<span class="sd">        non-spatial variance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gamma : numpy.float64</span>
+<span class="sd">        Unlike in most variogram function formulas, which define the function</span>
+<span class="sd">        for :math:`2*\gamma`, this function will return :math:`\gamma` only.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The implementation following [7]_, [9]_ and [8]_ is as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \gamma = b + C_0 * \left({1 - e^{-\frac{h}{a}}}\right)</span>
+
+<span class="sd">    a is the range parameter, that can be calculated from the</span>
+<span class="sd">    effective range r as: :math:`a = \frac{r}{3}`.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    .. [7] Cressie, N. (1993): Statistics for spatial data.</span>
+<span class="sd">       Wiley Interscience.</span>
+
+<span class="sd">    .. [8] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial</span>
+<span class="sd">       Uncertainty. Wiley Interscience.</span>
+<span class="sd">    </span>
+<span class="sd">    .. [9] Journel, A G, and Huijbregts, C J. Mining geostatistics. </span>
+<span class="sd">        United Kingdom: N. p., 1976.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># prepare parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="mf">3.</span>
+
+    <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">a</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="gaussian"><a class="viewcode-back" href="../../reference/models.html#skgstat.models.gaussian">[docs]</a><span class="nd">@variogram</span>
+<span class="nd">@jit</span>
+<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; Gaussian Variogram function</span>
+
+<span class="sd">    Implementation of the Gaussian variogram function. Calculates the</span>
+<span class="sd">    dependent variable for a given lag (h). The nugget (b) defaults to be 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : float</span>
+<span class="sd">        Specifies the lag of separating distances that the dependent variable</span>
+<span class="sd">        shall be calculated for. It has to be a positive real number.</span>
+<span class="sd">    r : float</span>
+<span class="sd">        The effective range. Note this is not the range parameter! For the</span>
+<span class="sd">        exponential variogram function the range parameter a is defined to be</span>
+<span class="sd">        :math:`a=\frac{r}{3}`. The effetive range is the lag where 95% of the</span>
+<span class="sd">        sill are exceeded. This is needed as the sill is only approached</span>
+<span class="sd">        asymptotically by an exponential function.</span>
+<span class="sd">    c0 : float</span>
+<span class="sd">        The sill of the variogram, where it will flatten out. The function</span>
+<span class="sd">        will not return a value higher than C0 + b.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        The nugget of the variogram. This is the value of independent</span>
+<span class="sd">        variable at the distance of zero. This is usually attributed to</span>
+<span class="sd">        non-spatial variance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gamma : numpy.float64</span>
+<span class="sd">        Unlike in most variogram function formulas, which define the function</span>
+<span class="sd">        for :math:`2*\gamma`, this function will return :math:`\gamma` only.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    This implementation follows [10]_ and [11]_:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \gamma = b + c_0 * \left({1 - e^{-\frac{h^2}{a^2}}}\right)</span>
+
+
+<span class="sd">    a is the range parameter, that can be calculated from the</span>
+<span class="sd">    effective range r as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        a = \frac{r}{2}</span>
+
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    .. [10] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial</span>
+<span class="sd">       Uncertainty. Wiley Interscience.</span>
+<span class="sd">    .. [11] Journel, A G, and Huijbregts, C J. Mining geostatistics. </span>
+<span class="sd">        United Kingdom: N. p., 1976.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># prepare parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="mf">2.</span>
+
+    <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="p">(</span><span class="n">h</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="cubic"><a class="viewcode-back" href="../../reference/models.html#skgstat.models.cubic">[docs]</a><span class="nd">@variogram</span>
+<span class="nd">@jit</span>
+<span class="k">def</span> <span class="nf">cubic</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Cubic Variogram function</span>
+
+<span class="sd">    Implementation of the Cubic variogram function. Calculates the</span>
+<span class="sd">    dependent variable for a given lag (h). The nugget (b) defaults to be 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : float</span>
+<span class="sd">        Specifies the lag of separating distances that the dependent variable</span>
+<span class="sd">        shall be calculated for. It has to be a positive real number.</span>
+<span class="sd">    r : float</span>
+<span class="sd">        The effective range. Note this is not the range parameter! However,</span>
+<span class="sd">        for the cubic variogram the range and effective range are the same.</span>
+<span class="sd">    c0 : float</span>
+<span class="sd">        The sill of the variogram, where it will flatten out. The function</span>
+<span class="sd">        will not return a value higher than C0 + b.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        The nugget of the variogram. This is the value of independent</span>
+<span class="sd">        variable at the distance of zero. This is usually attributed to</span>
+<span class="sd">        non-spatial variance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gamma : numpy.float64</span>
+<span class="sd">        Unlike in most variogram function formulas, which define the function</span>
+<span class="sd">        for :math:`2*\gamma`, this function will return :math:`\gamma` only.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    This implementation is taken from [11]_:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \gamma = b + C_0 *  \left[{7 * \left(\frac{h^2}{a^2}\right) -</span>
+<span class="sd">        \frac{35}{4} * \left(\frac{h^3}{a^3}\right) +</span>
+<span class="sd">        \frac{7}{2} * \left(\frac{h^5}{a^5}\right) -</span>
+<span class="sd">        \frac{3}{4} * \left(\frac{h^7}{a^7}\right)}\right]</span>
+
+<span class="sd">    a is the range parameter. For the cubic function, the effective range and</span>
+<span class="sd">    range parameter are the same.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    .. [11] Montero, J.-M., Mateu, J., &amp; others. (2015). Spatial and spatio-temporal </span>
+<span class="sd">        geostatistical modeling and kriging (Vol. 998). John Wiley &amp; Sons.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># prepare parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="mf">1.</span>
+
+    <span class="k">if</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">r</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="p">((</span><span class="mi">7</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">-</span>
+                         <span class="p">((</span><span class="mi">35</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">/</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">3</span><span class="p">))</span> <span class="o">+</span>
+                         <span class="p">((</span><span class="mi">7</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">**</span> <span class="mi">5</span> <span class="o">/</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">5</span><span class="p">))</span> <span class="o">-</span>
+                         <span class="p">((</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">h</span> <span class="o">**</span> <span class="mi">7</span> <span class="o">/</span> <span class="n">a</span> <span class="o">**</span> <span class="mi">7</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span></div>
+
+
+<div class="viewcode-block" id="stable"><a class="viewcode-back" href="../../reference/models.html#skgstat.models.stable">[docs]</a><span class="nd">@variogram</span>
+<span class="nd">@jit</span>
+<span class="k">def</span> <span class="nf">stable</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Stable Variogram function</span>
+
+<span class="sd">    Implementation of the stable variogram function. Calculates the</span>
+<span class="sd">    dependent variable for a given lag (h). The nugget (b) defaults to be 0.</span>
+
+<span class="sd">    .. versionchanged:: 0.4.4</span>
+<span class="sd">        Now returns the nugget at lag 0</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : float</span>
+<span class="sd">        Specifies the lag of separating distances that the dependent variable</span>
+<span class="sd">        shall be calculated for. It has to be a positive real number.</span>
+<span class="sd">    r : float</span>
+<span class="sd">        The effective range. Note this is not the range parameter! For the</span>
+<span class="sd">        stable variogram function the range parameter a is defined to be</span>
+<span class="sd">        :math:`a = \frac{r}{3^{\frac{1}{s}}}`. The effective range is the lag</span>
+<span class="sd">        where 95% of the sill are exceeded. This is needed as the sill is</span>
+<span class="sd">        only approached asymptotically by the e-function part of the stable</span>
+<span class="sd">        model.</span>
+<span class="sd">    c0 : float</span>
+<span class="sd">        The sill of the variogram, where it will flatten out. The function</span>
+<span class="sd">        will not return a value higher than C0 + b.</span>
+<span class="sd">    s : float</span>
+<span class="sd">        Shape parameter. For s &lt;= 2 the model will be shaped more like a</span>
+<span class="sd">        exponential or spherical model, for s &gt; 2 it will be shaped most like</span>
+<span class="sd">        a Gaussian function.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        The nugget of the variogram. This is the value of independent</span>
+<span class="sd">        variable at the distance of zero. This is usually attributed to</span>
+<span class="sd">        non-spatial variance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gamma : numpy.float64</span>
+<span class="sd">        Unlike in most variogram function formulas, which define the function</span>
+<span class="sd">        for :math:`2*\gamma`, this function will return :math:`\gamma` only.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The implementation is taken from [12]_:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \gamma = b + C_0 * \left({1. - e^{- {\frac{h}{a}}^s}}\right)</span>
+
+<span class="sd">    a is the range parameter and is calculated from the effective range r as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        a = \frac{r}{3^{\frac{1}{s}}}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    .. [12] Montero, J.-M., Mateu, J., &amp; others. (2015). Spatial and spatio-temporal</span>
+<span class="sd">        geostatistical modeling and kriging (Vol. 998). John Wiley &amp; Sons.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if s gts too small, we run into a zeroDivision error at lag 0</span>
+    <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span>
+
+    <span class="c1"># prepare parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span>
+
+<span class="c1">#    if s &gt; 2:</span>
+<span class="c1">#        s = 2</span>
+    <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="matern"><a class="viewcode-back" href="../../reference/models.html#skgstat.models.matern">[docs]</a><span class="nd">@variogram</span>
+<span class="nd">@jit</span><span class="p">(</span><span class="n">forceobj</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">matern</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Matérn Variogram function</span>
+
+<span class="sd">    Implementation of the Matérn variogram function. Calculates the</span>
+<span class="sd">    dependent variable for a given lag (h). The nugget (b) defaults to be 0.</span>
+
+<span class="sd">    .. versionchanged:: 0.4.4</span>
+<span class="sd">        now returns the nugget instead of NaN for lag 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h : float</span>
+<span class="sd">        Specifies the lag of separating distances that the dependent variable</span>
+<span class="sd">        shall be calculated for. It has to be a positive real number.</span>
+<span class="sd">    r : float</span>
+<span class="sd">        The effective range. Note this is not the range parameter! For the</span>
+<span class="sd">        Matérn variogram function the range parameter a is defined to be</span>
+<span class="sd">        :math:`a = \frac{r}{2}` and :math:`a = \frac{r}{3}` if s is smaller</span>
+<span class="sd">        than 0.5 or larger than 10. The effective range is the lag</span>
+<span class="sd">        where 95% of the sill are exceeded. This is needed as the sill is</span>
+<span class="sd">        only approached asymptotically by Matérn model.</span>
+<span class="sd">    c0 : float</span>
+<span class="sd">        The sill of the variogram, where it will flatten out. The function</span>
+<span class="sd">        will not return a value higher than C0 + b.</span>
+<span class="sd">    s : float</span>
+<span class="sd">        Smoothness parameter. The smoothness parameter can shape a smooth or</span>
+<span class="sd">        rough variogram function. A value of 0.5 will yield the exponential</span>
+<span class="sd">        function, while a smoothness of +inf is exactly the Gaussian model.</span>
+<span class="sd">        Typically a value of 10 is close enough to Gaussian shape to simulate</span>
+<span class="sd">        its behaviour. Low values are considered to be &#39;smooth&#39;, while larger</span>
+<span class="sd">        values are considered to describe a &#39;rough&#39; random field.</span>
+<span class="sd">    b : float</span>
+<span class="sd">        The nugget of the variogram. This is the value of independent</span>
+<span class="sd">        variable at the distance of zero. This is usually attributed to</span>
+<span class="sd">        non-spatial variance.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gamma : numpy.float64</span>
+<span class="sd">        Unlike in most variogram function formulas, which define the function</span>
+<span class="sd">        for :math:`2*\gamma`, this function will return :math:`\gamma` only.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The implementation is taken from [13]_:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \gamma (h) = b + C_0 \left( 1 - \frac{1}{2^{\upsilon - 1}</span>
+<span class="sd">        \Gamma(\upsilon)}\left(\frac{h}{a}\right)^\upsilon K_\upsilon</span>
+<span class="sd">        \left(\frac{h}{a}\right)\right)</span>
+
+<span class="sd">    a is the range parameter and is calculated from the effective range r as:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        a = \frac{r}{2}</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [13] Zimmermann, B., Zehe, E., Hartmann, N. K., &amp; Elsenbeer, H. (2008).</span>
+<span class="sd">        Analyzing spatial data: An assessment of assumptions, new methods, and</span>
+<span class="sd">        uncertainty using soil hydraulic data. Water Resources Research,</span>
+<span class="sd">        44(10), 1–18. https://doi.org/10.1029/2007WR006604</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">h</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">b</span>
+    <span class="c1"># prepare parameters</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="mf">2.</span>
+
+    <span class="c1"># calculate</span>
+    <span class="k">return</span> <span class="n">b</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="n">special</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="o">*</span>
+                     <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="o">/</span> <span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="o">*</span>
+                     <span class="n">special</span><span class="o">.</span><span class="n">kv</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">h</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="o">/</span> <span class="n">a</span><span class="p">))</span>
+                     <span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

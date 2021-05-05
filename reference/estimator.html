@@ -1,0 +1,621 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estimator Functions &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Variogram models" href="models.html" />
+    <link rel="prev" title="SpaceTimeVariogram class" href="spacetimevariogram.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <p class="caption">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="variogram.html">
+   Variogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="directionalvariogram.html">
+   DirectionalVariogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="spacetimevariogram.html">
+   SpaceTimeVariogram class
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Estimator Functions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="models.html">
+   Variogram models
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="kriging.html">
+   Kriging Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="metric_space.html">
+   MetricSpace - Coordinate representation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="util.html">
+   Utility Functions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#matheron">
+   Matheron
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cressie">
+   Cressie
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dowd">
+   Dowd
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#genton">
+   Genton
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#shannon-entropy">
+   Shannon Entropy
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#minmax">
+   MinMax
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#percentile">
+   Percentile
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="estimator-functions">
+<h1>Estimator Functions<a class="headerlink" href="#estimator-functions" title="Permalink to this headline">¶</a></h1>
+<p>Scikit-GStat implements various semi-variance estimators. These fucntions can
+be found in the skgstat.estimators submodule. Each of these functions can be
+used independently from Variogram class. In this case the estimator is
+expecting an array of pairwise differences to calculate the semi-variance.
+Not the values themselves.</p>
+<div class="section" id="matheron">
+<h2>Matheron<a class="headerlink" href="#matheron" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.estimators.matheron">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">matheron</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#matheron"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.matheron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matheron Semi-Variance</p>
+<p>Calculates the Matheron Semi-Variance from an array of pairwise differences.
+Returns the semi-variance for the whole array. In case a semi-variance is
+needed for multiple groups, this function has to be mapped on each group.
+That is the typical use case in geostatistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This implementation follows the original publication <a class="footnote-reference brackets" href="#id4" id="id1">1</a> and the
+notes on their application <a class="footnote-reference brackets" href="#id5" id="id2">2</a>. Following the 1962 publication <a class="footnote-reference brackets" href="#id4" id="id3">1</a>,
+the semi-variance is calculated as:</p>
+<div class="math notranslate nohighlight">
+\[\gamma (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}(x)^2\]</div>
+<p>with:</p>
+<div class="math notranslate nohighlight">
+\[x = Z(x_i) - Z(x_{i+h})\]</div>
+<p>where x is exactly the input array x.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id4"><span class="brackets">1</span><span class="fn-backref">(<a href="#id1">1</a>,<a href="#id3">2</a>)</span></dt>
+<dd><p>Matheron, G. (1962): Traité de Géostatistique Appliqué, Tonne 1.
+Memoires de Bureau de Recherches Géologiques et Miniéres, Paris.</p>
+</dd>
+<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p>Matheron, G. (1965): Les variables regionalisées et leur estimation.
+Editions Masson et Cie, 212 S., Paris.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="cressie">
+<h2>Cressie<a class="headerlink" href="#cressie" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.estimators.cressie">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">cressie</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#cressie"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.cressie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cressie-Hawkins Semi-Variance</p>
+<p>Calculates the Cressie-Hawkins Semi-Variance from an array of pairwise
+differences. Returns the semi-variance for the whole array. In case a
+semi-variance is needed for multiple groups, this function has to be
+mapped on each group. That is the typical use case in geostatistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This implementation is done after the publication by Cressie and Hawkins
+from 1980 <a class="footnote-reference brackets" href="#id7" id="id6">3</a>:</p>
+<div class="math notranslate nohighlight">
+\[2\gamma (h) = \frac{(\frac{1}{N(h)} \sum_{i=1}^{N(h)} |x|^{0.5})^4}
+{0.457 + \frac{0.494}{N(h)} + \frac{0.045}{N^2(h)}}\]</div>
+<p>with:</p>
+<div class="math notranslate nohighlight">
+\[x = Z(x_i) - Z(x_{i+h})\]</div>
+<p>where x is exactly the input array x.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id6">3</a></span></dt>
+<dd><p>Cressie, N., and D. Hawkins (1980): Robust estimation of the
+variogram. Math. Geol., 12, 115-125.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="dowd">
+<h2>Dowd<a class="headerlink" href="#dowd" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.estimators.dowd">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">dowd</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#dowd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.dowd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dowd semi-variance</p>
+<p>Calculates the Dowd semi-variance from an array of pairwise
+differences. Returns the semi-variance for the whole array. In case a
+semi-variance is needed for multiple groups, this function has to be
+mapped on each group. That is the typical use case in geostatistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Dowd estimator is based on the median of all pairwise differences in
+each lag class and is therefore robust to exteme values at the cost of
+variability.
+This implementation follows Dowd’s publication <a class="footnote-reference brackets" href="#id9" id="id8">4</a>:</p>
+<div class="math notranslate nohighlight">
+\[2\gamma (h) = 2.198 * {median(x)}^2\]</div>
+<p>with:</p>
+<div class="math notranslate nohighlight">
+\[x = Z(x_i) - Z(x_{i+h})\]</div>
+<p>where x is exactly the input array x.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id9"><span class="brackets"><a class="fn-backref" href="#id8">4</a></span></dt>
+<dd><p>Dowd, P. A., (1984): The variogram and kriging: Robust and resistant
+estimators, in Geostatistics for Natural Resources Characterization.
+Edited by G. Verly et al., pp. 91 - 106, D. Reidel, Dordrecht.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="genton">
+<h2>Genton<a class="headerlink" href="#genton" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.estimators.genton">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">genton</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#genton"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.genton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Genton robust semi-variance estimator</p>
+<p>Return the Genton semi-variance of the given sample x. Genton is a highly
+robust varigram estimator, that is designed to be location free and
+robust on extreme values in x.
+Genton is based on calculating kth order statistics and will for large
+data sets be close or equal to the 25% quartile of all ordered point pairs
+in X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Genton estimator is described in great detail in the original
+publication <a class="footnote-reference brackets" href="#id11" id="id10">5</a> and is defined as:</p>
+<div class="math notranslate nohighlight">
+\[Q_{N_h} = 2.2191\{|V_i(h) - V_j(h)|; i &lt; j\}_{(k)}\]</div>
+<p>and</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[k = \binom{[N_h / 2] + 1}{2}\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[q = \binom{N_h}{2}\]</div>
+<p>where k is the kth quantile of all q point pairs. For large N (k/q) will be
+close to 0.25. For N &gt;= 500, (k/q) is close to 0.25 by two decimals and
+will therefore be set to 0.5 and the two binomial coefficients k,
+q are not calculated.</p>
+</div></blockquote>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id10">5</a></span></dt>
+<dd><p>Genton, M. G., (1998): Highly robust variogram estimation,
+Math. Geol., 30, 213 - 221.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="shannon-entropy">
+<h2>Shannon Entropy<a class="headerlink" href="#shannon-entropy" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="skgstat.estimators.entropy">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">entropy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shannon Entropy estimator</p>
+<p>Calculates the Shannon Entropy H as a variogram estimator. It is highly
+recommended to calculate the bins and explicitly set them as a list.
+In case this function is called for more than one lag class in a
+variogram, setting bins to None would result in different bin edges in
+each lag class. This would be very difficult to interpret.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p></li>
+<li><p><strong>bins</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – list of the bin edges used to calculate the empirical distribution of x.
+If bins is a list, these values are used directly. In case bins is a
+integer, as many even width bins will be calculated between the
+minimum and maximum value of x. In case bins is a string, it will be
+passed as bins argument to numpy.histograms function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>entropy</strong> – Shannon entropy of the given pairwise differences.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+</dd></dl>
+
+</div>
+<div class="section" id="minmax">
+<h2>MinMax<a class="headerlink" href="#minmax" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is an experimental semi-variance estimator. It is heavily influenced
+by extreme values and outliers. That behaviour is usually not desired in
+geostatistics.</p>
+</div>
+<dl class="py function">
+<dt id="skgstat.estimators.minmax">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">minmax</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#minmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.minmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum - Maximum Estimator</p>
+<p>Returns a custom value. This estimator is the difference of maximum and
+minimum pairwise differences, normalized by the mean. MinMax will be very
+sensitive to extreme values.</p>
+<p>Do only use this estimator, in case you know what you are doing. It is
+experimental and might change its behaviour in a future version.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="percentile">
+<h2>Percentile<a class="headerlink" href="#percentile" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is an experimental semi-variance estimator. It uses just a
+percentile of the given pairwise differences and does not bear any
+information about their variance.</p>
+</div>
+<dl class="py function">
+<dt id="skgstat.estimators.percentile">
+<code class="sig-prename descclassname"><span class="pre">skgstat.estimators.</span></code><code class="sig-name descname"><span class="pre">percentile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/estimators.html#percentile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.estimators.percentile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Percentile estimator</p>
+<p>Returns a given percentile as semi-variance. Do only use this estimator,
+in case you know what you are doing.</p>
+<p>Do only use this estimator, in case you know what you are doing. It is
+experimental and might change its behaviour in a future version.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>numpy.ndarray</em></a>) – Array of pairwise differences. These values should be the distances
+between pairwise observations in value space. If xi and x[i+h] fall
+into the h separating distance class, x should contain abs(xi - x[i+h])
+as an element.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Desired percentile. Should be given as whole numbers 0 &lt; p &lt; 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.float64</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="spacetimevariogram.html" title="previous page">SpaceTimeVariogram class</a>
+    <a class='right-next' id="next-link" href="models.html" title="next page">Variogram models</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

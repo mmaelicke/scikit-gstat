@@ -1,0 +1,902 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SpaceTimeVariogram class &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Estimator Functions" href="estimator.html" />
+    <link rel="prev" title="DirectionalVariogram Class" href="directionalvariogram.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../userguide/userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <p class="caption">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="variogram.html">
+   Variogram Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="directionalvariogram.html">
+   DirectionalVariogram Class
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   SpaceTimeVariogram class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="estimator.html">
+   Estimator Functions
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="models.html">
+   Variogram models
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="kriging.html">
+   Kriging Class
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="metric_space.html">
+   MetricSpace - Coordinate representation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="util.html">
+   Utility Functions
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="spacetimevariogram-class">
+<h1>SpaceTimeVariogram class<a class="headerlink" href="#spacetimevariogram-class" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="skgstat.SpaceTimeVariogram">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">skgstat.</span></code><code class="sig-name descname"><span class="pre">SpaceTimeVariogram</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xdist_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdist_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxlag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'even'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'even'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'matheron'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nugget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'product-sum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xdist_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdist_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'euclidean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'max'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxlag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'even'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'even'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'matheron'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_nugget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'product-sum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.contour">
+<code class="sig-name descname"><span class="pre">contour</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'k'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linewidths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fast'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.contour"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.contour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram 2D contour plot</p>
+<p>Plot a 2D contour plot of the experimental variogram. The
+experimental semi-variance values are spanned over a space - time lag
+meshgrid. This grid is (linear) interpolated onto the given
+resolution for visual reasons. Then, contour lines are caluclated
+from the denser grid. Their number can be specified by <em>levels</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.AxesSubplot</em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If None a new matplotlib.Figure will be created, otherwise the
+plot will be rendered into the given subplot.</p></li>
+<li><p><strong>zoom_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The experimental variogram will be interpolated onto a regular
+grid for visual reasons. The density of this plot can be set by
+zoom_factor. A factor of 10 will enlarge each of the axes by 10.
+Higher zoom_factors result in smoother contours, but are
+expansive in calculation time.</p></li>
+<li><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of levels to be formed for finding contour lines. More
+levels result in more detailed plots, but are expansive in terms
+of calculation time.</p></li>
+<li><p><strong>colors</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – Will be passed down to matplotlib.pyplot.contour as <em>c</em> parameter.</p></li>
+<li><p><strong>linewidths</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – Will be passed down to matplotlib.pyplot.contour as <em>linewidths</em>
+parameter.</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The method used for densifying the meshgrid. Can be one of
+‘fast’ or ‘precise’. Fast will use the scipy.ndimage.zoom method
+to incresae the node density. This is fast, but cannot
+interpolate <em>behind</em> any NaN occurance. ‘Precise’ performs an
+actual linear interpolation between the nodes using
+scipy.interpolate.griddata. This takes more time, but the result
+is less smoothed out.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Other arguments that can be specific to <em>contour</em> or <em>contourf</em>
+type. Accepts <em>xlabel</em>, <em>ylabel</em>, <em>xlim</em> and <em>ylim</em> as of this
+writing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fig</strong> – The Figure object used for rendering the contour plot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.SpaceTimeVariogram.contourf" title="skgstat.SpaceTimeVariogram.contourf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.contourf</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.contourf">
+<code class="sig-name descname"><span class="pre">contourf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RdYlBu_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fast'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.contourf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.contourf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variogram 2D filled contour plot</p>
+<p>Plot a 2D filled contour plot of the experimental variogram. The
+experimental semi-variance values are spanned over a space - time lag
+meshgrid. This grid is (linear) interpolated onto the given
+resolution for visual reasons. Then, contour lines are caluclated
+from the denser grid. Their number can be specified by <em>levels</em>.
+Finally, each contour region is filled with a color supplied by the
+specified <em>cmap</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.AxesSubplot</em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If None a new matplotlib.Figure will be created, otherwise the
+plot will be rendered into the given subplot.</p></li>
+<li><p><strong>zoom_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The experimental variogram will be interpolated onto a regular
+grid for visual reasons. The density of this plot can be set by
+zoom_factor. A factor of 10 will enlarge each of the axes by 10.
+Higher zoom_factors result in smoother contours, but are
+expansive in calculation time.</p></li>
+<li><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Number of levels to be formed for finding contour lines. More
+levels result in more detailed plots, but are expansive in terms
+of calculation time.</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Will be passed down to matplotlib.pyplot.contourf as <em>cmap</em>
+parameter. Can be any valid color range supported by matplotlib.</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The method used for densifying the meshgrid. Can be one of
+‘fast’ or ‘precise’. Fast will use the scipy.ndimage.zoom method
+to incresae the node density. This is fast, but cannot
+interpolate <em>behind</em> any NaN occurance. ‘Precise’ performs an
+actual linear interpolation between the nodes using
+scipy.interpolate.griddata. This takes more time, but the result
+is less smoothed out.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Other arguments that can be specific to <em>contour</em> or <em>contourf</em>
+type. Accepts <em>xlabel</em>, <em>ylabel</em>, <em>xlim</em> and <em>ylim</em> as of this
+writing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fig</strong> – The Figure object used for rendering the contour plot.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.SpaceTimeVariogram.contour" title="skgstat.SpaceTimeVariogram.contour"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.contour</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.create_TMarginal">
+<code class="sig-name descname"><span class="pre">create_TMarginal</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.create_TMarginal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.create_TMarginal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an instance of skgstat.Variogram for the time marginal variogram
+by arranging the coordinates and values and infer parameters from
+this SpaceTimeVariogram instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.create_XMarginal">
+<code class="sig-name descname"><span class="pre">create_XMarginal</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.create_XMarginal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.create_XMarginal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an instance of skgstat.Variogram for the space marginal variogram
+by arranging the coordinates and values and infer parameters from
+this SpaceTimeVariogram instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.distance">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">distance</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance matrices</p>
+<p>Returns both the space and time distance matrix. This property is
+equivalent to two separate calls of
+<a class="reference internal" href="#skgstat.SpaceTimeVariogram.xdistance" title="skgstat.SpaceTimeVariogram.xdistance"><code class="xref py py-func docutils literal notranslate"><span class="pre">xdistance</span></code></a> and
+<a class="reference internal" href="#skgstat.SpaceTimeVariogram.tdistance" title="skgstat.SpaceTimeVariogram.tdistance"><code class="xref py py-func docutils literal notranslate"><span class="pre">tdistance</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>distance matrices</strong> – Returns a tuple of the two distance matrices in space and time.
+Each distance matrix is a flattened upper triangle of the
+distance matrix squareform in row orientation.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(numpy.array, numpy.array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.experimental">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">experimental</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.experimental" title="Permalink to this definition">¶</a></dt>
+<dd><p>Experimental Variogram</p>
+<p>Returns an experimental variogram for the given data. The
+semivariances are arranged over the spatial binning as defined in
+SpaceTimeVariogram.xbins and temporal binning defined in
+SpaceTimeVariogram.tbins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>variogram</strong> – Returns an two dimensional array of semivariances over space on
+the first axis and time over the second axis.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.fitted_model">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">fitted_model</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.fitted_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.get_marginal">
+<code class="sig-name descname"><span class="pre">get_marginal</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.get_marginal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.get_marginal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marginal Variogram</p>
+<p>Returns the marginal experimental variogram of axis for the given lag
+on the other axis. Axis can either be ‘space’ or ‘time’. The parameter
+lag specifies the index of the desired lag class on the other axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The axis a marginal variogram shall be calculated for. Can either
+be ‘ space’ or ‘time’.</p></li>
+<li><p><strong>lag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – Index of the lag class group on the other axis to be used. In case
+this is 0, this is often considered to be <em>the</em> marginal variogram
+of the axis.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>variogram</strong> – Marginal variogram of the given axis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.lag_classes">
+<code class="sig-name descname"><span class="pre">lag_classes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.lag_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.lag_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator over all lag classes</p>
+<p>Returns an iterator over all lag classes by aligning all time lags
+over all space lags. This means that it will yield all time lag groups
+for a space lag of index 0 at first and then iterate the space lags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>iterator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.lag_groups">
+<code class="sig-name descname"><span class="pre">lag_groups</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.lag_groups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.lag_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lag class group mask array</p>
+<p>Returns a mask array for the given axis (either ‘space’ or ‘time’).
+It will have as amany elements as the respective distance matrices.
+<strong>Unlike the base Variogram class, it does not mask the array of
+pairwise differences.</strong>. It will mask the distance matrix of the
+respective axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Can either be ‘space’ or ‘time’. Specifies the axis the mask array
+shall be returned for.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>masK_array</strong> – mask array that identifies the lag class group index for each pair
+of points on the given axis.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.marginals">
+<code class="sig-name descname"><span class="pre">marginals</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sharey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.marginals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.marginals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot marginal variograms</p>
+<p>Plots the two marginal variograms into a new or existing figure. The
+space marginal variogram is defined to be the variogram of temporal
+lag class 0, while the time marginal variogram uses only spatial lag
+class 0. In case the expected variability is not of same magnitude,
+the sharey parameter should be set to <code class="docutils literal notranslate"><span class="pre">False</span></code> in order to use
+separated y-axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – <div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 0.4: </span>With version 0.4, this parameter will be removed</p>
+</div>
+<p>If set to False, no matplotlib.Figure will be returned. Instead a
+tuple of the two marginal experimental variogram values is
+returned.</p>
+</p></li>
+<li><p><strong>axes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) – Is either <code class="docutils literal notranslate"><span class="pre">None</span></code> to create a new matplotlib.Figure. Otherwise
+it has to be a list of two matplotlib.AxesSubplot instances,
+which will then be used for plotting.</p></li>
+<li><p><strong>sharey</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True (default), the two marginal variograms will share their
+y-axis to increase comparability. Should be set to False in the
+variances are of different magnitude.</p></li>
+<li><p><strong>include_model</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the marginal variogram models fitted to the respective
+axis are included into the plot.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Only kwargs accepted is  <code class="docutils literal notranslate"><span class="pre">figsize</span></code>, if ax is None.
+Anything else will be ignored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>variograms</strong> (<em>tuple</em>) – If plot is False, a tuple of numpy.arrays are returned. These are
+the two experimental marginal variograms.</p></li>
+<li><p><strong>plots</strong> (<em>matplotlib.Figure</em>) – If plot is True, the matplotlib.Figure will be returned.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.plot">
+<code class="sig-name descname"><span class="pre">plot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'scatter'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the experimental variogram</p>
+<p>At the current version the SpaceTimeVariogram class is not capable of
+modeling a spe-time variogram function, therefore all plots will only
+show the experimental variogram.
+As the experimental space-time semivariance is depending on a space
+and a time lag, one would basically need a 3D scatter plot, which is
+the default plot. However, 3D plots can be, especially for scientific
+usage, a bit problematic. Therefore the plot function can plot a
+variety of 3D and 2D plots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kind</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – <p>Has to be one of:</p>
+<ul>
+<li><p><strong>scatter</strong></p></li>
+<li><p><strong>surface</strong></p></li>
+<li><p><strong>contour</strong></p></li>
+<li><p><strong>contourf</strong></p></li>
+<li><p><strong>matrix</strong></p></li>
+<li><p><strong>marginals</strong></p></li>
+</ul>
+</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.AxesSubplot</em><em>, </em><em>mpl_toolkits.mplot3d.Axes3D</em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If None, the function will create a new figure and suitable Axes.
+Else, the Axes object can be passed to plot the variogram into an
+existing figure. In this case, one has to pass the correct type
+of Axes, whether it’s a 3D or 2D kind of a plot.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – All keyword arguments are passed down to the actual plotting
+function. Refer to their documentation for a more detailed
+description.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fig</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.SpaceTimeVariogram.scatter" title="skgstat.SpaceTimeVariogram.scatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.scatter</span></code></a>, <a class="reference internal" href="#skgstat.SpaceTimeVariogram.surface" title="skgstat.SpaceTimeVariogram.surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.surface</span></code></a>, <a class="reference internal" href="#skgstat.SpaceTimeVariogram.marginals" title="skgstat.SpaceTimeVariogram.marginals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.marginals</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.preprocessing">
+<code class="sig-name descname"><span class="pre">preprocessing</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.preprocessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.preprocessing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocessing</p>
+<p>Start all necessary calculation jobs needed to derive an experimental
+variogram. This hasto be present before the model fitting can be done.
+The force parameter will make all calculation functions to delete all
+cached intermediate results and make a clean calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>force</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, all cached intermediate results will be deleted and a
+clean calculation will be done.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.scatter">
+<code class="sig-name descname"><span class="pre">scatter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">220</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depthshade</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.scatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>3D Scatter Variogram</p>
+<p>Plot the experimental variogram into a 3D matplotlib.Figure. The two
+variogram axis (space, time) will span a meshgrid over the x and y axis
+and the semivariance will be plotted as z value over the respective
+space and time lag coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>mpl_toolkits.mplot3d.Axes3D</em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If ax is None (default), a new Figure and Axes instance will be
+created. If ax is given, this instance will be used for the plot.</p></li>
+<li><p><strong>elev</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The elevation of the 3D plot, which is a rotation over the xy-plane.</p></li>
+<li><p><strong>azim</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The azimuth of the 3D plot, which is a rotation over the z-axis.</p></li>
+<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Color of the scatter points, will be passed to the matplotlib
+<code class="docutils literal notranslate"><span class="pre">c</span></code> argument. The function also accepts <code class="docutils literal notranslate"><span class="pre">color</span></code> as an alias.</p></li>
+<li><p><strong>depthshade</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) – If True, the scatter points will change their color according to
+the distance from the viewport for illustration reasons.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Other kwargs accepted are only <code class="docutils literal notranslate"><span class="pre">color</span></code> as an alias for <code class="docutils literal notranslate"><span class="pre">c</span></code>
+and <code class="docutils literal notranslate"><span class="pre">figsize</span></code>, if ax is None. Anything else will be ignored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fig</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>In case an ax shall be passed to the function, note that this plot
+requires an AxesSubplot, that is capable of creating a 3D plot. This
+can be done like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+
+<span class="c1"># STV is an instance of SpaceTimeVariogram</span>
+<span class="n">STV</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.SpaceTimeVariogram.surface" title="skgstat.SpaceTimeVariogram.surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.surface</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.set_bin_func">
+<code class="sig-name descname"><span class="pre">set_bin_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bin_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.set_bin_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.set_bin_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set binning function</p>
+<p>Set a new binning function to either the space or time axis. Both axes
+support the methods: [‘even’, ‘uniform’]:</p>
+<ul class="simple">
+<li><p><strong>‘even’</strong>, create even width bins</p></li>
+<li><p><strong>‘uniform’</strong>, create bins of uniform distribution</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bin_func</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Sepcifies the function to be loaded. Can be either ‘even’ or
+‘uniform’.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Specifies the axis to be used for binning. Can be either ‘space’ or
+‘time’, or one of the two shortcuts ‘s’ and ‘t’</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.even_width_lags</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">skgstat.binning.uniform_count_lags</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.set_model">
+<code class="sig-name descname"><span class="pre">set_model</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.set_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.set_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set space-time model</p>
+<p>Set a new space-time model. It has to be either a callable of correct
+signature or a string identifying one of the predefined models</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><em>callable</em>) – <p>Either a callable of correct signature or a valid model name.
+Valid names are:</p>
+<ul class="simple">
+<li><p>sum</p></li>
+<li><p>product</p></li>
+<li><p>product-sum</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.set_tdist_func">
+<code class="sig-name descname"><span class="pre">set_tdist_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.set_tdist_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.set_tdist_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new space distance function</p>
+<p>Set a new function for calculating the distance matrix in the space
+dimension. At the moment only strings are supported. Will be passed
+to scipy.spatical.distance.pdist as ‘metric’ attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the function used to calculate the pairwise distances.
+Will be passed to scipy.spatial.distance.pdist as the ‘metric’
+attribute.</p>
+</dd>
+</dl>
+<p>:raises ValueError : in case a non-string argument is passed.:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.set_values">
+<code class="sig-name descname"><span class="pre">set_values</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.set_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.set_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new values</p>
+<p>The values should be an (m, n) array with m matching the size of
+coordinates first  dimension and n is the time dimension.</p>
+<p>:raises ValueError : in case n &lt;= 1 or values are not an array of correct: dimensionality
+:raises AttributeError : in case values cannot be converted to a numpy.array:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.set_xdist_func">
+<code class="sig-name descname"><span class="pre">set_xdist_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.set_xdist_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.set_xdist_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set new space distance function</p>
+<p>Set a new function for calculating the distance matrix in the space
+dimension. At the moment only strings are supported. Will be passed
+to scipy.spatical.distance.pdist as ‘metric’ attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func_name</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the function used to calculate the pairwise distances.
+Will be passed to scipy.spatial.distance.pdist as the ‘metric’
+attribute.</p>
+</dd>
+</dl>
+<p>:raises ValueError : in case a non-string argument is passed.:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.surface">
+<code class="sig-name descname"><span class="pre">surface</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">220</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/skgstat/SpaceTimeVariogram.html#SpaceTimeVariogram.surface"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#skgstat.SpaceTimeVariogram.surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>3D Scatter Variogram</p>
+<p>Plot the experimental variogram into a 3D matplotlib.Figure. The two
+variogram axis (space, time) will span a meshgrid over the x and y axis
+and the semivariance will be plotted as z value over the respective
+space and time lag coordinate. Unlike
+<a class="reference internal" href="#skgstat.SpaceTimeVariogram.scatter" title="skgstat.SpaceTimeVariogram.scatter"><code class="xref py py-func docutils literal notranslate"><span class="pre">scatter</span></code></a> the semivariance
+will not be scattered as points but rather as a surface plot. The
+surface is approximated by (Delauney) triangulation of the z-axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>mpl_toolkits.mplot3d.Axes3D</em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) – If ax is None (default), a new Figure and Axes instance will be
+created. If ax is given, this instance will be used for the plot.</p></li>
+<li><p><strong>elev</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The elevation of the 3D plot, which is a rotation over the xy-plane.</p></li>
+<li><p><strong>azim</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The azimuth of the 3D plot, which is a rotation over the z-axis.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – Color of the scatter points, will be passed to the matplotlib
+<code class="docutils literal notranslate"><span class="pre">color</span></code> argument. The function also accepts <code class="docutils literal notranslate"><span class="pre">c</span></code> as an alias.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – Sets the transparency of the surface as 0 &lt;= alpha &lt;= 1, with 0
+being completely transparent.</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – Other kwargs accepted are only <code class="docutils literal notranslate"><span class="pre">color</span></code> as an alias for <code class="docutils literal notranslate"><span class="pre">c</span></code>
+and <code class="docutils literal notranslate"><span class="pre">figsize</span></code>, if ax is None. Anything else will be ignored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>fig</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.Figure</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>In case an ax shall be passed to the function, note that this plot
+requires an AxesSubplot, that is capable of creating a 3D plot. This
+can be done like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+
+<span class="c1"># STV is an instance of SpaceTimeVariogram</span>
+<span class="n">STV</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#skgstat.SpaceTimeVariogram.scatter" title="skgstat.SpaceTimeVariogram.scatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceTimeVariogram.scatter</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.tbins">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tbins</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.tbins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Temporal binning</p>
+<p>Returns the bin edges over the temporal axis. These can be used to
+align the temporal lag class grouping to actual time lags. The length of
+the array matches the number of temporal lag classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>bins</strong> – Returns the edges of the current temporal binning.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.tdistance">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tdistance</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.tdistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time distance</p>
+<p>Returns a distance matrix containing the distance of all observation
+points in time. The time ‘coordiantes’ are created from the values
+multidimensional array, where the second dimension is assumed to be
+time. The unit will be time steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>tdistance</strong> – 1D-array of the upper triangle of a squareform representation of
+the distance matrix.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.values">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">values</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Values</p>
+<p>The SpaceTimeVariogram stores (and needs) the observations as a two
+dimensional array. The first axis (rows) need to match the coordinate
+array, but instead of containing one value for each location,
+the values shall contain a time series per location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>values</strong> – Returns a two dimensional array of all observations. The first
+dimension (rows) matches the coordinate array and the second axis
+contains the time series for each observation point.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.xbins">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">xbins</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.xbins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spatial binning</p>
+<p>Returns the bin edges over the spatial axis. These can be used to
+align the spatial lag class grouping to actual distance lags. The
+length of the array matches the number of spatial lag classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>bins</strong> – Returns the edges of the current spatial binning.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="skgstat.SpaceTimeVariogram.xdistance">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">xdistance</span></code><a class="headerlink" href="#skgstat.SpaceTimeVariogram.xdistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distance matrix (space)</p>
+<p>Return the upper triangle of the squareform pairwise distance matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>xdistance</strong> – 1D-array of the upper triangle of a squareform representation of
+the distance matrix.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="directionalvariogram.html" title="previous page">DirectionalVariogram Class</a>
+    <a class='right-next' id="next-link" href="estimator.html" title="next page">Estimator Functions</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interpolation &#8212; SciKit GStat 0.5.4 documentation</title>
+    
+  <link href="../_static/css/theme.css" rel="stylesheet" />
+  <link href="../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorials" href="../tutorials/tutorials.html" />
+    <link rel="prev" title="Variography" href="variogram.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+<a class="navbar-brand" href="../index.html">
+<p class="title">SciKit GStat</p>
+</a>
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+      <div class="navbar-center-item">
+        <ul id="navbar-main-elements" class="navbar-nav">
+    <li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../install.html">
+  Installation
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../getting_started.html">
+  Getting Started
+ </a>
+</li>
+
+<li class="toctree-l1 current active nav-item">
+ <a class="reference internal nav-link" href="userguide.html">
+  User Guide
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../tutorials/tutorials.html">
+  Tutorials
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../technical/technical.html">
+  Technical Notes
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../reference/reference.html">
+  Code Reference
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference internal nav-link" href="../changelog.html">
+  Changelog
+ </a>
+</li>
+
+<li class="toctree-l1 nav-item">
+ <a class="reference external nav-link" href="https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf">
+  PDF
+ </a>
+</li>
+
+    
+</ul>
+      </div>
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mmaelicke/scikit-gstat" rel="noopener" target="_blank" title="GitHub">
+            <span><i class="fab fa-github-square"></i></span>
+            <label class="sr-only">GitHub</label>
+          </a>
+        </li>
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <p class="caption">
+ <span class="caption-text">
+  Contents
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="variogram.html">
+   Variography
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Interpolation
+  </a>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#spatial-interpolation">
+   Spatial interpolation
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#using-a-spatial-model">
+   Using a spatial model
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#kriging-equation-system">
+   Kriging equation system
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#kriging-error">
+   Kriging error
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#example">
+   Example
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="interpolation">
+<h1>Interpolation<a class="headerlink" href="#interpolation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="spatial-interpolation">
+<h2>Spatial interpolation<a class="headerlink" href="#spatial-interpolation" title="Permalink to this headline">¶</a></h2>
+<p>In geostatistics the procedure of spatial interpolation is
+known as <em>Kriging</em>. That goes back to the inventor of
+Kriging, a South-African mining engineer called Dave Krige.
+He published the method in 1951.
+In many text books you will also find the term <em>prediction</em>, but
+be aware that Kriging is still based on the assumption
+that the variable is a random field. THerefore I prefer the
+term <em>estimation</em> and would label the Kriging method a <em>BLUE</em>,
+<strong>B</strong> est <strong>L</strong> inear <strong>U</strong> nbiased <strong>E</strong> stimator.
+In general terms, the objective is to estimate a variable at
+a location that was not observed using observations from
+close locations. Kriging is considered to be the <strong>best</strong>
+estimator, because we utilize the spatial structure
+described by a variogram to find suitable weights for
+averaging the observations at close locations.</p>
+<p>Given a set of observation points <cite>s</cite> and observation
+values at these locations <span class="math notranslate nohighlight">\(Z(s)\)</span>, it can already be stated
+that the estimation at an unobserved location <span class="math notranslate nohighlight">\(Z^{*}(s_0)\)</span>
+is a weighted mean:</p>
+<div class="math notranslate nohighlight">
+\[Z^{*}(s_0) = \sum_{i=0}^N {\lambda}_i Z(s_i)\]</div>
+<p>where <span class="math notranslate nohighlight">\(N\)</span> is the size of <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(\lambda\)</span>
+is the array of weights. This is what we want to calculate
+from a fitted variogram model.</p>
+<p>Assumed that <span class="math notranslate nohighlight">\(\lambda\)</span> had already been calculated,
+estimating the prediction is pretty straightforward:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">Z_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.2</span><span class="p">,</span> <span class="mf">6.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">5.2</span><span class="p">])</span>
+
+<span class="gp">In [2]: </span><span class="n">lam</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+
+<span class="go"># calculate the weighted mean</span>
+<span class="gp">In [3]: </span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z_s</span> <span class="o">*</span> <span class="n">lam</span><span class="p">)</span>
+<span class="gh">Out[3]: </span><span class="go">4.42</span>
+</pre></div>
+</div>
+<p>or shorter:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="n">Z_s</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span>
+<span class="gh">Out[4]: </span><span class="go">4.42</span>
+</pre></div>
+</div>
+<p>In the example above the weights were just made up.
+Now we need to understand how this array of weights
+can be calculated.</p>
+</div>
+<div class="section" id="using-a-spatial-model">
+<h2>Using a spatial model<a class="headerlink" href="#using-a-spatial-model" title="Permalink to this headline">¶</a></h2>
+<p>Instead of just making up weights, we will now learn
+how we can utilize a variogram model to calculate the weights.
+At its core a variogram describes how point observations become
+more dissimilar with distance. Point distances can easily be calculated,
+not only for observed locations, but also for unobserved locations.
+As the variogram is only a function of <em>distance</em>, we can easily
+calculate a semi-variance value for any possible combination of point
+pairs.</p>
+<p>Assume we have five close observations for an unobserved location,
+like in the example above. Instead of making up weights, we can use
+the semi-variance value as a weight, as a first shot.
+What we still need are locations and a variogram model. For both,
+we can just make something up.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">4.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+
+<span class="gp">In [6]: </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">])</span>
+
+<span class="gp">In [7]: </span><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.2</span><span class="p">,</span> <span class="mf">6.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">5.2</span><span class="p">])</span>
+
+<span class="gp">In [8]: </span><span class="n">s0</span> <span class="o">=</span> <span class="p">[</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">]</span>
+
+<span class="gp">In [9]: </span><span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">([</span><span class="n">s0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)))</span>
+
+<span class="gp">In [10]: </span><span class="n">squareform</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">)</span>
+<span class="gh">Out[10]: </span><span class="go"></span>
+<span class="go">array([[0.   , 4.031, 0.8  , 2.702, 1.7  , 0.5  ],</span>
+<span class="go">       [4.031, 0.   , 4.742, 1.803, 5.093, 3.606],</span>
+<span class="go">       [0.8  , 4.742, 0.   , 3.265, 1.879, 1.3  ],</span>
+<span class="go">       [2.702, 1.803, 3.265, 0.   , 4.163, 2.419],</span>
+<span class="go">       [1.7  , 5.093, 1.879, 4.163, 0.   , 1.772],</span>
+<span class="go">       [0.5  , 3.606, 1.3  , 2.419, 1.772, 0.   ]])</span>
+</pre></div>
+</div>
+<p>Next, we build up a variogram model of spherical shape, that uses a
+effective range larger than the distances in the matrix. Otherwise,
+we would just calcualte the arithmetic mean.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="kn">from</span> <span class="nn">skgstat.models</span> <span class="kn">import</span> <span class="n">spherical</span>
+
+<span class="go"># range= 7. sill = 2. nugget = 0.</span>
+<span class="gp">In [12]: </span><span class="n">model</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="n">spherical</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The distances to the first point <cite>s0</cite> are the first 5 elements in
+the distance matrix. Therefore the semi-variances are calculated
+straightforward.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [13]: </span><span class="n">variances</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+
+<span class="gp">In [14]: </span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span>
+</pre></div>
+</div>
+<p>Of course we could now use the inverse of these semi-variances
+to weigh the observations, <strong>but that would not be correct.</strong>
+Remeber, that this array <cite>variances</cite> is what we want the
+target weights to incorporte. Whatever the weights are, these
+variances should be respected. At the same time, the five
+points among each other also have distances and therefore variances
+that should be respected. Or to put it differently.
+Take the first observation point <span class="math notranslate nohighlight">\(s_1\)</span>. The associated variances
+<span class="math notranslate nohighlight">\(\gamma\)</span> to the other four points need to match the one
+just calculated.</p>
+<div class="math notranslate nohighlight">
+\[a_1 * \gamma(s_1, s_1) + a_2 * \gamma(s_1, s_2) + a_3 * \gamma(s_1, s_3) + a_4 * \gamma(s_1, s_4) + a_5 * \gamma(s_1, s_5) =  \gamma(s_1, s_0)\]</div>
+<p>Ok. First: <span class="math notranslate nohighlight">\(\gamma(s_1, s_1)\)</span> is zero because the distance is obviously zero
+and the model does not have a nugget. All other distances have already been calculated.
+<span class="math notranslate nohighlight">\(a_1 ... a_5\)</span> are factors. These are the weights used to satisfy all given
+semi-variances. This is what we need. Obviously, we cannot calculate 5 unknown
+variables from just one equation. Lukily we have four more observations.
+Writing the above equation for <span class="math notranslate nohighlight">\(s_2, s_3, s_4, s_5\)</span>.
+Additionally, we will write the linear equation system in matrix form as a
+dot product of the <span class="math notranslate nohighlight">\(\gamma_i\)</span> and the <span class="math notranslate nohighlight">\(a_i\)</span> part.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+\gamma(s_1, s_1) &amp; \gamma(s_1, s_2) &amp; \gamma(s_1, s_3) &amp; \gamma(s_1, s_4) &amp; \gamma(s_1, s_5) \\
+\gamma(s_2, s_1) &amp; \gamma(s_2, s_2) &amp; \gamma(s_2, s_3) &amp; \gamma(s_2, s_4) &amp; \gamma(s_2, s_5) \\
+\gamma(s_3, s_1) &amp; \gamma(s_3, s_2) &amp; \gamma(s_3, s_3) &amp; \gamma(s_3, s_4) &amp; \gamma(s_3, s_5) \\
+\gamma(s_4, s_1) &amp; \gamma(s_4, s_2) &amp; \gamma(s_4, s_3) &amp; \gamma(s_4, s_4) &amp; \gamma(s_4, s_5) \\
+\gamma(s_5, s_1) &amp; \gamma(s_5, s_2) &amp; \gamma(s_5, s_3) &amp; \gamma(s_5, s_4) &amp; \gamma(s_5, s_5) \\
+\end{pmatrix} *
+\begin{bmatrix}
+a_1 \\
+a_2 \\
+a_3 \\
+a_4 \\
+a_5\\
+\end{bmatrix} =
+\begin{pmatrix}
+\gamma(s_0, s_1) \\
+\gamma(s_0, s_2) \\
+\gamma(s_0, s_3) \\
+\gamma(s_0, s_4) \\
+\gamma(s_0, s_5) \\
+\end{pmatrix}\end{split}\]</div>
+<p>That might look a bit complicated at first, but we have calculated almost everything.
+The last matrix are the <cite>variances</cite> that we calculated in the last step.
+The first matrix is of same shape as the sqaureform distance matrix calculated in
+the very begining. All we need to do is to map the variogram model on it and
+solve the system for the matrix of factors <span class="math notranslate nohighlight">\(a_1 \ldots a_5\)</span>.
+In Python, there are several strategies how you could solve this problem.
+Let’s at first build the matrix. We need a distance matrix without
+<span class="math notranslate nohighlight">\(s_0\)</span> for that.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [15]: </span><span class="n">dists</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)))</span>
+
+<span class="gp">In [16]: </span><span class="n">M</span> <span class="o">=</span> <span class="n">squareform</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">dists</span><span class="p">))</span>
+
+<span class="gp">In [17]: </span><span class="n">pprint</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="go">array([[0.   , 1.721, 0.756, 1.798, 1.409],</span>
+<span class="go">       [1.721, 0.   , 1.298, 0.786, 0.551],</span>
+<span class="go">       [0.756, 1.298, 0.   , 1.574, 0.995],</span>
+<span class="go">       [1.798, 0.786, 1.574, 0.   , 0.743],</span>
+<span class="go">       [1.409, 0.551, 0.995, 0.743, 0.   ]])</span>
+
+<span class="gp">In [18]: </span><span class="n">pprint</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span>
+<span class="go">array([1.537, 0.341, 1.1  , 0.714, 0.214])</span>
+</pre></div>
+</div>
+<p>And solve it:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [19]: </span><span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">solve</span>
+
+<span class="go"># solve for a</span>
+<span class="gp">In [20]: </span><span class="n">a</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">variances</span><span class="p">)</span>
+
+<span class="gp">In [21]: </span><span class="n">pprint</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="go">array([-0.022,  0.362,  0.018,  0.037,  0.593])</span>
+
+<span class="go"># calculate estimation</span>
+<span class="gp">In [22]: </span><span class="n">Z_s</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="gh">Out[22]: </span><span class="go">5.226267185422778</span>
+</pre></div>
+</div>
+<p>That’s it. Well, not really. We might have used the
+variogram and the spatial structure infered from the
+data for getting better results, but in fact our
+result is not <strong>unbiased</strong>. That means, the solver
+can choose any combination that satisfies the equation,
+even setting everything to zero except one weight.
+That means <span class="math notranslate nohighlight">\(a\)</span> could be biased.
+That would not be helpful.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [23]: </span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="gh">Out[23]: </span><span class="go">0.9872744357166217</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="kriging-equation-system">
+<h2>Kriging equation system<a class="headerlink" href="#kriging-equation-system" title="Permalink to this headline">¶</a></h2>
+<p>In the last section we came pretty close to the
+Kriging algorithm. The only thing missing is to
+assure unbiasedness.
+The weights sum up to almost one, but they are not one.
+We want to ensure, that they are always one. This
+is done by adding one more equation to the linear
+equation system. Also, we will rename the <span class="math notranslate nohighlight">\(a\)</span>
+array to <span class="math notranslate nohighlight">\(\lambda\)</span>, which is more frequently
+used for Kriging weights. The missing equation is:</p>
+<div class="math notranslate nohighlight">
+\[\sum_{i=1}^N \lambda = 1\]</div>
+<p>In matrix form this changes <span class="math notranslate nohighlight">\(M\)</span> to:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+\gamma(s_1, s_1) &amp; \gamma(s_1, s_2) &amp; \gamma(s_1, s_3) &amp; \gamma(s_1, s_4) &amp; \gamma(s_1, s_5) &amp; 1\\
+\gamma(s_2, s_1) &amp; \gamma(s_2, s_2) &amp; \gamma(s_2, s_3) &amp; \gamma(s_2, s_4) &amp; \gamma(s_2, s_5) &amp; 1\\
+\gamma(s_3, s_1) &amp; \gamma(s_3, s_2) &amp; \gamma(s_3, s_3) &amp; \gamma(s_3, s_4) &amp; \gamma(s_3, s_5) &amp; 1\\
+\gamma(s_4, s_1) &amp; \gamma(s_4, s_2) &amp; \gamma(s_4, s_3) &amp; \gamma(s_4, s_4) &amp; \gamma(s_4, s_5) &amp; 1\\
+\gamma(s_5, s_1) &amp; \gamma(s_5, s_2) &amp; \gamma(s_5, s_3) &amp; \gamma(s_5, s_4) &amp; \gamma(s_5, s_5) &amp; 1\\
+1 &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 0 \\
+\end{pmatrix} *
+\begin{bmatrix}
+\lambda_1 \\
+\lambda_2 \\
+\lambda_3 \\
+\lambda_4 \\
+\lambda_5 \\
+\mu \\
+\end{bmatrix} =
+\begin{pmatrix}
+\gamma(s_0, s_1) \\
+\gamma(s_0, s_2) \\
+\gamma(s_0, s_3) \\
+\gamma(s_0, s_4) \\
+\gamma(s_0, s_5) \\
+1 \\
+\end{pmatrix}\end{split}\]</div>
+<p>This is the Kriging equation for Ordinary Kriging that can be found
+in text books. We added the ones to the result array and into the
+matrix of semivariances. <span class="math notranslate nohighlight">\(\mu\)</span> is a Lagrangian multiplier
+that will be used to estimate the Kriging variance, which will
+be covered later.
+Ordinary Kriging still assumes the observation and their residuals
+to be normally distributed and second order stationarity.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Include the references to Kitanidis and Bardossy.</p>
+</div>
+<p>Applied in Python, this can be done like:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [24]: </span><span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">variances</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+<span class="gp">In [25]: </span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="gp">In [26]: </span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="gp">In [27]: </span><span class="n">weights</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+
+<span class="go"># see the weights</span>
+<span class="gp">In [28]: </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Old weights:&#39;</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+<span class="go">Old weights: [-0.022  0.362  0.018  0.037  0.593]</span>
+
+<span class="gp">In [29]: </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;New weights:&#39;</span><span class="p">,</span> <span class="n">weights</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">New weights: [-0.017  0.365  0.02   0.041  0.592]</span>
+
+<span class="gp">In [30]: </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Old estimation:&#39;</span><span class="p">,</span> <span class="n">Z_s</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="p">))</span>
+<span class="go">Old estimation: 5.226267185422778</span>
+
+<span class="gp">In [31]: </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;New estimation:&#39;</span><span class="p">,</span> <span class="n">Z_s</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">weights</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+<span class="go">New estimation: 5.2628805787423785</span>
+
+<span class="gp">In [32]: </span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mean:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">Z_s</span><span class="p">))</span>
+<span class="go">Mean: 3.28</span>
+</pre></div>
+</div>
+<p>And the sum of weights:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [33]: </span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="gh">Out[33]: </span><span class="go">1.0</span>
+</pre></div>
+</div>
+<p>The estimation did not change a lot, but the weights
+perfectly sum up to one now.</p>
+</div>
+<div class="section" id="kriging-error">
+<h2>Kriging error<a class="headerlink" href="#kriging-error" title="Permalink to this headline">¶</a></h2>
+<p>In the last step, we introduced a factor <span class="math notranslate nohighlight">\(\mu\)</span>.
+It was needed to solve the linear equation system
+while assuring that the weights sum up to one.
+This factor can in turn be added to the weighted
+target semi-variances used to build the equation system,
+to obtain the Kriging error.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [34]: </span><span class="nb">sum</span><span class="p">(</span><span class="n">B</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">weights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="gh">Out[34]: </span><span class="go">0.262875753928683</span>
+</pre></div>
+</div>
+<p>This is really usefull when a whole map is interpolated.
+Using Kriging, you can also produce a map showing
+in which regions the interpolation is more certain.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>We can use the data shown in the variography section,
+to finally interpolate the field and check the
+Kriging error. You could either build a loop around the
+code shown in the previous section, or just use
+skgstat.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [35]: </span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/sample_lr.csv&#39;</span><span class="p">)</span>
+
+<span class="gp">In [36]: </span><span class="n">V</span> <span class="o">=</span> <span class="n">Variogram</span><span class="p">(</span><span class="n">data</span><span class="p">[[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+<span class="gp">   ....: </span>  <span class="n">maxlag</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">n_lags</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+
+<span class="gp">In [37]: </span><span class="n">V</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="gh">Out[37]: </span><span class="go">&lt;Figure size 800x500 with 2 Axes&gt;</span>
+
+<span class="gp">In [38]: </span><span class="kn">from</span> <span class="nn">skgstat</span> <span class="kn">import</span> <span class="n">OrdinaryKriging</span>
+
+<span class="gp">In [39]: </span><span class="n">ok</span> <span class="o">=</span> <span class="n">OrdinaryKriging</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">min_points</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_points</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;exact&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/kriging_used_variogram.png"><img alt="../_images/kriging_used_variogram.png" src="../_images/kriging_used_variogram.png" style="width: 8in;" /></a>
+<p>The <a class="reference internal" href="../reference/kriging.html#skgstat.OrdinaryKriging" title="skgstat.OrdinaryKriging"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrdinaryKriging</span></code></a> class
+need at least a fitted <a class="reference internal" href="../reference/variogram.html#skgstat.Variogram" title="skgstat.Variogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">Variogram</span></code></a>
+instance. Using <cite>min_points</cite> we can demand the Kriging equation
+system to be build upon at least 5 points to yield robust results.
+If not enough close observations are found within the effective range
+of the variogram, the estimation will not be calculated and a
+<cite>np.NaN</cite> value is estimated.</p>
+<p>The <cite>max_points</cite> parameter will set the upper bound of the
+equation system by using in this case at last the 20 nearest points.
+Adding more will most likely not change the estimation, as more points
+will recieve small, if not negligible, weights.
+But it will increase the processing time, as each added point will
+increase the Kriging equation system dimensionality by one.</p>
+<p>The <cite>mode</cite> parameter sets the method that will
+build up the equation system. There are two implemented:
+<cite>mode=’exact’</cite> and <cite>mode=’estimate’</cite>. Estimate is much faster, but
+if not used carefully, it can lead to numerical instability quite
+quickly. In the technical notes section of this userguide, you
+will find a whole section on the two modes.</p>
+<p>Finally, we need the unobsered locations. The observations in
+the file were drawn from a <cite>100x100</cite> random field.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [40]: </span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">99</span><span class="p">:</span><span class="mi">100</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">99</span><span class="p">:</span><span class="mi">100</span><span class="n">j</span><span class="p">]</span>
+
+<span class="gp">In [41]: </span><span class="n">field</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">yy</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="gp">In [42]: </span><span class="n">s2</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">sigma</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../_images/kriging_result_and_error.png"><img alt="../_images/kriging_result_and_error.png" src="../_images/kriging_result_and_error.png" style="width: 8in;" /></a>
+</div>
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="variogram.html" title="previous page">Variography</a>
+    <a class='right-next' id="next-link" href="../tutorials/tutorials.html" title="next page">Tutorials</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2021, Mirko Mälicke.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>
