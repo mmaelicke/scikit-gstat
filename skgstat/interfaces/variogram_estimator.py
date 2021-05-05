@@ -57,6 +57,11 @@ class VariogramEstimator(BaseEstimator):
             .. versionadded:: 0.5.4
             If not None, this is the amount of points (and iterations) used in
             cross valiation. Does not have any effect if `cross_validate=False`.
+        seed : int
+            .. versionadded:: 0.5.4
+            Will be passed down to the
+            :func:`cross_validation <skgstat.Variogram.cross_validate>`
+            method of Variogram.
 
         Note
         ----
@@ -168,7 +173,11 @@ class VariogramEstimator(BaseEstimator):
         if self.cross_validate:
             # check if a n was given
             n = self._kwargs.get('cross_n')
-            return self.variogram.cross_validate(n=n, metric=self.use_score)
+            return self.variogram.cross_validate(
+                n=n,
+                metric=self.use_score,
+                seed=self._kwargs.get('seed')
+            )
         else:
             # return the score
             return getattr(self.variogram, self.use_score)

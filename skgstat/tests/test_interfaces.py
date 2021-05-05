@@ -10,19 +10,23 @@ from sklearn.model_selection import GridSearchCV
 from skgstat import Variogram, OrdinaryKriging
 from skgstat.interfaces import VariogramEstimator
 
+
 def get_sample() -> pd.DataFrame:
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'pan_sample.csv'))
     return df
 
+
 try:
     import pykrige
+    print(f'Found PyKrige: {pykrige.__version__}')
     from skgstat.interfaces import pykrige as pykrige_interface
     PYKRIGE_AVAILABLE = True
-except:
+except ImportError:
     PYKRIGE_AVAILABLE = False  # pragma: no cover
 
 try:
     import gstools
+    print(f'Found PyKrige: {gstools.__version__}')
     GSTOOLS_AVAILABLE = True
 except ImportError:
     GSTOOLS_AVAILABLE = False  # pragma: no cover
@@ -89,7 +93,8 @@ class TestVariogramEstimator(unittest.TestCase):
 
         gs = gs.fit(self.c, self.v)
 
-        # Python 3.6 yields 'exponential', while 3.7, 3.8 yield 'gaussian' - this is so stupid
+        # Python 3.6 yields 'exponential', 
+        # while 3.7, 3.8 yield 'gaussian' - this is so stupid
         self.assertTrue(gs.best_params_['model'] in ['gaussian', 'exponential'])
 
     def test_find_best_model_future_cv(self):
@@ -135,7 +140,15 @@ class TestVariogramEstimator(unittest.TestCase):
 
         # based on cross-validation
         gs = GridSearchCV(
-            VariogramEstimator(model='exponential', maxlag=100, n_lags=25, cross_n=50, cross_validate=True, use_score='mae'),
+            VariogramEstimator(
+                model='exponential',
+                maxlag=100,
+                n_lags=25,
+                cross_n=50,
+                cross_validate=True,
+                use_score='mae',
+                seed=42
+                ),
             parameters,
             cv=3
         )
