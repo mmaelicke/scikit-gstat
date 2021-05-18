@@ -46,11 +46,14 @@ def field(fname: str, band: Union[int, str] = 0) -> np.ndarray:
 
     # switch band
     if isinstance(band, int):
-        return img[:, :, band]
+        if len(img.shape) > 2:
+            return img[:, :, band]
+        elif len(img.shape) == 2:
+            return img
     elif band.lower() == 'mean':
         return np.mean(img, axis=2)
-    else:
-        raise AttributeError('band parameter is invalid')
+
+    raise AttributeError('band parameter is invalid')
 
 
 def get_sample(
