@@ -6,12 +6,15 @@ names = field_names()
 
 origins = dict(
     pancake="""Image of a pancake with apparent spatial structure.
-    If you use this data, cite SciKit-GStat: https://doi.org/10.5281/zenodo.1345584
-    Copyright Mirko Mälicke, 2020.""",
+    Copyright Mirko Mälicke, 2020. If you use this data,
+    cite SciKit-GStat: https://doi.org/10.5281/zenodo.1345584
+    """,
     aniso="""Random field greyscale image with geometric anisotropy.
     The anisotropy in North-East direction has a factor of 3. The random
     field was generated using gstools.
-    Copyright Mirko Mälicke, 2021"""
+    Copyright Mirko Mälicke, 2020. If you use this data,
+    cite SciKit-GStat: https://doi.org/10.5281/zenodo.1345584
+    """
 )
 
 
