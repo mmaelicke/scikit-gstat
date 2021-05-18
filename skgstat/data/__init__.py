@@ -41,11 +41,11 @@ def pancake(N=500, band=0, seed=42):
 
     See Also
     --------
-    skgstat.data._loader.get_sample
-    skgstat.data.pancake_field
+    :func:`get_sample <skgstat.data._loader.get_sample>`
+    :func:`pancake_field <skgstat.data.pancake_field>`
 
-    Note
-    ----
+    Notes
+    -----
     The image originates from a photograph of an actual pancake.
     The image was cropped to an 500x500 pixel extent keeping the
     center of the original photograph.
@@ -90,8 +90,8 @@ def pancake_field(band=0):
     skgstat.data._loader.field
     skgstat.data.pancake
 
-    Note
-    ----
+    Notes
+    -----
     The image originates from a photograph of an actual pancake.
     The image was cropped to an 500x500 pixel extent keeping the
     center of the original photograph.
@@ -136,10 +136,11 @@ def aniso(N=500, seed=42):
 
     See Also
     --------
-    skgstat.data._loader.field
+    skgstat.data._loader.field : field loader
+    aniso_field : Return the full field
 
-    Note
-    ----
+    Notes
+    -----
     This image was created using :any:`gstools.SRF`.
     The spatial random field was created using a Gaussian model
     and has a size of 500x500 pixel. The created field
@@ -180,11 +181,11 @@ def aniso_field():
 
     See Also
     --------
-    skgstat.data._loader.field
-    skgstat.data.aniso
+    skgstat.data._loader.field : field loader
+    aniso : Return a sample
 
-    Note
-    ----
+    Notes
+    -----
     This image was created using :any:`gstools.SRF`.
     The spatial random field was created using a Gaussian model
     and has a size of 500x500 pixel. The created field
