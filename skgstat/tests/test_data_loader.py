@@ -30,3 +30,13 @@ def test_loader_mean():
     print(mean)
 
     assert_array_almost_equal(cv, mean, decimal=4)
+
+
+def test_aniso_data():
+    assert 'aniso' in data.names
+
+    img = data.aniso_field().get('sample')
+    assert img.shape[0] == 500 and img.shape[1] == 500
+
+    c, v = data.aniso(N=25).get('sample')
+    assert len(c) == len(v) == 25
