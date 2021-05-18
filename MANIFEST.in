@@ -5,3 +5,4 @@ include VERSION
 include classifiers.txt
 include TODO
 include .coveragerc
+graft skgstat/data/rf
