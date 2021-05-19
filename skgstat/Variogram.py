@@ -222,6 +222,14 @@ class Variogram(object):
             If :func:`bin_func <skgstat.Variogram.set_bin_func>` is `'ward'`
             this keyword argument can switch from default mean aggregation to
             median aggregation for calculating the cluster centroids.
+        obs_sigma : int, float
+            .. versionadded:: 0.6.0
+
+            If set, the Variogram will use this sigma as the standard deviation
+            of the observations passed as values. Using a MonteCarlo simulation
+            the uncertainties are propagated into the experimental variogram.
+            If present, the plot will indicate the confidence interval as
+            error bars around the experimental variogram.
 
         """
         # Before we do anything else, make kwargs available
@@ -316,6 +324,11 @@ class Variogram(object):
         # do the preprocessing and fitting upon initialization
         # Note that fit() calls preprocessing
         self.fit(force=True)
+
+        # finally check if any of the uncertainty propagation kwargs are set
+        self._experimental_conf_interval = None
+        if 'obs_sigma' in self._kwargs:
+            self._propagate_obs_sigma()
 
     @property
     def coordinates(self):
@@ -1715,7 +1728,6 @@ class Variogram(object):
         self.preprocessing(force=force)
 
         # calculate the experimental variogram
-        _exp = self.experimental
         _bin = self.bins
 
         x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
@@ -1725,6 +1737,22 @@ class Variogram(object):
             self.fit(force=force)
 
         return x, self._model(x, *self.cof)
+
+    def _propagate_obs_sigma(self):
+        """
+        Observation uncertainties are propagated into the experimental
+        variogram.
+        """
+        # due to circular import, import here
+        from skgstat.util.uncertainty import propagate
+
+        # TODO: load and propagate percentile settings
+        self._experimental_conf_interval = propagate(
+            self,
+            'values',
+            self._kwargs['obs_sigma'],
+            use_bounds=True
+        )
 
     @property
     def residuals(self):
