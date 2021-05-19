@@ -7,6 +7,7 @@ from skgstat import Variogram
 from skgstat import data
 from skgstat.util import shannon_entropy
 from skgstat.util.cross_validation import jacknife
+from skgstat.util.uncertainty import propagate
 
 
 # read the sample data
@@ -77,3 +78,27 @@ def test_uncertainty_propagation():
     conf = V._experimental_conf_interval
     assert conf.shape[0] == 15
     assert conf.shape[1] == 3
+
+
+def test_all_propagation_options():
+        # load a pancake variogram
+    c, v = data.pancake().get('sample')
+
+    V = Variogram(c, v, n_lags=15)
+
+    # propagation - experimental
+    conf = propagate(V, 'values', sigma=5, evalf='experimental', num_iter=100)
+    assert conf.shape == (15, 3)
+
+    # propagation - model
+    conf = propagate(V, 'values', sigma=5, evalf='model', num_iter=100)
+    assert conf.shape == (100, 3)
+
+    # propagation - model
+    conf = propagate(V, 'values', sigma=5, evalf='parameter', num_iter=100)
+    assert conf.shape == (3, 3)
+
+    # switch model
+    V.model = 'stable'
+    conf = propagate(V, 'values', sigma=5, evalf='parameter', num_iter=100)
+    assert conf.shape == (4, 3)
