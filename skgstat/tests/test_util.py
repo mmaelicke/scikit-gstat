@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from skgstat import Variogram
+from skgstat import data
 from skgstat.util import shannon_entropy
 from skgstat.util.cross_validation import jacknife
 
@@ -64,3 +65,15 @@ def test_unknown_cross_validation():
         V.cross_validate(method='foobar')
 
     assert "'foobar' is not implemented" in str(e.value)
+
+
+def test_uncertainty_propagation():
+    # load a pancake variogram
+    c, v = data.pancake().get('sample')
+
+    V = Variogram(c, v, n_lags=15, obs_sigma=5)
+
+    # now there should be a 15,3 shaped conf interval
+    conf = V._experimental_conf_interval
+    assert conf.shape[0] == 15
+    assert conf.shape[1] == 3
