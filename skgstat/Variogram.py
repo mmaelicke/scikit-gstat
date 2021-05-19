@@ -14,7 +14,7 @@ from sklearn.isotonic import IsotonicRegression
 from skgstat import estimators, models, binning
 from skgstat import plotting
 from skgstat.util import shannon_entropy
-from .MetricSpace import MetricSpace, MetricSpacePair, ProbabalisticMetricSpace
+from .MetricSpace import MetricSpace, ProbabalisticMetricSpace
 from skgstat.interfaces.gstools import skgstat_to_gstools, skgstat_to_krige
 
 
@@ -116,12 +116,17 @@ class Variogram(object):
                 * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
                 * `'sturges'` applies Sturge's rule to find `n_lags`.
                 * `'scott'` applies Scott's rule to find `n_lags`
-                * `'doane'` applies Doane's extension to Sturge's rule to find `n_lags`
-                * `'sqrt'` uses the square-root of :func:`distance <skgstat.Variogram.distance>` as `n_lags`.
+                * `'doane'` applies Doane's extension to Sturge's rule
+                  to find `n_lags`
+                * `'sqrt'` uses the square-root of
+                  :func:`distance <skgstat.Variogram.distance>`
+                  as `n_lags`.
                 * `'kmeans'` uses KMeans clustering to well supported bins
-                * `'ward'` uses hierachical clustering to find minimum-variance clusters.
+                * `'ward'` uses hierachical clustering to find
+                  minimum-variance clusters.
 
-            More details are given in the documentation for :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
+            More details are given in the documentation for
+            :func:`set_bin_func <skgstat.Variogram.set_bin_func>`.
 
         normalize : bool
             Defaults to False. If True, the independent and dependent
@@ -140,15 +145,15 @@ class Variogram(object):
                 * 'trf': Trust Region Reflective function for non-linear
                   constrained problems. The class will set the boundaries
                   itself. This is the default function.
-                * 'ml': Maximum-Likelihood estimation. With the current implementation
-                  only the Nelder-Mead solver for unconstrained problems is
-                  implemented. This will estimate the variogram parameters from
-                  a Gaussian parameter space by minimizing the negative
-                  log-likelihood.
+                * 'ml': Maximum-Likelihood estimation. With the current
+                  implementation only the Nelder-Mead solver for
+                  unconstrained problems is implemented. This will estimate
+                  the variogram parameters from a Gaussian parameter space
+                  by minimizing the negative log-likelihood.
                 * 'manual': Manual fitting. You can set the range, sill and
-                  nugget either directly to the :func:`fit <skgstat.Variogram.fit>`
-                  function, or as `fit_` prefixed keyword arguments on
-                  Variogram instantiation.
+                  nugget either directly to the
+                  :func:`fit <skgstat.Variogram.fit>` function, or as
+                  `fit_` prefixed keyword arguments on Variogram instantiation.
 
         fit_sigma : numpy.ndarray, str
             Defaults to None. The sigma is used as measure of uncertainty
@@ -247,13 +252,26 @@ class Variogram(object):
                     np.zeros(len(coordinates))
                 ))
                 self._1d = True
+
             # handle maxlag for MetricSpace
-            _maxlag = maxlag if maxlag and not isinstance(maxlag, str) and maxlag >= 1 else None
-            if samples == None:
-                coordinates = MetricSpace(coordinates.copy(), dist_func, _maxlag)
+            if maxlag and not isinstance(maxlag, str) and maxlag >= 1:
+                _maxlag = maxlag
             else:
-                coordinates = ProbabalisticMetricSpace(coordinates.copy(), dist_func, _maxlag, samples=samples,
-                                                       rnd=self._kwargs.get("binning_random_state", None))
+                _maxlag = None
+
+            if samples is None:
+                coordinates = MetricSpace(
+                    coordinates.copy(),
+                    dist_func,
+                    _maxlag
+                )
+            else:
+                coordinates = ProbabalisticMetricSpace(
+                    coordinates.copy(),
+                    dist_func, _maxlag,
+                    samples=samples,
+                    rnd=self._kwargs.get("binning_random_state", None)
+                )
         elif dist_func != coordinates.dist_metric:
             raise AttributeError((
                 "Distance metric of variogram differs "
@@ -268,7 +286,7 @@ class Variogram(object):
 
         # set verbosity
         self.verbose = verbose
-    
+
         # set values
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
@@ -540,7 +558,8 @@ class Variogram(object):
         .. math::
             n = log_2 n + 1
 
-        **`'scott'`**: estimates the lag class widths (h) by Scott's rule [102]_:
+        **`'scott'`**: estimates the lag class widths (h) by
+        Scott's rule [102]_:
 
         .. math::
             h = \sigma \frac{24 * \sqrt{\pi}}{n}^{\frac{1}{3}}
@@ -596,13 +615,14 @@ class Variogram(object):
 
         References
         ----------
-        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1: 303-306.
-            https://doi.org/10.1002/wics.35
-        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2: 497-502.
-            https://doi.org/10.1002/wics.103
-        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the histogram as
-            a density estimator: L 2 theory." Zeitschrift für Wahrscheinlichkeitstheorie
-            und verwandte Gebiete 57.4: 453-476.
+        .. [101] Scott, D.W. (2009), Sturges' rule. WIREs Comp Stat, 1:
+            303-306. https://doi.org/10.1002/wics.35
+        .. [102] Scott, D.W. (2010), Scott's rule. WIREs Comp Stat, 2:
+            497-502. https://doi.org/10.1002/wics.103
+        .. [103] Freedman, David, and Persi Diaconis  (1981), "On the
+            histogram as a density estimator: L 2 theory." Zeitschrift
+            für Wahrscheinlichkeitstheorie und verwandte Gebiete 57.4:
+            453-476.
         .. [104] Doane, D. P. (1976). Aesthetic frequency classifications.
             The American Statistician, 30(4), 181-183.
 
