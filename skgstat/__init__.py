@@ -6,6 +6,6 @@ from .MetricSpace import MetricSpace, MetricSpacePair
 from . import interfaces
 
 # set some stuff
-__version__ = '0.5.4'
+__version__ = '0.5.5'
 __author__ = 'Mirko Maelicke <mirko.maelicke@kit.edu>'
 __backend__ = 'matplotlib'
