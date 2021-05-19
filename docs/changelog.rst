@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 0.5.5
+=============
+- [data] new submodule :any:`data <skgstat.data>` contains sample random fields and methods for sampling
+  these fields in a reproducible way at random locations and different sample sizes.
+
 Version 0.5.4
 =============
 - [util] added a new `cross_validation` utility module to cross-validate variograms with leave-one-out Kriging 
