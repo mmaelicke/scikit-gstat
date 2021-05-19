@@ -1,9 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 
 try:
     from plotly.subplots import make_subplots
-    import plotly.graph_objects as go 
+    import plotly.graph_objects as go
 except ImportError:
     pass
 
@@ -27,7 +27,13 @@ def __calculate_plot_data(variogram):
     return x, y, _bins, _exp
 
 
-def matplotlib_variogram_plot(variogram, axes=None, grid=True, show=True, hist=True):
+def matplotlib_variogram_plot(
+    variogram,
+    axes=None,
+    grid=True,
+    show=True,
+    hist=True
+):
     # get the plotting data
     x, y, _bins, _exp = __calculate_plot_data(variogram)
 
@@ -62,7 +68,12 @@ def matplotlib_variogram_plot(variogram, axes=None, grid=True, show=True, hist=T
     # grid settings
     if grid:
         ax1.grid(False)
-        ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
+        ax1.vlines(
+            _bins,
+            *ax1.axes.get_ybound(),
+            colors=(.85, .85, .85),
+            linestyles='dashed'
+        )
 
     # always print error bars above grid
     conf = variogram._experimental_conf_interval
@@ -75,7 +86,6 @@ def matplotlib_variogram_plot(variogram, axes=None, grid=True, show=True, hist=T
     # annotation
     ax1.axes.set_ylabel('semivariance (%s)' % variogram._estimator.__name__)
     ax1.axes.set_xlabel('Lag (-)')
-
 
     # ------------------------
     # plot histogram
@@ -98,7 +108,12 @@ def matplotlib_variogram_plot(variogram, axes=None, grid=True, show=True, hist=T
         # need a grid?
         if grid:  # pragma: no cover
             ax2.grid(False)
-            ax2.vlines(_bins, *ax2.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
+            ax2.vlines(
+                _bins,
+                *ax2.axes.get_ybound(),
+                colors=(.85, .85, .85),
+                linestyles='dashed'
+            )
 
         # anotate
         ax2.axes.set_ylabel('N')
@@ -110,7 +125,13 @@ def matplotlib_variogram_plot(variogram, axes=None, grid=True, show=True, hist=T
     return fig
 
 
-def plotly_variogram_plot(variogram, fig=None, grid=True, show=True, hist=True):
+def plotly_variogram_plot(
+    variogram,
+    fig=None,
+    grid=True,
+    show=True,
+    hist=True
+):
     # get the plotting data
     x, y, _bins, _exp = __calculate_plot_data(variogram)
 
@@ -155,8 +176,13 @@ def plotly_variogram_plot(variogram, fig=None, grid=True, show=True, hist=True):
         row=2 if hist else 1, col=1
     )
     fig.add_trace(
-        go.Scatter(x=x, y=y, mode='lines', marker=dict(color='green'),
-            name='%s model' % variogram.model.__name__),
+        go.Scatter(
+            x=x,
+            y=y,
+            mode='lines',
+            marker=dict(color='green'),
+            name='%s model' % variogram.model.__name__
+        ),
         row=2 if hist else 1, col=1
     )
 
@@ -170,7 +196,10 @@ def plotly_variogram_plot(variogram, fig=None, grid=True, show=True, hist=True):
     # hist
     if hist:
         # calculate
-        _count = np.fromiter((g.size for g in variogram.lag_classes()), dtype=int)
+        _count = np.fromiter(
+            (g.size for g in variogram.lag_classes()),
+            dtype=int
+        )
 
         fig.add_trace(
             go.Bar(
