@@ -65,8 +65,8 @@ def matplotlib_variogram_plot(variogram, axes=None, grid=True, show=True, hist=T
         ax1.vlines(_bins, *ax1.axes.get_ybound(), colors=(.85, .85, .85), linestyles='dashed')
 
     # always print error bars above grid
-    if hasattr(variogram, '_experimental_conf_interval'):
-        conf = variogram._experimental_conf_interval
+    conf = variogram._experimental_conf_interval
+    if conf is not None:
         lo = conf[:, 1] - conf[:, 0]
         up = conf[:, 2] - conf[:, 1]
         yerr = np.column_stack((lo, up)).T
@@ -131,8 +131,8 @@ def plotly_variogram_plot(variogram, fig=None, grid=True, show=True, hist=True):
         raise ValueError('axes has to be None or a plotly.Figure.')
 
     # handle error bars on exerimental
-    if hasattr(variogram, '_experimental_conf_interval'):
-        conf = variogram._experimental_conf_interval
+    conf = variogram._experimental_conf_interval
+    if conf is not None:
         error_y = dict(
             type='data',
             symmetric=False,
