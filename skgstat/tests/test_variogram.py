@@ -527,9 +527,8 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         with self.assertRaises(AttributeError) as e:
             self.V.fit_sigma
         
-        self.assertEqual(
-            str(e.exception),
-            'fit_sigma and bins need the same length.'
+        self.assertTrue(
+            'len(fit_sigma)' in str(e.exception)
         )
 
     def test_fit_sigma_raises_ValueError(self):
