@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 0.5.6
+=============
+- The util and data submodule are now always loaded at top-level
+- fixed a potential circular import
+- addded uncertainty tools to util. This is not yet finished and may change the signature before
+  it gets stable with Version 0.6.0
+
 Version 0.5.5
 =============
 - [data] new submodule :any:`data <skgstat.data>` contains sample random fields and methods for sampling
