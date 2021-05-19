@@ -131,7 +131,8 @@ def propagate(
 
     # get the variogram parameters
     _var_opts = variogram.describe().get('params', {})
-    args = {k: v for k, v in _var_opts.items() if k not in source}
+    omit_names = [*source, 'verbose']
+    args = {k: v for k, v in _var_opts.items() if k not in omit_names}
 
     # add the metric space
     args['coordinates'] = metricSpace
