@@ -358,15 +358,20 @@ class Variogram(object):
         can be used to pass pre-calculated coordinates to other
         :class:`Variogram <skgstat.Variogram>` instances.
 
+        Returns
+        -------
+        metric_space : skgstat.MetricSpace
+
         See Also
         --------
         Variogram.coordinates : coordinate representation
+
         """
         return self._X
 
     @metric_space.setter
     def metric_space(self, value):
-        raise AttributeError('MetricSpace is read-only. Instantiate a new Variogram.')
+        raise AttributeError('MetricSpace is read-only.')
 
     @property
     def dim(self):
