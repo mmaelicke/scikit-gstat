@@ -81,7 +81,7 @@ def test_uncertainty_propagation():
 
 
 def test_all_propagation_options():
-        # load a pancake variogram
+    # load a pancake variogram
     c, v = data.pancake().get('sample')
 
     V = Variogram(c, v, n_lags=15)
@@ -94,7 +94,7 @@ def test_all_propagation_options():
     conf = propagate(V, 'values', sigma=5, evalf='model', num_iter=100)
     assert conf.shape == (100, 3)
 
-    # propagation - model
+    # propagation - parameter
     conf = propagate(V, 'values', sigma=5, evalf='parameter', num_iter=100)
     assert conf.shape == (3, 3)
 
@@ -102,3 +102,19 @@ def test_all_propagation_options():
     V.model = 'stable'
     conf = propagate(V, 'values', sigma=5, evalf='parameter', num_iter=100)
     assert conf.shape == (4, 3)
+
+
+def test_propagate_many_targets():
+    # load a pancake variogram
+    c, v = data.pancake().get('sample')
+
+    V = Variogram(c, v, n_lags=12)
+
+    # progate many
+    conf_list = propagate(V, 'values', sigma=10, evalf=['experimental', 'parameter'], num_iter=50)
+    assert len(conf_list) == 2
+
+    # unstack the list
+    conf_exp, conf_par = conf_list
+    assert conf_exp.shape == (12, 3)
+    assert conf_par.shape == (3, 3)

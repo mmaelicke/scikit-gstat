@@ -70,7 +70,7 @@ def propagate(
         Defaults to ``10``
     num_iter : int
         Number of iterations used in the Monte Carlo simulation.
-        Defaults to ``5000``.
+        Defaults to ``500``.
     eval_at : int
         If evalf is set to model, the theoretical model get evaluated
         at this many evenly spaced lags up to maximum lag.
