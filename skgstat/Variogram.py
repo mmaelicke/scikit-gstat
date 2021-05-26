@@ -345,6 +345,7 @@ class Variogram(object):
 
         # finally check if any of the uncertainty propagation kwargs are set
         self._experimental_conf_interval = None
+        self._model_conf_interval = None
         if 'obs_sigma' in self._kwargs:
             self._propagate_obs_sigma()
 

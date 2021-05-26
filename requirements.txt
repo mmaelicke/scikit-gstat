@@ -5,4 +5,3 @@ matplotlib
 numba
 scikit-learn
 imageio
-uncertainty-framework

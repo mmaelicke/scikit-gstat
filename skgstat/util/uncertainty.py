@@ -3,36 +3,17 @@ Estimate uncertainties propagated through the Variogram
 using a MonteCarlo approach
 """
 from typing import Union, List
-from uncertainty_framework import MonteCarlo
 from skgstat import Variogram
 import numpy as np
-
-
-def _propagate_experimental(**kwargs):
-    vario = Variogram(**kwargs)
-
-    return np.asarray(vario.experimental)
-
-
-def _propagate_params(**kwargs):
-    vario = Variogram(**kwargs)
-
-    return vario.parameters
-
-
-def _propagate_model(eval_at=100, **kwargs):
-    vario = Variogram(**kwargs)
-
-    x = np.linspace(0, np.max(vario.bins), num=eval_at)
-
-    return vario.fitted_model(x)
+from tqdm import tqdm
+from joblib import Parallel, delayed
 
 
 def propagate(
     variogram: Variogram = None,
     source: Union[str, List[str]] = 'values',
     sigma: Union[float, List[float]] = 5,
-    evalf: str = 'experimental',
+    evalf: Union[str, List[str]] = 'experimental',
     verbose: bool = False,
     use_bounds: bool = False,
     **kwargs
@@ -59,7 +40,7 @@ def propagate(
         else is untested.
     sigma : list
         Standard deviation of the error distribution.
-    evalf : str
+    evalf : list
         Evaluation function. This specifies, which part of
         the :class:`Variogram <skgstat.Variogram>` should be
         used to be evaluated. Possible values are
@@ -94,12 +75,21 @@ def propagate(
         If evalf is set to model, the theoretical model get evaluated
         at this many evenly spaced lags up to maximum lag.
         Defaults to ``100``.
+    n_jobs : int
+        The evaluation can be performed in parallel. This will specify
+        how many processes may be spawned in parallel. None will spwan
+        only one (default).
+
+        .. note::
+            This is an untested experimental feature.
 
     Returns
     -------
     conf_interval : numpy.ndarray
         Confidence interval of the uncertainty propagation as
-        [lower, median, upper]. See notes for more details
+        [lower, median, upper]. If more than one evalf is given, a
+        list of ndarrays will be returned.
+        See notes for more details.
 
     Notes
     -----
@@ -112,14 +102,20 @@ def propagate(
     :func:`Variogram.model = 'stable' | 'matern' <skgstat.Variogram.model>`
     and ``100`` for ``'model'`` as the model gets evaluated at
     100 evenly spaced lags up to the maximum lag class. This amount
-    can be changed using the eval_at parameter
+    can be changed using the eval_at parameter.
+
+    If more than one evalf parameter is given, the Variogram will be
+    evaluated at multiple steps and each one will be returned as a
+    confidence interval. Thus if ``len(evalf) == 2``, a list containing
+    two confidence interval matrices will be returned.
+    The order is [experimental, parameter, model].
 
     """
     # handle error bounds shortcut
     if use_bounds:
         kwargs['q'] = 0
 
-    # extract the MetricSpace to speed things a bit up
+    # extract the MetricSpace to speed things up a bit
     metricSpace = variogram._X
 
     # get the source of error
@@ -129,53 +125,77 @@ def propagate(
     if not isinstance(sigma, (list, tuple)):
         sigma = [sigma]
 
-    # get the variogram parameters
+    if isinstance(evalf, str):
+        evalf = [evalf]
+
+    # get the static variogram parameters
     _var_opts = variogram.describe().get('params', {})
     omit_names = [*source, 'verbose']
     args = {k: v for k, v in _var_opts.items() if k not in omit_names}
 
-    # add the metric space
+    # add back the metric space
     args['coordinates'] = metricSpace
 
-    # build the parameter map
-    parameters = dict()
-    for s, err in zip(source, sigma):
-        obs = getattr(variogram, s)
-        parameters[s] = dict(
-            distribution=kwargs.get('distribution', 'normal'),
-            scale=err,
-            value=obs
-        )
+    # build the parameter field
+    num_iter = kwargs.get('num_iter', 500)
+    rng = np.random.default_rng(kwargs.get('seed'))
+    dist = getattr(rng, kwargs.get('distribution', 'normal'))
+    param_field = []
 
-    # switch the evaluation function
-    if evalf == 'experimental':
-        func = _propagate_experimental
-    elif evalf == 'parameter':
-        func = _propagate_params
-    elif evalf == 'model':
-        func = _propagate_model
+    for it in range(num_iter):
+        par = {**args}
+
+        # add the noisy params
+        for s, err in zip(source, sigma):
+            obs = getattr(variogram, s)
+            size = len(obs) if hasattr(obs, '__len__') else 1
+            par[s] = dist(obs, err, size=size)
+
+        # append to param field
+        param_field.append(par)
+
+    # define the eval function
+    def func(par):
+        vario = Variogram(**par)
+        out = []
+        if 'experimental' in evalf:
+            out.append(vario.experimental)
+        if 'parameter' in evalf:
+            out.append(vario.parameters)
+        if 'model' in evalf:
+            x = np.linspace(0, np.max(vario.bins), kwargs.get('eval_at', 100))
+            out.append(vario.fitted_model(x))
+        return out
+
+    # build the worker
+    worker = Parallel(n_jobs=kwargs.get('n_jobs'))
+    if verbose:
+        generator = (delayed(func)(par) for par in tqdm(param_field))
     else:
-        raise AttributeError('')
-
-    # build the montecarlo object
-    mc = MonteCarlo(
-        func=func,
-        num_iter=kwargs.get('num_iter', 500),
-        parameters=parameters,
-        verbose=verbose,
-        **args
-    )
+        generator = (delayed(func)(par) for par in param_field)
 
     # run
-    res = mc.run()
+    result = worker(generator)
 
-    # create the result
-    ql = int(kwargs.get('q', 10) / 2)
-    qu = 100 - int(kwargs.get('q', 10) / 2)
-    conf_interval = np.column_stack((
-        np.percentile(res, ql, axis=0),
-        np.median(res, axis=0),
-        np.percentile(res, qu, axis=0)
-    ))
+    # split up conf intervals
+    conf_intervals = []
 
-    return conf_interval
+    for i in range(len(evalf)):
+        # unpack
+        res = [result[j][i] for j in range(len(result))]
+
+        # create the result
+        ql = int(kwargs.get('q', 10) / 2)
+        qu = 100 - int(kwargs.get('q', 10) / 2)
+        conf_intervals.append(
+            np.column_stack((
+                np.percentile(res, ql, axis=0),
+                np.median(res, axis=0),
+                np.percentile(res, qu, axis=0)
+            ))
+        )
+
+    # return
+    if len(conf_intervals) == 1:
+        return conf_intervals[0]
+    return conf_intervals
