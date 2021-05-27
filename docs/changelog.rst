@@ -7,6 +7,7 @@ Version 0.5.6
 - [Variogram] the interal :class:`MetricSpace <skgstat.MetricSpace>` instance used to calculate the distance matrix
   is now available as the :any:`Variogram.metric_space <skgstat.Variogram.metric_space>` property.
 - [Variogram] :any:`Variogram.metric_space <skgstat.Variogram.metric_space>` is now read-only.
+- [unittest] two unittests are changed (linting, not functionality)
 
 Version 0.5.5
 =============

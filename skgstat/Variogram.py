@@ -353,6 +353,8 @@ class Variogram(object):
     @property
     def metric_space(self):
         r"""
+        .. versionadded:: 0.5.6
+        
         :class:`MetricSpace <skgstat.MetricSpace>` representation of the
         input coordinates. A :class:`MetricSpace <skgstat.MetricSpace>`
         can be used to pass pre-calculated coordinates to other
