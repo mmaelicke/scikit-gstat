@@ -1,7 +1,7 @@
 SciKit-GStat
 ============
 
-Info: scikit-gstat needs Python >= 3.5!
+Info: scikit-gstat needs Python >= 3.6!
 
 .. image:: https://img.shields.io/pypi/v/scikit-gstat?color=green&logo=pypi&logoColor=yellow&style=flat-square   :alt: PyPI
     :target: https://pypi.org/project/scikit-gstat
