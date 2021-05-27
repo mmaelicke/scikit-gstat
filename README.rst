@@ -102,15 +102,15 @@ Usage
 
 The `Variogram` class needs at least a list of coordiantes and values.
 All other attributes are set by default.
-You can easily set up an example by generating some random data:
+You can easily set up an example by using the `skgstat.data` sub-module,
+that includes a growing list of sample data.
 
 .. code-block:: python
 
-  import numpy as np
   import skgstat as skg
 
-  coordinates = np.random.gamma(0.7, 2, (30,2))
-  values = np.random.gamma(2, 2, 30)
+  # the data functions return a dict of 'sample' and 'description'
+  coordinates, values = skg.data.pancake(N=300).get('sample')
 
   V = skg.Variogram(coordinates=coordinates, values=values)
   print(V)
@@ -119,8 +119,21 @@ You can easily set up an example by generating some random data:
 
   spherical Variogram
   -------------------
-  Estimator:    matheron
-  Range:        1.64
-  Sill:         5.35
-  Nugget:       0.00
-  
+  Estimator:         matheron
+  Effective Range:   353.64
+  Sill:              1512.24
+  Nugget:            0.00
+
+All variogram parameters can be changed in place and the class will automatically
+invalidate and update dependent results and parameters.
+
+.. code-block:: python
+
+  V.model = 'exponential'
+  V.n_lags = 15
+  V.maxlag = 500
+
+  # plot - matplotlib and plotly are available backends
+  fig = V.plot()
+
+.. image:: ./example.png
