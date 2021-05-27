@@ -2,12 +2,17 @@
 Changelog
 =========
 
-Version 0.6.0-rc
-================
+Version 0.6.0
+=============
 - The util and data submodule are now always loaded at top-level
 - fixed a potential circular import
 - addded uncertainty tools to util. This is not yet finished and may change the signature before
-  it gets stable with Version 0.6.0
+  it gets stable with Version 0.7.0
+
+.. note::
+  The current implementation of uncertainty propagation is not stable. It will be changed until 
+  version 0.7. The entry-point `obs_sigma` will stay stable and persist, but currently the uncertainty
+  propagation will not be updated and invalidated as the Variogram instance changes. 
 
 Version 0.5.6
 =============
