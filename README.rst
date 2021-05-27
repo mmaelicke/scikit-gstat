@@ -76,13 +76,17 @@ to change in future versions.
 Installation
 ~~~~~~~~~~~~
 
-PyPI:
-
+PyPI
+^^^^
 .. code-block:: bash
 
   pip install scikit-gstat
 
+**Note:** It can happen that the installation of numba or numpy is failing using pip. Especially on Windows systems. 
+Usually, a missing Dll (see eg. `#31 <https://github.com/mmaelicke/scikit-gstat/issues/31>`_) or visual c++ redistributable is the reason. 
+
 GIT:
+^^^^
 
 .. code-block:: bash
 
@@ -91,14 +95,20 @@ GIT:
   pip install -r requirements.txt
   pip install -e .
 
-**Note:** It can happen that the installation of shapely, numba or numpy is failing using pip. Especially on Windows systems. Usually, a missing Dll (see eg. `#31 <https://github.com/mmaelicke/scikit-gstat/issues/31>`_) or visual c++ redistributable is the reason. These errors are not caused by pip, scikit-gstat or the respective packages and there are a lot of issues in the shapely and numpy repo concerning these problems. Usually, the best workaround is to install especially shapely independent from scikit-gstat. As far as I know, these problems do not apply if anaconda is used like:
+Conda-Forge:
+^^^^^^^^^^^^
+
+From Version `0.5.5` on `scikit-gstat` is also available on conda-forge.
+Note that for versions `< 1.0` conda-forge will not always be up to date, but
+from `1.0` on, each minor release will be available.
 
 .. code-block:: bash
-  
-  conda install shapely numpy
 
-Usage
-~~~~~
+  conda install -c conda-forge scikit-gstat
+
+
+Quickstart
+----------
 
 The `Variogram` class needs at least a list of coordiantes and values.
 All other attributes are set by default.
