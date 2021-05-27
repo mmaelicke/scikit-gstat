@@ -7,25 +7,6 @@ Welcome to SciKit GStat
 
 `Download the docs as PDF <https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf>`_
 
-.. image:: https://img.shields.io/pypi/v/scikit-gstat?color=green&logo=pypi&logoColor=yellow&style=flat-square   :alt: PyPI
-    :target: https://pypi.org/project/scikit-gstat
-
-.. image:: https://img.shields.io/github/v/release/mmaelicke/scikit-gstat?color=green&logo=github&style=flat-square   :alt: GitHub release (latest by date)
-    :target: https://github.com/mmaelicke/scikit-gstat
-
-.. image:: https://github.com/mmaelicke/scikit-gstat/workflows/Test%20and%20build%20docs/badge.svg
-    :target: https://github.com/mmaelicke/scikit-gstat/actions
-
-.. image:: https://api.codacy.com/project/badge/Grade/34022fb8b795435b8eeb5431159fa7c6
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/mmaelicke/scikit-gstat?utm_source=github.com&utm_medium=referral&utm_content=mmaelicke/scikit-gstat&utm_campaign=Badge_Grade_Dashboard
-
-.. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/mmaelicke/scikit-gstat
-    :alt: Codecov
-
-.. image:: https://zenodo.org/badge/98853365.svg
-   :target: https://zenodo.org/badge/latestdoi/98853365
 
 SciKit-Gstat is a scipy-styled analysis module for variogram analysis. 
 The base class is called :class:`Variogram <skgstat.Variogram>`, which is probably the
