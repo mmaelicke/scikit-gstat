@@ -2,12 +2,19 @@
 Changelog
 =========
 
-Version 0.5.6
-=============
+Version 0.6.0-rc
+================
 - The util and data submodule are now always loaded at top-level
 - fixed a potential circular import
 - addded uncertainty tools to util. This is not yet finished and may change the signature before
   it gets stable with Version 0.6.0
+
+Version 0.5.6
+=============
+- [Variogram] the interal :class:`MetricSpace <skgstat.MetricSpace>` instance used to calculate the distance matrix
+  is now available as the :any:`Variogram.metric_space <skgstat.Variogram.metric_space>` property.
+- [Variogram] :any:`Variogram.metric_space <skgstat.Variogram.metric_space>` is now read-only.
+- [unittest] two unittests are changed (linting, not functionality)
 
 Version 0.5.5
 =============

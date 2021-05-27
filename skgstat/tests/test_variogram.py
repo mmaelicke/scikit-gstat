@@ -403,12 +403,16 @@ class TestVariogramArguments(unittest.TestCase):
         V.use_nugget = True
         self.assertEqual(V.use_nugget, True)
         self.assertEqual(V._use_nugget, True)
-        self.assertAlmostEqual(V.describe()['normalized_nugget'], 291.28, places=2)
+        self.assertAlmostEqual(
+            V.describe()['normalized_nugget'],
+            291.28,
+            places=2
+        )
 
     def test_use_nugget_exception(self):
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, self.v, use_nugget=42)
-            
+
         self.assertEqual(
             str(e.exception),
             'use_nugget has to be of type bool.'
@@ -425,7 +429,7 @@ class TestVariogramArguments(unittest.TestCase):
         for arg in [15.5, -5]:
             with self.assertRaises(ValueError) as e:
                 Variogram(self.c, self.v, n_lags=arg)
-            
+
             self.assertEqual(
                 str(e.exception),
                 'n_lags has to be a positive integer'
@@ -434,7 +438,7 @@ class TestVariogramArguments(unittest.TestCase):
     def test_n_lags_not_implemented(self):
         with self.assertRaises(NotImplementedError):
             Variogram(self.c, self.v, n_lags='auto')
-    
+
     def test_set_values(self):
         V = Variogram(self.c, self.v)
 
@@ -467,7 +471,7 @@ class TestVariogramArguments(unittest.TestCase):
 
         # now, biggest bin should be almost or exactly 1.0
         self.assertLessEqual(np.max(V.bins), 1.0)
-    
+
     def test_distance_matrix(self):
         coor = [[0, 0], [1, 0], [0, 1], [1, 1]]
         vals = [0, 1, 2, 3]
@@ -481,20 +485,47 @@ class TestVariogramArguments(unittest.TestCase):
         V = Variogram(coor, vals)
 
         assert_array_almost_equal(V.distance_matrix, dist_mat, decimal=3)
-    
+
     def test_entropy_as_estimator(self):
         """
-        Note: This unittest will change in future, as soon as the 
+        Note: This unittest will change in future, as soon as the
         bin edges for Entropy calculation can be set on instantiation
 
         """
         V = Variogram(self.c, self.v, estimator='entropy', n_lags=10)
 
         assert_array_almost_equal(
-            V.experimental, 
-            [2.97, 3.3 , 3.45, 2.95, 3.33, 3.28, 3.31, 3.44, 2.65, 1.01],
+            V.experimental,
+            [2.97, 3.3, 3.45, 2.95, 3.33, 3.28, 3.31, 3.44, 2.65, 1.01],
             decimal=2
         )
+
+    def test_metric_space_property(self):
+        """
+        Test that the MetricSpace is correctly returned
+        """
+        V = Variogram(self.c, self.v)
+
+        # get the metric space through property
+        mc = V.metric_space
+
+        # assert the coords are actually the same
+        assert_array_almost_equal(
+            mc.coords,
+            V.coordinates,
+            decimal=5
+        )
+
+    def test_metric_space_readonly(self):
+        """
+        Verify that metric_space is a read-only property.
+        """
+        V = Variogram(self.c, self.v)
+
+        with self.assertRaises(AttributeError) as e:
+            V.metric_space = self.c
+
+            self.assertTrue('read-only' in str(e.exception))
 
 
 class TestVariogramFittingProcedure(unittest.TestCase):
@@ -1250,7 +1281,6 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
         skgstat.__backend__ = 'matplotlib'
 
 
-
 class TestSampling(unittest.TestCase):
     def setUp(self):
         self.data = pd.read_csv(os.path.dirname(__file__) + '/pan_sample.csv')
@@ -1286,7 +1316,7 @@ class TestSampling(unittest.TestCase):
             self.assertAlmostEqual(Vf["effective_range"], Vs["effective_range"], delta = Vf["effective_range"] / 5)
             self.assertAlmostEqual(Vf["sill"], Vs["sill"], delta = Vf["sill"] / 5)
 
-        
+       
 class TestVariogramPickling(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
