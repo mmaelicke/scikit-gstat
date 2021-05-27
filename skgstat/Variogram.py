@@ -351,6 +351,31 @@ class Variogram(object):
         return self._X.coords
 
     @property
+    def metric_space(self):
+        r"""
+        .. versionadded:: 0.5.6
+        
+        :class:`MetricSpace <skgstat.MetricSpace>` representation of the
+        input coordinates. A :class:`MetricSpace <skgstat.MetricSpace>`
+        can be used to pass pre-calculated coordinates to other
+        :class:`Variogram <skgstat.Variogram>` instances.
+
+        Returns
+        -------
+        metric_space : skgstat.MetricSpace
+
+        See Also
+        --------
+        Variogram.coordinates : coordinate representation
+
+        """
+        return self._X
+
+    @metric_space.setter
+    def metric_space(self, value):
+        raise AttributeError('MetricSpace is read-only.')
+
+    @property
     def dim(self):
         """
         Input coordinates dimensionality.
