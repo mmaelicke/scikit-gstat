@@ -22,10 +22,11 @@ What is geostatistics?
 ======================
 
 The basic idea of geostatistics is to describe and estimate spatial
-correlations in a set of point data. While the main tool, the variogram, is
-quite easy to implement and use, a lot of assumptions are underlying it.
+covariance, or correlation, in a set of point data. 
+While the main tool, the semi-variogram, is quite easy to implement and use,
+a lot of important assumptions are underlying it.
 The typical application is geostatistics is an interpolation. Therefore,
-although using point data, a basic concept is to understand these point data
+although using point data, a basic concept is to understand this point data
 as a sample of a (spatially) continuous variable that can be described as a
 random field :math:`rf`, or to be more precise, a Gaussian random field in many
 cases. The most fundamental assumption in geostatistics is that any two values
@@ -50,7 +51,7 @@ where :math:`Z_u` is the value of :math:`rf` at a non-observed location with
 .. math::
     w_i = \frac{1}{||\overrightarrow{ux_i}||}
 
-where :math:`u` is the not observed point and :math:`x_i` is one of the
+where :math:`u` is the unobserved point and :math:`x_i` is one of the
 sample points. Thus, :math:`||\overrightarrow{ux_i}||` is the 2-norm of
 the vector between the two points: the Euclidean distance in the coordinate
 space (which by no means has to be limited to the :math:`\mathbb{R}^2` case).
@@ -76,29 +77,45 @@ Geostatistics is a wide field spanning a wide variety of disciplines, like
 geology, biology, hydrology or geomorphology. Each discipline defines their
 own set of tools, and apparently definitions, and progress is made until
 today. It is not the objective of ``scikit-gstat`` to be a comprehensive
-collection of all available tools. That would only be possible if
-professionals from each discipline contribute to the project. The objective
-is more to offer some common tools and simplify the process of geostatistical
-analysis and tool development thereby.
-However, you split geostatistics into three main fields, each of it with its
+collection of all available tools. The objective is more to offer some
+common and also more sophisticated tools for variogram analysis.
+Thus, when useing ``scikit-gstat``, you typically need another library for
+the actual application, like interpolation. In most cases that will be
+`gstools <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/>`_.
+However, one can split geostatistics into three main fields, each of it with its
 own tools:
 
 * **variography:** with the variogram being the main tool, the variography
   focuses on describing, visualizing and modelling covariance structures in
   space and time.
-* **kriging:** is an interpolation method, that utilizes a variogram to find
-  the estimate for weights as shown in the section above.
+* **kriging:** is a family of interpolation methods, that utilize a variogram to
+  estimate the kriging weights as sketched above.
 * **geostatistical simulation:** is aiming on generate random fields that fit
-  a given set of observations or a pre-defined variogram.
+  a given set of observations or a pre-defined variogram or covariance function.
 
 .. note::
 
-    I am planning to implement common tools from all three fields. However,
-    up to now, I am only focusing on variograms and no field generators or
-    kriging procedures are available.
+    I am not planning to implement tools from all three fields. 
+    You can rather use one of the interfaces, like :func:`Variogram.to_gstools <skgstat.Variogram.to_gstools>`
+    to export a variogram to another library, that covers kriging and 
+    spatial random field generation in great detail.
 
 
-How to use this Guide
+How to use this guide
 =====================
 
-*Write something about code examples and stuff*
+The main idea behind the user-guide is to introduce geostatistics at the example of
+SciKit-GStat. The module has a growing collection of data examples, that are used
+throughout the documentation. They can be loaded from the `data` submodule.
+Each function will return a dictionary of the actual sample and a brief description.
+
+.. note::
+
+  Any data sample included has a origin and an owner. While they are all distributed
+  under open licenses, you have to check the description for data ownership as all
+  used licenses force you to attribute the owner.
+
+.. ipython:: python
+
+  import skgstat as skg
+  skg.data.aniso(N=20)
