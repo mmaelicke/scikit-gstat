@@ -27,7 +27,7 @@ on instantiation.
 
 .. ipython:: python
 
-    V = Variogram(coordinates=coordinates, values=values)
+    V = skg.Variogram(coordinates=coordinates, values=values)
     print(V)
 
 
