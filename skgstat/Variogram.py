@@ -227,6 +227,14 @@ class Variogram(object):
             If :func:`bin_func <skgstat.Variogram.set_bin_func>` is `'ward'`
             this keyword argument can switch from default mean aggregation to
             median aggregation for calculating the cluster centroids.
+        obs_sigma : int, float
+            .. versionadded:: 0.6.0
+
+            If set, the Variogram will use this sigma as the standard deviation
+            of the observations passed as values. Using a MonteCarlo simulation
+            the uncertainties are propagated into the experimental variogram.
+            If present, the plot will indicate the confidence interval as
+            error bars around the experimental variogram.
 
         """
         # Before we do anything else, make kwargs available
@@ -334,6 +342,12 @@ class Variogram(object):
         # do the preprocessing and fitting upon initialization
         # Note that fit() calls preprocessing
         self.fit(force=True)
+
+        # finally check if any of the uncertainty propagation kwargs are set
+        self._experimental_conf_interval = None
+        self._model_conf_interval = None
+        if 'obs_sigma' in self._kwargs:
+            self._propagate_obs_sigma()
 
     @property
     def coordinates(self):
@@ -641,17 +655,18 @@ class Variogram(object):
         """
         # handle strings
         if isinstance(bin_func, str):
+            fname = bin_func.lower()
             # switch the input
-            if bin_func.lower() == 'even':
+            if fname == 'even':
                 self._bin_func = binning.even_width_lags
 
-            elif bin_func.lower() == 'uniform':
+            elif fname == 'uniform':
                 self._bin_func = binning.uniform_count_lags
 
             # remove the n_lags if they will be adjusted on call
             else:
                 # reset lags for adjusting algorithms
-                if bin_func.lower() not in ('kmeans', 'ward', 'stable_entropy'):
+                if fname not in ('kmeans', 'ward', 'stable_entropy'):
                     self._n_lags = None
 
                 # use the wrapper for all but even and uniform
@@ -686,10 +701,19 @@ class Variogram(object):
             return binning.ward(distances, n, maxlag)
 
         elif self._bin_func_name.lower() == 'stable_entropy':
-            return binning.stable_entropy_lags(distances, n, maxlag, **self._kwargs)
+            return binning.stable_entropy_lags(
+                distances,
+                n,
+                maxlag,
+                **self._kwargs
+            )
 
         else:
-            return binning.auto_derived_lags(distances, self._bin_func_name, maxlag)
+            return binning.auto_derived_lags(
+                distances,
+                self._bin_func_name,
+                maxlag
+            )
 
     @property
     def normalized(self):
@@ -964,7 +988,7 @@ class Variogram(object):
         # handle sparse matrix
         if isinstance(self.distance_matrix, sparse.spmatrix):
             return self.triangular_distance_matrix.data
-        
+
         # Turn it back to triangular form not to have duplicates
         return squareform(self.distance_matrix)
 
@@ -981,7 +1005,10 @@ class Variogram(object):
         c = m.tocsc()
         c.data = c.indices
         rows = c.tocsr()
-        filt = sparse.csr.csr_matrix((m.indices < rows.data, m.indices, m.indptr), m.shape)
+        filt = sparse.csr.csr_matrix(
+            (m.indices < rows.data, m.indices, m.indptr),
+            m.shape
+        )
         return m.multiply(filt)
 
     @property
@@ -1000,7 +1027,7 @@ class Variogram(object):
         # remove bins
         self._bins = None
         self._groups = None
-        
+
         # set new maxlag
         if value is None:
             self._maxlag = None
@@ -1023,7 +1050,8 @@ class Variogram(object):
         cost function, which divides the residuals by their uncertainty.
 
         When setting fit_sigma, the array of uncertainties itself can be
-        given, or one of the strings: ['linear', 'exp', 'sqrt', 'sq', 'entropy'].
+        given, or one of the strings:
+        ['linear', 'exp', 'sqrt', 'sq', 'entropy'].
         The parameters described below refer to the setter of this property.
 
         .. versionchanged:: 0.3.11
@@ -1079,7 +1107,7 @@ class Variogram(object):
             if len(self._fit_sigma) == len(self._bins):
                 return self._fit_sigma
             else:
-                raise AttributeError('fit_sigma and bins need the same length.')
+                raise AttributeError('len(fit_sigma) != len(bins)')
 
         # linear function of distance
         elif self._fit_sigma == 'linear':
@@ -1253,15 +1281,15 @@ class Variogram(object):
                 scipy.optimize.leastsq function.
               * trf: Trust Region Reflective algorithm implemented in
                 scipy.optimize.least_squares(method='trf')
-              * 'ml': Maximum-Likelihood estimation. With the current implementation
-                only the Nelder-Mead solver for unconstrained problems is
-                implemented. This will estimate the variogram parameters from
-                a Gaussian parameter space by minimizing the negative
-                log-likelihood.
+              * 'ml': Maximum-Likelihood estimation. With the current
+                implementation only the Nelder-Mead solver for unconstrained
+                problems is implemented. This will estimate the variogram
+                parameters from a Gaussian parameter space by minimizing
+                the negative log-likelihood.
               * 'manual': Manual fitting. You can set the range, sill and
-                nugget either directly to the :func:`fit <skgstat.Variogram.fit>`
-                function, or as `fit_` prefixed keyword arguments on
-                Variogram instantiation.
+                nugget either directly to the
+                :func:`fit <skgstat.Variogram.fit>` function, or as
+                `fit_` prefixed keyword arguments on Variogram instantiation.
 
 
         sigma : string, array
@@ -1481,14 +1509,13 @@ class Variogram(object):
             if kw["nugget"] != 0:
                 cof.append(kw["nugget"])
 
-        harmonize = False
         if not callable(model):
             if model == "harmonize":
                 raise ValueError("Please supply the actual harmonized model directly")
             else:
                 model = model.lower()
                 model = getattr(models, model)
-            
+
         if model.__name__ == "harmonize":
             code = """fitted_model = lambda x: model(x)"""
         else:
@@ -1536,7 +1563,7 @@ class Variogram(object):
             self._diff = np.abs(Vrow.data - Vcol.data)
         else:
             # Append a column of zeros to make pdist happy
-            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2) == abs(a-b)
+            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
             self._diff = pdist(
                 np.column_stack((v, np.zeros(len(v)))),
                 metric="euclidean"
@@ -1760,7 +1787,6 @@ class Variogram(object):
         self.preprocessing(force=force)
 
         # calculate the experimental variogram
-        _exp = self.experimental
         _bin = self.bins
 
         x = np.linspace(0, np.float64(np.nanmax(_bin)), n)
@@ -1770,6 +1796,22 @@ class Variogram(object):
             self.fit(force=force)
 
         return x, self._model(x, *self.cof)
+
+    def _propagate_obs_sigma(self):
+        """
+        Observation uncertainties are propagated into the experimental
+        variogram.
+        """
+        # due to circular import, import here
+        from skgstat.util.uncertainty import propagate
+
+        # TODO: load and propagate percentile settings
+        self._experimental_conf_interval = propagate(
+            self,
+            'values',
+            self._kwargs['obs_sigma'],
+            use_bounds=True
+        )
 
     @property
     def residuals(self):
@@ -1903,7 +1945,6 @@ class Variogram(object):
 
         return mae
 
-
     @property
     def nrmse(self):
         r"""NRMSE
@@ -2002,8 +2043,16 @@ class Variogram(object):
         mx = np.nanmean(experimental)
 
         # calculate the single nash-sutcliffe terms
-        term1 = np.nansum(np.fromiter(map(lambda x, y: (x - y)**2, experimental, model), float))
-        term2 = np.nansum(np.fromiter(map(lambda x: (x - mx)**2, experimental), float))
+        term1 = np.nansum(np.fromiter(
+            map(lambda x, y: (x - y)**2, experimental, model),
+            float
+            )
+        )
+        term2 = np.nansum(np.fromiter(
+            map(lambda x: (x - mx)**2, experimental),
+            float
+            )
+        )
 
         return 1 - (term1 / term2)
 
@@ -2058,7 +2107,7 @@ class Variogram(object):
             The number of points to be included into the cross-validation.
             If None (default), all points will be used.
         metric : str
-            Metric used for cross-validation. 
+            Metric used for cross-validation.
             Can be root mean square error (rmse), mean squared error (mse)
             or mean absolute error (mae).
         seed : int
@@ -2078,7 +2127,12 @@ class Variogram(object):
         from skgstat.util import cross_validation
 
         if method == 'jacknife':
-            return cross_validation.jacknife(self, n=n, metric=metric, seed=seed)
+            return cross_validation.jacknife(
+                self,
+                n=n,
+                metric=metric,
+                seed=seed
+            )
         else:
             raise AttributeError(f"A method '{method}' is not implemented.")
 
@@ -2184,9 +2238,16 @@ class Variogram(object):
     @property
     def parameters(self):
         """
-        Extract just the variogram parameters range, sill and nugget from the self.describe return
+        Extract just the variogram parameters range, sill
+        and nugget from the
+        :func:`describe <skgstat.Variogram.describe>` output.
 
-        :return:
+        Returns
+        -------
+        params : list
+            [range, sill, nugget] for most models and
+            [range, sill, shape, nugget] for matern and stable model.
+
         """
         d = self.describe()
         if 'error' in d:
@@ -2367,9 +2428,21 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_variogram_plot(self, axes=axes, grid=grid, show=show, hist=hist)
+            return plotting.matplotlib_variogram_plot(
+                self,
+                axes=axes,
+                grid=grid,
+                show=show,
+                hist=hist
+            )
         elif used_backend == 'plotly':
-            return plotting.plotly_variogram_plot(self, fig=axes, grid=grid, show=show, hist=hist)
+            return plotting.plotly_variogram_plot(
+                self,
+                fig=axes,
+                grid=grid,
+                show=show,
+                hist=hist
+            )
 
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
@@ -2405,9 +2478,19 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_variogram_scattergram(self, ax=ax, show=show, **kwargs)
+            return plotting.matplotlib_variogram_scattergram(
+                self,
+                ax=ax,
+                show=show,
+                **kwargs
+            )
         elif used_backend == 'plotly':
-            return plotting.plotly_variogram_scattergram(self, fig=ax, show=show, **kwargs)
+            return plotting.plotly_variogram_scattergram(
+                self,
+                fig=ax,
+                show=show,
+                **kwargs
+            )
 
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
@@ -2462,9 +2545,19 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_location_trend(self, axes=axes, show=show, **kwargs)
+            return plotting.matplotlib_location_trend(
+                self,
+                axes=axes,
+                show=show,
+                **kwargs
+            )
         elif used_backend == 'plotly':
-            return plotting.plotly_location_trend(self, fig=axes, show=show, **kwargs)
+            return plotting.plotly_location_trend(
+                self,
+                fig=axes,
+                show=show,
+                **kwargs
+            )
 
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
@@ -2499,9 +2592,19 @@ class Variogram(object):
         used_backend = plotting.backend()
 
         if used_backend == 'matplotlib':
-            return plotting.matplotlib_dd_plot(self, ax=ax, plot_bins=plot_bins, show=show)
+            return plotting.matplotlib_dd_plot(
+                self,
+                ax=ax,
+                plot_bins=plot_bins,
+                show=show
+            )
         elif used_backend == 'plotly':
-            return plotting.plotly_dd_plot(self, fig=ax, plot_bins=plot_bins, show=show)
+            return plotting.plotly_dd_plot(
+                self,
+                fig=ax,
+                plot_bins=plot_bins,
+                show=show
+            )
 
         # if we reach this line, somethings wrong with plotting backend
         raise ValueError('The plotting backend has an undefined state.')
@@ -2515,7 +2618,7 @@ class Variogram(object):
         try:
             _name = self._model.__name__
             _b = int(len(self.bins))
-        except:
+        except Exception:
             return "< abstract Variogram >"
         return "< %s Semivariogram fitted to %d bins >" % (_name, _b)
 
@@ -2539,8 +2642,8 @@ class Variogram(object):
         _nugget = np.NaN if 'error' in par else par['nugget']
 
         s = "{0} Variogram\n".format(par['model'])
-        s+= "-" * (len(s) - 1) + "\n"
-        s+="""Estimator:         %s
+        s += "-" * (len(s) - 1) + "\n"
+        s += """Estimator:         %s
         \rEffective Range:   %.2f
         \rSill:              %.2f
         \rNugget:            %.2f
