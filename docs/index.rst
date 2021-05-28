@@ -29,9 +29,9 @@ In case you use SciKit-GStat in other software or scientific publications,
 please reference this module. It is published and has a DOI. It can be cited
 as:
 
-  Mirko Mälicke, Helge David Schneider, Sebastian Müller, & Egil Möller. (2021, April 20). 
+  Mirko Mälicke, Egil Möller, Helge David Schneider, & Sebastian Müller. (2021, May 28). 
     mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox 
-    (Version v0.5.0). Zenodo. http://doi.org/10.5281/zenodo.4704356
+    (Version v0.6.0). Zenodo. http://doi.org/10.5281/zenodo.4835779
 
 .. note::
 
