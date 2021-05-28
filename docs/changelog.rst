@@ -6,8 +6,8 @@ Version 0.6.0
 =============
 - The util and data submodule are now always loaded at top-level
 - fixed a potential circular import
-- addded uncertainty tools to util. This is not yet finished and may change the signature before
-  it gets stable with Version 0.7.0
+- added uncertainty tools to util. This is not yet finished and may change the signature before
+  it gets stable with Version 1.0 or 1.1
 
 .. note::
   The current implementation of uncertainty propagation is not stable. It will be changed until 
