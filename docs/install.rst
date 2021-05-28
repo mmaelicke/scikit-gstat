@@ -24,20 +24,30 @@ The most recent version from GitHub can be installed like:
 
 .. code-block:: bash
 
-    git clone https://github.com/mmaelicke/scikit-gstat.git
+    git clone git@github.com:mmaelicke/scikit-gstat
     cd scikit-gstat
-    pip install -r requirements.txt
-    python setup.py install
+    pip install -e .
 
+
+Conda-Forge
+-----------
+
+Since version `0.5.5`, SciKit-GStat is available on Conda-Forge.
+You can install it like:
+
+.. code-block:: bash
+
+    conda install -c conda-forge scikit-gstat
 
 Note
 ----
 
-Depending on you OS, you might run into problems installing all requirements
-in a clean Python environment. These problems are usually caused by the scipy
-and numba package, which might need to be compiled. From our experience, no
-problems should occur, when an environment manager like anaconda is used.
-Then, the requirements can be installed like:
+On Windows, you might run into problems installing all requirements
+in a clean Python environment, especially if C++ redistributables are missing. 
+This can happen i.e. on *bare* VMs and the compilation of libraries required by
+scipy, numpy or numba package are the ones failing.
+In these cases, install the libraries first, and then SciKit-GStat or move to
+the conda-forge package 
 
 .. code-block:: bash
 

@@ -1,5 +1,0 @@
-pytest
-pytest-cov
-pytest-depends
-pykrige
-plotly

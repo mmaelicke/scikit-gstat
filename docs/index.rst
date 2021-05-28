@@ -33,15 +33,6 @@ as:
     mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox 
     (Version v0.6.0). Zenodo. http://doi.org/10.5281/zenodo.4835779
 
-.. note::
-
-    Scikit-gstat was rewritten in major parts. Most of the changes are internal,
-    but the attributes and behaviour of the `Variogram` has also changed
-    substantially.
-    A detailed description of the new versions usage will follow. The last
-    version of the old Variogram class, 0.1.8, is kept in the `version-0.1.8`
-    branch on GitHub, but not developed any further. It is not compatible to
-    the current version.
 
 .. toctree::
     :maxdepth: 3
