@@ -40,7 +40,8 @@ The Variogram class has its own plotting method.
     :okwarning:
 
     @savefig default_variogram.png width=7in
-    V.plot()
+    fig = V.plot()
+    fig.close()
 
 With version 0.2, the histogram plot can also be disabled. This is most
 useful, when the binning method for the lag classes is changed from `'even'`
@@ -51,7 +52,8 @@ step classes to `'uniform'` distribution in the lag classes.
 
     V.set_bin_func('uniform')
     @savefig variogram_uniform.png width=7in
-    V.plot(hist=False)
+    fig = V.plot(hist=False)
+    fig.close()
 
 Mutating
 --------
@@ -67,7 +69,8 @@ You can i.e. increase the number of lag classes:
     V.maxlag = 500
 
     @savefig default_variogram_25lag.png width=7in
-    V.plot()
+    fig = V.plot()
+    fig.close()
 
 Note, how the experimental variogram was updated and the model was
 fitted to the new data automatically.
