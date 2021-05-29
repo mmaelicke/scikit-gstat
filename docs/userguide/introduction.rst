@@ -111,11 +111,14 @@ Each function will return a dictionary of the actual sample and a brief descript
 
 .. note::
 
-  Any data sample included has a origin and an owner. While they are all distributed
+  Any data sample included has an origin and an owner. While they are all distributed
   under open licenses, you have to check the description for data ownership as all
   used licenses force you to attribute the owner.
 
 .. ipython:: python
+  :okwarning:
 
   import skgstat as skg
   skg.data.aniso(N=20)
+
+These samples contain a coordinate and a value array.
