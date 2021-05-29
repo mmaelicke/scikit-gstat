@@ -4,9 +4,9 @@ Changelog
 
 Version 0.6.1
 =============
-- The dockerfile was completely rewritten. A user can now specify the used Python version 
+- The Dockerfile was completely rewritten. A user can now specify the used Python version 
   at build time of the docker image.
-- The dockerfile is now part of the python package
+- The Dockerfile is now part of the python package
 
 Version 0.6.0
 =============
