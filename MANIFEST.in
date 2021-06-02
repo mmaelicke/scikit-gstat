@@ -8,3 +8,4 @@ include .coveragerc
 include Dockerfile
 include Dockerfile.legacy
 graft skgstat/data/rf
+graft skgstat/data/samples
