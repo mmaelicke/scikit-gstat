@@ -122,5 +122,5 @@ def read_sample_file(fname) -> pd.DataFrame:
 
     """
     # build the path
-    path = os.path.join(PATH, 'sample', fname)
+    path = os.path.join(PATH, 'samples', fname)
     return pd.read_csv(path)
