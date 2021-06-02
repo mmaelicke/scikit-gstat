@@ -1,3 +1,5 @@
+import pandas as pd
+
 from skgstat.data import _loader
 from skgstat.data._loader import field_names
 
@@ -14,6 +16,19 @@ origins = dict(
     field was generated using gstools.
     Copyright Mirko Mälicke, 2020. If you use this data,
     cite SciKit-GStat: https://doi.org/10.5281/zenodo.1345584
+    """,
+    meuse=""""Sample dataset of real measurements of heavy metal pollutions
+    in the topsoil on a 15x15 meter plot along the river Meuse.
+    The data is distributed along with the R-package sp.
+    IMPORTANT: If you use this data, cite Pebesma and Bivand (2005)
+    and Bivand et al (2013):
+
+      Pebesma EJ, Bivand RS (2005). “Classes and methods for spatial
+      data in R.” R News, 5(2), 9–13. https://CRAN.R-project.org/doc/Rnews/.
+
+      Bivand RS, Pebesma E, Gomez-Rubio V (2013). Applied spatial data
+      analysis with R, Second edition. Springer, NY. https://asdar-book.org/.
+
     """
 )
 
@@ -211,4 +226,56 @@ def aniso_field():
     return dict(
         sample=sample,
         origin=origins.get('aniso')
+    )
+
+
+def meuse(variable='lead'):
+    """
+    Returns one of the samples of the well-known Meuse dataset.
+    You can specify which heave metal data you want to load.
+
+    Parameters
+    ----------
+    Returns
+    -------
+    result : dict
+        Dictionary of the sample and a citation information.
+
+    Notes
+    -----
+    The example data was taken from the R package 'sp'
+    as published on CRAN: https://cran.r-project.org/package=sp
+    The package is licensed under GPL-3, which applies
+    to the sample if used somewhere else.
+    If you use this sample, please cite the original sources
+    [502]_, [503]_ and not SciKit-GStat.
+
+    References
+    ----------
+    .. [502] Pebesma EJ, Bivand RS (2005). “Classes and methods for spatial
+      data in R.” R News, 5(2), 9–13. https://CRAN.R-project.org/doc/Rnews/.
+
+    .. [503] Bivand RS, Pebesma E, Gomez-Rubio V (2013). Applied spatial data
+      analysis with R, Second edition. Springer, NY. https://asdar-book.org/.
+
+    """
+    # check variable
+    if variable not in ('cadmium', 'copper', 'lead', 'zinc'):
+        raise AttributeError(
+            "variable has to be in ['cadmium', 'copper', 'lead', 'zinc']"
+        )
+
+    # get the data
+    df = _loader.read_sample_file('meuse.txt')
+
+    # get the coordinates
+    coords = df[['x', 'y']].values
+
+    # get the correct variable
+    values = df[[variable]].values
+
+    # return
+    return dict(
+        sample=(coords, values, ),
+        origin=origins.get('meuse')
     )
