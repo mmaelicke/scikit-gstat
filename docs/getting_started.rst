@@ -19,7 +19,7 @@ the data module available with version `>=0.5.5`.
     plt.style.use('ggplot')
 
     data = skg.data.pancake(N=500, seed=42)
-    print(data.get('description'))
+    print(data.get('origin'))
     coordinates, values = data.get('sample')
 
 The Variogram needs at least an array of coordinates and an array of values
@@ -64,10 +64,11 @@ will be invalidated and re-caluculated.
 You can i.e. increase the number of lag classes:
 
 .. ipython:: python
-    :okwaring:
+    :okwarning:
 
     V.n_lags = 25
     V.maxlag = 500
+    V.bin_func = 'kmeans'
 
     @savefig default_variogram_25lag.png width=7in
     V.plot()
