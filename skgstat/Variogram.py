@@ -1017,6 +1017,26 @@ class Variogram(object):
 
     @property
     def maxlag(self):
+        """
+        Maximum lag distance to be considered in this Variogram instance.
+        You can limit the distance at which point pairs are calcualted.
+        There are three possible ways how to do that, in absoulte lag units,
+        which is a number larger one. Secondly, a number ``0 < maxlag < 1``
+        can be set, which will use this share of the maximum distance as
+        maxlag. Lastly, a string can be set: ``'mean'`` and ``'median'``
+        for the mean or median value of the distance matrix.
+
+        Notes
+        -----
+        This setting is largely flexible, but all options except the
+        absolute limit in lag units need the full distance matrix to be
+        calculated. Hence, it does **not** speed up the calculation
+        of large distance matrices, just the estimation of the variogram.
+        Thus, if you pre-calcualte the distance matrix using
+        :class:`MetricSpace <skgstat.MetricSpace>`, only absoulte
+        limits can be used.
+
+        """
         return self._maxlag
 
     @maxlag.setter
