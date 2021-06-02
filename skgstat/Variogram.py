@@ -328,7 +328,7 @@ class Variogram(object):
         self.use_nugget = use_nugget
 
         # set the fitting method and sigma array
-        self.fit_method = fit_method
+        self._fit_method = fit_method
         self._fit_sigma = None
         self.fit_sigma = fit_sigma
 
@@ -1062,6 +1062,59 @@ class Variogram(object):
             self._maxlag = value
 
     @property
+    def fit_method(self):
+        """
+        .. versionadded:: 0.6.2
+
+        Set the fit method to be used for this Variogram instance.
+        Possible values are:
+
+        * ``'trf'``   - Trust-Region Reflective (default)
+        * ``'lm'``    - Levenberg-Marquardt
+        * ``'ml'``    - Maximum Likelihood estimation
+        * `'manual'`` - Manual fitting by setting the parameters
+
+        See Also
+        --------
+        scipy.optimize.minimize
+        scipy.optimize.curve_fit
+        Variogram.fit
+
+        Notes
+        -----
+        The default method (TRF) is a bounded least squares method,
+        that sets constraints to the value space of all parameters.
+        All methods use an initial guess for all used parameters.
+        This is :func:`max(bins) <skgstat.Variogram.bins>` for
+        the range,
+        :func:`max(experimental) <skgstat.Variogram.experimental>`
+        for the sill, ``20`` for the Matérn smoothness, ``2`` for
+        the stable model shape and ``1`` for the nugget if used.
+
+        """
+        return self._fit_method
+
+    @fit_method.setter
+    def fit_method(self, value):
+        if value not in ('lm', 'ml', 'trf', 'manual'):
+            raise AttributeError(
+                "fit_method has to be one of ['lm', 'ml', 'trf', 'manual']"
+            )
+
+        # value is fine -check for manual does not drop the coefficients
+        elif value == 'manual':
+            self._fit_method = 'manual'
+
+        # otherwise - refit
+        else:
+            # set method
+            self._fit_method = value
+
+            # reset fit
+            self.cof = None
+            self.cov = None
+
+    @property
     def fit_sigma(self):
         r"""Fitting Uncertainty
 
@@ -1335,8 +1388,9 @@ class Variogram(object):
             old_params = self.describe()
 
         # delete the last cov and cof
-        self.cof = None
-        self.cov = None
+        if force:
+            self.cof = None
+            self.cov = None
 
         # if force, force a clean preprocessing
         self.preprocessing(force=force)
@@ -1462,9 +1516,6 @@ class Variogram(object):
                 self.cof = [r, s, s2, n]
             else:
                 self.cof = [r, s, n]
-
-        else:
-            raise ValueError("fit method has to be one of ['trf', 'lm', 'ml', 'custom']")
 
     def transform(self, x):
         """Transform
@@ -2236,7 +2287,7 @@ class Variogram(object):
                 dist_func=str(self.dist_function),
                 bin_func=self._bin_func_name,
                 normalize=self.normalized,
-                fit_method=self.fit_method,
+                fit_method=self._fit_method,
                 fit_sigma=self.fit_sigma,
                 use_nugget=self.use_nugget,
                 maxlag=self.maxlag,
