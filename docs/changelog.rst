@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 0.6.2
+=============
+- [Variogram] the fitting method is now implemented as :func:`Variogram.fit_method <skgstat.Variogram.fit_method>`
+  property. It will drop fitting parameters if the fit method is changed to something else than ``'manual'``.
+- [Variogram] If an invalid :func:`Variogram.fit_method <skgstat.Variogram.fit_method>` is set, an
+  :class:`AttributeError` will instantly be raised. Beforehand it was only raised on the next call of 
+  :func:`fit <skgstat.Variogram.fit>`
+
 Version 0.6.1
 =============
 - The Dockerfile was completely rewritten. A user can now specify the used Python version 

@@ -668,7 +668,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )
 
     def test_fitted_model(self):
-        self.V.fit_method = 'trf'
+        self.V._fit_method = 'trf'
         self.V.fit_sigma = None
         fun = self.V.fitted_model
 
@@ -680,16 +680,16 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )
 
     def test_unavailable_method(self):
-        with self.assertRaises(ValueError) as e:
+        with self.assertRaises(AttributeError) as e:
             self.V.fit(method='unsupported')
 
         self.assertTrue(
-            "fit method has to be one of" in str(e.exception)
+            "fit_method has to be one of" in str(e.exception)
         )
 
     def test_implicit_run_fit_fitted_model(self):
         self.V.fit_sigma = None
-        self.V.fit_method = 'trf'
+        self.V._fit_method = 'trf'
         result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # remove cof
@@ -704,7 +704,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
     def test_implicit_run_fit_transform(self):
         self.V.fit_sigma = None
-        self.V.fit_method = 'trf'
+        self.V._fit_method = 'trf'
         result = np.array([12.48, 17.2, 17.2, 17.2])
 
         # test on transform
@@ -779,7 +779,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )
 
         # switch to manual fit
-        V.fit_method = 'manual'
+        V._fit_method = 'manual'
         V.fit(range=10, sill=5, shape=3)
 
         self.assertEqual(V.parameters, [10., 5., 3., 0.0])
@@ -794,7 +794,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         params = V.parameters
 
         # switch fit method
-        V.fit_method = 'manual'
+        V._fit_method = 'manual'
         V.fit(sill=14)
 
         # expected output
