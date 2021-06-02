@@ -37,6 +37,7 @@ This field could look like
 
     @savefig tf.png width=8in
     plt.imshow(z, cmap='RdYlBu_r')
+    plt.close()
 
 Using scikit-gstat
 ~~~~~~~~~~~~~~~~~~
@@ -48,14 +49,14 @@ value to the :class:`Variogram Class <skgstat.Variogram>`.
 .. ipython:: python
     :okwarning:
 
-    from skgstat import Variogram
+    import skgstat as skg
 
     # random coordinates
     np.random.seed(42)
     coords = np.random.randint(0, 500, (300, 2))
     values = np.fromiter((z[c[0], c[1]] for c in coords), dtype=float)
 
-    V = Variogram(coords, values)
+    V = skg.Variogram(coords, values)
     @savefig var1.png width=8in
     V.plot()
 
@@ -74,7 +75,7 @@ Therefore one will have to understand how the
 :class:`Variogram Class <skgstat.Variogram>` works along with some basic
 knowledge about variography in oder to be able to properly use ``scikit-gstat``.
 
-However, what we can discuss from the figure, is what a variogram actually is
+However, what we can discuss from the figure, is what a variogram actually is.
 At its core it relates a dependent variable to an independent variable and,
 in a second step, tries to describe this relationship with a statistical
 model. This model on its own describes some of the spatial properties of the
@@ -82,7 +83,7 @@ random field and can further be utilized in an interpolation to select nearby
 points and weight them based on their statistical properties.
 
 The variogram relates the separating distance between two observation points
-to a measure of variability of values at that given distance. Our expectation
+to a measure of observation similarity at that given distance. Our expectation
 is that variance is increasing with distance, what can basically be seen in
 the presented figure.
 
@@ -93,16 +94,16 @@ Consider the variogram figure from above, with which an *independent* and
 *dependent* variable was introduced. In statistics it is common to use
 *dependent* variable as an alias for *target variable*, because its value is
 dependent on the state of the independent variable. In the case of a
-variogram, this is the metric of variance on the y-axis. The independent
-variable is a measure of (usually) Euclidean distance.
+variogram, this is the metric of variance on the y-axis. In geostatistics,
+the independent variable is usually a measure of Euclidean distance.
 
 Consider observations taken in the environment, it is fairly unlikely to find
 two pairs of observations where the separating distance between the
-coordinates match exactly the same value. Therefore it is useful to group all
+coordinates match exactly the same value. Therefore one has to group all
 point pairs at the same distance *lag* together into one group, or *bin*.
 Beside practicability, there is also another reason, why one would want to
 group point pairs at similar separating distances together into one bin.
-This becomes obvious, when one plots the difference in value over the
+Consider the plot below, which shows the difference in value over the
 distance for all point pair combinations that can be formed for a given sample.
 The :class:`Variogram Class <skgstat.Variogram>` has a function for that:
 :func:`distance_difference_plot <skgstat.Variogram.distance_difference_plot>`:
@@ -112,10 +113,11 @@ The :class:`Variogram Class <skgstat.Variogram>` has a function for that:
 
     @savefig dist_diff_plot.png width=8in
     V.distance_difference_plot()
+    plt.close()
 
 While it is possible to see the increasing variability with increasing
 distance here quite nicely, it is not possible to guess meaningful moments
-for the distributions within the bins. Last but not least, to derive a simple
+for the distributions at different distances. Last but not least, to derive a simple
 model as presented in the variogram figure above by the green line, we have
 to be able to compress all values at a given distance lag to one estimation
 of variance. This would not be possible from the the figure above.
@@ -125,7 +127,7 @@ of variance. This would not be possible from the the figure above.
     There are also procedures that can fit a model directly based on unbinned
     data. As none of these methods is implemented into ``scikit-gstat``, they
     will not be discussed here. If you need them, you are more than welcome
-    to implement them. Else you'll have to wait until I did that.
+    to implement them.
 
 Binning the separating distances into distance lags is therefore a crucial and
 most important task in variogram analysis. The final binning must
@@ -141,17 +143,17 @@ distance calculation can be controlled by the
 takes either a string or a function. The default value is `'euclidean'`.
 This value is directly passed down to the
 :func:`pdist <scipy.spatial.distance.pdist>` as the `metric` argument.
-Consequently, the distance data is stores as a distance matrix for all 
+Consequently, the distance data is stored as a distance matrix for all 
 input locations passed to :class:`Variogram <skgstat.Variogram>` on 
-instantiation. To be more precise, only the upper triangle is stored 
-in an :class:`array <numpy.ndarray>` with the distance values sorted 
+creation. To be more precise, only the upper triangle is stored 
+in a :class:`array <numpy.ndarray>` with the distance values sorted 
 row-wise. Consider this very straightforward set of locations:
 
 .. ipython:: python
     :okwarning:
 
     locations = [[0,0], [0,1], [1,1], [1,0]]
-    V = Variogram(locations, [0, 1, 2, 1], normalize=False)
+    V = skg.Variogram(locations, [0, 1, 2, 1], normalize=False)
 
     V.distance
 
@@ -164,29 +166,42 @@ row-wise. Consider this very straightforward set of locations:
 Binning
 -------
 
-As already mentioned, in real world observation data, there will hardly
-be two observation location pairs at *exactly* the same distance. 
-Thus, we need to group information about point pairs at *similar* distance
+As already mentioned, in real world observation data, there won't
+be two observation location pairs at **exactly** the same distance. 
+Thus, we need to group information about point pairs at **similar** distance
 together, to learn how similar their observed values are. 
 With a :class:`Variogram <skgstat.Variogram>`, we will basically try
 to find and describe some systematic statistical behavior from these 
 similarities. The process of grouping distance data together is 
-called binning.
+called *binning*.
 
-``scikit-gstat`` has two different methods for binning distance data. 
+``scikit-gstat`` has many different methods for binning distance data. 
 They can be set using the :func:`bin_func <skgstat.Variogram.bin_func>`
-attribute. You have to pass the name of the method. 
-This has to be one of ``['even', 'uniform]`` to use one of the predefined 
-binning functions. Both methods will use two parameters to calculate the
-bins from the distance matrix: ``n``, the amount of bins, 
-and ``maxlag``, the maximum distance lag to be considered. You can choose
-both parameters during Variogram instantiation as 
-:func:`n_lags <skgstat.Variogram.n_lags>` and 
-:func:`maxlag <skgstat.Variogram.maxlag>`. The ``'even'`` method will 
-then form ``n`` bins from ``0`` to ``maxlag`` of same width. 
-The ``'uniform'`` method will form ``n`` bins from ``0`` to ``maxlag`` 
-with the same value count in each bin.
-The following example should illustrate this:
+attribute. You have to pass the name of the method.
+The available methods are:
+
+* :func:`even <skgstat.binning.even_width_lags>` - evenly spaced bins
+* :func:`uniform <skgstat.binning.uniform_count_lags>` - same sample sized bins
+* :func:`sturges <skgstat.binning.auto_derived_lags>` - derive number of bins by Sturge's rule
+* :func:`scott <skgstat.binning.auto_derived_lags>` - derive number of bins by Scotts's rule
+* :func:`sqrt <skgstat.binning.auto_derived_lags>` - derive number of bins by sqaureroot rule
+* :func:`doane <skgstat.binning.auto_derived_lags>` - derive number of bins by Doane's rule
+* :func:`fd <skgstat.binning.auto_derived_lags>` - derive number of bins by Freedmann-Diaconis estimator
+* :func:`kmeans <skgstat.binning.kmeans>` - derive bins by K-Means clustering
+* :func:`ward <skgstat.binning.ward>` - derive bins by hierachical clustering and Ward's criterion
+* :func:`stable_entropy <skgstat.binning.stable_entropy_lags>` - derive bins from stable entropy setting
+
+``['even', 'uniform', 'kmeans', 'ward', 'stable_entropy']`` methods will use two parameters 
+to calculate the bins from the distance matrix: :any:`n_lags <skgstat.Variogram.n_lags>`,
+the amount of bins, and :any:`maxlag <skgstat.Variogram.maxlag>`, the maximum distance lag to be considered.
+``['sturges', 'scott', 'sqrt', 'fd', 'doane']`` will only use :any:`maxlag <skgstat.Variogram.maxlag>`
+to derive :any:`n_lags <skgstat.Variogram.n_lags>` from statistical properties of the distance matrix.
+The :func:`even <skgstat.binning.even_width_lags>` method will 
+then form :any:`n_lags <skgstat.Variogram.n_lags>` bins from ``0`` to :any:`maxlag <skgstat.Variogram.maxlag>`
+of same width. 
+The :func:`uniform <skgstat.binning.uniform_count_lags>` method will form the same amount of classes
+within the same range, using the same point pair count in each bin.
+The following example illustrates this:
 
 .. ipython:: python
     :okwarning:
@@ -208,6 +223,31 @@ distance matrix:
     uniform_count_lags(distances, 10, 250)
 
 
+Using the :class:`Variogram <skgstat.Variogram>` you can see how the setting
+of different binning methods will update the :any:`Variogram.bins <skgstat.Variogram.bins>`
+and eventually :any:`n_lags <skgstat.Variogram.n_lags>`:
+
+.. ipython:: python
+    :okwarning:
+
+    test = skg.Variogram(
+        *skg.data.pancake().get('sample'),  # use some sample data
+        n_lags=25,                          # set 25 classes
+        bin_func='even'
+    )
+    print(test.bins)
+
+Now, we can easily switch to a method that will derive a new value for :any:`n_lags <skgstat.Variogram.n_lags>`.
+That will auto-update :any:`Variogram.bins <skgstat.Variogram.bins>`
+and :any:`n_lags <skgstat.Variogram.n_lags>`.
+
+.. ipython:: python
+    :okwarning:
+
+    # sqrt will very likely estimate way more bins
+    test.bin_func = 'sqrt'
+    print(f'Auto-derived {test.n_lags} bins.')
+    print(V.bins)
 
 Observation differences
 -----------------------
@@ -236,36 +276,27 @@ point combinations (stored in the distance matrix). Using the
 :func:`squareform <scipy.spatial.distance.squareform>` function 
 of scipy, we *could* turn the distance matrix into a 2D version.
 Then the row and column indices align with the values indices.
-However, the :class:`Variogram Class <skgstat.Variogram>` implements 
+However, :class:`Variogram <skgstat.Variogram>` implements 
 a method for doing mapping a bit more efficiently.
 
-.. note::
-
-    As of this writing, the actual iterator that yields the group
-    number for each point is written in a plain Python loop. 
-    This is not very fast and in fact the main bottleneck of this class.
-    I am evaluating numba, cython or a numpy based solution at the moment
-    to gain better performance.
-
 A :class:`array <numpy.ndarray>` of bin groups for each point pair that 
-is indexed exactly like the :func:`distance <skgstat.Variogram.distance`
+is indexed exactly like the :func:`distance <skgstat.Variogram.distance>`
 array can be obtained by :func:`lag_groups <skgstat.Variogram.lag_groups>`.
 
-This will be illustrated by some sample data (you can find the CSV file 
-in the github repository of SciKit-GStat).
-You can easily read the data using pandas.
+This will be illustrated by some sample data from the :any:`data <skgstat.data>`
+submodule.
 
 .. ipython:: python
     :okwarning:
 
-    import pandas as pd 
-    data = pd.read_csv('data/sample_sr.csv')
+    coords, vals = skg.data.pancake(N=200).get('sample')
 
-    V = Variogram(list(zip(data.x, data.y)), data.z, 
-        normalize=False, n_lags=25, maxlag=60)
-    
-    @savefig variogram_sample_data.png width=8in
-    V.plot()
+    V = skg.Variogram(
+            coords, 
+            vals,
+            n_lags=25
+        )
+    V.maxlag = 500
 
 Then, you can compare the first 10 point pairs from the distance matrix
 to the first 10 elements returned by the 
@@ -275,7 +306,7 @@ to the first 10 elements returned by the
     :okwarning:
 
     # first 10 distances
-    V.distance[:10]
+    V.distance[:10].round(1)
 
     # first 10 groups
     V.lag_groups()[:10]
@@ -288,15 +319,16 @@ to verify the grouping.
 
     V.bins
 
-The first and 9th element are grouped into group ``3``. Their values are
-``20.8`` and ``18.8``. The grouping starts with ``0``, therefore the 
-corresponding upper bound of the bin is at index ``3`` and the lower at 
-``2``. The bin edges are therefore ``15.8 < x < 21.07``. 
+The elements ``[2, 3, 6, 8]``are grouped into group ``7``.
+Their distance values are ``[151.2, 156.1, 142.4, 156.5]``.
+The grouping starts with ``0``, therefore the corresponding upper bound of the bin
+is at index ``7`` and the lower at ``6``.
+The bin edges are therefore ``140. < x < 160.``. 
 Consequently, the binning and grouping worked fine.
 
 If you want to access all value pairs at a given group, it would of 
 course be possible to use the machanism above to find the correct points.
-However, :class:`Variogram class <skgstat.Variogram>` offers an iterator 
+However, :class:`Variogram <skgstat.Variogram>` offers an iterator 
 that already does that for you: 
 :func:`lag_classes <skgstat.Variogram.lag_classes>`. This iterator 
 will yield all pair-wise observation value differences for the bin 
@@ -321,7 +353,7 @@ Experimental variograms
 -----------------------
 
 The last stage before a variogram function can be modeled is to define 
-an empirical variogram, also known as *experimental variogram*, which
+an experimental variogram, also known as *empirical variogram*, which
 will be used to parameterize a variogram model.
 However, the expermental variogram already contains a lot of information 
 about spatial relationships in the data. Therefore, it's worth looking 
@@ -329,15 +361,27 @@ at more closely. Last but not least a poor expermental variogram will
 also affect the variogram model, which is ultimatively used to interpolate
 the input data.
 
+.. note::
+
+    In geostatistical literature you can find the terms *experimental* and
+    *empirical* variogram. Both refer to the varigoram estimated from a sample.
+    In SciKit-GStat the term :func:`experimental <skgstat.Variogram.experimental>`
+    variogram is used for the estimated semi-variances solely. Thus, this is a
+    1D structure (of length :any:`n_lags <skgstat.Variogram.n_lags>`).
+    The term *empirical* (:func:`Variogram.get_empirical <skgstat.Variogram.get_empirical>`)
+    is used for the combination of :func:`bins <skgstat.Variogram.bins>` and
+    :func:`experimental <skgstat.Variogram.experimental>`, thus it is a tuple of
+    two 1D arrays.
+
 The previous sections summarized how distance is calculated and handeled 
 by the :class:`Variogram class <skgstat.Variogram>`. 
-The :func:`lag_groups function <skgstat.Variogram.lag_groups>` makes it 
+The :func:`lag_groups <skgstat.Variogram.lag_groups>` function makes it 
 possible to find corresponding observation value pairs for all distance 
 lags. Finally the last step will be to use a more suitable estimator 
 for the similarity of observation values at a specific lag. 
 In geostatistics this estimator is called semi-variance and the
 the most popular estimator is called *Matheron estimator*. 
-In case the estimator used is not further specified, Matheron was used.
+By default, the :func:`Matheron <skgstat.estimator.matheron>` estimator will be used.
 It is defined as 
 
 .. math::
@@ -359,23 +403,36 @@ estimators are :func:`Dowd <skgstat.estimators.dowd>` or
 :func:`Genton <skgstat.estimators.genton>`.
 The remaining are experimental estimators and should only be used 
 with caution. 
+Let's compare them directly. You could use the code from the last section
+to group the pair-wise value differencens into lag groups and apply the
+formula for each estimator. In the example below, we will iteratively change
+the :class:`Variogram <skgstat.Variogram>` instance used so far to
+achieve this:
 
 .. ipython:: python
     :okwarning:
 
-    fig, _a = plt.subplots(2, 2, figsize=(8,8))
+    fig, _a = plt.subplots(1, 3, figsize=(8,4), sharey=True)
     axes = _a.flatten()
 
-    V.plot(axes=axes[0], hist=False)
+    axes[0].plot(V.bins, V.experimental, '.b')
     V.estimator = 'cressie'
-    V.plot(axes=axes[1], hist=False)
+    axes[1].plot(V.bins, V.experimental, '.b')
     V.estimator = 'dowd'
-    V.plot(axes=axes[2], hist=False)
-    V.estimator = 'genton'
-    V.plot(axes=axes[3], hist=False)
+    axes[2].plot(V.bins, V.experimental, '.b')
+    axes[0].set_ylabel('semivariance')
+    axes[0].set_title('Matheron')
+    axes[1].set_title('Cressie-Hawkins')
+    axes[2].set_title('Dowd')
 
     @savefig compare_estimators.png width=8in
     fig.show()
+
+.. note::
+
+    With this example it is not a good idea to use the Gention estimator,
+    as it takes a long time to calculate the experimental variogram.
+
 
 Variogram models
 ----------------
@@ -384,7 +441,7 @@ The last step to describe the spatial pattern in a data set
 using variograms is to model the empirically observed and calculated
 experimental variogram with a proper mathematical function. 
 Technically, this setp is straightforward. We need to define a 
-function that takes a distance value (not a lag) and returns 
+function that takes a distance value and returns 
 a semi-variance value. One big advantage of these models is, that we 
 can assure different things, like positive definitenes. Most models
 are also monotonically increasing and approach an upper bound.
@@ -392,15 +449,28 @@ Usually these models need three parameters to fit to the experimental
 variogram. All three parameters have a meaning and are usefull
 to learn something about the data. This upper bound a model approaches
 is called *sill*. The distance at which 95% of the sill are approached 
-is called the *range*. That means, the range is the distance at which 
+is called the *effective range*. 
+That means, the range is the distance at which 
 observation values do **not** become more dissimilar with increasing 
 distance. They are statistically independent. That also means, it doesn't 
 make any sense to further describe spatial relationships of observations 
-further apart with means of geostatistics. The last parameter is the *nugget*.
+further apart with means of geostatistics. 
+The last parameter is the *nugget*.
 It is used to add semi-variance to all values. Graphically that means to
 *move the variogram up on the y-axis*. The nugget is the semi-variance modeled
 on the 0-distance lag. Compared to the sill it is the share of variance that
-can not be described spatially.
+cannot be described spatially.
+
+.. warning::
+
+    There is a very important design decision underlying all models in SciKit-GStat.
+    All models take the *effective range* as a parameter. If you look into literature,
+    there is also the **model** parameter *range*. That can be very confusing, hence
+    it was decided to fit models on the *effective range*.
+    You can translate one into the other quite easily. Transformation factors are
+    reported in literature, but not commonly the same ones are used.
+    Finally, the transformation is always coded into SciKit-GStat's 
+    :any:`models <skgstat.models>`, even if it's a 1:1 *transformation*.
 
 The spherical model
 ~~~~~~~~~~~~~~~~~~~
@@ -419,7 +489,7 @@ if h < r, and
 .. math::
     \gamma = b + C_0
     
-else. ``b`` is the nugget, :math:``C_0`` is the sill, ``h`` is the input
+else. ``b`` is the nugget, :math:`C_0` is the sill, ``h`` is the input
 distance lag and ``r`` is the effective range. That is the range parameter 
 described above, that describes the correlation length. 
 Many other variogram model implementations might define the range parameter, 
@@ -428,9 +498,16 @@ is specific to the used model. Therefore I decided to directly use the
 *effective range* as a parameter, as that makes more sense in my opinion. 
  
 As we already calculated an experimental variogram and find the spherical 
-model in the :py:mod:`skgstat.models` sub-module, we can utilize e.g. 
+model in the :any:`models <skgstat.models>` sub-module, we can utilize e.g. 
 :func:`curve_fit <scipy.optimize.curve_fit>` from scipy to fit the model 
 using a least squares approach.
+
+.. note::
+
+    With the given example, the default usage of :func:`curve_fit <scipy.optimize.curve_fit>` 
+    will use the Levenberg-Marquardt algorithm, without initial guess for the parameters.
+    This will fail to find a suitable range parameter. 
+    Thus, for this example, you need to pass an initial guess to the method.
  
 .. ipython:: python
     :okwarning:
@@ -446,14 +523,16 @@ using a least squares approach.
    
     from scipy.optimize import curve_fit
     
-    cof, cov =curve_fit(models.spherical, xdata, ydata)
+    # initial guess - otherwise lm will not find a range
+    p0 = [np.mean(xdata), np.mean(ydata), 0] 
+    cof, cov =curve_fit(models.spherical, xdata, ydata, p0=p0)
     
 Here, *cof* are now the coefficients found to fit the model to the data.
 
 .. ipython:: python
     :okwarning:
 
-    pprint("range: %.2f\nsill: %.f\nnugget: %.2f" % (cof[0], cof[1], cof[2]))
+    print("range: %.2f   sill: %.f   nugget: %.2f" % (cof[0], cof[1], cof[2]))
   
 .. ipython:: python
     :okwarning:
@@ -469,12 +548,18 @@ The :class:`Variogram Class <skgstat.Variogram>` does in principle the
 same thing. The only difference is that it tries to find a good 
 initial guess for the parameters and limits the search space for 
 parameters. That should make the fitting more robust. 
-Technically, we used the Levenberg-Marquardt algorithm above. 
-:class:`Variogram <skgstat.Variogram>` can be forced to use the same 
+Technically, we used the Levenberg-Marquardt algorithm above.
+That's a commonly used, very fast least squares implementation.
+However, sometimes it fails to find good parameters, as it is
+unbounded and *searching* an invalid parameter space.
+The default for :class:`Variogram <skgstat.Variogram>` is
+Trust-Region Reflective (TRF), which is also the default for
+:class:`Variogram <skgstat.Variogram>`. It uses a valid parameter space as bounds
+and therefore won't fail in finding parameters.
+You can, hoever, switch to Levenberg-Marquardt
 by setting the :class:`Variogram.fit_method <skgstat.Variogram.fit_method>` 
-to 'lm'. The default, however, is 'trf', which is the *Trust Region Reflective* 
-algorithm, the bounded fit with initial guesses described above.
-You can use it like:
+to 'lm'. 
+
 
 .. ipython:: python
     :okwarning:
@@ -482,12 +567,12 @@ You can use it like:
     V.fit_method ='trf'
     @savefig trf_automatic_fit.png width=8in
     V.plot();
-    pprint(V.describe())
+    pprint(V.parameters)
     
     V.fit_method ='lm'
     @savefig lm_automatic_fit.png width=8in
     V.plot();
-    pprint(V.describe())
+    pprint(V.parameters)
 
 .. note::
 
@@ -514,26 +599,110 @@ Consequently, the exponential can be used for data that shows a way
 too large spatial correlation extent for a spherical model to 
 capture. 
 
-Applied to the data used so far, you can see the similarity between 
-the two models:
+Applied to the data used so far, you can see the difference between 
+the two models quite nicely:
+
+.. ipython:: python
+    :okwarning:
+
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
+
+    axes[0].set_title('Spherical')
+    axes[1].set_title('Exponential')
+
+    V.fit_method = 'trf'
+    V.plot(axes=axes[0], hist=False)
+
+    # switch the model
+    V.model = 'exponential'
+    
+    @savefig compare_spherical_exponential.png width=8in
+    V.plot(axes=axes[1], hist=False);
+
+Keep in mind how important the theoretical model is. We will
+use it for interpolation later on and the quality of this interpolation
+will primarily rely on the fit of the model to the experimental data
+smaller than the effective range.
+From the example above it is quite hard to tell, which is the correct one.
+Also, the goodness of fit is quite comparable:
+
+.. ipython:: python
+    :okwarning:
+
+    # spherical
+    V.model = 'spherical'
+    rmse_sph = V.rmse
+    r_sph = V.describe().get('effective_range')
+
+    # exponential
+    V.model = 'exponential'    
+    rmse_exp = V.rmse
+    r_exp = V.describe().get('effective_range')
+
+    print('Spherical   RMSE: %.2f' % rmse_sph)
+    print('Exponential RMSE: %.2f' % rmse_exp)
+
+But the difference in effective range is more pronounced:
+
+.. ipython:: python
+    
+    print('Spherical effective range:    %.1f' % r_sph)
+    print('Exponential effective range:  %.1f' % r_exp)
+
+
+Finally, we can use both models to perform a Kriging interpolation.
 
 .. ipython:: python
     :okwarning:
 
     fig, axes = plt.subplots(1, 2, figsize=(8, 4))
 
-    V.fit_method = 'trf'
-    V.plot(axes=axes[0], hist=False)
-
+    V.model = 'spherical'
+    krige1 = V.to_gs_krige()
     V.model = 'exponential'
-    @savefig compare_spherical_exponential.png width=8in
-    V.plot(axes=axes[1], hist=False);
+    krige2 = V.to_gs_krige()
+
+    # build a grid
+    x = y = np.arange(0, 500, 5)
+
+    # apply
+    field1, _ = krige1.structured((x, y))
+    field2, _ = krige2.structured((x, y))
+
+    # use the same bounds
+    vmin = np.min((field1, field2))
+    vmax = np.max((field1, field2))
+    # plot
+    axes[0].set_title('Spherical')
+    axes[1].set_title('Exponential')
+    axes[0].imshow(field1, origin='lower', cmap='terrain_r', vmin=vmin, vmax=vmax)
+    
+    @savefig model_compare_kriging.png width=8in
+    axes[1].imshow(field2, origin='lower', cmap='terrain_r', vmin=vmin, vmax=vmax)
+
+While the two final maps look alike, in the difference plot, you can
+spot some differences. While performing an analysis, with the model functions in mind, 
+you should take these differences and add them as uncertainty cause by model choice to
+your final result.
+
+.. ipython:: python
+
+    # calculate the differences
+    diff = np.abs(field2 - field1)
+    print('Mean difference:     %.1f' % np.mean(diff))
+    print('3rd quartile diffs.: %.1f' % np.percentile(diff, 75))
+    print('Max differences:     %.1f' % np.max(diff))
+
+    plt.imshow(diff, origin='lower', cmap='hot')
+    @savefig model_compare_kriging_diff.png width=6in
+    plt.colorbar()
+
 
 Gaussian model
 ~~~~~~~~~~~~~~
 
 The last fundamental variogram model is the Gaussian. 
-Unlike the spherical and exponential models a very different 
+Unlike the spherical and exponential it models a very different 
 spatial relationship between semi-variance and distance.
 Following the Gaussian model, observations are assumed to 
 be similar up to intermediate distances, showing just a 
@@ -545,14 +714,15 @@ changes in the variable at a specific distance,
 while being very similar at smaller distances.
 
 To show a typical Gaussian model, we will load another 
-sample dataset.
+sample dataset, that actually shows a Gaussian experimental variogram.
 
 .. ipython:: python
     :okwarning:
 
+    import pandas as pd
     data = pd.read_csv('data/sample_lr.csv')
 
-    Vg = Variogram(list(zip(data.x, data.y)), data.z.values,
+    Vg = skg.Variogram(list(zip(data.x, data.y)), data.z.values,
         normalize=False, n_lags=25, maxlag=90, model='gaussian')
 
     @savefig sample_data_gaussian_model.png width=8in
@@ -561,10 +731,8 @@ sample dataset.
 Matérn model
 ~~~~~~~~~~~~
 
-One of the not so commonly used models is the Matérn model. 
-It is nevertheless implemented into scikit-gstat as it is one 
-of the most powerful models. Especially in cases where you cannot 
-chose the appropiate model a priori so easily.
+Another, quite powerful model is the Matérn model. 
+Especially in cases where you cannot chose the appropiate model a priori so easily.
 The Matérn model takes an additional smoothness paramter, that can 
 change the shape of the function in between an exponential 
 model shape and a Gaussian one. 
@@ -582,11 +750,21 @@ model shape and a Gaussian one.
     ax.plot(xi, y_exp, '-b', label='exponential')
     ax.plot(xi, y_gau, '-g', label='gaussian')
 
-    for s in (0.1, 2., 10.):
-        y = [models.matern(h, 40, 10, 3, s) for h in xi]
+    for s in (0.5, 1., 10.):
+        y = [models.matern(h, 40, 10, s, 3) for h in xi]
         ax.plot(xi, y, '--k', label='matern s=%.1f' % s)
     @savefig compare_smoothness_parameter_matern.png width=8in
     plt.legend(loc='lower right')
+
+This example illustrates really nicely, how the smoothness parameter adapts the Matérn
+model shape.
+Moreover, the smoothness parameter can be used to assess whether an experimental
+variogram is rather showing a Gaussian or exponential behavior.
+
+.. note::
+
+    If you would like to export a Variogram instance to gstools, the smoothness parameter
+    may not be smaller than ``0.2``.
 
 When direction matters
 ======================
@@ -716,7 +894,7 @@ Therefore, the :func:`fit <skgstat.DirectionalVariogram.fit>` mehtod is overwrit
 .. ipython:: python
     :okwarning:
 
-    class TestCls(DirectionalVariogram):
+    class TestCls(skg.DirectionalVariogram):
         def fit(*args, **kwargs):
             pass
 
@@ -763,8 +941,8 @@ second one oriented to East.
 .. ipython:: python
     :okwarning:
 
-    Vnorth = DirectionalVariogram(coords, vals, azimuth=90, tolerance=90, maxlag=80, n_lags=20)
-    Veast = DirectionalVariogram(coords, vals, azimuth=0, tolerance=90, maxlag=80, n_lags=20)
+    Vnorth = skg.DirectionalVariogram(coords, vals, azimuth=90, tolerance=90, maxlag=80, n_lags=20)
+    Veast = skg.DirectionalVariogram(coords, vals, azimuth=0, tolerance=90, maxlag=80, n_lags=20)
     pd.DataFrame({'north':Vnorth.describe(), 'east': Veast.describe()})
 
 You can see, how the two are differing in effective range and also sill, only 
