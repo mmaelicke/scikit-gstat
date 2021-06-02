@@ -133,7 +133,7 @@ def exponential(h, r, c0, b=0):
 
     .. [8] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
-    
+
     .. [9] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
         United Kingdom: N. p., 1976.
 
@@ -242,7 +242,7 @@ def cubic(h, r, c0, b=0):
     Notes
     -----
 
-    This implementation is taken from [11]_:
+    This implementation is taken from [12]_:
 
     .. math::
 
@@ -257,7 +257,7 @@ def cubic(h, r, c0, b=0):
     References
     ----------
 
-    .. [11] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
         geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
