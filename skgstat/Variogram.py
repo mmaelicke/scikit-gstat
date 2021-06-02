@@ -2417,6 +2417,9 @@ class Variogram(object):
         >> cond_pos Variogram.coordinates.T
 
         """
+        # first fit again
+        self.fit()
+
         return skgstat_to_gstools(self, **kwargs)
 
     def to_gs_krige(self, **kwargs):
@@ -2456,6 +2459,8 @@ class Variogram(object):
         gstools.Krige
 
         """
+        # fit 
+        self.fit()
         return skgstat_to_krige(self, **kwargs)
 
     def plot(self, axes=None, grid=True, show=True, hist=True):
