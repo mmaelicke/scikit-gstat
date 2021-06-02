@@ -121,7 +121,7 @@ def auto_derived_lags(distances, method_name, maxlag):
 
 
 def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
-    """KMeans binning
+    """
     .. versionadded:: 0.3.9
 
     Clustering of pairwise separating distances between locations up to
@@ -143,14 +143,18 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
     bin_edges : numpy.ndarray
         The **upper** bin edges of the lag classes
 
+    See Also
+    --------
+    sklearn.cluster.KMeans
+
     Note
     ----
-    The `KMeans <sklearn.cluster.KMeans>` that is used under the hood is not
+    The :class:`KMeans <sklearn.cluster.KMeans>` that is used under the hood is not
     a deterministic algorithm, as the starting cluster centroids are seeded
     randomly. This can yield slightly different results on reach run.
     Thus, for this application, the random_state on KMeans is fixed to a
     specific value. You can change the seed by passing another seed to
-    `Variogram <skgstat.Variogram>` as `binning_random_state`. 
+    :class:`Variogram <skgstat.Variogram>` as `binning_random_state`.
 
     """
     # maxlags larger than maximum separating distance will be ignored
@@ -174,7 +178,7 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
 
 
 def ward(distances, n, maxlag, **kwargs):
-    """Agglomerative binning
+    """
     .. versionadded:: 0.3.9
 
     Clustering of pairwise separating distances between locations up to
@@ -198,6 +202,10 @@ def ward(distances, n, maxlag, **kwargs):
     -------
     bin_edges : numpy.ndarray
         The **upper** bin edges of the lag classes
+
+    See Also
+    --------
+    sklearn.clsuter.AgglomerativeClustering
 
     """
     # maxlags larger than maximum separating distance will be ignored
@@ -227,7 +235,7 @@ def ward(distances, n, maxlag, **kwargs):
 
 
 def stable_entropy_lags(distances, n, maxlag, **kwargs):
-    """Stable lags
+    """
     .. versionadded: 0.4.0
 
     Optimizes the lag class edges for `n` lag classes.

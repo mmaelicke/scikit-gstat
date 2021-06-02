@@ -9,6 +9,7 @@ Code Reference
     variogram
     directionalvariogram
     spacetimevariogram
+    binning
     estimator
     models
     kriging
