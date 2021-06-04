@@ -1,3 +1,5 @@
+import pytest
+
 from skgstat import data
 import numpy as np
 from numpy.testing import assert_array_almost_equal
@@ -40,3 +42,20 @@ def test_aniso_data():
 
     c, v = data.aniso(N=25).get('sample')
     assert len(c) == len(v) == 25
+
+
+def test_meuse_loads():
+    df = data._loader.read_sample_file('meuse.txt')
+
+    # get zinc data
+    _, zinc = data.meuse(variable='zinc').get('sample')
+
+    assert_array_almost_equal(
+        zinc, df[['zinc']].values, decimal=6
+    )
+
+    # check exeption
+    with pytest.raises(AttributeError) as e:
+        data.meuse(variable='unknown')
+
+    assert 'variable has to be in' in str(e.value)

@@ -3,6 +3,7 @@ import os
 import imageio
 from glob import glob
 import numpy as np
+import pandas as pd
 
 
 PATH = os.path.abspath(os.path.dirname(__file__))
@@ -107,3 +108,19 @@ def get_sample(
     values = np.asarray([img[c[0], c[1]] for c in coordinates])
 
     return coordinates, values
+
+
+def read_sample_file(fname) -> pd.DataFrame:
+    """
+    Return a sample from a sample-file as a
+    pandas DataFrame
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        The file content
+
+    """
+    # build the path
+    path = os.path.join(PATH, 'samples', fname)
+    return pd.read_csv(path)
