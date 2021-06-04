@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.6.3-rc 
-================
+Version 0.6.3 
+=============
 - [interfaces] If any of the gstools interfaces are used, the Variogram will call :func:`fit <skgstat.Variogram.fit>`
   without forcing a full preprocessing cycle. This fixes edge cases, where a parameter was mutated, but the fitting 
   not performed before the instance was exported. This should only have happended in very rare occasions.
