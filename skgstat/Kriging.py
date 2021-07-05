@@ -295,8 +295,10 @@ class OrdinaryKriging:
         self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
         
         # DEV: this is dirty, not sure how to do it better at the moment
-        self.sigma = np.empty(len(x[0]))
+        #self.sigma = np.empty(len(x[0]))
+        self.sigma = np.ones(len(x[0])) * np.nan
         self.__sigma_index = 0
+        
         # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
@@ -329,21 +331,35 @@ class OrdinaryKriging:
         LessPointsError are handled and the error counters are increased. In
         both cases numpy.NaN will be used as estimate.
 
+        ..versionchanged:: 0.6.4
+            sigma_index is now always incremented
+        
         """
+        # indicate if this esimation raised an error
+        did_error = False
+        
+        # reun estimation
         try:
-            z, sigma = self._krige(idx)
+            estimation, sigma = self._krige(idx)
         except SingularMatrixError:
             self.singular_error += 1
-            return np.nan
+            did_error = True
         except LessPointsError:
             self.no_points_error += 1
-            return np.nan
+            did_error = True
         except IllMatrixError:
             self.ill_matrix += 1
-            return np.nan
+            did_error = True
 
         # TODO: This is a side-effect and I need to re-design this part:
-        self.sigma[self.__sigma_index] = sigma
+        if not did_error:
+            self.sigma[self.__sigma_index] = sigma
+            z = estimation
+        else:
+            # on error - Z* is NaN
+            z = np.nan
+
+        # in any case increment the sigma index counter
         self.__sigma_index += 1
 
         return z
