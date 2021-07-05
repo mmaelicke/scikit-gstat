@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.6.4
+=============
+- [Kriging] `OrdinaryKriging.sigma <skgstat.OrdinaryKriging>` is now initialized as a `NaN`-filled array.
+- [Kriging] `OrdinaryKriging._estimator <skgstat.OrdinaryKriging>` handles the error variance matrix index
+  now correctly. On error during kriging, the index was not incremented, which lead to malformed error variance field output.
+
 Version 0.6.3 
 =============
 - [interfaces] If any of the gstools interfaces are used, the Variogram will call :func:`fit <skgstat.Variogram.fit>`
