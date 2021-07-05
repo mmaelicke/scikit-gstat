@@ -10,10 +10,10 @@ from scipy.spatial.distance import squareform
 from scipy.linalg import solve as scipy_solve
 from numpy.linalg import solve as numpy_solve, LinAlgError, inv
 from multiprocessing import Pool
-import scipy.spatial.distance
 
 from .Variogram import Variogram
 from .MetricSpace import MetricSpace, MetricSpacePair
+
 
 class LessPointsError(RuntimeError):
     pass
@@ -30,6 +30,7 @@ class IllMatrixError(RuntimeWarning):
 def inv_solve(a, b):
     return inv(a).dot(b)
 
+
 class OrdinaryKriging:
     def __init__(
             self,
@@ -42,7 +43,6 @@ class OrdinaryKriging:
             n_jobs=1,
             perf=False,
             sparse=False,
-            
             coordinates=None,
             values=None
     ):
@@ -100,15 +100,17 @@ class OrdinaryKriging:
         # store arguments to the instance
 
         if isinstance(variogram, Variogram):
-            if coordinates is None: coordinates = variogram.coordinates
-            if values is None: values = variogram.values
+            if coordinates is None:
+                coordinates = variogram.coordinates
+            if values is None:
+                values = variogram.values
             variogram_descr = variogram.describe()
             if variogram_descr["model"] == "harmonize":
                 variogram_descr["model"] = variogram._build_harmonized_model()
             variogram = variogram_descr
-                
+
         self.sparse = sparse
-        
+
         # general attributes
         self._minp = min_points
         self._maxp = max_points
@@ -123,7 +125,7 @@ class OrdinaryKriging:
         self.nugget = variogram['nugget']
         self.sill = variogram['sill']
         self.dist_metric = variogram["dist_func"]
-        
+
         # coordinates and semivariance function
         if not isinstance(coordinates, MetricSpace):
             coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
@@ -153,7 +155,7 @@ class OrdinaryKriging:
         self.singular_error = 0
         self.no_points_error = 0
         self.ill_matrix = 0
-                
+
         # performance counter
         if self.perf:
             self.perf_dist = list()
@@ -162,7 +164,7 @@ class OrdinaryKriging:
 
     def dist(self, x):
         return Variogram.wrapped_distance_function(self.dist_metric, x)
-    
+
     @classmethod
     def _remove_duplicated_coordinates(cls, coords, values):
         """Extract the coordinates and values
@@ -267,6 +269,9 @@ class OrdinaryKriging:
         returns an estimation of the observable for the given unobserved
         locations. Each coordinate dimension should be a 1D array.
 
+        .. versionchanged:: 0.6.4
+            sigma array is now initialized with NaN, instead of empty.
+
         Parameters
         ----------
         x : numpy.array, MetricSpace
@@ -293,12 +298,12 @@ class OrdinaryKriging:
         else:
             self.transform_coords = x[0]
         self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
-        
+
         # DEV: this is dirty, not sure how to do it better at the moment
         #self.sigma = np.empty(len(x[0]))
         self.sigma = np.ones(len(x[0])) * np.nan
         self.__sigma_index = 0
-        
+
         # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
@@ -333,11 +338,11 @@ class OrdinaryKriging:
 
         ..versionchanged:: 0.6.4
             sigma_index is now always incremented
-        
+
         """
         # indicate if this esimation raised an error
         did_error = False
-        
+
         # reun estimation
         try:
             estimation, sigma = self._krige(idx)
@@ -365,7 +370,7 @@ class OrdinaryKriging:
         return z
 
     def _krige(self, idx):
-        """Algorithm
+        r"""Algorithm
 
         Kriging algorithm for one point. This is the place, where the
         algorithm shall be changed and optimized.
@@ -391,8 +396,8 @@ class OrdinaryKriging:
 
         .. math::
             \hat{Z} = \sum_i(w_i * z_i)
-        
-        where :math:`w_i` is the calulated kriging weight for the i-th point 
+
+        where :math:`w_i` is the calulated kriging weight for the i-th point
         and :math:`z_i` is the observed value at that point.
 
         The kriging variance :math:`\sigma^2` (sigma) is calculate as follows:
@@ -400,8 +405,8 @@ class OrdinaryKriging:
         .. math::
             \sigma^2 = \sum_i(w_i * \gamma(p_0 - p_i)) + \lambda
 
-        where :math:`w_i` is again the weight, :math:`\gamma(p_0 - p_i)` is 
-        the semivairance of the distance between the unobserved location and 
+        where :math:`w_i` is again the weight, :math:`\gamma(p_0 - p_i)` is
+        the semivairance of the distance between the unobserved location and
         the i-th observation. :math:`\lamda` is the Lagrange multiplier needed
         to minimize the estimation error.
 
@@ -413,37 +418,31 @@ class OrdinaryKriging:
             kriging variance :math:`\sigma^2` for p.
 
         """
-        
+
         if self.perf:
             t0 = time.time()
 
-        p = self.transform_coords.coords[idx,:]
+        # get the point and index
+        p = self.transform_coords.coords[idx, :]
+        idx = self.transform_coords_pair.find_closest(
+            idx,
+            self.range,
+            self._maxp
+        )
 
-        idx = self.transform_coords_pair.find_closest(idx, self.range, self._maxp)
-        
         # raise an error if not enough points are found
         if idx.size < self._minp:
             raise LessPointsError
-            
+
         # finally find the points and values
         in_range = self.coords.coords[idx]
         values = self.values[idx]
         dist_mat = self.coords.diagonal(idx)
-        
+
         # if performance is tracked, time this step
         if self.perf:
             t1 = time.time()
             self.perf_dist.append(t1 - t0)
-
-        # OLD ALGORITHM
-        # a = np.ones((len(in_range) + 1, len(in_range) + 1))
-
-        # fill; TODO: this can be done faster
-        #for i in range(len(in_range)):
-        #    for j in range(len(in_range)):
-        #        a[i, j] = self.V.compiled_model(dist_mat[i ,j])
-        # the outermost elements are all 1, except the last one
-        #a[-1, -1] = 0
 
         # build the kriging Matrix; needs N + 1 dimensionality
         if self.mode == 'exact':
@@ -471,7 +470,7 @@ class OrdinaryKriging:
 
         # solve the system
         try:
-            l = self._solve(a, b)
+            _lambda = self._solve(a, b)
         except LinAlgError as e:
             print(a)
             if str(e) == 'Matrix is singular.':
@@ -495,12 +494,12 @@ class OrdinaryKriging:
                 self.perf_solv.append(t3 - t2)
 
         # calculate Kriging variance
-        # sigma is the weights times the semi-variance to p0 
-        # plus the lagrange factor 
-        sigma = sum(b[:-1] * l[:-1]) + l[-1]
+        # sigma is the weights times the semi-variance to p0
+        # plus the lagrange factor
+        sigma = sum(b[:-1] * _lambda[:-1]) + _lambda[-1]
 
         # calculate Z
-        Z = l[:-1].dot(values)
+        Z = _lambda[:-1].dot(values)
 
         # return
         return Z, sigma
