@@ -32,7 +32,7 @@ def even_width_lags(distances, n, maxlag):
 
     """
     # maxlags larger than the maximum separating distance will be ignored
-    if maxlag is None: #or maxlag > np.nanmax(distances):
+    if maxlag is None or maxlag > np.nanmax(distances):
         maxlag = np.nanmax(distances)
 
     return np.linspace(0, maxlag, n + 1)[1:], None
