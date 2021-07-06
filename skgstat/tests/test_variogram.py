@@ -278,20 +278,20 @@ class TestVariogramArguments(unittest.TestCase):
 
         assert np.array_equal(V.bins, custom_bins)
         assert V.n_lags == len(custom_bins)
-        assert V.maxlag is None
+        assert V.maxlag == max(custom_bins)
 
         # check that custom bins have priority over nlags and maxlag
         V = Variogram(self.c, self.v, bin_func=custom_bins, nlags=1000)
 
         assert np.array_equal(V.bins, custom_bins)
         assert V.n_lags == len(custom_bins)
-        assert V.maxlag is None
+        assert V.maxlag == max(custom_bins)
 
         V = Variogram(self.c, self.v, bin_func=custom_bins, maxlag=1000)
 
         assert np.array_equal(V.bins, custom_bins)
         assert V.n_lags == len(custom_bins)
-        assert V.maxlag is None
+        assert V.maxlag == max(custom_bins)
 
     def test_binning_kmeans_method(self):
         V = Variogram(

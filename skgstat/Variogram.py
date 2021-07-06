@@ -705,7 +705,7 @@ class Variogram(object):
         # if the input is an iterable with bin edges, we need to write self._bins here
         else:
             self._bins = bin_func
-            self._maxlag = None
+            self._maxlag = max(bin_func)
             self._n_lags = sum(1 for e in bin_func)
 
         self.cof, self.cov = None, None
