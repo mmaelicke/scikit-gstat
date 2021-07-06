@@ -255,8 +255,13 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertIsNone(V.cov)
         self.assertIsNone(V.cof)
 
-    def test_binning_non_string_arg(self):
-        V = Variogram(self.c, self.v, n_lags=8)
+    def test_binning_callable_arg(self):
+
+        def even_func(distances, n, maxlag):
+            return np.linspace(0, np.min(np.nanmax(distances), maxlag), n + 1)[1:]
+
+        V = Variogram(self.c, self.v, n_lags=8, bin_func=even_func)
+        V2 = Variogram(self.c, self.v, n_lags=8, bin_func='even')
 
         return True
 

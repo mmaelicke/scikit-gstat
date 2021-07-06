@@ -3,6 +3,7 @@ Variogram class
 """
 import copy
 import warnings
+from typing import Iterable, Callable, Union
 
 import numpy as np
 from pandas import DataFrame
@@ -101,7 +102,7 @@ class Variogram(object):
             scipy.spatial.distance.pdist. Additional parameters are not (yet)
             passed through to pdist. These are accepted by pdist for some of
             the metrics. In these cases the default values are used.
-        bin_func : str
+        bin_func : str | Callable | Iterable
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
             .. versionchanged:: 0.3.9
@@ -311,6 +312,7 @@ class Variogram(object):
         self._bin_func = None
         self._groups = None
         self._bins = None
+        self._count = None
         self.set_bin_func(bin_func=bin_func)
 
         # Needed for harmonized models
@@ -523,12 +525,14 @@ class Variogram(object):
     def bin_func(self, bin_func):
         self.set_bin_func(bin_func=bin_func)
 
-    def set_bin_func(self, bin_func: str):
+    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray],np.ndarray]]):
         r"""Set binning function
 
         Sets a new binning function to be used. The new binning method is set
-        by a string identifying the new function to be used. Can be one of:
-        ['even', 'uniform', 'fd', 'sturges', 'scott', 'sqrt', 'doane'].
+        by either a string identifying the new function to be used, or an
+        iterable containing the bin edges, or any function that can compute bins
+        from the distances. The string can be one of: ['even', 'uniform', 'fd',
+         'sturges', 'scott', 'sqrt', 'doane'].
         If the number of lag classes should be estimated automatically, it is
         recommended to use ' sturges' for small, normal distributed locations
         and 'fd' or 'scott' for large datasets, where 'fd' is more robust to
@@ -549,9 +553,13 @@ class Variogram(object):
             pass kwargs to the binning functions is now implemented as
             a instance method, to make it pickleable.
 
+        .. versionchanged:: 0.X.X
+            added iterable and function as arguments to allow for custom
+            bins.
+
         Parameters
         ----------
-        bin_func : str
+        bin_func : str | Iterable | Callable
             Can be one of:
 
                 * 'even'
@@ -671,20 +679,31 @@ class Variogram(object):
 
                 # use the wrapper for all but even and uniform
                 self._bin_func = self._bin_func_wrapper
+            bin_func_name = bin_func
 
-        elif callable(bin_func):  # pragma: no cover
+        elif isinstance(bin_func, Callable):  # pragma: no cover
             self._bin_func = bin_func
-            bin_func = 'custom'
+            bin_func_name = 'custom_func'
+
+        elif isinstance(bin_func, Iterable):
+            self._bin_func = None
+            bin_func_name = 'custom_bin_edges'
 
         else:
-            raise AttributeError('bin_func has to be of type string.')
+            raise AttributeError('bin_func has to be of type string, iterable or callable.')
 
         # store the name
-        self._bin_func_name = bin_func
+        self._bin_func_name = bin_func_name
 
         # reset groups and bins
         self._groups = None
-        self._bins = None
+
+        if isinstance(bin_func, str) or isinstance(bin_func, Callable):
+            self._bins = None
+        # if the input is an iterable with bin edges, we need to write self._bins here
+        else:
+            self._bins = bin_func
+
         self.cof, self.cov = None, None
 
     def _bin_func_wrapper(self, distances, n, maxlag):
@@ -759,6 +778,7 @@ class Variogram(object):
         self._bins = np.asarray(bins)
 
         # clean the groups as they are not valid anymore
+        self._count = None
         self._groups = None
         self.cov = None
         self.cof = None
@@ -807,6 +827,13 @@ class Variogram(object):
         # reset the fitting
         self.cof = None
         self.cov = None
+
+    @property
+    def count(self):
+
+        if self._count is None:
+            self._count = np.fromiter((g.size for g in self.lag_classes()), dtype=int)
+        return self._count
 
     @property
     def estimator(self):
