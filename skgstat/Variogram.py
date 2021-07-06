@@ -525,13 +525,14 @@ class Variogram(object):
     def bin_func(self, bin_func):
         self.set_bin_func(bin_func=bin_func)
 
-    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray],np.ndarray]]):
+    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray,float,float],np.ndarray]]):
         r"""Set binning function
 
         Sets a new binning function to be used. The new binning method is set
         by either a string identifying the new function to be used, or an
         iterable containing the bin edges, or any function that can compute bins
-        from the distances. The string can be one of: ['even', 'uniform', 'fd',
+        from the distances, number of lags and maximum lag.
+        The string can be one of: ['even', 'uniform', 'fd',
          'sturges', 'scott', 'sqrt', 'doane'].
         If the number of lag classes should be estimated automatically, it is
         recommended to use ' sturges' for small, normal distributed locations
@@ -695,14 +696,17 @@ class Variogram(object):
         # store the name
         self._bin_func_name = bin_func_name
 
-        # reset groups and bins
+        # reset groups, bins and count
         self._groups = None
+        self._count = None
 
         if isinstance(bin_func, str) or isinstance(bin_func, Callable):
             self._bins = None
         # if the input is an iterable with bin edges, we need to write self._bins here
         else:
             self._bins = bin_func
+            self._maxlag = None
+            self._n_lags = sum(1 for e in bin_func)
 
         self.cof, self.cov = None, None
 
@@ -821,8 +825,9 @@ class Variogram(object):
         # if there are no errors, store the passed value
         self._n_lags_passed_value = n
 
-        # reset the groups
+        # reset the groups and count
         self._groups = None
+        self._count = None
 
         # reset the fitting
         self.cof = None
@@ -1074,6 +1079,7 @@ class Variogram(object):
         # remove bins
         self._bins = None
         self._groups = None
+        self._count = None
 
         # set new maxlag
         if value is None:

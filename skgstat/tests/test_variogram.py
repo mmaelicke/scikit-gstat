@@ -257,13 +257,41 @@ class TestVariogramArguments(unittest.TestCase):
 
     def test_binning_callable_arg(self):
 
+        # define a custom function similar an existing string function
         def even_func(distances, n, maxlag):
-            return np.linspace(0, np.min(np.nanmax(distances), maxlag), n + 1)[1:]
+            return np.linspace(0, np.min(np.nanmax(distances), maxlag), n + 1)[1:], None
 
+        # run custom function and string function
         V = Variogram(self.c, self.v, n_lags=8, bin_func=even_func)
         V2 = Variogram(self.c, self.v, n_lags=8, bin_func='even')
 
-        return True
+        # check the binning is indeed the same
+        assert np.array_equal(V.bins, V2.bins)
+
+    def test_binning_iterable_arg(self):
+
+        # define a custom iterable with bin edges
+        custom_bins = np.linspace(5,50,5)
+
+        # check that the bins are set according to those edges
+        V = Variogram(self.c, self.v, bin_func=custom_bins)
+
+        assert np.array_equal(V.bins, custom_bins)
+        assert V.n_lags == len(custom_bins)
+        assert V.maxlag is None
+
+        # check that custom bins have priority over nlags and maxlag
+        V = Variogram(self.c, self.v, bin_func=custom_bins, nlags=1000)
+
+        assert np.array_equal(V.bins, custom_bins)
+        assert V.n_lags == len(custom_bins)
+        assert V.maxlag is None
+
+        V = Variogram(self.c, self.v, bin_func=custom_bins, maxlag=1000)
+
+        assert np.array_equal(V.bins, custom_bins)
+        assert V.n_lags == len(custom_bins)
+        assert V.maxlag is None
 
     def test_binning_kmeans_method(self):
         V = Variogram(
@@ -532,6 +560,32 @@ class TestVariogramArguments(unittest.TestCase):
 
             self.assertTrue('read-only' in str(e.exception))
 
+    def test_get_count(self):
+
+        V = Variogram(self.c, self.v)
+
+        # check type
+        assert isinstance(V.count, np.ndarray)
+
+        # check against real count
+        assert np.array_equal(V.count, np.array([22, 54, 87, 65, 77, 47, 46, 24, 10,  2]))
+
+        # check property gets updated
+        old_count = V.count
+
+        # when setting binning function
+        V.bin_func = 'uniform'
+        assert not np.array_equal(V.count, old_count)
+
+        # when setting maxlag
+        old_count = V.count
+        V.maxlag = 25
+        assert not np.array_equal(V.count, old_count)
+
+        # when setting nlags
+        old_count = V.count
+        V.n_lags = 5
+        assert len(V.count) == 5
 
 class TestVariogramFittingProcedure(unittest.TestCase):
     def setUp(self):
@@ -812,7 +866,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )      
 
 
-class TestVariogramQaulityMeasures(unittest.TestCase):
+class TestVariogramQualityMeasures(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
         np.random.seed(42)
