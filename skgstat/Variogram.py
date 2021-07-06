@@ -3,7 +3,7 @@ Variogram class
 """
 import copy
 import warnings
-from typing import Iterable, Callable, Union
+from typing import Iterable, Callable, Union, Tuple
 
 import numpy as np
 from pandas import DataFrame
@@ -525,7 +525,7 @@ class Variogram(object):
     def bin_func(self, bin_func):
         self.set_bin_func(bin_func=bin_func)
 
-    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray,float,float],np.ndarray]]):
+    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray,float,float], Tuple[np.ndarray, float]]]):
         r"""Set binning function
 
         Sets a new binning function to be used. The new binning method is set
