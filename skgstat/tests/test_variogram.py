@@ -527,6 +527,16 @@ class TestVariogramArguments(unittest.TestCase):
 
             self.assertTrue('read-only' in str(e.exception))
 
+    def test_nofit(self):
+        """
+        Verify that providing no fitting method skips the fitting procedure
+        """
+        V = Variogram(self.c, self.v, fit_method=None)
+
+        assert V.fit_method is None
+        assert V.cov is None
+        assert V.cof is None
+
 
 class TestVariogramFittingProcedure(unittest.TestCase):
     def setUp(self):
