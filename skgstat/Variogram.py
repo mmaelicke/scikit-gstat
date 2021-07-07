@@ -525,13 +525,13 @@ class Variogram(object):
     def bin_func(self, bin_func):
         self.set_bin_func(bin_func=bin_func)
 
-    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray,float,float], Tuple[np.ndarray, float]]]):
+    def set_bin_func(self, bin_func: Union[str, Iterable, Callable[[np.ndarray, float, float], Tuple[np.ndarray, float]]]):
         r"""Set binning function
 
         Sets a new binning function to be used. The new binning method is set
         by either a string identifying the new function to be used, or an
-        iterable containing the bin edges, or any function that can compute bins
-        from the distances, number of lags and maximum lag.
+        iterable containing the bin edges, or any function that can compute
+        bins from the distances, number of lags and maximum lag.
         The string can be one of: ['even', 'uniform', 'fd',
          'sturges', 'scott', 'sqrt', 'doane'].
         If the number of lag classes should be estimated automatically, it is
@@ -554,7 +554,7 @@ class Variogram(object):
             pass kwargs to the binning functions is now implemented as
             a instance method, to make it pickleable.
 
-        .. versionchanged:: 0.X.X
+        .. versionchanged:: 0.6.5
             added iterable and function as arguments to allow for custom
             bins.
 
