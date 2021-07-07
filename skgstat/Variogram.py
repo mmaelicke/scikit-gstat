@@ -312,7 +312,7 @@ class Variogram(object):
         self._bin_func = None
         self._groups = None
         self._bins = None
-        self._count = None
+        self._bin_count = None
         self.set_bin_func(bin_func=bin_func)
 
         # Needed for harmonized models
@@ -696,9 +696,9 @@ class Variogram(object):
         # store the name
         self._bin_func_name = bin_func_name
 
-        # reset groups, bins and count
+        # reset groups, bins and bin count
         self._groups = None
-        self._count = None
+        self._bin_count = None
 
         if isinstance(bin_func, str) or isinstance(bin_func, Callable):
             self._bins = None
@@ -782,7 +782,7 @@ class Variogram(object):
         self._bins = np.asarray(bins)
 
         # clean the groups as they are not valid anymore
-        self._count = None
+        self._bin_count = None
         self._groups = None
         self.cov = None
         self.cof = None
@@ -825,20 +825,20 @@ class Variogram(object):
         # if there are no errors, store the passed value
         self._n_lags_passed_value = n
 
-        # reset the groups and count
+        # reset the groups and bin count
         self._groups = None
-        self._count = None
+        self._bin_count = None
 
         # reset the fitting
         self.cof = None
         self.cov = None
 
     @property
-    def count(self):
+    def bin_count(self):
 
-        if self._count is None:
-            self._count = np.fromiter((g.size for g in self.lag_classes()), dtype=int)
-        return self._count
+        if self._bin_count is None:
+            self._bin_count = np.fromiter((g.size for g in self.lag_classes()), dtype=int)
+        return self._bin_count
 
     @property
     def estimator(self):
@@ -1076,10 +1076,10 @@ class Variogram(object):
         # reset fitting
         self.cof, self.cov = None, None
 
-        # remove bins
+        # remove bins, groups, and bin count
         self._bins = None
         self._groups = None
-        self._count = None
+        self._bin_count = None
 
         # set new maxlag
         if value is None:

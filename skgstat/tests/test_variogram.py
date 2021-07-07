@@ -560,32 +560,31 @@ class TestVariogramArguments(unittest.TestCase):
 
             self.assertTrue('read-only' in str(e.exception))
 
-    def test_get_count(self):
+    def test_get_bin_count(self):
 
         V = Variogram(self.c, self.v)
 
         # check type
-        assert isinstance(V.count, np.ndarray)
+        assert isinstance(V.bin_count, np.ndarray)
 
-        # check against real count
-        assert np.array_equal(V.count, np.array([22, 54, 87, 65, 77, 47, 46, 24, 10,  2]))
+        # check against real bin count
+        assert np.array_equal(V.bin_count, np.array([22, 54, 87, 65, 77, 47, 46, 24, 10,  2]))
 
         # check property gets updated
-        old_count = V.count
+        old_bin_count = V.bin_count
 
         # when setting binning function
         V.bin_func = 'uniform'
-        assert not np.array_equal(V.count, old_count)
+        assert not np.array_equal(V.bin_count, old_bin_count)
 
         # when setting maxlag
-        old_count = V.count
+        old_bin_count = V.bin_count
         V.maxlag = 25
-        assert not np.array_equal(V.count, old_count)
+        assert not np.array_equal(V.bin_count, old_bin_count)
 
         # when setting nlags
-        old_count = V.count
         V.n_lags = 5
-        assert len(V.count) == 5
+        assert len(V.bin_count) == 5
 
 class TestVariogramFittingProcedure(unittest.TestCase):
     def setUp(self):
