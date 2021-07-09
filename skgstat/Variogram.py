@@ -1110,6 +1110,10 @@ class Variogram(object):
         * ``'ml'``    - Maximum Likelihood estimation
         * `'manual'`` - Manual fitting by setting the parameters
 
+        .. versionchanged:: 0.6.6
+            Passing `None` will prevent the fitting procedure from
+            running.
+
         See Also
         --------
         scipy.optimize.minimize
