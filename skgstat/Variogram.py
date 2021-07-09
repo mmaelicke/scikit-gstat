@@ -132,13 +132,14 @@ class Variogram(object):
         normalize : bool
             Defaults to False. If True, the independent and dependent
             variable will be normalized to the range [0,1].
-        fit_method : str
+        fit_method : str | None
             .. versionchanged:: 0.3.10
                 Added 'ml' and 'custom'
 
             String identifying the method to be used for fitting the
-            theoretical variogram function to the experimental. More info is
-            given in the Variogram.fit docs. Can be one of:
+            theoretical variogram function to the experimental. If None
+            is passed, the fit does not run. More info is given in the
+            Variogram.fit docs. Can be one of:
 
                 * 'lm': Levenberg-Marquardt algorithm for unconstrained
                   problems. This is the faster algorithm, yet is the fitting of
@@ -315,8 +316,10 @@ class Variogram(object):
         self._bin_count = None
         self.set_bin_func(bin_func=bin_func)
 
-        # Needed for harmonized models
-        self.preprocessing(force=True)
+        # Needed for harmonized models, no need to
+        # run if there is no fit
+        if fit_method is not None:
+            self.preprocessing(force=True)
 
         # model can be a function or a string
         self._model = None
