@@ -1,5 +1,3 @@
-from typing import Union, Optional, Sequence
-
 from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
