@@ -1,3 +1,5 @@
+from typing import Union, Optional, Sequence
+
 from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
@@ -376,4 +378,229 @@ class ProbabalisticMetricSpace(MetricSpace):
             dists.indices = self.lidx[dists.indices]
             dists = dists.tocsr()
             self._dists = dists
+        return self._dists
+
+class RasterEquidistantMetricSpace(MetricSpace):
+    """Like ProbabilisticMetricSpace but only applies to Raster data (2D gridded data) and
+    samples iteratively an `equidistant` subset within distances to a 'center' subset.
+    Subsets can either be a fraction of the total number of pairs (float < 1), or an integer count.
+      """
+
+    def __init__(
+            self,
+            coords,
+            shape,
+            extent,
+            runs=None,
+            dist_metric="euclidean",
+            max_dist=None,
+            samples=0.5,
+            rnd=None
+    ):
+        """RasterEquidistantMetricSpace class
+
+        Parameters
+        ----------
+        coords : numpy.ndarray
+            Coordinate array of shape (Npoints, 2)
+        shape: tuple[int, int]
+            Shape of raster (X, Y)
+        extent: tuple[float, float, float, float]
+            Extent of raster (Xmin, Xmax, Ymin, Ymax)
+        runs: int
+            Number of subsamples to concatenate
+        dist_metric : str
+            Distance metric names as used by scipy.spatial.distance.pdist
+        max_dist : float
+            Maximum distance between points after which the distance
+            is considered infinite and not calculated.
+        samples : float, int
+            Number of samples (int) or fraction of coords to sample (float < 1).
+        rnd : numpy.random.RandomState, int
+            Random state to use for the sampling.
+        """
+        self.coords = coords.copy()
+        self.dist_metric = dist_metric
+        self.shape = shape
+        self.extent = extent
+        self.res = np.sqrt(((extent[1] - extent[0])/shape[0])**2 + ((extent[3] - extent[2])/shape[1])**2)
+
+        # TODO: if the number of runs is not specified, divide the grid in N center samples
+        if runs is None:
+            runs = 10
+
+        self.runs = runs
+
+        # if the maximum distance is not specified, find the maximum possible distance from the grid dimensions
+        if max_dist is None:
+            max_dist = np.max(self.shape) * self.res
+        self.max_dist = max_dist
+
+        self.samples = samples
+        if rnd is None:
+            self.rnd = np.random
+        elif isinstance(rnd, np.random.RandomState):
+            self.rnd = rnd
+        else:
+            self.rnd = np.random.RandomState(np.random.MT19937(np.random.SeedSequence( )))
+
+        # Index and KDTree of center sample
+        self._cidx = None
+        self._ctree = None
+
+        # Index and KDTree of equidistant sample
+        self._eqidx = None
+        self._eqtree = None
+
+        self._center = None
+        self._center_radius = None
+        self._dists = None
+        # Do a very quick check to see throw exceptions
+        # if self.dist_metric is invalid...
+        pdist(self.coords[:1, :], metric=self.dist_metric)
+
+    @property
+    def sample_count(self):
+        if isinstance(self.samples, int):
+            return self.samples
+        return int(self.samples * len(self.coords))
+
+    @property
+    def cidx(self):
+        """The sampled indices into `self.coords` for the center sample."""
+
+        if self._cidx is None:
+
+            # First index: preselect samples in a disk of radius large enough to contain twice the sample_count samples
+            dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
+                    self.coords[:, 1] - self._center[1]) ** 2)
+            idx1 = dist_center < self._center_radius
+            coords_center = self.coords[idx1, :]
+
+            indices1 = np.argwhere(idx1)
+
+            # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
+            # sample for low distances
+            indices2 = self.rnd.choice(len(coords_center), size=int(len(coords_center) / 2), replace=False)
+
+            self._cidx = indices1[indices2].squeeze()
+
+        return self._cidx
+
+    @property
+    def ctree(self):
+        """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
+        instance of the center sample of `self.coords`. Undefined otherwise."""
+
+        # only Euclidean supported
+        if self.dist_metric != "euclidean":
+            raise ValueError((
+                "A coordinate tree can only be constructed "
+                "for an euclidean space"
+            ))
+
+        if self._ctree is None:
+            self._ctree = cKDTree(self.coords[self.cidx, :])
+        return self._ctree
+
+
+    @property
+    def eqidx(self):
+        """The sampled indices into `self.coords` for the equidistant sample."""
+
+        # Hardcode exponential bins for now, see about providing more options later
+        list_inout_radius = [0.]
+        rad = self._center_radius
+        increasing_rad = rad
+        while increasing_rad < self.max_dist:
+            list_inout_radius.append(increasing_rad)
+            increasing_rad *= 1.5
+        list_inout_radius.append(self.max_dist)
+
+        dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
+                self.coords[:, 1] - self._center[1]) ** 2)
+
+        if self._eqidx is None:
+
+            # Loop over an iterative sampling in rings
+            list_idx = []
+            for i in range(len(list_inout_radius)-1):
+                # First index: preselect samples in a ring of inside radius and outside radius
+                idx1 = np.logical_and(dist_center < list_inout_radius[i+1], dist_center >= list_inout_radius[i])
+                coords_equi = self.coords[idx1, :]
+
+                indices1 = np.argwhere(idx1)
+
+                # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
+                # sample for low distances
+                indices2 = ~self.rnd.choice(len(coords_equi), size=min(len(coords_equi),self.sample_count), replace=False)
+                list_idx.append(indices1[indices2].squeeze())
+
+            self._eqidx = np.concatenate(list_idx)
+
+        return self._eqidx
+
+    @property
+    def eqtree(self):
+        """If `self.dist_metric` is `euclidean`, a `scipy.spatial.cKDTree`
+        instance of the equidistant sample of `self.coords`. Undefined otherwise."""
+
+        # only Euclidean supported
+        if self.dist_metric != "euclidean":
+            raise ValueError((
+                "A coordinate tree can only be constructed "
+                "for an euclidean space"
+            ))
+
+        if self._eqtree is None:
+            self._eqtree = cKDTree(self.coords[self.eqidx, :])
+        return self._eqtree
+
+    @property
+    def dists(self):
+        """A distance matrix of the sampled point pairs as a
+        `scipy.sparse.csr_matrix` sparse matrix. """
+
+        if self._dists is None:
+
+            list_dists, list_cidx, list_eqidx = ([] for i in range(3))
+
+            idx_center = self.rnd.choice(len(self.coords), size=(2, self.runs), replace=False)
+
+            for i in range(self.runs):
+
+                # Each run has a different center
+                self._center = (self.coords[idx_center[0, i], 0], self.coords[idx_center[1, i], 1])
+                # Radius of center based on sample count
+                self._center_radius = np.sqrt(self.sample_count / np.pi) * self.res
+
+                dists = self.ctree.sparse_distance_matrix(
+                    self.eqtree,
+                    self.max_dist,
+                    output_type="coo_matrix"
+                )
+
+                list_dists.append(dists.data)
+                list_cidx.append(self.cidx[dists.row])
+                list_eqidx.append(self.eqidx[dists.col])
+
+                self._cidx = None
+                self._ctree = None
+                self._eqidx = None
+                self._eqtree = None
+
+            # concatenate the coo matrixes
+            d = np.concatenate(list_dists)
+            c = np.concatenate(list_cidx)
+            eq = np.concatenate(list_eqidx)
+
+            # remove possible duplicates (that would be summed by default)
+            # from https://stackoverflow.com/questions/28677162/ignoring-duplicate-entries-in-sparse-matrix
+            c, eq, d = zip(*set(zip(c, eq, d)))
+
+            # put everything into a csr matrix
+            dists = sparse.csr_matrix((d, (c, eq)), shape=(len(self.coords), len(self.coords)))
+
+            self._dists = dists
+
         return self._dists
