@@ -2,7 +2,6 @@ from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
 import numpy as np
-import multiprocessing as mp
 
 def _sparse_dok_get(m, fill_value=np.NaN):
     """Like m.toarray(), but setting empty values to `fill_value`, by
@@ -393,7 +392,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
             dist_metric="euclidean",
             max_dist=None,
             samples=0.5,
-            ncores=1,
             rnd=None
     ):
         """RasterEquidistantMetricSpace class
@@ -473,7 +471,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
         if self._cidx is None:
 
-            # First index: preselect samples in a disk of radius large enough to contain twice the sample_count samples
+            # First index: preselect samples in a disk of radius large enough to contain the sample_count samples
             dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
                     self.coords[:, 1] - self._center[1]) ** 2)
             idx1 = dist_center < self._center_radius
