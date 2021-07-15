@@ -381,6 +381,31 @@ class RasterEquidistantMetricSpace(MetricSpace):
     """Like ProbabilisticMetricSpace but only applies to Raster data (2D gridded data) and
     samples iteratively an `equidistant` subset within distances to a 'center' subset.
     Subsets can either be a fraction of the total number of pairs (float < 1), or an integer count.
+    The 'center' subset corresponds to a disk centered on a point of the grid for which the location
+    randomly varies and can be redrawn and aggregate for several runs. The corresponding 'equidistant'
+    subset consists of the concatenation samples drawn from rings with radius increasing gradually
+    until the maximum extent of the grid is reached.
+
+    To define the subsampling, several parameters are available:
+    - The raw number of samples correspond to the samples that will be drawn in each central disk.
+     Along with the ratio of samples drawn (see below), it will automatically defines the radius
+     of the disk and rings for subsampling.
+     Note that this amount of samples drawn will be repeatedly drawn for each equidistant rings
+     at a given radius, resulting in a several-fold amount of samples for the equidistant subset.
+    - The ratio of subsample drawn defines the density of point sampled within each subset.
+     It defines the radius of the central disk and equidistant rings with the raw sample size.
+     It default to 20%.
+    - The number of runs correspond to the number of random center points repeated during the
+    subsampling. It default to a sampling of 1% of the grid with center subsets.
+
+    Alternatively, one can supply:
+    - The multiplicative factor to derive increasing rings radii, set as squareroot of 2 by
+    default in order to conserve a similar area for each ring and verify the sampling ratio.
+    Or directly:
+    - The radius of the central disk subset.
+    - A list of radii for the equidistant ring subsets.
+    When providing those spatial parameters, all other sampling parameters will be ignored
+    except for the raw number of samples to draw in each subset.
       """
 
     def __init__(
@@ -388,10 +413,14 @@ class RasterEquidistantMetricSpace(MetricSpace):
             coords,
             shape,
             extent,
+            samples=100,
+            ratio_subsamp=0.2,
             runs=None,
-            dist_metric="euclidean",
+            exp_increase_fac=np.sqrt(2),
+            center_radius=None,
+            equidistant_radii=None,
             max_dist=None,
-            samples=0.5,
+            dist_metric="euclidean",
             rnd=None
     ):
         """RasterEquidistantMetricSpace class
@@ -400,42 +429,49 @@ class RasterEquidistantMetricSpace(MetricSpace):
         ----------
         coords : numpy.ndarray
             Coordinate array of shape (Npoints, 2)
-        shape: tuple[int, int]
+        shape : tuple[int, int]
             Shape of raster (X, Y)
-        extent: tuple[float, float, float, float]
+        extent : tuple[float, float, float, float]
             Extent of raster (Xmin, Xmax, Ymin, Ymax)
-        runs: int
-            Number of subsamples to concatenate
+        samples : float, int
+            Number of samples (int) or fraction of coords to sample (float < 1).
+        ratio_subsamp:
+            Ratio of samples drawn within each subsample.
+        runs : int
+            Number of subsamplings based on a random center point
+        exp_increase_fac : float
+            Multiplicative factor of increasing radius for ring subsets
+        center_radius: float
+            Radius of center subset, overrides other sampling parameters.
+        equidistant_radii: list
+            List of radii of ring subset, overrides other sampling parameters.
         dist_metric : str
             Distance metric names as used by scipy.spatial.distance.pdist
         max_dist : float
             Maximum distance between points after which the distance
             is considered infinite and not calculated.
-        samples : float, int
-            Number of samples (int) or fraction of coords to sample (float < 1).
+
         rnd : numpy.random.RandomState, int
             Random state to use for the sampling.
         """
+
         self.coords = coords.copy()
         self.dist_metric = dist_metric
         self.shape = shape
         self.extent = extent
-        self.res = np.sqrt(((extent[1] - extent[0])/shape[0])**2 + ((extent[3] - extent[2])/shape[1])**2)
+        self.res = np.mean([(extent[1] - extent[0])/(shape[0]-1),(extent[3] - extent[2])/(shape[1]-1)])
 
-
-        # if the maximum distance is not specified, find the maximum possible distance from the grid dimensions
+        # if the maximum distance is not specified, find the maximum possible distance from the extent
         if max_dist is None:
-            max_dist = np.max(self.shape) * self.res
+            max_dist = np.sqrt((extent[1] - extent[0])**2 + (extent[3] - extent[2])**2)
         self.max_dist = max_dist
 
         self.samples = samples
 
         if runs is None:
-            # By default
-            runs = (self.shape[0] * self.shape[1]) / (100 * self.samples)
-
+            # If None is provided, try to sample center samples for about one percent of the area
+            runs = int((self.shape[0] * self.shape[1]) / self.samples * 1/100.)
         self.runs = runs
-
 
         if rnd is None:
             self.rnd = np.random
@@ -443,6 +479,27 @@ class RasterEquidistantMetricSpace(MetricSpace):
             self.rnd = rnd
         else:
             self.rnd = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(rnd)))
+
+        # Radius of center subsample, based on sample count
+        # If None is provided, the disk is defined with the exact size to hold the number of percentage of samples
+        # defined by the user
+        if center_radius is None:
+            center_radius = np.sqrt(1. / ratio_subsamp * self.sample_count / np.pi) * self.res
+        self._center_radius = center_radius
+
+        # Radii of equidistant ring subsamples
+        # If None is provided, the rings are defined with exponentially increasing radii with a factor sqrt(2), which
+        # means each ring will have just enough area to sample at least the number of samples desired, and same
+        # for each of the following, due to:
+        # (sqrt(2)R)**2 - R**2 = R**2
+        if equidistant_radii is None:
+            equidistant_radii = [0.]
+            increasing_rad = self._center_radius
+            while increasing_rad < self.max_dist:
+                equidistant_radii.append(increasing_rad)
+                increasing_rad *= exp_increase_fac
+            equidistant_radii.append(self.max_dist)
+        self._equidistant_radii = equidistant_radii
 
         # Index and KDTree of center sample
         self._cidx = None
@@ -453,7 +510,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
         self._eqtree = None
 
         self._center = None
-        self._center_radius = None
         self._dists = None
         # Do a very quick check to see throw exceptions
         # if self.dist_metric is invalid...
@@ -508,27 +564,17 @@ class RasterEquidistantMetricSpace(MetricSpace):
     def eqidx(self):
         """The sampled indices into `self.coords` for the equidistant sample."""
 
-        # Hardcode exponential bins for now, see about providing more options later
-        list_in_radius = [0.]
-        rad = self._center_radius
-        increasing_rad = rad
-        list_out_radius = [rad]
-        while increasing_rad < self.max_dist:
-            list_in_radius.append(increasing_rad)
-            increasing_rad *= 1.5
-            list_out_radius.append(increasing_rad)
-
         dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
                 self.coords[:, 1] - self._center[1]) ** 2)
 
-        idx = np.logical_and(dist_center[None, :] >= np.array(list_in_radius)[:, None],
-                             dist_center[None, :] < np.array(list_out_radius)[:, None])
+        idx = np.logical_and(dist_center[None, :] >= np.array(self._equidistant_radii[:-1])[:, None],
+                             dist_center[None, :] < np.array(self._equidistant_radii[1:])[:, None])
 
         if self._eqidx is None:
 
             # Loop over an iterative sampling in rings
             list_idx = []
-            for i in range(len(list_in_radius)):
+            for i in range(len(self._equidistant_radii) - 1):
                 # First index: preselect samples in a ring of inside radius and outside radius
                 idx1 = idx[i, :]
 
@@ -575,8 +621,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
             # Each run has a different center
             centers = self.coords[idx_center]
-            # Radius of center based on sample count
-            self._center_radius = np.sqrt(self.sample_count / np.pi) * self.res
 
             for i in range(self.runs):
 

@@ -99,7 +99,7 @@ def test_raster_metric():
 
     # Minimal check of the output
     assert rems.max_dist == pytest.approx(140,rel=0.01)
-    assert rems.res == pytest.approx(1.4, rel=0.0001)
+    assert rems.res == pytest.approx(1, rel=0.0001)
     assert isinstance(rems.dists, scipy.sparse.csr.csr_matrix)
     assert rems.dists.shape == (10000, 10000)
 
