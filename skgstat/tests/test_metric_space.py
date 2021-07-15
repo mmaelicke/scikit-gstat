@@ -1,13 +1,13 @@
 import pytest
 import numpy as np
 import skgstat as skg
+import scipy
 
 # produce a random dataset
 np.random.seed(42)
 rcoords = np.random.gamma(40, 10, size=(500, 2))
 np.random.seed(42)
 rvals = np.random.normal(10, 4, 500)
-
 
 def test_invalid_dist_func():
     # instantiate metrix space
@@ -39,7 +39,7 @@ def test_dense_matrix_warning():
         assert 'Only available' in w.value
 
 
-def test_unkonwn_metric():
+def test_unknown_metric():
     with pytest.raises(ValueError) as e:
         skg.MetricSpace(rcoords, dist_metric='foobar')
 
@@ -76,3 +76,39 @@ def test_metric_pair_max_dist():
         skg.MetricSpacePair(ms1, ms2)
 
         assert 'same max_dist' in e.value
+
+def test_raster_metric():
+
+    # Generate a gridded dataset
+    shape = (100, 100)
+    np.random.seed(42)
+    vals = np.random.normal(0, 1, size=shape)
+
+    # Coordinates
+    x = np.arange(0, shape[0])
+    y = np.arange(0, shape[1])
+    xx, yy = np.meshgrid(x, y)
+
+    # Flatten everything because we don't care about the 2D at this point
+    coords = np.dstack((xx.flatten(), yy.flatten())).squeeze()
+    vals = vals.flatten()
+
+    # Run the computation
+    rems = skg.RasterEquidistantMetricSpace(coords, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=10, runs=10,
+                                            rnd=42)
+
+    # Minimal check of the output
+    assert rems.max_dist == pytest.approx(140,rel=0.01)
+    assert rems.res == pytest.approx(1.4, rel=0.0001)
+    assert isinstance(rems.dists, scipy.sparse.csr.csr_matrix)
+    assert rems.dists.shape == (10000, 10000)
+
+    # Check the random state provides the same final center
+    assert all(rems._center == np.array([62, 52]))
+
+    # Check the interface with a Variogram object works
+    V = skg.Variogram(rems, vals)
+
+    assert V.bin_count is not None
+    # Check the variogram is always the same with the random state given
+    assert V.experimental[0] == pytest.approx(1.06,0.01)

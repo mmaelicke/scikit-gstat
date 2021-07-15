@@ -442,7 +442,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
         elif isinstance(rnd, np.random.RandomState):
             self.rnd = rnd
         else:
-            self.rnd = np.random.RandomState(np.random.MT19937(np.random.SeedSequence( )))
+            self.rnd = np.random.RandomState(np.random.MT19937(np.random.SeedSequence(rnd)))
 
         # Index and KDTree of center sample
         self._cidx = None
