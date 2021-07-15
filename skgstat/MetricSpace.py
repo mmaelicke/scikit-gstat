@@ -2,7 +2,7 @@ from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
 import numpy as np
-
+import multiprocessing as mp
 
 def _sparse_dok_get(m, fill_value=np.NaN):
     """Like m.toarray(), but setting empty values to `fill_value`, by
@@ -393,6 +393,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             dist_metric="euclidean",
             max_dist=None,
             samples=0.5,
+            ncores=1,
             rnd=None
     ):
         """RasterEquidistantMetricSpace class
@@ -423,11 +424,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
         self.extent = extent
         self.res = np.sqrt(((extent[1] - extent[0])/shape[0])**2 + ((extent[3] - extent[2])/shape[1])**2)
 
-        # TODO: if the number of runs is not specified, divide the grid in N center samples
-        if runs is None:
-            runs = 10
-
-        self.runs = runs
 
         # if the maximum distance is not specified, find the maximum possible distance from the grid dimensions
         if max_dist is None:
@@ -435,6 +431,14 @@ class RasterEquidistantMetricSpace(MetricSpace):
         self.max_dist = max_dist
 
         self.samples = samples
+
+        if runs is None:
+            # By default
+            runs = (self.shape[0] * self.shape[1]) / (100 * self.samples)
+
+        self.runs = runs
+
+
         if rnd is None:
             self.rnd = np.random
         elif isinstance(rnd, np.random.RandomState):
@@ -473,13 +477,13 @@ class RasterEquidistantMetricSpace(MetricSpace):
             dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
                     self.coords[:, 1] - self._center[1]) ** 2)
             idx1 = dist_center < self._center_radius
-            coords_center = self.coords[idx1, :]
 
+            count = np.count_nonzero(idx1)
             indices1 = np.argwhere(idx1)
 
             # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
             # sample for low distances
-            indices2 = self.rnd.choice(len(coords_center), size=int(len(coords_center) / 2), replace=False)
+            indices2 = self.rnd.choice(count, size=count, replace=False)
 
             self._cidx = indices1[indices2].squeeze()
 
@@ -507,32 +511,38 @@ class RasterEquidistantMetricSpace(MetricSpace):
         """The sampled indices into `self.coords` for the equidistant sample."""
 
         # Hardcode exponential bins for now, see about providing more options later
-        list_inout_radius = [0.]
+        list_in_radius = [0.]
         rad = self._center_radius
         increasing_rad = rad
+        list_out_radius = [rad]
         while increasing_rad < self.max_dist:
-            list_inout_radius.append(increasing_rad)
+            list_in_radius.append(increasing_rad)
             increasing_rad *= 1.5
-        list_inout_radius.append(self.max_dist)
+            list_out_radius.append(increasing_rad)
 
         dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
                 self.coords[:, 1] - self._center[1]) ** 2)
+
+        idx = np.logical_and(dist_center[None, :] >= np.array(list_in_radius)[:, None],
+                             dist_center[None, :] < np.array(list_out_radius)[:, None])
 
         if self._eqidx is None:
 
             # Loop over an iterative sampling in rings
             list_idx = []
-            for i in range(len(list_inout_radius)-1):
+            for i in range(len(list_in_radius)):
                 # First index: preselect samples in a ring of inside radius and outside radius
-                idx1 = np.logical_and(dist_center < list_inout_radius[i+1], dist_center >= list_inout_radius[i])
-                coords_equi = self.coords[idx1, :]
+                idx1 = idx[i, :]
 
+                count = np.count_nonzero(idx1)
                 indices1 = np.argwhere(idx1)
 
                 # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
                 # sample for low distances
-                indices2 = ~self.rnd.choice(len(coords_equi), size=min(len(coords_equi),self.sample_count), replace=False)
-                list_idx.append(indices1[indices2].squeeze())
+                indices2 = self.rnd.choice(count, size=min(count,self.sample_count), replace=False)
+                sub_idx = indices1[indices2]
+                if len(sub_idx)>1:
+                    list_idx.append(sub_idx.squeeze())
 
             self._eqidx = np.concatenate(list_idx)
 
@@ -563,14 +573,16 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
             list_dists, list_cidx, list_eqidx = ([] for i in range(3))
 
-            idx_center = self.rnd.choice(len(self.coords), size=(2, self.runs), replace=False)
+            idx_center = self.rnd.choice(len(self.coords), size=self.runs, replace=False)
+
+            # Each run has a different center
+            centers = self.coords[idx_center]
+            # Radius of center based on sample count
+            self._center_radius = np.sqrt(self.sample_count / np.pi) * self.res
 
             for i in range(self.runs):
 
-                # Each run has a different center
-                self._center = (self.coords[idx_center[0, i], 0], self.coords[idx_center[1, i], 1])
-                # Radius of center based on sample count
-                self._center_radius = np.sqrt(self.sample_count / np.pi) * self.res
+                self._center = centers[i]
 
                 dists = self.ctree.sparse_distance_matrix(
                     self.eqtree,
@@ -594,10 +606,16 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
             # remove possible duplicates (that would be summed by default)
             # from https://stackoverflow.com/questions/28677162/ignoring-duplicate-entries-in-sparse-matrix
-            c, eq, d = zip(*set(zip(c, eq, d)))
 
-            # put everything into a csr matrix
-            dists = sparse.csr_matrix((d, (c, eq)), shape=(len(self.coords), len(self.coords)))
+            # Stable solution but a bit slow
+            # c, eq, d = zip(*set(zip(c, eq, d)))
+            # dists = sparse.csr_matrix((d, (c, eq)), shape=(len(self.coords), len(self.coords)))
+
+            # Solution 5+ times faster than the preceding, but relies on _update() which might change in scipy (which
+            # only has an implemented method for summing duplicates, and not ignoring them yet)
+            dok = sparse.dok_matrix((len(self.coords), len(self.coords)))
+            dok._update(zip(zip(c, eq), d))
+            dists = dok.tocsr()
 
             self._dists = dists
 
