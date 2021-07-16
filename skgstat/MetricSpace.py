@@ -382,21 +382,21 @@ class RasterEquidistantMetricSpace(MetricSpace):
     samples iteratively an `equidistant` subset within distances to a 'center' subset.
     Subsets can either be a fraction of the total number of pairs (float < 1), or an integer count.
     The 'center' subset corresponds to a disk centered on a point of the grid for which the location
-    randomly varies and can be redrawn and aggregate for several runs. The corresponding 'equidistant'
-    subset consists of the concatenation samples drawn from rings with radius increasing gradually
+    randomly varies and can be redrawn and aggregated for several runs. The corresponding 'equidistant'
+    subset consists of a concatenation of subsets drawn from rings with radius gradually increasing
     until the maximum extent of the grid is reached.
 
     To define the subsampling, several parameters are available:
-    - The raw number of samples correspond to the samples that will be drawn in each central disk.
-     Along with the ratio of samples drawn (see below), it will automatically defines the radius
+    - The raw number of samples corresponds to the samples that will be drawn in each central disk.
+     Along with the ratio of samples drawn (see below), it will automatically define the radius
      of the disk and rings for subsampling.
-     Note that this amount of samples drawn will be repeatedly drawn for each equidistant rings
-     at a given radius, resulting in a several-fold amount of samples for the equidistant subset.
-    - The ratio of subsample drawn defines the density of point sampled within each subset.
-     It defines the radius of the central disk and equidistant rings with the raw sample size.
-     It default to 20%.
-    - The number of runs correspond to the number of random center points repeated during the
-    subsampling. It default to a sampling of 1% of the grid with center subsets.
+     Note that the number of samples drawn will be repeatedly drawn for each equidistant rings
+     at a given radius, resulting in a several-fold amount of total samples for the equidistant
+     subset.
+    - The ratio of subsample defines the density of point sampled within each subset. It
+     defaults to 20%.
+    - The number of runs corresponds to the number of random center points repeated during the
+    subsampling. It defaults to a sampling of 1% of the grid with center subsets.
 
     Alternatively, one can supply:
     - The multiplicative factor to derive increasing rings radii, set as squareroot of 2 by
