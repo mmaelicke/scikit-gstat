@@ -2,6 +2,8 @@ from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
 import numpy as np
+import multiprocessing as mp
+import time as time
 
 def _sparse_dok_get(m, fill_value=np.NaN):
     """Like m.toarray(), but setting empty values to `fill_value`, by
@@ -377,6 +379,80 @@ class ProbabalisticMetricSpace(MetricSpace):
             self._dists = dists
         return self._dists
 
+# Subfunctions of RasterEquidistantMetricSpace
+
+def get_disk_sample(coords, center, center_radius, rnd_func, sample_count):
+
+    # First index: preselect samples in a disk of certain radius
+    dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (
+            coords[:, 1] - center[1]) ** 2)
+    idx1 = dist_center < center_radius
+
+    count = np.count_nonzero(idx1)
+    indices1 = np.argwhere(idx1)
+
+    # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
+    # sample for low distances
+    indices2 = rnd_func.choice(count, size=sample_count, replace=False)
+
+    return indices1[indices2].squeeze()
+
+def get_successive_ring_samples(coords, center, equidistant_radii, rnd_func, sample_count):
+
+    dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (
+            coords[:, 1] - center[1]) ** 2)
+
+    idx = np.logical_and(dist_center[None, :] >= np.array(equidistant_radii[:-1])[:, None],
+                         dist_center[None, :] < np.array(equidistant_radii[1:])[:, None])
+
+    # Loop over an iterative sampling in rings
+    list_idx = []
+    for i in range(len(equidistant_radii) - 1):
+        # First index: preselect samples in a ring of inside radius and outside radius
+        idx1 = idx[i, :]
+
+        count = np.count_nonzero(idx1)
+        indices1 = np.argwhere(idx1)
+
+        # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
+        # sample for low distances
+        indices2 = rnd_func.choice(count, size=min(count, sample_count), replace=False)
+        sub_idx = indices1[indices2]
+        if len(sub_idx) > 1:
+            list_idx.append(sub_idx.squeeze())
+
+    return np.concatenate(list_idx)
+
+def get_idx_dists(coords, center, center_radius, equidistant_radii, rnd_func,
+                  sample_count, max_dist, i, imax, verbose):
+
+    if verbose:
+        print('Working on subsample ' + str(i+1) + ' out of ' + str(imax))
+
+    cidx = get_disk_sample(coords=coords, center=center,
+                           center_radius=center_radius, rnd_func=rnd_func,
+                           sample_count=sample_count)
+
+    eqidx = get_successive_ring_samples(coords=coords, center=center,
+                            equidistant_radii=equidistant_radii, rnd_func=rnd_func,
+                            sample_count=sample_count)
+
+    ctree = cKDTree(coords[cidx, :])
+    eqtree = cKDTree(coords[eqidx, :])
+
+    dists = ctree.sparse_distance_matrix(
+        eqtree,
+        max_dist,
+        output_type="coo_matrix"
+    )
+
+    return dists.data, cidx[dists.row], eqidx[dists.col]
+
+def mp_wrapper_get_idx_dists(argdict: dict):
+
+    return get_idx_dists(**argdict)
+
+
 class RasterEquidistantMetricSpace(MetricSpace):
     """Like ProbabilisticMetricSpace but only applies to Raster data (2D gridded data) and
     samples iteratively an `equidistant` subset within distances to a 'center' subset.
@@ -416,12 +492,14 @@ class RasterEquidistantMetricSpace(MetricSpace):
             samples=100,
             ratio_subsamp=0.2,
             runs=None,
+            ncores=1,
             exp_increase_fac=np.sqrt(2),
             center_radius=None,
             equidistant_radii=None,
             max_dist=None,
             dist_metric="euclidean",
-            rnd=None
+            rnd=None,
+            verbose=False
     ):
         """RasterEquidistantMetricSpace class
 
@@ -439,6 +517,8 @@ class RasterEquidistantMetricSpace(MetricSpace):
             Ratio of samples drawn within each subsample.
         runs : int
             Number of subsamplings based on a random center point
+        ncores : int
+            Number of cores to use in multiprocessing for the subsamplings.
         exp_increase_fac : float
             Multiplicative factor of increasing radius for ring subsets
         center_radius: float
@@ -450,10 +530,18 @@ class RasterEquidistantMetricSpace(MetricSpace):
         max_dist : float
             Maximum distance between points after which the distance
             is considered infinite and not calculated.
+        verbose : bool
+            Whether to print statements in the console
 
         rnd : numpy.random.RandomState, int
             Random state to use for the sampling.
         """
+
+        if dist_metric != "euclidean":
+            raise ValueError((
+                "A RasterEquidistantMetricSpace class can only be constructed "
+                "for an euclidean space"
+            ))
 
         self.coords = coords.copy()
         self.dist_metric = dist_metric
@@ -473,8 +561,10 @@ class RasterEquidistantMetricSpace(MetricSpace):
             runs = int((self.shape[0] * self.shape[1]) / self.samples * 1/100.)
         self.runs = runs
 
+        self.ncores = ncores
+
         if rnd is None:
-            self.rnd = np.random
+            self.rnd = np.random.default_rng()
         elif isinstance(rnd, np.random.RandomState):
             self.rnd = rnd
         else:
@@ -485,6 +575,9 @@ class RasterEquidistantMetricSpace(MetricSpace):
         # defined by the user
         if center_radius is None:
             center_radius = np.sqrt(1. / ratio_subsamp * self.sample_count / np.pi) * self.res
+            if verbose:
+                print('Radius of center disk sample for sample count of '+str(self.sample_count)+ ' and subsampling ratio'
+                      ' of '+str(ratio_subsamp)+': '+str(center_radius))
         self._center_radius = center_radius
 
         # Radii of equidistant ring subsamples
@@ -499,7 +592,12 @@ class RasterEquidistantMetricSpace(MetricSpace):
                 equidistant_radii.append(increasing_rad)
                 increasing_rad *= exp_increase_fac
             equidistant_radii.append(self.max_dist)
+            if verbose:
+                print('Radii of equidistant ring samples for increasing factor of ' + str(exp_increase_fac) + ': ')
+                print(equidistant_radii)
         self._equidistant_radii = equidistant_radii
+
+        self.verbose = verbose
 
         # Index and KDTree of center sample
         self._cidx = None
@@ -509,7 +607,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
         self._eqidx = None
         self._eqtree = None
 
-        self._center = None
+        self._centers = None
         self._dists = None
         # Do a very quick check to see throw exceptions
         # if self.dist_metric is invalid...
@@ -524,22 +622,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
     @property
     def cidx(self):
         """The sampled indices into `self.coords` for the center sample."""
-
-        if self._cidx is None:
-
-            # First index: preselect samples in a disk of radius large enough to contain the sample_count samples
-            dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
-                    self.coords[:, 1] - self._center[1]) ** 2)
-            idx1 = dist_center < self._center_radius
-
-            count = np.count_nonzero(idx1)
-            indices1 = np.argwhere(idx1)
-
-            # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
-            # sample for low distances
-            indices2 = self.rnd.choice(count, size=count, replace=False)
-
-            self._cidx = indices1[indices2].squeeze()
 
         return self._cidx
 
@@ -556,39 +638,13 @@ class RasterEquidistantMetricSpace(MetricSpace):
             ))
 
         if self._ctree is None:
-            self._ctree = cKDTree(self.coords[self.cidx, :])
+            self._ctree = [cKDTree(self.coords[self.cidx[i], :]) for i in range(len(self.cidx))]
         return self._ctree
 
 
     @property
     def eqidx(self):
         """The sampled indices into `self.coords` for the equidistant sample."""
-
-        dist_center = np.sqrt((self.coords[:, 0] - self._center[0]) ** 2 + (
-                self.coords[:, 1] - self._center[1]) ** 2)
-
-        idx = np.logical_and(dist_center[None, :] >= np.array(self._equidistant_radii[:-1])[:, None],
-                             dist_center[None, :] < np.array(self._equidistant_radii[1:])[:, None])
-
-        if self._eqidx is None:
-
-            # Loop over an iterative sampling in rings
-            list_idx = []
-            for i in range(len(self._equidistant_radii) - 1):
-                # First index: preselect samples in a ring of inside radius and outside radius
-                idx1 = idx[i, :]
-
-                count = np.count_nonzero(idx1)
-                indices1 = np.argwhere(idx1)
-
-                # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
-                # sample for low distances
-                indices2 = self.rnd.choice(count, size=min(count,self.sample_count), replace=False)
-                sub_idx = indices1[indices2]
-                if len(sub_idx)>1:
-                    list_idx.append(sub_idx.squeeze())
-
-            self._eqidx = np.concatenate(list_idx)
 
         return self._eqidx
 
@@ -598,14 +654,9 @@ class RasterEquidistantMetricSpace(MetricSpace):
         instance of the equidistant sample of `self.coords`. Undefined otherwise."""
 
         # only Euclidean supported
-        if self.dist_metric != "euclidean":
-            raise ValueError((
-                "A coordinate tree can only be constructed "
-                "for an euclidean space"
-            ))
 
         if self._eqtree is None:
-            self._eqtree = cKDTree(self.coords[self.eqidx, :])
+            self._eqtree = [cKDTree(self.coords[self.eqidx[i], :]) for i in range(len(self.eqidx))]
         return self._eqtree
 
     @property
@@ -613,33 +664,57 @@ class RasterEquidistantMetricSpace(MetricSpace):
         """A distance matrix of the sampled point pairs as a
         `scipy.sparse.csr_matrix` sparse matrix. """
 
-        if self._dists is None:
 
-            list_dists, list_cidx, list_eqidx = ([] for i in range(3))
+        # Derive distances
+        if self._dists is None:
 
             idx_center = self.rnd.choice(len(self.coords), size=self.runs, replace=False)
 
             # Each run has a different center
             centers = self.coords[idx_center]
 
-            for i in range(self.runs):
+            t0 = time.time()
+            # Running on a single core: for loop
+            if self.ncores == 1:
 
-                self._center = centers[i]
+                list_dists, list_cidx, list_eqidx = ([] for i in range(3))
 
-                dists = self.ctree.sparse_distance_matrix(
-                    self.eqtree,
-                    self.max_dist,
-                    output_type="coo_matrix"
-                )
+                for i in range(self.runs):
 
-                list_dists.append(dists.data)
-                list_cidx.append(self.cidx[dists.row])
-                list_eqidx.append(self.eqidx[dists.col])
+                    center = centers[i]
+                    dists, cidx, eqidx = get_idx_dists(self.coords, center=center, center_radius=self._center_radius,
+                                                       equidistant_radii=self._equidistant_radii, rnd_func=self.rnd,
+                                                       sample_count=self.sample_count, max_dist=self.max_dist, i=i,
+                                                       imax=self.runs, verbose=self.verbose)
+                    list_dists.append(dists)
+                    list_cidx.append(cidx)
+                    list_eqidx.append(eqidx)
 
-                self._cidx = None
-                self._ctree = None
-                self._eqidx = None
-                self._eqtree = None
+            # Running on several cores: multiprocessing
+            else:
+                print(self.ncores)
+                # Arguments to pass: only centers and loop index for verbose are changing
+                argsin = [{'center': centers[i], 'coords': self.coords, 'center_radius': self._center_radius,
+                           'equidistant_radii': self._equidistant_radii, 'rnd_func': self.rnd,
+                           'sample_count': self.sample_count, 'max_dist': self.max_dist, 'i': i, 'imax': self.runs,
+                           'verbose': self.verbose} for i in range(self.runs)]
+
+                # Process in parallel
+                pool = mp.Pool(self.ncores, maxtasksperchild=1)
+                outputs = pool.map(mp_wrapper_get_idx_dists, argsin)
+                pool.close()
+                pool.join()
+
+                # Get lists of outputs
+                list_dists, list_cidx, list_eqidx = list(zip(*outputs))
+
+
+            t1 = time.time()
+            print(str(t1-t0))
+            # Define class objects
+            self._centers = centers
+            self._cidx = list_cidx
+            self._eqidx = list_eqidx
 
             # concatenate the coo matrixes
             d = np.concatenate(list_dists)

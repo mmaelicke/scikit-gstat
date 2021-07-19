@@ -95,7 +95,7 @@ def test_raster_metric():
 
     # Run the computation
     rems = skg.RasterEquidistantMetricSpace(coords, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=10, runs=10,
-                                            rnd=42)
+                                            rnd=42, verbose=True)
 
     # Minimal check of the output
     assert rems.max_dist == pytest.approx(140,rel=0.01)
@@ -104,11 +104,18 @@ def test_raster_metric():
     assert rems.dists.shape == (10000, 10000)
 
     # Check the random state provides the same final center
-    assert all(rems._center == np.array([62, 52]))
+    assert all(rems._centers[-1] == np.array([62, 52]))
 
     # Check the interface with a Variogram object works
     V = skg.Variogram(rems, vals)
 
     assert V.bin_count is not None
     # Check the variogram is always the same with the random state given
-    assert V.experimental[0] == pytest.approx(1.06,0.01)
+    assert V.experimental[0] == pytest.approx(0.89,0.01)
+
+    # Try to run in parallel
+    rems_mp = skg.RasterEquidistantMetricSpace(coords, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=100, runs=10,
+                                            rnd=42, ncores=5, verbose=True)
+
+    V_mp = skg.Variogram(rems_mp, vals)
+
