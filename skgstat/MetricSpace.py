@@ -379,10 +379,12 @@ class ProbabalisticMetricSpace(MetricSpace):
             self._dists = dists
         return self._dists
 
-# Subfunctions of RasterEquidistantMetricSpace
-
 def get_disk_sample(coords, center, center_radius, rnd_func, sample_count):
-
+    """
+    Subfunction for RasterEquidistantMetricSpace.
+    Calculates the indexes of a subsample in a disk "center sample".
+    Same parameters as in the class.
+    """
     # First index: preselect samples in a disk of certain radius
     dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (
             coords[:, 1] - center[1]) ** 2)
@@ -398,7 +400,11 @@ def get_disk_sample(coords, center, center_radius, rnd_func, sample_count):
     return indices1[indices2].squeeze()
 
 def get_successive_ring_samples(coords, center, equidistant_radii, rnd_func, sample_count):
-
+    """
+    Subfunction for RasterEquidistantMetricSpace.
+    Calculates the indexes of several subsamples within disks, "equidistant sample".
+    Same parameters as in the class.
+    """
     dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (
             coords[:, 1] - center[1]) ** 2)
 
@@ -425,6 +431,11 @@ def get_successive_ring_samples(coords, center, equidistant_radii, rnd_func, sam
 
 def get_idx_dists(coords, center, center_radius, equidistant_radii, rnd_func,
                   sample_count, max_dist, i, imax, verbose):
+    """
+    Subfunction for RasterEquidistantMetricSpace.
+    Calculates the pairwise distances between a list of pairs of "center" and "equidistant" ensembles.
+    Same parameters as in the class.
+    """
 
     if verbose:
         print('Working on subsample ' + str(i+1) + ' out of ' + str(imax))
@@ -449,7 +460,9 @@ def get_idx_dists(coords, center, center_radius, equidistant_radii, rnd_func,
     return dists.data, cidx[dists.row], eqidx[dists.col]
 
 def mp_wrapper_get_idx_dists(argdict: dict):
-
+    """
+    Multiprocessing wrapper for get_idx_dists.
+    """
     return get_idx_dists(**argdict)
 
 
