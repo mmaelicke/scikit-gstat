@@ -3,7 +3,6 @@ from scipy.spatial import cKDTree
 from scipy import sparse
 import numpy as np
 import multiprocessing as mp
-import time as time
 
 def _sparse_dok_get(m, fill_value=np.NaN):
     """Like m.toarray(), but setting empty values to `fill_value`, by
@@ -686,7 +685,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
             # Each run has a different center
             centers = self.coords[idx_center]
 
-            t0 = time.time()
             # Running on a single core: for loop
             if self.ncores == 1:
 
@@ -705,7 +703,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
             # Running on several cores: multiprocessing
             else:
-                print(self.ncores)
                 # Arguments to pass: only centers and loop index for verbose are changing
                 argsin = [{'center': centers[i], 'coords': self.coords, 'center_radius': self._center_radius,
                            'equidistant_radii': self._equidistant_radii, 'rnd_func': self.rnd,
@@ -721,9 +718,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
                 # Get lists of outputs
                 list_dists, list_cidx, list_eqidx = list(zip(*outputs))
 
-
-            t1 = time.time()
-            print(str(t1-t0))
             # Define class objects
             self._centers = centers
             self._cidx = list_cidx
