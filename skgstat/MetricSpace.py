@@ -508,7 +508,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             samples=100,
             ratio_subsample=0.2,
             runs=None,
-            ncores=1,
+            n_jobs=1,
             exp_increase_fac=np.sqrt(2),
             center_radius=None,
             equidistant_radii=None,
@@ -533,8 +533,8 @@ class RasterEquidistantMetricSpace(MetricSpace):
             Ratio of samples drawn within each subsample.
         runs : int
             Number of subsamplings based on a random center point
-        ncores : int
-            Number of cores to use in multiprocessing for the subsamplings.
+        n_jobs : int
+            Number of jobs to use in multiprocessing for the subsamplings.
         exp_increase_fac : float
             Multiplicative factor of increasing radius for ring subsets
         center_radius: float
@@ -577,7 +577,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             runs = int((self.shape[0] * self.shape[1]) / self.samples * 1/100.)
         self.runs = runs
 
-        self.ncores = ncores
+        self.n_jobs = n_jobs
 
         if rnd is None:
             self.rnd = np.random.default_rng()
@@ -687,7 +687,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             centers = self.coords[idx_center]
 
             # Running on a single core: for loop
-            if self.ncores == 1:
+            if self.n_jobs == 1:
 
                 list_dists, list_cidx, list_eqidx = ([] for i in range(3))
 
@@ -711,8 +711,8 @@ class RasterEquidistantMetricSpace(MetricSpace):
                            'verbose': self.verbose} for i in range(self.runs)]
 
                 # Process in parallel
-                pool = mp.Pool(self.ncores, maxtasksperchild=1)
-                outputs = pool.map(_mp_wrapper_get_idx_dists, argsin)
+                pool = mp.Pool(self.n_jobs, maxtasksperchild=1)
+                outputs = pool.map(_mp_wrapper_get_idx_dists, argsin, chunksize=1)
                 pool.close()
                 pool.join()
 
