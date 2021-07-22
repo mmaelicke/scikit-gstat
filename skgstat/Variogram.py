@@ -1436,7 +1436,7 @@ class Variogram(object):
         self.preprocessing(force=force)
 
         # load the data
-        x = self.bins
+        x = np.array(self.bins)
         y = self.experimental
 
         # overwrite fit setting if new params are given
