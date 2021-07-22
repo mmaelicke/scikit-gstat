@@ -407,6 +407,7 @@ def _get_successive_ring_samples(coords: np.ndarray, center: tuple[float, float]
     Calculates the indexes of several subsamples within disks, "equidistant sample".
     Same parameters as in the class.
     """
+    # First index: preselect samples in a ring of certain inside radius and outside radius
     dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (
             coords[:, 1] - center[1]) ** 2)
 
@@ -416,7 +417,6 @@ def _get_successive_ring_samples(coords: np.ndarray, center: tuple[float, float]
     # Loop over an iterative sampling in rings
     list_idx = []
     for i in range(len(equidistant_radii) - 1):
-        # First index: preselect samples in a ring of inside radius and outside radius
         idx1 = idx[i, :]
 
         count = np.count_nonzero(idx1)
