@@ -378,6 +378,7 @@ class ProbabalisticMetricSpace(MetricSpace):
             self._dists = dists
         return self._dists
 
+
 # Subfunctions used in RasterEquidistantMetricSpace (outside class so that they can be pickled by multiprocessing)
 def _get_disk_sample(coords: np.ndarray, center: tuple[float, float], center_radius: float, rnd_func: np.random.RandomState,
                      sample_count: int):
@@ -505,7 +506,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             shape,
             extent,
             samples=100,
-            ratio_subsamp=0.2,
+            ratio_subsample=0.2,
             runs=None,
             ncores=1,
             exp_increase_fac=np.sqrt(2),
@@ -528,7 +529,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             Extent of raster (Xmin, Xmax, Ymin, Ymax)
         samples : float, int
             Number of samples (int) or fraction of coords to sample (float < 1).
-        ratio_subsamp:
+        ratio_subsample:
             Ratio of samples drawn within each subsample.
         runs : int
             Number of subsamplings based on a random center point
@@ -589,10 +590,10 @@ class RasterEquidistantMetricSpace(MetricSpace):
         # If None is provided, the disk is defined with the exact size to hold the number of percentage of samples
         # defined by the user
         if center_radius is None:
-            center_radius = np.sqrt(1. / ratio_subsamp * self.sample_count / np.pi) * self.res
+            center_radius = np.sqrt(1. / ratio_subsample * self.sample_count / np.pi) * self.res
             if verbose:
                 print('Radius of center disk sample for sample count of '+str(self.sample_count)+ ' and subsampling ratio'
-                      ' of '+str(ratio_subsamp)+': '+str(center_radius))
+                      ' of '+str(ratio_subsample)+': '+str(center_radius))
         self._center_radius = center_radius
 
         # Radii of equidistant ring subsamples
