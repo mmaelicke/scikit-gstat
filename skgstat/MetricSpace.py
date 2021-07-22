@@ -378,7 +378,9 @@ class ProbabalisticMetricSpace(MetricSpace):
             self._dists = dists
         return self._dists
 
-def get_disk_sample(coords, center, center_radius, rnd_func, sample_count):
+# Subfunctions used in RasterEquidistantMetricSpace (outside class so that they can be pickled by multiprocessing)
+def _get_disk_sample(coords: np.ndarray, center: tuple[float, float], center_radius: float, rnd_func: np.random.RandomState,
+                     sample_count: int):
     """
     Subfunction for RasterEquidistantMetricSpace.
     Calculates the indexes of a subsample in a disk "center sample".
@@ -398,7 +400,8 @@ def get_disk_sample(coords, center, center_radius, rnd_func, sample_count):
 
     return indices1[indices2].squeeze()
 
-def get_successive_ring_samples(coords, center, equidistant_radii, rnd_func, sample_count):
+def _get_successive_ring_samples(coords: np.ndarray, center: tuple[float, float], equidistant_radii: list[float],
+                                 rnd_func: np.random.RandomState, sample_count: int):
     """
     Subfunction for RasterEquidistantMetricSpace.
     Calculates the indexes of several subsamples within disks, "equidistant sample".
@@ -428,8 +431,8 @@ def get_successive_ring_samples(coords, center, equidistant_radii, rnd_func, sam
 
     return np.concatenate(list_idx)
 
-def get_idx_dists(coords, center, center_radius, equidistant_radii, rnd_func,
-                  sample_count, max_dist, i, imax, verbose):
+def _get_idx_dists(coords: np.ndarray, center: tuple[float, float], center_radius: float, equidistant_radii: list[float],
+                   rnd_func: np.random.RandomState, sample_count: int, max_dist: float, i: int, imax: int, verbose: bool):
     """
     Subfunction for RasterEquidistantMetricSpace.
     Calculates the pairwise distances between a list of pairs of "center" and "equidistant" ensembles.
@@ -439,11 +442,11 @@ def get_idx_dists(coords, center, center_radius, equidistant_radii, rnd_func,
     if verbose:
         print('Working on subsample ' + str(i+1) + ' out of ' + str(imax))
 
-    cidx = get_disk_sample(coords=coords, center=center,
+    cidx = _get_disk_sample(coords=coords, center=center,
                            center_radius=center_radius, rnd_func=rnd_func,
                            sample_count=sample_count)
 
-    eqidx = get_successive_ring_samples(coords=coords, center=center,
+    eqidx = _get_successive_ring_samples(coords=coords, center=center,
                             equidistant_radii=equidistant_radii, rnd_func=rnd_func,
                             sample_count=sample_count)
 
@@ -458,11 +461,11 @@ def get_idx_dists(coords, center, center_radius, equidistant_radii, rnd_func,
 
     return dists.data, cidx[dists.row], eqidx[dists.col]
 
-def mp_wrapper_get_idx_dists(argdict: dict):
+def _mp_wrapper_get_idx_dists(argdict: dict):
     """
     Multiprocessing wrapper for get_idx_dists.
     """
-    return get_idx_dists(**argdict)
+    return _get_idx_dists(**argdict)
 
 
 class RasterEquidistantMetricSpace(MetricSpace):
@@ -634,7 +637,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
     @property
     def cidx(self):
         """The sampled indices into `self.coords` for the center sample."""
-
         return self._cidx
 
     @property
@@ -657,7 +659,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
     @property
     def eqidx(self):
         """The sampled indices into `self.coords` for the equidistant sample."""
-
         return self._eqidx
 
     @property
@@ -676,7 +677,6 @@ class RasterEquidistantMetricSpace(MetricSpace):
         """A distance matrix of the sampled point pairs as a
         `scipy.sparse.csr_matrix` sparse matrix. """
 
-
         # Derive distances
         if self._dists is None:
 
@@ -693,7 +693,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
                 for i in range(self.runs):
 
                     center = centers[i]
-                    dists, cidx, eqidx = get_idx_dists(self.coords, center=center, center_radius=self._center_radius,
+                    dists, cidx, eqidx = _get_idx_dists(self.coords, center=center, center_radius=self._center_radius,
                                                        equidistant_radii=self._equidistant_radii, rnd_func=self.rnd,
                                                        sample_count=self.sample_count, max_dist=self.max_dist, i=i,
                                                        imax=self.runs, verbose=self.verbose)
@@ -711,7 +711,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
                 # Process in parallel
                 pool = mp.Pool(self.ncores, maxtasksperchild=1)
-                outputs = pool.map(mp_wrapper_get_idx_dists, argsin)
+                outputs = pool.map(_mp_wrapper_get_idx_dists, argsin)
                 pool.close()
                 pool.join()
 
