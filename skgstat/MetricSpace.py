@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
