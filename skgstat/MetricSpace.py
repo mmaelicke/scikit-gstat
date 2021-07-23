@@ -1,10 +1,11 @@
-from __future__ import annotations
+from typing import Tuple, List
 
 from scipy.spatial.distance import pdist, cdist, squareform
 from scipy.spatial import cKDTree
 from scipy import sparse
 import numpy as np
 import multiprocessing as mp
+
 
 def _sparse_dok_get(m, fill_value=np.NaN):
     """Like m.toarray(), but setting empty values to `fill_value`, by
@@ -381,9 +382,15 @@ class ProbabalisticMetricSpace(MetricSpace):
         return self._dists
 
 
-# Subfunctions used in RasterEquidistantMetricSpace (outside class so that they can be pickled by multiprocessing)
-def _get_disk_sample(coords: np.ndarray, center: tuple[float, float], center_radius: float, rnd_func: np.random.RandomState,
-                     sample_count: int):
+# Subfunctions used in RasterEquidistantMetricSpace 
+# (outside class so that they can be pickled by multiprocessing)
+def _get_disk_sample(
+    coords: np.ndarray,
+    center: Tuple[float, float],
+    center_radius: float,
+    rnd_func: np.random.RandomState,
+    sample_count: int
+):
     """
     Subfunction for RasterEquidistantMetricSpace.
     Calculates the indexes of a subsample in a disk "center sample".
@@ -397,25 +404,32 @@ def _get_disk_sample(coords: np.ndarray, center: tuple[float, float], center_rad
     count = np.count_nonzero(idx1)
     indices1 = np.argwhere(idx1)
 
-    # Second index: randomly select half of the valid pixels, so that the other half can be used by the equidist
+    # Second index: randomly select half of the valid pixels, 
+    # so that the other half can be used by the equidist
     # sample for low distances
     indices2 = rnd_func.choice(count, size=sample_count, replace=False)
 
     return indices1[indices2].squeeze()
 
-def _get_successive_ring_samples(coords: np.ndarray, center: tuple[float, float], equidistant_radii: list[float],
-                                 rnd_func: np.random.RandomState, sample_count: int):
+
+def _get_successive_ring_samples(
+    coords: np.ndarray,
+    center: Tuple[float, float],
+    equidistant_radii: List[float],
+    rnd_func: np.random.RandomState, sample_count: int
+):
     """
     Subfunction for RasterEquidistantMetricSpace.
-    Calculates the indexes of several subsamples within disks, "equidistant sample".
-    Same parameters as in the class.
+    Calculates the indexes of several subsamples within disks,
+    "equidistant sample". Same parameters as in the class.
     """
     # First index: preselect samples in a ring of certain inside radius and outside radius
-    dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (
-            coords[:, 1] - center[1]) ** 2)
+    dist_center = np.sqrt((coords[:, 0] - center[0]) ** 2 + (coords[:, 1] - center[1]) ** 2)
 
-    idx = np.logical_and(dist_center[None, :] >= np.array(equidistant_radii[:-1])[:, None],
-                         dist_center[None, :] < np.array(equidistant_radii[1:])[:, None])
+    idx = np.logical_and(
+        dist_center[None, :] >= np.array(equidistant_radii[:-1])[:, None],
+        dist_center[None, :] < np.array(equidistant_radii[1:])[:, None]
+    )
 
     # Loop over an iterative sampling in rings
     list_idx = []
@@ -434,8 +448,19 @@ def _get_successive_ring_samples(coords: np.ndarray, center: tuple[float, float]
 
     return np.concatenate(list_idx)
 
-def _get_idx_dists(coords: np.ndarray, center: tuple[float, float], center_radius: float, equidistant_radii: list[float],
-                   rnd_func: np.random.RandomState, sample_count: int, max_dist: float, i: int, imax: int, verbose: bool):
+
+def _get_idx_dists(
+    coords: np.ndarray,
+    center: Tuple[float, float],
+    center_radius: float,
+    equidistant_radii: List[float],
+    rnd_func: np.random.RandomState,
+    sample_count: int,
+    max_dist: float,
+    i: int,
+    imax: int,
+    verbose: bool
+):
     """
     Subfunction for RasterEquidistantMetricSpace.
     Calculates the pairwise distances between a list of pairs of "center" and "equidistant" ensembles.
@@ -445,13 +470,20 @@ def _get_idx_dists(coords: np.ndarray, center: tuple[float, float], center_radiu
     if verbose:
         print('Working on subsample ' + str(i+1) + ' out of ' + str(imax))
 
-    cidx = _get_disk_sample(coords=coords, center=center,
-                           center_radius=center_radius, rnd_func=rnd_func,
-                           sample_count=sample_count)
+    cidx = _get_disk_sample(
+        coords=coords, center=center,
+        center_radius=center_radius,
+        rnd_func=rnd_func,
+        sample_count=sample_count
+    )
 
-    eqidx = _get_successive_ring_samples(coords=coords, center=center,
-                            equidistant_radii=equidistant_radii, rnd_func=rnd_func,
-                            sample_count=sample_count)
+    eqidx = _get_successive_ring_samples(
+        coords=coords,
+        center=center,
+        equidistant_radii=equidistant_radii,
+        rnd_func=rnd_func,
+        sample_count=sample_count
+    )
 
     ctree = cKDTree(coords[cidx, :])
     eqtree = cKDTree(coords[eqidx, :])
@@ -463,6 +495,7 @@ def _get_idx_dists(coords: np.ndarray, center: tuple[float, float], center_radiu
     )
 
     return dists.data, cidx[dists.row], eqidx[dists.col]
+
 
 def _mp_wrapper_get_idx_dists(argdict: dict):
     """
