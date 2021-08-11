@@ -120,3 +120,9 @@ def test_raster_metric():
                                             rnd=42)
     V = skg.Variogram(rems_sub, vals_sub)
 
+    # Check with a single isolated point possibly being used as center
+    coords_sub = np.concatenate(([coords[0]], coords[-10:]))
+    vals_sub = np.concatenate(([vals[0]], vals[-10:]))
+    rems_sub = skg.RasterEquidistantMetricSpace(coords_sub, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=100, runs=11,
+                                            rnd=42)
+    V = skg.Variogram(rems_sub, vals_sub)

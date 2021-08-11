@@ -409,7 +409,10 @@ def _get_disk_sample(
     # sample for low distances
     indices2 = rnd_func.choice(count, size=min(count, sample_count), replace=False)
 
-    return indices1[indices2].squeeze()
+    if count != 1:
+        return indices1[indices2].squeeze()
+    else:
+        return indices1[indices2][0]
 
 
 def _get_successive_ring_samples(
@@ -443,8 +446,11 @@ def _get_successive_ring_samples(
         # sample for low distances
         indices2 = rnd_func.choice(count, size=min(count, sample_count), replace=False)
         sub_idx = indices1[indices2]
-        if len(sub_idx) > 1:
+
+        if count > 1:
             list_idx.append(sub_idx.squeeze())
+        elif count == 1:
+            list_idx.append(sub_idx[0])
 
     return np.concatenate(list_idx)
 
@@ -716,7 +722,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
         # Derive distances
         if self._dists is None:
 
-            idx_center = self.rnd.choice(len(self.coords), size=self.runs, replace=False)
+            idx_center = self.rnd.choice(len(self.coords), size=min(self.runs, len(self.coords)), replace=False)
 
             # Each run has a different center
             centers = self.coords[idx_center]
