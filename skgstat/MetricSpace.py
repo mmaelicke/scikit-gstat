@@ -407,7 +407,7 @@ def _get_disk_sample(
     # Second index: randomly select half of the valid pixels, 
     # so that the other half can be used by the equidist
     # sample for low distances
-    indices2 = rnd_func.choice(count, size=sample_count, replace=False)
+    indices2 = rnd_func.choice(count, size=min(count, sample_count), replace=False)
 
     return indices1[indices2].squeeze()
 
