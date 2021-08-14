@@ -2,6 +2,33 @@
 Changelog
 =========
 
+Version 0.6.9
+=============
+- SciKit-GStat is now tested for Python 3.9. Finally.
+  All unittest are now automatically run for Python 3.6, 3.7, 3.8 and 3.9
+
+Version 0.6.8
+=============
+- [RasterMetricSpace] small bugfix for Exceptions raised with small sample sizes
+
+Version 0.6.7
+=============
+- [RasterMetricSpace] a new class is introduced: :class:`RasterEquidistantMetricSpace <skgstat.RasterEquidistantMetricSpace>`.
+  An instance can be passed as `coordinates`. It samples a given Raster image at concentric rings, to derive a 
+  more uniformly distributed distance matrix.
+
+Version 0.6.6
+=============
+- [Variogram] The automatic fitting of a theoretical variogram model is now optional. You can pass `None` as 
+  `fit_method` parameter, which will suppress the fitting.
+
+Version 0.6.5
+=============
+- [Variogram] now supports custom bin edges for the experimental variogram. :func:`Variogram.bins <skgstat.Variogram.bins>` 
+  now accepts a list or array of upper bin edges.
+- [Variogram] has a new property called :func:`bin_count <skgstat.Variogram.bin_count>` which returns the number of 
+  point pairs within each lag class
+
 Version 0.6.4
 =============
 - [Kriging] `OrdinaryKriging.sigma <skgstat.OrdinaryKriging>` is now initialized as a `NaN`-filled array.
