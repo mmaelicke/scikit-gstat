@@ -27,8 +27,11 @@ How to cite
 -----------
 
 In case you use SciKit-GStat in other software or scientific publications,
-please reference this module. It is published and has a DOI. It can be cited
-as:
+please reference this module. There is a `GMD <https://www.geoscientific-model-development.net>`_  publication in discussion. Please cite it like:
+
+  Mälicke, M.: SciKit-GStat 1.0: A SciPy flavoured geostatistical variogram estimation toolbox written in Python, Geosci. Model Dev. Discuss. [preprint],   https://doi.org/10.5194/gmd-2021-174, in review, 2021.
+
+The code itself is published and has a DOI. It can be cited as:
 
   Mirko Mälicke, Egil Möller, Helge David Schneider, & Sebastian Müller. (2021, May 28). 
     mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox 
