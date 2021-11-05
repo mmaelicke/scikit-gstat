@@ -1,5 +1,7 @@
+import warnings
 import numpy as np
 from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.exceptions import ConvergenceWarning
 from scipy.optimize import minimize, OptimizeWarning
 
 from skgstat.util import shannon_entropy
@@ -164,8 +166,16 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
     # filter for distances < maxlag
     d = distances[np.where(distances <= maxlag)]
 
-    # cluster the filtered distances
-    km = KMeans(n_clusters=n, random_state=binning_random_state).fit(d.reshape(-1, 1))
+    # filter the sklearn convervence warning, because working with 
+    # undefined state in binning does not make any sense
+    with warnings.catch_warnings():
+        warnings.filterwarnings('error')
+
+        # cluster the filtered distances
+        try:
+            km = KMeans(n_clusters=n, random_state=binning_random_state).fit(d.reshape(-1, 1))
+        except ConvergenceWarning:
+            raise ValueError("KMeans failed to converge. Maybe you need to use a different n_lags.")
 
     # get the centers
     _centers = np.sort(km.cluster_centers_.flatten())
