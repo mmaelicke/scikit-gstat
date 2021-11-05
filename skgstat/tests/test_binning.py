@@ -125,7 +125,9 @@ class TestClusteringBins(unittest.TestCase):
 
     def test_kmeans_convergence(self):
         with self.assertRaises(ValueError) as err:
-            kmeans(np.array([1,2,3,4]), 5, None)
+            kmeans(np.array([1, 1, 1, 1, 1]), 3, None)
+        
+        self.assertTrue('KMeans failed to converge' in str(err.exception))
 
     def test_ward(self):
         np.random.seed(1312)
