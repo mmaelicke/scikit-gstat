@@ -64,9 +64,9 @@ def jacknife(
     deviations = np.fromiter(cros_val_map, dtype=float)
 
     if metric.lower() == 'rmse':
-        return np.sqrt(np.mean(np.power(deviations, 2)))
+        return np.sqrt(np.nanmean(np.power(deviations, 2)))
     elif metric.lower() == 'mse':
-        return np.mean(np.power(deviations, 2))
+        return np.nanmean(np.power(deviations, 2))
     else:
         # MAE
-        return np.sum(np.abs(deviations)) / len(deviations)
+        return np.nansum(np.abs(deviations)) / len(deviations)
