@@ -12,8 +12,7 @@ WORKDIR /home/skguser
 
 # copy the tutorial
 RUN mkdir tutorials
-COPY --chown=skguser:skguser ./docs/tutorials ./tutorials
-RUN rm ./tutorials/tutorials.rst
+COPY --chown=skguser:skguser ./tutorials ./tutorials
 
 # set the path
 ENV PATH="/home/skguser/.local/bin:${PATH}"
