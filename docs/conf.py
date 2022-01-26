@@ -45,6 +45,7 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -54,12 +55,9 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
-    'nbsphinx',
-    'sphinx_gallery.load_style'
-#    'numpydoc'
+    'sphinx_gallery.gen_gallery',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -218,4 +216,20 @@ intersphinx_mapping = {
     'scipy':  ('https://docs.scipy.org/doc/scipy/reference', None),
     'gstools': ('https://geostat-framework.readthedocs.io/projects/gstools/en/latest/', None),
     'sklearn': ('http://scikit-learn.org/stable', None),
+}
+
+from plotly.io._sg_scraper import plotly_sg_scraper
+image_scrapers = ('matplotlib', plotly_sg_scraper,)
+import plotly.io as pio
+pio.renderers.default = 'sphinx_gallery'
+
+import sphinx_gallery
+
+sphinx_gallery_conf = {
+    'examples_dirs': './tutorials',
+    'gallery_dirs': 'auto_examples',
+    'backreferences_dir': 'gen_modules/backreferences',
+    'doc_module': ('skgstat', 'skgstat'),
+    'image_scrapers': image_scrapers,
+    'filename_pattern': '/tutorial',
 }
