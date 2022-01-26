@@ -41,7 +41,7 @@ as:
     install
     getting_started
     userguide/userguide
-    tutorials/tutorials
+    auto_examples/index
     technical/technical
     reference/reference
     changelog
