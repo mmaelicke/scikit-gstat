@@ -72,9 +72,11 @@ random coordinates, the visualization is shown below.
     :okwarning:
 
     from skgstat import DirectionalVariogram
+    from skgstat.plotting import backend
     import numpy as np
     import matplotlib.pyplot as plt
     plt.style.use('ggplot')
+    backend('matplotlib')
     np.random.seed(42)
     coords = np.random.gamma(15, 6, (40, 2))
     np.random.seed(42)
