@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import zoom
-
+skg.plotting.backend('matplotlib')
 # %%
 # 2.1 Load data
 # -------------

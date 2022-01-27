@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore')
-
+skg.plotting.backend('matplotlib')
 # %%
 # 3.1 Load data
 # -------------
