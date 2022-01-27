@@ -1,7 +1,7 @@
 import pandas as pd
 
 from skgstat.data import _loader
-from skgstat.data._loader import field_names
+from skgstat.data._loader import field_names, sample_to_df
 
 # define all names
 names = field_names()
@@ -34,7 +34,7 @@ origins = dict(
 
 
 # define the functions
-def pancake(N=500, band=0, seed=42):
+def pancake(N=500, band=0, seed=42, as_dataframe=False):
     """
     Sample of the :func:`pancake_field <skgstat.data.pancake_field>`.
     By default, the Red band is sampled at 500 random
@@ -50,6 +50,9 @@ def pancake(N=500, band=0, seed=42):
     seed : int
         By default a seed is set to always return the same
         sample for same N and band input
+    as_dataframe : bool
+        If True, the data is returned as pandas.Dataframe.
+        Default is False.
 
     Returns
     -------
@@ -79,6 +82,9 @@ def pancake(N=500, band=0, seed=42):
 
     """
     sample = _loader.get_sample('pancake', N=N, seed=seed, band=band)
+
+    if as_dataframe:
+        sample = sample_to_df(*sample)
 
     return dict(
         sample=sample,
@@ -132,7 +138,7 @@ def pancake_field(band=0):
     )
 
 
-def aniso(N=500, seed=42):
+def aniso(N=500, seed=42, as_dataframe=False):
     """
     Sample of the :func:`ansio_field <skgstat.data.aniso_field>`.
     By default the greyscale image is sampled
@@ -145,6 +151,9 @@ def aniso(N=500, seed=42):
     seed : int
         By default a seed is set to always return the same
         sample for same N and band input
+    as_dataframe : bool
+        If True, the data is returned as pandas.Dataframe.
+        Default is False.
 
     Returns
     -------
@@ -177,6 +186,9 @@ def aniso(N=500, seed=42):
 
     """
     sample = _loader.get_sample('aniso', N=N, seed=seed)
+
+    if as_dataframe:
+        sample = sample_to_df(*sample)
 
     return dict(
         sample=sample,
@@ -229,13 +241,21 @@ def aniso_field():
     )
 
 
-def meuse(variable='lead'):
+def meuse(variable='lead', as_dataframe=False):
     """
     Returns one of the samples of the well-known Meuse dataset.
     You can specify which heave metal data you want to load.
 
     Parameters
     ----------
+    variable : str
+        Name of the variable to be extracted from the dataset.
+        Can be one of ['cadmium', 'copper', 'lead', 'zinc'].
+        Default is 'lead'.
+    as_dataframe : bool
+        If True, the data is returned as pandas.Dataframe.
+        Default is False.
+
     Returns
     -------
     result : dict
@@ -274,8 +294,13 @@ def meuse(variable='lead'):
     # get the correct variable
     values = df[[variable]].values
 
+    # create sample
+    if as_dataframe:
+        sample = sample_to_df(coords, values)
+    else:
+        sample = (coords, values, )
     # return
     return dict(
-        sample=(coords, values, ),
+        sample=sample,
         origin=origins.get('meuse')
     )
