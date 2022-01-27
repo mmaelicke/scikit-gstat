@@ -2,6 +2,22 @@
 Changelog
 =========
 
+Version 0.6.12
+==============
+- [data] the dataset loader can now return pandas.DataFrame objects
+- [Dockerfile] some cleanups for making future tutorials work. 
+
+Version 0.6.11
+==============
+- [Variogram] The kriging based leave-one-out cross validation is now omitting NaN.
+
+Version 0.6.10
+==============
+- [Variogram] The KMeans based binning function is now raising a value error if
+  a ConvergenceWarning is found. The reason is, that the original settings for binning
+  were not valid if KMeans did not converge and thus, the bins array might not be
+  in a well defined state. 
+
 Version 0.6.9
 =============
 - SciKit-GStat is now tested for Python 3.9. Finally.

@@ -124,3 +124,38 @@ def read_sample_file(fname) -> pd.DataFrame:
     # build the path
     path = os.path.join(PATH, 'samples', fname)
     return pd.read_csv(path)
+
+
+def sample_to_df(coordinates: np.ndarray, values: np.ndarray) -> pd.DataFrame:
+    """
+    Turn the coordinates and values array into a pandas DataFrame.
+    The columns will be called x[,y[,z]],v
+
+    Parameters
+    ----------
+    coordinates : numpy.ndarray
+        Coordinate array of shape ``(N, 1), (N, 2)`` or ``(N, 3)``.
+    values : numpy.ndarray
+        1D array of the values at the coordinates
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        The data as a pandas DataFrame
+
+    """
+    # check that the array sizes match
+    if len(coordinates) != len(values):
+        raise AttributeError('coordinates and values must have the same length')
+
+    # check dimensions
+    col_names = ['x']
+    if coordinates.ndim >= 2:
+        col_names.append('y')
+    if coordinates.ndim == 3:
+        col_names.append('z')
+
+    # build the dataframe
+    df = pd.DataFrame(coordinates, columns=col_names)
+    df['v'] = values
+    return df
