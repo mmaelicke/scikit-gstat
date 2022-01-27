@@ -112,3 +112,5 @@ container
 # project specific
 Playground.ipynb
 in_progress
+docs/auto_examples
+docs/gen_modules
