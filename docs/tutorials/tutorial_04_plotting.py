@@ -46,13 +46,12 @@ Fersch, Benjamin, et al. "A dense network of cosmic-ray neutron sensors for soil
 Mälicke, M.: SciKit-GStat 1.0: A SciPy flavoured geostatistical variogram estimation toolbox written in Python, Geosci. Model Dev. Discuss. [preprint], https://doi.org/10.5194/gmd-2021-174, in review, 2021.
 
 """
+import os
 import skgstat as skg
 from skgstat.plotting import backend
 import numpy as np
-import pandas as pd
 import json
 import warnings
-import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 warnings.filterwarnings('ignore')
@@ -82,7 +81,7 @@ print(DV)
 
 # %%
 # Load the TERENO soil temperature data from Fersch et al. (2020):
-with open('./tereno_fendt/tereno.json', 'r') as js:
+with open(os.path.join(os.path.dirname(__file__), 'tereno_fendt/tereno.json'), 'r') as js:
     data_obj = json.load(js)
 
 coords = np.array(data_obj['coordinates'])
