@@ -39,7 +39,7 @@ Creative Commons BY 4.20 license. Please cite the original publications if you
 use the data, and **not** SciKit-GStat.
 
 References
-~~~~~~~~~~
+^^^^^^^^^^
 
 Fersch, Benjamin, et al. "A dense network of cosmic-ray neutron sensors for soil moisture observation in a pre-alpine headwater catchment in Germany." Earth System Science Data Discussions 2020 (2020): 1-35.
 
@@ -103,7 +103,7 @@ print(DV)
 # all point pairs and you will see nothing on the plot. But there is also the
 # possibility to draw these lines only for a subset of the coordinate locations.
 
-+# Matplotlib
+# Matplotlib
 # ^^^^^^^^^^^
 backend('matplotlib')
 fig = DV.pair_field()

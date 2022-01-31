@@ -39,7 +39,7 @@ Creative Commons BY 4.0 license. Please cite the original publications if you
 use the data, and **not** SciKit-GStat.
 
 References
-~~~~~~~~~~
+^^^^^^^^^^
 
 Fersch, Benjamin, et al. "A dense network of cosmic-ray neutron sensors for soil moisture observation in a pre-alpine headwater catchment in Germany." Earth System Science Data Discussions 2020 (2020): 1-35.
 
@@ -70,7 +70,7 @@ print(data_obj['description'])
 # %%
 # Estimate the spatio-temporal variogram with a product-sum model.
 # Only every 6th hour is taken into account to decrease the memory footprint.
-# If you use the full dataset, you need ~120 GiB RAM. 
+# If you use the full dataset, you need ^120 GiB RAM. 
 # The marginal variograms are kept as they are.
 STV = skg.SpaceTimeVariogram(coords, vals[:,::6], x_lags=20, t_lags=20, model='product-sum')
 print(STV)
@@ -108,13 +108,13 @@ print(STV)
 # :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` itself.
 
 # 4.3.5.1 `plot(kind='scatter') <skgstat.SpaceTimeVariogram.plot>`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
 # The scatter plot can be used to inspect the experimental variogram data on a
 # spatial and temporal axis, with the fitted spatio-temporal model fitted to the data.
 # 
 # Plotly
-# ^^^^^^
+# """"""
 backend('plotly')
 fig = STV.plot(kind='scatter', show=False)
 fig
@@ -133,13 +133,13 @@ fig
 
 
 # Matplotlib
-# ^^^^^^^^^^
+# """"""""""
 backend('matplotlib')
 fig = STV.plot(kind='surf')
 
 # %%
 # 4.3.5.2 :func:`contour <skgstat.SpaceTimeVariogram.contour>`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 3D plots are great for data exploration, especially if they are interactive.
 # For publications, 3D plots are not that helpful. Additionally, it can be quite
 # tricky sometimes to find a good angle to focus on the main message of a 3D plot. 
@@ -153,7 +153,7 @@ fig = STV.plot(kind='surf')
 # contour (``'contourf'``).
 # 
 # Plotly
-# ^^^^^^
+# """"""
 backend('plotly')
 fig = STV.contour(show=False)
 fig
@@ -165,7 +165,7 @@ fig
 
 # %%
 # Matplotlib
-# ^^^^^^^^^^
+# """"""""""
 # 
 # The matplotlib versions of the contour plots are not that sophisticated,
 # but the returned figure can  be adjusted to your needs.
@@ -179,7 +179,7 @@ fig = STV.plot(kind='contourf')
 
 # %%
 # 4.3.5.3 :func`marginals <skgstat.SpaceTimeVariogram.marginals>`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # A very important step for the estimation of spatio-temporal variogram models,
 # is the estimation of marginal models. While the marginal models are
 # implemented as :class:`Variogram <skgstat.Variogram>` instances and can be

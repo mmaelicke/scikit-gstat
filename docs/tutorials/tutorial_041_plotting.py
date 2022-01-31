@@ -38,13 +38,11 @@ or from the SciKit-GStat documentation. Both samples are published under
 Creative Commons BY 4.0 license. Please cite the original publications if you
 use the data, and **not** SciKit-GStat.
 
-References
-~~~~~~~~~~
+**References**
 
 Fersch, Benjamin, et al. "A dense network of cosmic-ray neutron sensors for soil moisture observation in a pre-alpine headwater catchment in Germany." Earth System Science Data Discussions 2020 (2020): 1-35.
 
 Mälicke, M.: SciKit-GStat 1.0: A SciPy flavoured geostatistical variogram estimation toolbox written in Python, Geosci. Model Dev. Discuss. [preprint], https://doi.org/10.5194/gmd-2021-174, in review, 2021.
-
 """
 import skgstat as skg
 from skgstat.plotting import backend
@@ -88,7 +86,7 @@ print(V)
 # -------------
 # 
 # 4.3.1 :func:`Variogram.plot <skgstat.Variogram.plot>`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The :func:`Variogram.plot <skgstat.Variogram.plot>` is the main plotting
 # function in SciKit-GStat.
 # Before you use the variogram for further geostatistical methods, like kriging,
@@ -104,7 +102,7 @@ backend('plotly')
 
 # %%
 # Plotly
-# ~~~~~~
+# """"""
 fig = V.plot(show=False)
 fig
 
@@ -152,7 +150,7 @@ fig
 
 # %%
 #  Matplotlib
-#  ^^^^^^^^^^
+#  """"""""""
 backend('matplotlib')
 
 fig = V.plot()
@@ -167,7 +165,7 @@ fig = V.plot(axes=ax.flatten()[1], hist=False)
 
 # %%
 # 4.3.2 `Variogram.scattergram`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # You can plot a scattergram of all point pairs formed by the class.
 # The pairs can be grouped by the lag classes, they were formed in. This way you
 # can analyze how the two values of the point pait (head and tail) scatter and
@@ -177,7 +175,7 @@ fig = V.plot(axes=ax.flatten()[1], hist=False)
 # This makes it much easier to inspect the classes.
 # 
 # Plotly
-# ^^^^^^
+# """"""
 backend('plotly')
 fig = V.scattergram(show=False)
 fig
@@ -191,13 +189,13 @@ fig
 
 # %%
 # Matplotlib
-# ^^^^^^^^^^
+# """"""""""
 # backend('matplotlib')
 fig = V.scattergram()
 
 # %%
 # 4.3.3 `Variogram.location_trend`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Another useful helper plot is the
 # :func:`location_trend <skgstat.Variogram.location_trend>`. This will plot the
 # observation values related to their coordinate position, for each coordinate
@@ -227,7 +225,7 @@ fig = V.location_trend(add_trend_line=True, show=False)
 fig
 
 # Matplotlib
-# ^^^^^^^^^^
+# """"""""""
 # 
 # There is a difference between the ``'matplotlib'`` and ``'plotly'`` backend in
 # this plotting function. As Plotly utilizes the legend by default to show and
@@ -240,7 +238,7 @@ fig = V.location_trend()
 
 # %%
 # 4.3.4 :func:`distance_difference plot <skgstat.Variogram.distance_difference_plot>`
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # 
 # The final utility plot presented here is a scatter-plot that relates all
 # pairwise-differences in value to the spatial distance of the respective point
@@ -252,7 +250,7 @@ fig = V.location_trend()
 # never find a useful variogram.
 # 
 # Plotly
-# ^^^^^^
+# """"""
 # 
 backend('plotly')
 fig = V.distance_difference_plot(show=False)
@@ -270,6 +268,6 @@ fig
 
 
 # Matplotlib
-# ^^^^^^^^^^
+# """"""""""
 backend('matplotlib')
 fig = V.distance_difference_plot()
