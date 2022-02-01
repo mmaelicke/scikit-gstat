@@ -54,15 +54,45 @@ from plotly.subplots import make_subplots
 warnings.filterwarnings('ignore')
 
 # %%
-# 4.1 Variogram
+# 4.1 Load data
 # -------------
 # Load a pancake sample from the data directory.
 c, v = skg.data.pancake(N=300, seed=42).get('sample')
 
 # %%
+# Load a artificial random field, generated from a Gaussian covariance function,
+# with a 2x larger range in x-axis direction:
+ac, av = skg.data.aniso(N=300, seed=42).get('sample')
+
+# %%
+# Load the TERENO soil temperature data from Fersch et al. (2020):
+with open('./data/tereno_fendt/tereno.json', 'r') as js:
+    data_obj = json.load(js)
+
+coords = np.array(data_obj['coordinates'])
+vals = np.array(data_obj['values'])
+print(data_obj['description'])
+
+# %%
 # Estimate a variogram, with a few more lag classes, as there are enough observation points available.
 V = skg.Variogram(c,v, n_lags=25)
 print(V)
+
+
+# %%
+# Estimate the directional variogram with a few more lag classes and an azimuth
+# of 90°. The tolerance is set rather low to illustrate the graphs better
+# (fewer point connections.):
+DV = skg.DirectionalVariogram(ac, av, n_lags=20, azimuth=40., tolerance=15.0)
+print(DV)
+
+# %%
+# Estimate the spatio-temporal variogram with a product-sum model.
+# Only every 6th hour is taken into account to decrease the memory footprint.
+# If you use the full dataset, you need ^120 GiB RAM. 
+# The marginal variograms are kept as they are.
+STV = skg.SpaceTimeVariogram(coords, vals[:,::6], x_lags=20, t_lags=20, model='product-sum')
+print(STV)
 
 # %%
 # 4.2 Backend
@@ -271,3 +301,160 @@ fig
 # """"""""""
 backend('matplotlib')
 fig = V.distance_difference_plot()
+
+# %%
+# 4.4 Directional Variogram
+# -------------------------
+# 
+# 4.4.1 :func:`pair_field <skgstat.DirectionalVariogram.pair_field>`
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# 
+# The :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` class is
+# inheriting from :class:`Variogram <skgstat.Variogram>`. Therefore all plotting
+# method shown above are available for directional variograms, as well.
+# Additionally, there is one more plotting method,
+# :func:`DirectionalVariogram.pair_field <skgstat.DirectionalVariogram.pair_field>`.
+# This function will plot all coordinate locations and draw a line between all
+# point pairs, that were not masked by the directional mask array and will, thus,
+# be used for variogram estimation. By default, the method will draw all lines for
+# all point pairs and you will see nothing on the plot. But there is also the
+# possibility to draw these lines only for a subset of the coordinate locations.
+
+# Matplotlib
+# """"""""""
+backend('matplotlib')
+fig = DV.pair_field()
+
+# %%
+# Obviously, one can see the ``azimuth`` (40°) and narrow ``tolerance`` (15°)
+# settings in the cone-like shapes of the connection lines, but the whole plot
+# is not really instructive or helpful like this. 
+# Using the ``points`` keyword, you can show the lines only for a given set of
+# coordinate locations. You have to pass a list of coordinate indices. With
+# ``add_points=True``, the seleceted points will be highlighted in red.
+fig = DV.pair_field(points=[0, 42, 104, 242], add_points=True)
+
+# %%
+# Plotly
+# """"""
+# 
+# **Note:** It is not recommended to plot the full
+# :func:`pair_field <skgstat.DirectionalVariogram.pair_field>` with all points
+# using plotly. Due to the implementation, that makes the plot really,
+# really slow for rendering.
+backend('plotly')
+fig = DV.pair_field(points=[0,42, 104, 242], add_points=True, show=False)
+fig
+
+# %%
+# 4.5 ST Variogram
+# ----------------
+# The :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` does not
+# inherit from the :class:`Variogram <skgstat.Variogram>`class and thus,
+# its plotting methods are not available for space time variograms.
+# However, the :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>`
+# has two properties, ``SpaceTimeVariogram.XMarginal`` and ``SpaceTimeVariogram.TMarginal``,
+# which are both instances of :class:`Variogram <skgstat.Variogram>`
+# for the spatial and temporal marginal variogram. These instances in turn,
+# have all plotting methods available, in addition to the plotting methods of
+# :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` itself.
+
+# 4.5.1 `plot(kind='scatter') <skgstat.SpaceTimeVariogram.plot>`
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# 
+# The scatter plot can be used to inspect the experimental variogram data on a
+# spatial and temporal axis, with the fitted spatio-temporal model fitted to the data.
+# 
+# Plotly
+# """"""
+backend('plotly')
+fig = STV.plot(kind='scatter', show=False)
+fig
+
+# %%
+# The method can also remove the model from the plot. This can be helpful in
+# case the experimental data should be analyzed. Then, the model plane might be disturbing.
+fig = STV.plot(kind='scatter', no_model=True, show=False)
+fig
+
+# %%
+# And finally, the experimental point data can be connected to a surface grid,
+# to emphasize an apparent structure more easily in a 3D plot. This can be done by switching to ``kind='surf'``.
+fig = STV.plot(kind='surf', show=False)
+fig
+
+
+# Matplotlib
+# """"""""""
+backend('matplotlib')
+fig = STV.plot(kind='surf')
+
+# %%
+# 4.5.2 :func:`contour <skgstat.SpaceTimeVariogram.contour>`
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# 3D plots are great for data exploration, especially if they are interactive.
+# For publications, 3D plots are not that helpful. Additionally, it can be quite
+# tricky sometimes to find a good angle to focus on the main message of a 3D plot. 
+# Hence, there are more plotting modes. They can either be used by
+# setting ``kind='contour'`` or ``kind='contourf'``. Alternatively, these two
+# plotting types also have their own method.
+# In both cases, the experimental semi-variance is plotted on a two dimensional
+# plane. The spatial dimension can be found on the x-axis and the temporal
+# dimension on the y-axis. The semi-variance itself is shown as a contour plot,
+# that can either only plot the lines (``'contour'``) or filled areas for each
+# contour (``'contourf'``).
+# 
+# Plotly
+# """"""
+backend('plotly')
+fig = STV.contour(show=False)
+fig
+
+# %%
+#
+fig = STV.contourf(show=False)
+fig
+
+# %%
+# Matplotlib
+# """"""""""
+# 
+# The matplotlib versions of the contour plots are not that sophisticated,
+# but the returned figure can  be adjusted to your needs.
+backend('matplotlib')
+fig = STV.plot(kind='contour')
+
+
+# %%
+# 
+fig = STV.plot(kind='contourf')
+
+# %%
+# 4.5.3 :func`marginals <skgstat.SpaceTimeVariogram.marginals>`
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# A very important step for the estimation of spatio-temporal variogram models,
+# is the estimation of marginal models. While the marginal models are
+# implemented as :class:`Variogram <skgstat.Variogram>` instances and can be
+# changed and plotted like any other :class:`Variogram <skgstat.Variogram>` instance,
+# it can come very handy to plot the marginal models side-by-side.
+# 
+# This can be done with the :func`marginals <skgstat.SpaceTimeVariogram.marginals>` method.
+backend('plotly')
+fig = STV.marginals(show=False)
+fig
+
+# %%
+# 
+backend('matplotlib')
+fig = STV.marginals()
+
+# %%
+# Additionally, the separated spatial and temporal models can be plotted into each sub-plot:
+fig = STV.marginals(include_model=True)
+
+# %%
+#
+backend('plotly')
+fig = STV.marginals(include_model=True, show=False)
+fig
+
