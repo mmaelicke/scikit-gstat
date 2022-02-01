@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 0.6.13
+==============
+- [docs] the sphinx recipe knitting a TeX file from docs is now ignored on fail 
+  Reason is that the current build is too lage and any kind of buffer is overflowing
+- [docs] The jupyter notebook tutorials for the Docker image are now at root level.
+- [docs] The documentation tutorials are now sphinx-gallery builds of the notebook
+  tutorial examples
+- [docs] all tutorials have been updated (spelling, code style etc.)
+- [docs] all tutorials now use the data submodule to be reproducible
+
 Version 0.6.12
 ==============
 - [data] the dataset loader can now return pandas.DataFrame objects
