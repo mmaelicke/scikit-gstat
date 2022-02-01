@@ -42,7 +42,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@master
         with:
-          python-version: '3.6'
+          python-version: '3.8'
       - name: Install SciKit-GStat
         run: | 
           pip3 install -r requirements.txt
@@ -58,12 +58,14 @@ jobs:
           cd docs
           make html 
           make latex
+        continue-on-error: true
       - name: compile LaTeX
         run: | 
           cd docs/_build/latex
           pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
           cd ../..
           cp _build/latex/SciKitGStat.pdf _build/html
+        continue-on-error: true
       - name: deploy to gh pages
         uses: crazy-max/ghaction-github-pages@v1
         with:
