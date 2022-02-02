@@ -1,8 +1,5 @@
-from typing import Callable, List
 import numpy as np
 from itertools import cycle
-from scipy.spatial.distance import squareform
-from numpy.linalg import inv, det
 
 from skgstat.Kriging import OrdinaryKriging
 from skgstat.Variogram import Variogram
@@ -59,8 +56,8 @@ def jacknife(
 
     # shuffle the input coordinates
     rng = np.random.default_rng(seed=seed)
-    l = n if n is not None else len(variogram.coordinates)
-    indices = rng.choice(len(variogram.coordinates), replace=False, size=l)
+    size = n if n is not None else len(variogram.coordinates)
+    indices = rng.choice(len(variogram.coordinates), replace=False, size=size)
 
     # TODO maybe multiprocessing?
     cros_val_map = map(_interpolate, indices, cycle([variogram]))
