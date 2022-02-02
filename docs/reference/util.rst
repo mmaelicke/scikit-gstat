@@ -16,3 +16,9 @@ Uncertainty Propagation
 -----------------------
 
 .. autofunction:: skgstat.util.uncertainty.propagate
+
+
+Maximum Likelihood Estimation
+-----------------------------
+
+.. autofunction: skgstat.util.likelihood.get_likelihood
