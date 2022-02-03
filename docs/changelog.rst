@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.0.0-rc
+================
+- [plotting] the 3D surface plot is now handling the opacity settings correctly.
+
+Version 0.6.14
+==============
+- [plotting] plotly contour plots are showing a colorbar label by default
+- [DirectionalVariogram] the constructor now sets an empty uncertainty array to prevent the
+  class from throwing and error if no confidence interval is given.
+
 Version 0.6.13
 ==============
 - [docs] the sphinx recipe knitting a TeX file from docs is now ignored on fail 
