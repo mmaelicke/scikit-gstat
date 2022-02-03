@@ -102,7 +102,11 @@ def plotly_plot_2d(stvariogram, kind='contour', fig=None, **kwargs):
                     size=kwargs.get('label_size', 14)
                 )
             ),
-            line_width=lw
+            line_width=lw,
+            colorbar=dict(
+                title=f"semivariance ({stvariogram.estimator.__name__})",
+                titleside='right'
+            )
         )
     )
 
