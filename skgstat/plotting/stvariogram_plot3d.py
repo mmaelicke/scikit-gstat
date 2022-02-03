@@ -107,7 +107,7 @@ def plotly_plot_3d(stvariogram, kind='scatter', fig=None, **kwargs):
                 y=yy.flatten(),
                 z=z,
                 mode='markers',
-                opacity=alpha,
+                opacity=1,
                 marker=dict(color=c, size=kwargs.get('size', 4)),
                 name='experimental variogram'
             )
@@ -120,7 +120,7 @@ def plotly_plot_3d(stvariogram, kind='scatter', fig=None, **kwargs):
                 x=_xx,
                 y=_yy,
                 z=_z.reshape(_xx.shape),
-                opacity=max(1, alpha * 1.2),
+                opacity=min(1, alpha * 0.8),
                 colorscale=cmap,
                 name='%s model' % stvariogram.model.__name__
             )
