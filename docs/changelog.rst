@@ -2,9 +2,12 @@
 Changelog
 =========
 
-Version 1.0.0-rc
-================
+Version 1.0.0
+=============
 - [plotting] the 3D surface plot is now handling the opacity settings correctly.
+- [utils] the utils now include the likelihood submodule, which includes a 
+  :func:`get_likelihood <skgstat.util.likelihood.get_likelihood>` function factory.
+  The returned function can be minimized using SciPy to perform maximum likelihood fits. 
 
 Version 0.6.14
 ==============
