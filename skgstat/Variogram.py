@@ -2167,6 +2167,20 @@ class Variogram(object):
 
         return 1 - (term1 / term2)
 
+    @property
+    def aic(self) -> float:
+        """
+        """
+        from skgstat.util.cross_validation import aic
+        return aic(self)
+
+    @property
+    def bic(self) -> float:
+        """
+        """
+        from skgstat.util.cross_validation import bic
+        return bic(self)
+
     def model_deviations(self):
         """Model Deviations
 

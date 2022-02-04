@@ -2,6 +2,8 @@ import numpy as np
 from itertools import cycle
 
 from skgstat.Kriging import OrdinaryKriging
+from skgstat.Variogram import Variogram
+from skgstat.util.likelihood import get_likelihood
 
 
 def _interpolate(idx: int, variogram) -> float:
@@ -54,8 +56,8 @@ def jacknife(
 
     # shuffle the input coordinates
     rng = np.random.default_rng(seed=seed)
-    l = n if n is not None else len(variogram.coordinates)
-    indices = rng.choice(len(variogram.coordinates), replace=False, size=l)
+    size = n if n is not None else len(variogram.coordinates)
+    indices = rng.choice(len(variogram.coordinates), replace=False, size=size)
 
     # TODO maybe multiprocessing?
     cros_val_map = map(_interpolate, indices, cycle([variogram]))
@@ -70,3 +72,35 @@ def jacknife(
     else:
         # MAE
         return np.nansum(np.abs(deviations)) / len(deviations)
+
+
+def aic(variogram: Variogram) -> float:
+    like = get_likelihood(variogram)
+
+    # get parameters
+    params = variogram.parameters
+    k = len(params)
+    if params[-1] < 1e-6:
+        k -= 1
+
+    # get maximum log-likelihood
+    log_like = like(params)
+
+    # return AIC
+    return 2 * k - 2 * log_like
+
+
+def bic(variogram: Variogram) -> float:
+    like = get_likelihood(variogram)
+
+    # get parameters
+    params = variogram.parameters
+    k = len(params)
+    if params[-1] < 1e-6:
+        k -= 1
+
+    # get maximum log-likelihood
+    log_like = like(params)
+
+    # return BIC
+    return 2 * np.log(k) - 2 * log_like
