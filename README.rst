@@ -12,10 +12,6 @@ Info: scikit-gstat needs Python >= 3.6!
 .. image:: https://github.com/mmaelicke/scikit-gstat/workflows/Test%20and%20build%20docs/badge.svg
     :target: https://github.com/mmaelicke/scikit-gstat/actions
 
-.. image:: https://api.codacy.com/project/badge/Grade/34022fb8b795435b8eeb5431159fa7c6
-   :alt: Codacy Badge
-   :target: https://app.codacy.com/app/mmaelicke/scikit-gstat?utm_source=github.com&utm_medium=referral&utm_content=mmaelicke/scikit-gstat&utm_campaign=Badge_Grade_Dashboard
-
 .. image:: https://codecov.io/gh/mmaelicke/scikit-gstat/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/mmaelicke/scikit-gstat
     :alt: Codecov
@@ -33,9 +29,7 @@ please reference this module. There is a `GMD <https://www.geoscientific-model-d
 
 The code itself is published and has a DOI. It can be cited as:
 
-  Mirko Mälicke, Egil Möller, Helge David Schneider, & Sebastian Müller. (2021, May 28). 
-    mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox 
-    (Version v0.6.0). Zenodo. http://doi.org/10.5281/zenodo.4835779
+  Mirko Mälicke, Romain Hugonnet, Helge David Schneider, Sebastian Müller, Egil Möller, & Johan Van de Wauw. (2022). mmaelicke/scikit-gstat: Version 1.0 (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.5970098
 
 
 Full Documentation
