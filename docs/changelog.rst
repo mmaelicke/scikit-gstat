@@ -10,13 +10,13 @@ Version 1.0.0
   The returned function can be minimized using SciPy to perform maximum likelihood fits. 
 
 Version 0.6.14
-==============
+--------------
 - [plotting] plotly contour plots are showing a colorbar label by default
 - [DirectionalVariogram] the constructor now sets an empty uncertainty array to prevent the
   class from throwing and error if no confidence interval is given.
 
 Version 0.6.13
-==============
+--------------
 - [docs] the sphinx recipe knitting a TeX file from docs is now ignored on fail 
   Reason is that the current build is too lage and any kind of buffer is overflowing
 - [docs] The jupyter notebook tutorials for the Docker image are now at root level.
@@ -26,63 +26,63 @@ Version 0.6.13
 - [docs] all tutorials now use the data submodule to be reproducible
 
 Version 0.6.12
-==============
+--------------
 - [data] the dataset loader can now return pandas.DataFrame objects
 - [Dockerfile] some cleanups for making future tutorials work. 
 
 Version 0.6.11
-==============
+--------------
 - [Variogram] The kriging based leave-one-out cross validation is now omitting NaN.
 
 Version 0.6.10
-==============
+--------------
 - [Variogram] The KMeans based binning function is now raising a value error if
   a ConvergenceWarning is found. The reason is, that the original settings for binning
   were not valid if KMeans did not converge and thus, the bins array might not be
   in a well defined state. 
 
 Version 0.6.9
-=============
+-------------
 - SciKit-GStat is now tested for Python 3.9. Finally.
   All unittest are now automatically run for Python 3.6, 3.7, 3.8 and 3.9
 
 Version 0.6.8
-=============
+-------------
 - [RasterMetricSpace] small bugfix for Exceptions raised with small sample sizes
 
 Version 0.6.7
-=============
+-------------
 - [RasterMetricSpace] a new class is introduced: :class:`RasterEquidistantMetricSpace <skgstat.RasterEquidistantMetricSpace>`.
   An instance can be passed as `coordinates`. It samples a given Raster image at concentric rings, to derive a 
   more uniformly distributed distance matrix.
 
 Version 0.6.6
-=============
+-------------
 - [Variogram] The automatic fitting of a theoretical variogram model is now optional. You can pass `None` as 
   `fit_method` parameter, which will suppress the fitting.
 
 Version 0.6.5
-=============
+-------------
 - [Variogram] now supports custom bin edges for the experimental variogram. :func:`Variogram.bins <skgstat.Variogram.bins>` 
   now accepts a list or array of upper bin edges.
 - [Variogram] has a new property called :func:`bin_count <skgstat.Variogram.bin_count>` which returns the number of 
   point pairs within each lag class
 
 Version 0.6.4
-=============
+-------------
 - [Kriging] `OrdinaryKriging.sigma <skgstat.OrdinaryKriging>` is now initialized as a `NaN`-filled array.
 - [Kriging] `OrdinaryKriging._estimator <skgstat.OrdinaryKriging>` handles the error variance matrix index
   now correctly. On error during kriging, the index was not incremented, which lead to malformed error variance field output.
 
 Version 0.6.3 
-=============
+-------------
 - [interfaces] If any of the gstools interfaces are used, the Variogram will call :func:`fit <skgstat.Variogram.fit>`
   without forcing a full preprocessing cycle. This fixes edge cases, where a parameter was mutated, but the fitting 
   not performed before the instance was exported. This should only have happended in very rare occasions.
 - [data] added the meuse dataset from the R-package ``'sp'``
 
 Version 0.6.2
-=============
+-------------
 - [Variogram] the fitting method is now implemented as :func:`Variogram.fit_method <skgstat.Variogram.fit_method>`
   property. It will drop fitting parameters if the fit method is changed to something else than ``'manual'``.
 - [Variogram] If an invalid :func:`Variogram.fit_method <skgstat.Variogram.fit_method>` is set, an
@@ -90,13 +90,13 @@ Version 0.6.2
   :func:`fit <skgstat.Variogram.fit>`
 
 Version 0.6.1
-=============
+-------------
 - The Dockerfile was completely rewritten. A user can now specify the used Python version 
   at build time of the docker image.
 - The Dockerfile is now part of the python package
 
 Version 0.6.0
-=============
+-------------
 - The util and data submodule are now always loaded at top-level
 - fixed a potential circular import
 - added uncertainty tools to util. This is not yet finished and may change the signature before
@@ -108,42 +108,42 @@ Version 0.6.0
   propagation will not be updated and invalidated as the Variogram instance changes. 
 
 Version 0.5.6
-=============
+-------------
 - [Variogram] the interal :class:`MetricSpace <skgstat.MetricSpace>` instance used to calculate the distance matrix
   is now available as the :any:`Variogram.metric_space <skgstat.Variogram.metric_space>` property.
 - [Variogram] :any:`Variogram.metric_space <skgstat.Variogram.metric_space>` is now read-only.
 - [unittest] two unittests are changed (linting, not functionality)
 
 Version 0.5.5
-=============
+-------------
 - [data] new submodule :any:`data <skgstat.data>` contains sample random fields and methods for sampling
   these fields in a reproducible way at random locations and different sample sizes.
 
 Version 0.5.4
-=============
+-------------
 - [util] added a new `cross_validation` utility module to cross-validate variograms with leave-one-out Kriging 
   cross validations.
 
 Version 0.5.3
-=============
+-------------
 - [MetricSpace] new class :class:`ProbabilisticMetricSpace <skgstat.MetricSpace.ProbabilisticMetricSpace>` that
   extends the metric space by a stochastic element to draw samples from the input data, instead of using 
   the full dataset.
 
 Version 0.5.2
-=============
+-------------
 - [interface] new interface function added: :func:`to_gs_krige <skgstat.Variogram.to_gs_krige>`. This interface
   will return a :any:`gs.Krige <gstools.Krige>` instance from the fitted variogram.
 - some typos were corrected
 - some code refactored (mainly linting errors)
 
 Version 0.5.1
-=============
+-------------
 - [plotting] the spatio-temporal 2D and 3D plots now label the axis correctly. 
 - [plotting] fixed swapped plotting axes for spatio-temporal plots.
 
 Version 0.5.0
-=============
+-------------
 - [MetricSpace] A new class :class:`MetricSpace <skgstat.MetricSpace>` was introduced. This class can be passed
   to any class that accepted coordinates so far. This wrapper can be used to pre-calculate large distance
   matrices and pass it to a lot of Variograms. 
@@ -153,7 +153,7 @@ Version 0.5.0
   the interpolation grid only once.
 
 Version 0.4.4
-=============
+-------------
 - [models] the changes to :func:`matern <skgstat.models.matern>` introduced in `0.3.2` are reversed. 
   The Matérn model does not adapt the smoothness scaling to effective range anymore, as the behavior was too
   inconsistent.
@@ -163,12 +163,12 @@ Version 0.4.4
   `ZeroDivisionError`.
 
 Version 0.4.3
-=============
+-------------
 - [Variogram] :func:`dim <skgstat.Variogram.dim>` now returns the spatial dimensionality of the input data.
 - [Variogram] fixed a numpy depreaction warning in `_calc_distances`
 
 Version 0.4.2
-=============
+-------------
 - [Variogram] :func:`bins <skgstat.Variogram.bins>` now cases manual setted bin edges automatically
   to a :func:`numpy.array`.
 - [Variogram] :func:`get_empirical <skgstat.Variogram.get_empirical>` returns the empirical variogram.
@@ -177,30 +177,30 @@ Version 0.4.2
   lag classes centers.
 
 Version 0.4.1
-=============
+-------------
 - [Variogram] moved the bin function setting into a wrapper instance method, which was an anonymous lambda before.
   This makes the Variogram serializable again.
 - [Variogram] a list of pylint errors were solved. Still enough left.
 
 Version 0.4.0
-=============
+-------------
 - [binning] added `'stable_entropy'` option that will optimize the lag class edges to be of comparable Shannon Entropy.
 
 Version 0.3.11
-==============
+--------------
 - [Variogram] A new method is introduced to calculate fitting weights. Works for all but the manual fit
-  method. By setting :func:`fit_sigma='entropy' <skgstat.Variogram.fit_sigma>`, the fitting weights will
+  method. By setting :func:`fit_sigma-'entropy' <skgstat.Variogram.fit_sigma>`, the fitting weights will
   be adjusted according to the lag classes' Shannon entropy. That will ignore lag classes of high
   uncertainty and emphasize lags of low uncertainty.
 
 Version 0.3.10
-==============
+--------------
 - [binning] added a median aggregation option to :func:`ward <skgstat.binning.ward>`. This can be 
   enabled by setting `binning_agg_func` to `'median'`. The cluster centroids will be derived from 
   the members median value, instead of mean value.
-- [Variogram] added :func:`fit_method='ml' <skgstat.Variogram.fit_method>` - a maximum likelihood fitting 
+- [Variogram] added :func:`fit_method-'ml' <skgstat.Variogram.fit_method>` - a maximum likelihood fitting 
   procedure to fit the theoretical variogram to the experimental
-- [Variogram] added :func:`fit_method='manual' <skgstat.Variogram.fit_method>`. This is a manual fitting 
+- [Variogram] added :func:`fit_method-'manual' <skgstat.Variogram.fit_method>`. This is a manual fitting 
   method that takes the variogram parameters either at instantiation prefixed by `fit_`, or as 
   keyword arguments by :func:`fit <skgstat.Variogram.fit>`. 
 - [Variogram] the manual fitting method will preseve the previous parameters, if the Variogram was 
@@ -208,14 +208,14 @@ Version 0.3.10
 
 
 Version 0.3.9
-=============
+-------------
 - [binning] added :func:`kmeans <skgstat.binning.kmeans>` and :func:`ward <skgstat.binning.ward>` for forming
   non-equidistant lag classes based on a distance matrix clustering
 - [Kriging] Kriging now stores the last interpolated field as `z`. This is the first of a few changes
   in future releases, which will ultimately add some plotting methods to Kriging.
 
 Version 0.3.8
-=============
+-------------
 - [plotting] minor bugfixes in plotting routines (wrong arguments, pltting issues)
 - [docs] added a tutorial about plotting
 - [binning] added :func:`auto_derived_lags <skgstat.binning.auto_derived_lags>` for a variety
@@ -226,7 +226,7 @@ Version 0.3.8
   Uses `histogram_bin_edges <numpy.histogram_bin_edges>` internally.
 
 Version 0.3.7
-=============
+-------------
 - [Variogram] now accepts arbitary kwargs. These can be used to further specify functional behavior
   of the class. As of Version `0.3.7` this is used to pass arguments down to the 
   :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.estimators.percentile>` 
@@ -236,7 +236,7 @@ Version 0.3.7
   the init params as a nested dict inside the output or flatten the output dict.
 
 Version 0.3.6
-=============
+-------------
 .. warning:: 
   There is some potential breaking behaviour
 
@@ -251,7 +251,7 @@ Version 0.3.6
   **This is a potential breaking change**
 
 Version 0.3.5
-=============
+-------------
 - [plotting] The :func:`location_trend <skgstat.Variogram.location_trend>` can now add 
   trend model lines to the scatter plot for the `'plotly'` backend and calculate the 
   R² for the trend model.
@@ -259,14 +259,14 @@ Version 0.3.5
   was renamed from `_dict_func` to `_dist_func_name`
 
 Version 0.3.4
-=============
+-------------
 - [plotting] The :func:`scattergram <skgstat.Variogram.scattergram>` 
   functions color the plotted points with respect to the lag bin they
   are originating from. For `matplotlib`, this coloring is suppressed, but can activated by 
-  passing the argument ``scattergram(single_color=False)``.
+  passing the argument ``scattergram(single_color-False)``.
 
 Version 0.3.3
-=============
+-------------
 
 - [plotting] a new submodule is introduced: :py:mod:`skgstat.plotting`. This contains all plotting functions. 
   The plotting behavior is not changed, but using :func:`skgstat.plotting.backend`, the used plotting library
@@ -275,19 +275,19 @@ Version 0.3.3
 - [SpaceTimeVariogram] finally can fit the product-sum model to the experimental variogram
 
 Version 0.3.2
-=============
+-------------
 - [models] Matérn model now adapts effective range to smoothness parameter
 - [models] Matérn model documentation updated
 - [models] some minor updates to references in the docs
 
 Version 0.3.1
-=============
+-------------
 
 - [Variogram] - internal distance calculations were refactored, to speed things up
 - [Kriging] - internal distance calculations were refactored, to speed things up
 
 Version 0.3.0
-=============
+-------------
 
 - [Variogram] some internal calculations were changed.
 - [DirectionalVariogram] - the circular search are is removed and raises a NotImplementedError
@@ -296,26 +296,26 @@ Version 0.3.0
 - [unittests] - more unittests were added.
 
 Version 0.2.8
-=============
+-------------
 
 - [Variogram] is now ``pickle.dump()``-able, by removing ``lambda`` usage (thanks to @redhog!)
 - [Variogram] now raises a `Warning` if all input values are the same
 - [DOCS] Tutorial added and Dockerfile finalized
-- [Variogram] `normalize` default value changed to `normalize=False`
+- [Variogram] `normalize` default value changed to `normalize-False`
 - [Variogram] `harmonize` parameter is removed
 - [Variogram] Monotonization (old harmonize par) is available as a new
-  theoretical model function. Can be used by setting `model='harmonize'`
+  theoretical model function. Can be used by setting `model-'harmonize'`
 - [interfaces] gstools interface implemented. 
   :func:`gstools_cov_model <skgstat.interfaces.gstools.gstools_cov_model>`
   takes a :class:`skgstat.Variogram` instance and returns a **fitted** 
   `gstools.CovModel`. 
 
 Version 0.2.7
-=============
+-------------
 
 - [Kriging] Little performance gains due to code cleanup.
-- [Variogram] The `normalize=True` default in `__init__` will change to 
-  `normalize=False` in a future version. A DeprecationWarning was included.
+- [Variogram] The `normalize-True` default in `__init__` will change to 
+  `normalize-False` in a future version. A DeprecationWarning was included.
 - [tests] The Variogram class fitting unit tests are now explicitly setting 
   the normalize parameter to handle the future deprecation.
 - [tests] More unittests were added to increase coverage
@@ -340,7 +340,7 @@ Version 0.2.7
   correctly detect space and time lags
 
 Version 0.2.6
-=============
+-------------
 - [OrdinaryKriging]: widely enhanced the class in terms of performance, code
   coverage and handling.
 
@@ -363,18 +363,18 @@ Version 0.2.6
   associated unit test necessary. 
 
 Version 0.2.5
-=============
+-------------
 - added :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` for using a
   :class:`Variogram <skgstat.Variogram>` to perform an interpolation.
 
 Version 0.2.4
-=============
+-------------
 
 - added :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` for
   calculating dispersion functions depending on a space and a time lag.
 
 Version 0.2.3
-=============
+-------------
 
 - **[severe bug]** A severe bug was in
   :func:`Variogram.__vdiff_indexer <skgstat.Variogram.__vdiff_indexer>` was
@@ -389,18 +389,18 @@ Version 0.2.3
   distance and, thus, give less weight to distant lag classes during fitting.
 
 Version 0.2.2
-=============
+-------------
 
 - added DirectionalVariogram class for direction-dependent variograms
 - [Variogram] changed default values for `estimator` and `model` from
   function to string
 
 Version 0.2.1
-=============
+-------------
 
 - added various unittests
 
 Version 0.2.0
-=============
+-------------
 
 - completely rewritten Variogram class compared to v0.1.8
