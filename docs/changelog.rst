@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.1-rc
+==============
+
+Version 1.0.1
+-------------
+- [Variogram] documentation added to :func:`use_nugget <skgstat.Variogram.use_nugget>`
+- [Variogram] :func:`Variogram.fit(method='manual') <skgstat.Variogram.fit>` now
+  implicitly sets :func:`use_nugget=True <skgstat.Variogram.use_nugget>` if a
+  nugget is passed to fit.
+
 Version 1.0.0
 =============
 - [plotting] the 3D surface plot is now handling the opacity settings correctly.
