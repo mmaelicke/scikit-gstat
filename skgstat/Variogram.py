@@ -962,15 +962,31 @@ class Variogram(object):
 
     @property
     def use_nugget(self):
+        """
+        Use a nugget effect on this Variogram instance.
+        If disabled, the automatic fitting procedures will omit the nugget and
+        not use it as a model parameter.
+
+        Note
+        ----
+        If :func:`fit_method <skgstat.Variogram.fit_method>` is set to
+        ``'manual'`` and a nugget parameter is pass to
+        :func:`fit <skgstat.Variogram.fit>`, use_nugget will be set to True.
+
+        Returns
+        -------
+        use_nugget : bool
+
+        """
         return self._use_nugget
 
     @use_nugget.setter
-    def use_nugget(self, nugget):
-        if not isinstance(nugget, bool):
+    def use_nugget(self, enable_nugget):
+        if not isinstance(enable_nugget, bool):
             raise ValueError('use_nugget has to be of type bool.')
 
         # set new value
-        self._use_nugget = nugget
+        self._use_nugget = enable_nugget
 
     @property
     def dist_function(self):
@@ -1380,6 +1396,10 @@ class Variogram(object):
         .. versionchanged:: 0.3.10
             added 'ml' and 'custom' method.
 
+        .. versionchanged:: 1.0.1 
+            use_nugget is now flagged implicitly, whenever a nugget > 0 is
+            passed in manual fitting.    
+        
         Parameters
         ----------
         force : bool
@@ -1448,6 +1468,10 @@ class Variogram(object):
         # remove nans
         _x = x[~np.isnan(y)]
         _y = y[~np.isnan(y)]
+
+        # check if method is manual and a nugget was passed
+        if self.fit_method == 'manual' and kwargs.get('nugget', False):
+            self.use_nugget = True
 
         # handle harmonized models
         if self._harmonize:
