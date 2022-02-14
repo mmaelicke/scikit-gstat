@@ -873,7 +873,18 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             V.parameters,
             params,
             decimal=1
-        )      
+        )
+    
+    def test_implicit_nugget(self):
+        V = Variogram(self.c, self.v, use_nugget=False)
+
+        # no nugget used
+        self.assertTrue(V.parameters[-1] < 1e-10)
+
+        # switch to manual fitting
+        V.fit(method='manual', sill=5., nugget=2.)
+
+        self.assertTrue(abs(V.parameters[-1] - 2.) < 1e-10)
 
 
 class TestVariogramQualityMeasures(unittest.TestCase):
