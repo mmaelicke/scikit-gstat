@@ -14,6 +14,7 @@ from multiprocessing import Pool
 from .Variogram import Variogram
 from .MetricSpace import MetricSpace, MetricSpacePair
 
+import joblib
 
 class LessPointsError(RuntimeError):
     pass
@@ -44,7 +45,7 @@ class OrdinaryKriging:
             perf=False,
             sparse=False,
             coordinates=None,
-            values=None
+            values=None,
     ):
         """Ordinary Kriging routine
 
@@ -308,10 +309,11 @@ class OrdinaryKriging:
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
         else:
-            def f(idxs):
-                return self._estimator(idxs)
-            with Pool(self.n_jobs) as p:
-                z = p.starmap(f, range(len(self.transform_coords)))
+            #def f(idxs):
+            #    return self._estimator(idxs)
+            #with Pool(self.n_jobs) as p:
+            #    z = p.starmap(f, range(len(self.transform_coords)))
+            z = joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(self._estimator)(idx) for idx in range(len(self.transform_coords)))
 
         # print warnings
         if self.singular_error > 0:
