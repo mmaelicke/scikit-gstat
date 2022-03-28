@@ -313,7 +313,11 @@ class OrdinaryKriging:
             #    return self._estimator(idxs)
             #with Pool(self.n_jobs) as p:
             #    z = p.starmap(f, range(len(self.transform_coords)))
-            z = joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(self._estimator)(idx) for idx in range(len(self.transform_coords)))
+            res = joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(self._multi_estimator)(idx) for idx in range(len(self.transform_coords)))
+            z, sigma = zip(*res)
+
+            # TODO: this is a dirty hack, but it works for now
+            self.sigma = sigma
 
         # print warnings
         if self.singular_error > 0:
@@ -370,6 +374,31 @@ class OrdinaryKriging:
         self.__sigma_index += 1
 
         return z
+    
+    def _multi_estimator(self, idx):
+         # indicate if this esimation raised an error
+        did_error = False
+
+        # reun estimation
+        try:
+            estimation, sigma = self._krige(idx)
+        except SingularMatrixError:
+            self.singular_error += 1
+            did_error = True
+        except LessPointsError:
+            self.no_points_error += 1
+            did_error = True
+        except IllMatrixError:
+            self.ill_matrix += 1
+            did_error = True
+
+        # TODO: This is a side-effect and I need to re-design this part:
+        if did_error:
+            # on error - Z* is NaN
+            estimation = np.nan
+            sigma = np.nan
+
+        return estimation, sigma
 
     def _krige(self, idx):
         r"""Algorithm
