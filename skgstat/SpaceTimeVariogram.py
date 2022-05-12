@@ -11,24 +11,148 @@ from skgstat import binning, estimators, Variogram, stmodels, plotting
 
 
 class SpaceTimeVariogram:
-    """
+    """SpaceTimeVariogram Class
+
+    Calculates a variogram of the separating distances lags in a spatial
+    and temporal dimensions and relates them to one of the semi-variance
+    measures of the given dependent values.
 
     """
-    def __init__(self,
-                 coordinates,
-                 values,
-                 xdist_func='euclidean',
-                 tdist_func='euclidean',
-                 x_lags=10,
-                 t_lags='max',
-                 maxlag=None,
-                 xbins='even',
-                 tbins='even',
-                 estimator='matheron',
-                 use_nugget=False,
-                 model='product-sum',
-                 verbose=False
-                 ):
+    def __init__(
+        self,
+        coordinates,
+        values,
+        xdist_func='euclidean',
+        tdist_func='euclidean',
+        x_lags=10,
+        t_lags='max',
+        maxlag=None,
+        xbins='even',
+        tbins='even',
+        estimator='matheron',
+        use_nugget=False,
+        model='product-sum',
+        verbose=False
+    ):
+        """
+        Instatiate a new instance of a spatio-temporal variogram
+
+        Parameters
+        ----------
+        coordinates : numpy.ndarray
+            Array of shape (m, n). Will be used as m observation points of
+            n-dimensions. This variogram can be calculated on 1 - n
+            dimensional coordinates. In case a 1-dimensional array is passed,
+            a second array of same length containing only zeros will be
+            stacked to the passed one.
+            For very large datasets, you can set maxlag to only calculate
+            distances within the maximum lag in a sparse matrix.
+        values : numpy.ndarray
+            Array of shape (m, n) values observed at the given coordinates.
+            The ``m`` dimension has to match the coordinates ``m`` dimension.
+            The length of ``n`` has to match the length of observations for
+            each coordinate. That means, the timeseries are organized into
+            rows. If you have your data as a :class:`pandas.DataFrame`, you
+            need to transpose the data first.
+        xdist_func : str
+            String identifying the distance function for the **spatial**
+            dimension. Defaults to 'euclidean'. Can be any metric accepted by
+            :any:`pdist <scipy.spatial.distance.pdist>`.
+            Additional parameters are not (yet) passed through to pdist.
+            These are accepted by pdist for some of the metrics.
+            In these cases the default values are used.
+        tdist_func : str
+            String identifying the distance function for the **temporal**
+            dimension. Defaults to 'euclidean'. Can be any metric accepted by
+            :any:`pdist <scipy.spatial.distance.pdist>`.
+            Additional parameters are not (yet) passed through to pdist.
+            These are accepted by pdist for some of the metrics.
+            In these cases the default values are used.
+        x_lags : int
+            Specify the number of **spatial** lag classes to be defined by
+            the binning function. Defaults to 10.
+        t_lags : int, str
+            Specify the number of **temporal** lag classes to be defined by
+            the binning function.
+            Instead of a number, the string ``'max'`` can be passed. This
+            will assgin as many lag classes as time steps are passed.
+            Defaults to max.
+        maxlag : float, str
+            Can specify the maximum lag distance directly by giving a value
+            larger than 1. The binning function will not find any lag class
+            with an edge larger than maxlag. If 0 < maxlag < 1, then maxlag
+            is relative and maxlag * max(Variogram.distance) will be used.
+            In case maxlag is a string it has to be one of 'median', 'mean'.
+            Then the median or mean of all Variogram.distance will be used.
+            Note maxlag=0.5 will use half the maximum separating distance,
+            this is not the same as 'median', which is the median of all
+            separating distances
+        xbins : str
+            String identifying the **spatial** binning function used to find
+            lag class edges. All methods calculate bin edges on the
+            interval [0, maxlag[. Possible values are:
+
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule
+                  to find `n_lags`
+                * `'sqrt'` uses the square-root of
+                  :func:`distance <skgstat.Variogram.distance>`
+                  as `n_lags`.
+                * `'kmeans'` uses KMeans clustering to well supported bins
+                * `'ward'` uses hierachical clustering to find
+                  minimum-variance clusters.
+        tbins : str
+            String identifying the **temporal** binning function used to find
+            lag class edges. All methods calculate bin edges on the
+            interval [0, max[. Possible values are:
+
+                * `'even'` (default) finds `n_lags` same width bins
+                * `'uniform'` forms `n_lags` bins of same data count
+                * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
+                * `'sturges'` applies Sturge's rule to find `n_lags`.
+                * `'scott'` applies Scott's rule to find `n_lags`
+                * `'doane'` applies Doane's extension to Sturge's rule
+                  to find `n_lags`
+                * `'sqrt'` uses the square-root of
+                  :func:`distance <skgstat.Variogram.distance>`
+                  as `n_lags`.
+                * `'kmeans'` uses KMeans clustering to well supported bins
+                * `'ward'` uses hierachical clustering to find
+                  minimum-variance clusters.
+        estimator : str, callable
+            String identifying the semi-variance estimator to be used.
+            Defaults to the Matheron estimator. Possible values are:
+
+              * matheron        [Matheron, default]
+              * cressie         [Cressie-Hawkins]
+              * dowd            [Dowd-Estimator]
+              * genton          [Genton]
+              * minmax          [MinMax Scaler]
+              * entropy         [Shannon Entropy]
+
+            If a callable is passed, it has to accept an array of absoulte
+            differences, aligned to the 1D distance matrix (flattened upper
+            triangle) and return a scalar, that converges towards small
+            values for similarity (high covariance).
+        use_nugget : bool
+            Defaults to False. If True, a nugget effet will be added to all
+            Variogram.models as a third (or fourth) fitting parameter. A
+            nugget is essentially the y-axis interception of the theoretical
+            variogram function.
+        model : str
+            String identifying the theoretical variogram function to be used
+            to describe the experimental variogram. Can be one of:
+
+              * sum
+              * product
+              * product-sum
+
+
+        """
         # set coordinates array
         self._X = np.asarray(coordinates)
 
