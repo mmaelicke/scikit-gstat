@@ -234,9 +234,6 @@ def genton(x):
     if n < 2:
         return np.nan
 
-    # pre-populate y => we need (n*n -n) / 2
-    y = np.zeros(int((n*n - n) / 2))
-
     # calculate
     y = []
     for i in range(n):
