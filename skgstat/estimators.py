@@ -234,16 +234,11 @@ def genton(x):
     if n < 2:
         return np.nan
 
-    # pre-populate y => we need (n*n -n) / 2
-    y = np.zeros(int((n*n - n) / 2))
-
     # calculate
-    z = 0
+    y = []
     for i in range(n):
-        for j in range(n):
-            if i < j:
-                y[z] = np.abs(x[i] - x[j])
-                z += 1
+        for j in range(i + 1, n):
+            y.append(np.abs(x[i] - x[j]))
 
     # if N > 500, (k/q) will be ~ 1/4 anyway
     if n >= 500:
@@ -256,7 +251,7 @@ def genton(x):
         q = binom(n, 2)
 
     # return the kth percentile
-    return 0.5 * np.power(2.219 * np.percentile(y, (k / q)), 2)
+    return 0.5 * np.power(2.219 * np.quantile(y, (k / q)), 2)
 
 
 def minmax(x):
