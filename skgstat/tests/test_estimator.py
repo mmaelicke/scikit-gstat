@@ -67,8 +67,8 @@ class TestEstimator(unittest.TestCase):
         np.random.seed(42)
         x2 = np.random.gamma(30, 5, 1000)
 
-        self.assertAlmostEqual(e(x1), 0.0089969, places=7)
-        self.assertAlmostEqual(e(x2), 0.0364393, places=7)
+        self.assertAlmostEqual(e(x1), 62.1, places=1)
+        self.assertAlmostEqual(e(x2), 354.5, places=1)
 
     def test_genton_nan(self):
         # extract actual estimator
