@@ -149,13 +149,28 @@ class TestVariogramInstatiation(unittest.TestCase):
         )
 
     def test_value_warning(self):
-        with self.assertRaises(Warning) as w:
-            Variogram(self.c, [42] * 30)
-        
+        with self.assertWarns(Warning) as w:
+            Variogram(self.c, [42] * 30, fit_method='lm')
+
         self.assertEqual(
             'All input values are the same.',
-            str(w.exception)
+            str(w.warning)
         )
+
+    def test_value_error_on_set_trf(self):
+        """Test the Attribute error when switching to TRF on single value input"""
+        with self.assertRaises(AttributeError) as e:
+            v = Variogram(self.c, [42] * 30, fit_method='lm')
+            v.fit_method = 'trf'
+
+        self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
+    
+    def test_value_error_trf(self):
+        """Test the Attribute error on TRF instantiation on single value input"""
+        with self.assertRaises(AttributeError) as e:
+            v = Variogram(self.c, [42] * 30, fit_method='trf')
+
+        self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
 
 
 class TestVariogramArguments(unittest.TestCase):

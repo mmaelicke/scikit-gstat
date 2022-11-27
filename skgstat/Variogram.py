@@ -333,7 +333,9 @@ class Variogram(object):
         self.use_nugget = use_nugget
 
         # set the fitting method and sigma array
-        self._fit_method = fit_method
+        self._fit_method = None
+        if fit_method is not None:
+            self.fit_method = fit_method
         self._fit_sigma = None
         self.fit_sigma = fit_sigma
 
@@ -457,6 +459,9 @@ class Variogram(object):
         differences are recalculated.
         Raises :py:class:`ValueError`s on shape mismatches and a Warning
 
+        .. versionchanged::
+            Now a warnings.warn message is thrown if all input data is the same
+
         Parameters
         ----------
         values : numpy.ndarray
@@ -489,7 +494,10 @@ class Variogram(object):
 
         # check if all input values are the same
         if len(set(_y)) < 2:
-            raise Warning('All input values are the same.')
+            self.__single_input = True
+            warnings.warn('All input values are the same.')
+        else:
+            self.__single_input = False
 
         # reset fitting parameter
         self.cof, self.cov = None, None
@@ -1160,6 +1168,10 @@ class Variogram(object):
         # value is fine -check for manual does not drop the coefficients
         elif value == 'manual':
             self._fit_method = 'manual'
+
+        # Trust region reflective does not work wi
+        elif value == 'trf' and self.__single_input:
+            raise AttributeError("'trf' is bounded and therefore not supported when all values are the same.")
 
         # otherwise - refit
         else:
