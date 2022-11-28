@@ -1984,9 +1984,30 @@ class Variogram(object):
         experimental variogram and the theoretical model values at
         corresponding lag values
 
+        .. deprecated:: 1.0.4
+            residuals can be ambigious, thus the property is renamed to model_residuals
+
         Returns
         -------
         numpy.ndarray
+
+        """
+        warnings.warn(
+            "residuals is deprecated and will be removed. Please use Variogram.model_residuals",
+            DeprecationWarning
+        )
+        return self.model_residuals
+
+    @property
+    def model_residuals(self) -> np.ndarray:
+        """
+        Calculate the model residuals defined as the differences between the
+        experimental variogram and the theoretical model values at
+        corresponding lag values.
+
+        Returns
+        -------
+        residuals : numpy.ndarray
 
         """
         # get the deviations
