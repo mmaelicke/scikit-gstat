@@ -172,7 +172,7 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
 
-    def test_residuals_diffs(self):
+    def test_pairwise_diffs(self):
         """
         Test that the cross-variogram changes do not mess with the standard
         implementation of Variogram.
@@ -184,6 +184,22 @@ class TestVariogramInstatiation(unittest.TestCase):
         # build the actual triangular distance matrix array
         diff = pdist(np.column_stack((self.v, np.zeros(len(self.v)))), metric='euclidean')
 
+        assert_array_almost_equal(V.pairwise_diffs, diff, decimal=2)
+    
+    def test_pairwise_diffs_preprocessing(self):
+        """
+        Remove the diffs and then request the diffs again to check preprocessing
+        trigger on missing pairwise residual diffs.
+        """
+        V = Variogram(self.c, self.v)
+
+        # build the diffs
+        diff = pdist(np.column_stack((self.v, np.zeros(len(self.v)))), metric='euclidean')
+
+        # remove the diffs
+        V._diff = None
+
+        # check preprocessing
         assert_array_almost_equal(V.pairwise_diffs, diff, decimal=2)
 
 
