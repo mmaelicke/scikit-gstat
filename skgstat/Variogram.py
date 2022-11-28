@@ -375,7 +375,7 @@ class Variogram(object):
     def metric_space(self):
         r"""
         .. versionadded:: 0.5.6
-        
+
         :class:`MetricSpace <skgstat.MetricSpace>` representation of the
         input coordinates. A :class:`MetricSpace <skgstat.MetricSpace>`
         can be used to pass pre-calculated coordinates to other
@@ -509,6 +509,19 @@ class Variogram(object):
         # recalculate the pairwise differences
         if calc_diff:
             self._calc_diff(force=True)
+
+    @property
+    def residuals(self):
+        """
+        .. versionadded:: 1.0.4
+
+        Pairwise residual differences of the input data.
+        The property should be used over the Variogram._diff attribute,
+        as this will contain multiple targets with future releases to
+        implement cross-variograms.
+
+        """
+        return self._diff
 
     @property
     def bin_func(self):
