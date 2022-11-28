@@ -1048,7 +1048,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
             Variogram(self.c, self.v).residuals
 
         self.assertTrue('residuals is deprecated and will be removed' in str(w.warning))
-  
+
 
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
@@ -1266,7 +1266,7 @@ class TestSampling(unittest.TestCase):
             self.assertAlmostEqual(Vf["effective_range"], Vs["effective_range"], delta = Vf["effective_range"] / 5)
             self.assertAlmostEqual(Vf["sill"], Vs["sill"], delta = Vf["sill"] / 5)
 
-       
+
 class TestVariogramPickling(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
@@ -1284,6 +1284,35 @@ class TestVariogramPickling(unittest.TestCase):
         pickle.loads(pickle.dumps(self.V))
         return True
 
+
+class TestCrossVariogram(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (30, 2))
+        np.random.seed(42)
+        self.v = np.random.normal(10, 4, (30, 2))
+
+    def test_cross_variable_dim_error(self):
+        """Generate values of too high dimensionality"""
+        # generate 3D values
+        np.random.seed(42)
+        v = np.random.normal(10, 4, (30, 3, 3))
+
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, v)
+
+        self.assertTrue('values has to be 1d (classic variogram)' in str(e.exception))
+
+    def test_too_many_cross_variables(self):
+        """Generate too many co-variables"""
+        np.random.seed(42)
+        v = np.random.normal(10, 3, (30,3))
+
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, v)
+
+        self.assertTrue('create a grid of cross-variograms' in str(e.exception))
 
 if __name__ == '__main__':  # pragma: no cover
     import os
