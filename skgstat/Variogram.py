@@ -496,11 +496,27 @@ class Variogram(object):
 
         # check if this is should be a cross-variogram
         # TODO: run tests for this
-        if _y.ndim > 2:  # pragma: no cover
-            raise ValueError("Use the utility function to create a grid of cross-variograms")
+        if _y.ndim > 2:
+            raise ValueError(
+                "values has to be 1d (classic variogram) or 2d dimensional (cross-variogram)"
+            )  
         elif _y.ndim == 2:
-            # TODO: this is what we are after
-            raise NotImplementedError("Cross-Variogram not yet implemented")
+            if _y.shape[1] > 2:
+                raise ValueError(
+                    "Use the utility function to create a grid of cross-variograms"
+                )
+            elif _y.shape[1] == 2:
+                # set the co-variable
+                self._co_variable = _y[:, 1].flatten()
+
+                # generate a warning if the cross variogram flag was set to False
+                if self._is_cross is not None and not self._is_cross:
+                    warnings.warn("You passed two variables as observation and " +
+                        "effectively turned this instance into a cross-variogram.")
+                self._is_cross = True
+
+                # by definition, the first axis is the observation
+                _y = _y[:, 0].flatten()
 
         # check if all input values are the same
         if len(set(_y)) < 2:
@@ -514,7 +530,7 @@ class Variogram(object):
         self._diff = None
 
         # set new values
-        self._values = np.asarray(values)
+        self._values = np.asarray(_y)
 
         # recalculate the pairwise differences
         if calc_diff:
