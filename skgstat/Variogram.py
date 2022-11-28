@@ -1379,9 +1379,12 @@ class Variogram(object):
         iterable
 
         """
+        # get the diffs
+        diffs = self.pairwise_diffs
+        
         # yield all groups
         for i in range(len(self.bins)):
-            yield self._diff[np.where(self.lag_groups() == i)]
+            yield diffs[np.where(self.lag_groups() == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
