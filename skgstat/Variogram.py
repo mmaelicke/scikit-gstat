@@ -511,7 +511,7 @@ class Variogram(object):
             self._calc_diff(force=True)
 
     @property
-    def residuals(self):
+    def pairwise_diffs(self):
         """
         .. versionadded:: 1.0.4
 
