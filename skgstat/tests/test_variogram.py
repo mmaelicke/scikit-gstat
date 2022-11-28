@@ -1048,7 +1048,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
             Variogram(self.c, self.v).residuals
 
         self.assertTrue('residuals is deprecated and will be removed' in str(w.warning))
-            
+  
 
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
