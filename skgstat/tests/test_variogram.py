@@ -1042,6 +1042,13 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         with self.assertRaises(AssertionError):
             assert_array_almost_equal(exp, exp2, decimal=2)
 
+    def test_residuals_deprecation(self):
+        """Variogram.residuals is deprecated in favor of model_residuals"""
+        with self.assertWarns(DeprecationWarning) as w:
+            Variogram(self.c, self.v).residuals
+
+        self.assertTrue('residuals is deprecated and will be removed' in str(w.warning))
+            
 
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
