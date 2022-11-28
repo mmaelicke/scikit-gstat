@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_almost_equal
-import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist
 
 try:
     import plotly.graph_objects as go
@@ -171,6 +171,20 @@ class TestVariogramInstatiation(unittest.TestCase):
             v = Variogram(self.c, [42] * 30, fit_method='trf')
 
         self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
+
+    def test_residuals_diffs(self):
+        """
+        Test that the cross-variogram changes do not mess with the standard
+        implementation of Variogram.
+
+        """
+        # build the variogram
+        V = Variogram(self.c, self.v)
+
+        # build the actual triangular distance matrix array
+        diff = pdist(np.column_stack((self.v, np.zeros(len(self.v)))), metric='euclidean')
+
+        assert_array_almost_equal(V.pairwise_diffs, diff, decimal=2)
 
 
 class TestVariogramArguments(unittest.TestCase):
