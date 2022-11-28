@@ -447,7 +447,7 @@ class Variogram(object):
         Variogram._diff
 
         """
-        return squareform(self._diff)
+        return squareform(self.pairwise_diffs)
 
     def set_values(self, values, calc_diff=True):
         """Set new values
@@ -521,6 +521,9 @@ class Variogram(object):
         implement cross-variograms.
 
         """
+        if self._diff is None:
+            self.preprocessing()
+
         return self._diff
 
     @property
