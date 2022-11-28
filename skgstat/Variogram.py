@@ -289,6 +289,11 @@ class Variogram(object):
         # set verbosity
         self.verbose = verbose
 
+        # declate a flag to mark if this is a covariogram
+        # this is set to None, as set_values will figure out.
+        self._is_cross = None
+        self._co_variable = None
+
         # set values
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
@@ -488,9 +493,14 @@ class Variogram(object):
 
         # use an array
         _y = np.asarray(values)
-        if not _y.ndim == 1:  # pragma: no cover
-            raise ValueError('The values shall be a 1-D array.' +
-                             'Multi-dimensional values not supported yet.')
+
+        # check if this is should be a cross-variogram
+        # TODO: run tests for this
+        if _y.ndim > 2:  # pragma: no cover
+            raise ValueError("Use the utility function to create a grid of cross-variograms")
+        elif _y.ndim == 2:
+            # TODO: this is what we are after
+            raise NotImplementedError("Cross-Variogram not yet implemented")
 
         # check if all input values are the same
         if len(set(_y)) < 2:
