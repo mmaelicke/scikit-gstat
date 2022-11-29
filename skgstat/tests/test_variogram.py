@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_almost_equal
-import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist
 
 try:
     import plotly.graph_objects as go
@@ -171,6 +171,36 @@ class TestVariogramInstatiation(unittest.TestCase):
             v = Variogram(self.c, [42] * 30, fit_method='trf')
 
         self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
+
+    def test_pairwise_diffs(self):
+        """
+        Test that the cross-variogram changes do not mess with the standard
+        implementation of Variogram.
+
+        """
+        # build the variogram
+        V = Variogram(self.c, self.v)
+
+        # build the actual triangular distance matrix array
+        diff = pdist(np.column_stack((self.v, np.zeros(len(self.v)))), metric='euclidean')
+
+        assert_array_almost_equal(V.pairwise_diffs, diff, decimal=2)
+    
+    def test_pairwise_diffs_preprocessing(self):
+        """
+        Remove the diffs and then request the diffs again to check preprocessing
+        trigger on missing pairwise residual diffs.
+        """
+        V = Variogram(self.c, self.v)
+
+        # build the diffs
+        diff = pdist(np.column_stack((self.v, np.zeros(len(self.v)))), metric='euclidean')
+
+        # remove the diffs
+        V._diff = None
+
+        # check preprocessing
+        assert_array_almost_equal(V.pairwise_diffs, diff, decimal=2)
 
 
 class TestVariogramArguments(unittest.TestCase):
@@ -1012,6 +1042,13 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         with self.assertRaises(AssertionError):
             assert_array_almost_equal(exp, exp2, decimal=2)
 
+    def test_residuals_deprecation(self):
+        """Variogram.residuals is deprecated in favor of model_residuals"""
+        with self.assertWarns(DeprecationWarning) as w:
+            Variogram(self.c, self.v).residuals
+
+        self.assertTrue('residuals is deprecated and will be removed' in str(w.warning))
+  
 
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
