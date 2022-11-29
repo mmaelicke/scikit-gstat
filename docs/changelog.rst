@@ -5,6 +5,13 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.4
+-------------
+- [Variogram] :func:`Variogram.pairwise_diffs <skgstat.Variogram.pairwise_diffs>` wraps around old ``_diff``
+  and should be used instead of directly accessing ``_diff``
+- [Variogram] :func:`Variogram.model_residuals <skgstat.Variogram.model_residuals>` will replace 
+  ``Variogram.residuals`` which has been deprecated
+
 Version 1.0.1
 -------------
 - [Variogram] documentation added to :func:`use_nugget <skgstat.Variogram.use_nugget>`

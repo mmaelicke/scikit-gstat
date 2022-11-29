@@ -375,7 +375,7 @@ class Variogram(object):
     def metric_space(self):
         r"""
         .. versionadded:: 0.5.6
-        
+
         :class:`MetricSpace <skgstat.MetricSpace>` representation of the
         input coordinates. A :class:`MetricSpace <skgstat.MetricSpace>`
         can be used to pass pre-calculated coordinates to other
@@ -447,7 +447,7 @@ class Variogram(object):
         Variogram._diff
 
         """
-        return squareform(self._diff)
+        return squareform(self.pairwise_diffs)
 
     def set_values(self, values, calc_diff=True):
         """Set new values
@@ -509,6 +509,22 @@ class Variogram(object):
         # recalculate the pairwise differences
         if calc_diff:
             self._calc_diff(force=True)
+
+    @property
+    def pairwise_diffs(self):
+        """
+        .. versionadded:: 1.0.4
+
+        Pairwise residual differences of the input data.
+        The property should be used over the Variogram._diff attribute,
+        as this will contain multiple targets with future releases to
+        implement cross-variograms.
+
+        """
+        if self._diff is None:
+            self.preprocessing()
+
+        return self._diff
 
     @property
     def bin_func(self):
@@ -1363,9 +1379,12 @@ class Variogram(object):
         iterable
 
         """
+        # get the diffs
+        diffs = self.pairwise_diffs
+        
         # yield all groups
         for i in range(len(self.bins)):
-            yield self._diff[np.where(self.lag_groups() == i)]
+            yield diffs[np.where(self.lag_groups() == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -1968,9 +1987,30 @@ class Variogram(object):
         experimental variogram and the theoretical model values at
         corresponding lag values
 
+        .. deprecated:: 1.0.4
+            residuals can be ambigious, thus the property is renamed to model_residuals
+
         Returns
         -------
         numpy.ndarray
+
+        """
+        warnings.warn(
+            "residuals is deprecated and will be removed. Please use Variogram.model_residuals",
+            DeprecationWarning
+        )
+        return self.model_residuals
+
+    @property
+    def model_residuals(self) -> np.ndarray:
+        """
+        Calculate the model residuals defined as the differences between the
+        experimental variogram and the theoretical model values at
+        corresponding lag values.
+
+        Returns
+        -------
+        residuals : numpy.ndarray
 
         """
         # get the deviations
