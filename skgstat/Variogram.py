@@ -1334,6 +1334,11 @@ class Variogram(object):
         self.cof = None
         self.cov = None
 
+    @property
+    def is_cross_variogram(self) -> bool:
+        """Read-only flag indicating if the current instance is a cross-variogram"""
+        return self._is_cross
+
     def update_kwargs(self, **kwargs):
         """
         .. versionadded:: 0.3.7
