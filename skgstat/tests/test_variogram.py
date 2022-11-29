@@ -1289,15 +1289,15 @@ class TestCrossVariogram(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
         np.random.seed(42)
-        self.c = np.random.gamma(10, 4, (30, 2))
+        self.c = np.random.gamma(10, 4, (100, 2))
         np.random.seed(42)
-        self.v = np.random.normal(10, 4, (30, 2))
+        self.v = np.random.multivariate_normal([10.5, 5.6], [[1.5, 3.2], [3.2, 1.5]], size=100)
 
     def test_cross_variable_dim_error(self):
         """Generate values of too high dimensionality"""
         # generate 3D values
         np.random.seed(42)
-        v = np.random.normal(10, 4, (30, 3, 3))
+        v = np.random.normal(10, 4, (100, 3, 3))
 
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, v)
@@ -1307,14 +1307,26 @@ class TestCrossVariogram(unittest.TestCase):
     def test_too_many_cross_variables(self):
         """Generate too many co-variables"""
         np.random.seed(42)
-        v = np.random.normal(10, 3, (30,3))
+        v = np.random.normal(10, 3, (100, 3))
 
         with self.assertRaises(ValueError) as e:
             Variogram(self.c, v)
 
         self.assertTrue('create a grid of cross-variograms' in str(e.exception))
+    
+    def test_cross_instantiation(self):
+        """Create a cross-variogram without error"""
+        vario = Variogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.is_cross_variogram)
+
+    def test_cross_shapes(self):
+        """diffs needs to be a 2d matrix now"""
+        vario = Variogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.pairwise_diffs.ndim == 2)
+
 
 if __name__ == '__main__':  # pragma: no cover
-    import os
     os.environ['SKG_SUPRESS'] = 'TRUE'
     unittest.main()
