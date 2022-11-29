@@ -8,7 +8,7 @@ from typing import Iterable, Callable, Union, Tuple
 import numpy as np
 from pandas import DataFrame
 from scipy.optimize import curve_fit, minimize, OptimizeWarning
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist, cdist, squareform
 from scipy import stats, sparse
 from sklearn.isotonic import IsotonicRegression
 
@@ -499,7 +499,7 @@ class Variogram(object):
         if _y.ndim > 2:
             raise ValueError(
                 "values has to be 1d (classic variogram) or 2d dimensional (cross-variogram)"
-            )  
+            )
         elif _y.ndim == 2:
             if _y.shape[1] > 2:
                 raise ValueError(
@@ -1407,10 +1407,17 @@ class Variogram(object):
         """
         # get the diffs
         diffs = self.pairwise_diffs
-        
+
+        # get the groups
+        groups = self.lag_groups()
+
+        # if this is a co-variogram -> diff has squareform
+        if self._is_cross:
+            groups = squareform(groups)
+
         # yield all groups
         for i in range(len(self.bins)):
-            yield diffs[np.where(self.lag_groups() == i)]
+            yield diffs[np.where(groups == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -1453,10 +1460,10 @@ class Variogram(object):
         .. versionchanged:: 0.3.10
             added 'ml' and 'custom' method.
 
-        .. versionchanged:: 1.0.1 
+        .. versionchanged:: 1.0.1
             use_nugget is now flagged implicitly, whenever a nugget > 0 is
-            passed in manual fitting.    
-        
+            passed in manual fitting.
+
         Parameters
         ----------
         force : bool
@@ -1720,7 +1727,13 @@ class Variogram(object):
         return loc['fitted_model']
 
     def _calc_diff(self, force=False):
-        """Calculates the pairwise differences
+        """
+        Calculates the pairwise differences for all coordinate locations.
+        If the Variogram is a cross-variogram, the differences are calculated
+        between the main variable (self.values) and the co-variable.
+
+        .. versionchanged:: 1.0.5
+            calculates co-variate differences
 
         Returns
         -------
@@ -1731,18 +1744,33 @@ class Variogram(object):
         if self._diff is not None and not force:
             return
 
+        # get the observation values
         v = self.values
 
         # handle sparse matrix
         if isinstance(self.distance_matrix, sparse.spmatrix):
+            # get triangular distance matrices
             c = r = self.triangular_distance_matrix
+
+            # get the sparse CSR matrix
             if not isinstance(c, sparse.csr.csr_matrix):
                 c = c.tocsr()
             if not isinstance(r, sparse.csc.csc_matrix):
                 r = r.tocsc()
+
+            # create the sparse column of observations
+            # for cross-variograms, this is the co-variable
+            if self._is_cross:
+                col_vals = self._co_variable[c.indices]
+            else:
+                col_vals = v[c.indices]
+
+            # get the cols
             Vcol = sparse.csr_matrix(
-                (self.values[c.indices], c.indices, c.indptr)
+                (col_vals, c.indices, c.indptr)
             )
+
+            # The sparse rows are always the observations
             Vrow = sparse.csc_matrix(
                 (self.values[r.indices], r.indices, r.indptr)
             ).tocsr()
@@ -1753,6 +1781,18 @@ class Variogram(object):
             # Vcol).data instead here, but that might optimize away
             # some zeros, leaving _diff in a different shape
             self._diff = np.abs(Vrow.data - Vcol.data)
+
+        # dense matrix - handle cross-variogram
+        elif self._is_cross:
+            # TODO: reflect this in the lag_classes
+            val_stack = np.column_stack((v, np.zeros(len(v))))
+            cov_stack = np.column_stack((
+                self._co_variable,
+                np.zeros(len(self._co_variable))
+            ))
+            self._diff = cdist(val_stack, cov_stack, metric='euclidean')
+
+        # dense matrix - normal variogram
         else:
             # Append a column of zeros to make pdist happy
             # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
