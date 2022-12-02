@@ -91,7 +91,6 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
 
 
 
-
 class Mock:
     def __init__(self, c=None, v=None):
         self._X = c

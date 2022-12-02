@@ -14,7 +14,7 @@ except ImportError:
     print('No plotly installed. Skip plot tests')
     PLOTLY_FOUND = False
 
-from skgstat import Variogram
+from skgstat import Variogram, DirectionalVariogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
@@ -1325,6 +1325,26 @@ class TestCrossVariogram(unittest.TestCase):
         vario = Variogram(self.c, self.v, maxlag='median')
 
         self.assertTrue(vario.pairwise_diffs.ndim == 1)
+
+    def test_covariable(self):
+        """check that the covariable was correctly instantiated"""
+        vario = Variogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.is_cross_variogram)
+        assert_array_almost_equal(self.v[:,1], vario._co_variable)
+
+    def test_directional_instantiation(self):
+        """Check that the directional variogram is also instantiated."""
+        vario = DirectionalVariogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.pairwise_diffs.ndim == 1)
+
+    def test_directional_covariable(self):
+        """Check that the directional variogram instantiated the covariable correctly"""
+        vario = DirectionalVariogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.is_cross_variogram)
+        assert_array_almost_equal(self.v[:,1], vario._co_variable)
 
 
 if __name__ == '__main__':  # pragma: no cover
