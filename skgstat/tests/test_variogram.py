@@ -73,7 +73,7 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
-            
+
     def test_sparse_standard_settings(self):
         V = Variogram(self.c, self.v, maxlag=10000)
 
@@ -127,7 +127,7 @@ class TestVariogramInstatiation(unittest.TestCase):
         with self.assertRaises(AttributeError) as e:
             V = Variogram(self.c, self.v)
             V.set_bin_func(42)
-        
+
         self.assertTrue('of type string' in str(e.exception))
 
     def test_unknown_model(self):
@@ -1313,7 +1313,7 @@ class TestCrossVariogram(unittest.TestCase):
             Variogram(self.c, v)
 
         self.assertTrue('create a grid of cross-variograms' in str(e.exception))
-    
+
     def test_cross_instantiation(self):
         """Create a cross-variogram without error"""
         vario = Variogram(self.c, self.v, maxlag='median')
@@ -1321,10 +1321,10 @@ class TestCrossVariogram(unittest.TestCase):
         self.assertTrue(vario.is_cross_variogram)
 
     def test_cross_shapes(self):
-        """diffs needs to be a 2d matrix now"""
+        """Check that the cross-variogram does not change the diff shape"""
         vario = Variogram(self.c, self.v, maxlag='median')
 
-        self.assertTrue(vario.pairwise_diffs.ndim == 2)
+        self.assertTrue(vario.pairwise_diffs.ndim == 1)
 
 
 if __name__ == '__main__':  # pragma: no cover
