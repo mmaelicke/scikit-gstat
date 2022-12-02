@@ -289,6 +289,11 @@ class Variogram(object):
         # set verbosity
         self.verbose = verbose
 
+        # declare a flag to mark if this is a covariogram
+        # this is set to None, as set_values will figure out.
+        self._is_cross = None
+        self._co_variable = None
+
         # set values
         self._values = None
         # calc_diff = False here, because it will be calculated by fit() later
@@ -488,9 +493,32 @@ class Variogram(object):
 
         # use an array
         _y = np.asarray(values)
-        if not _y.ndim == 1:  # pragma: no cover
-            raise ValueError('The values shall be a 1-D array.' +
-                             'Multi-dimensional values not supported yet.')
+
+        # check if this is should be a cross-variogram
+        # TODO: run tests for this
+        if _y.ndim > 2:
+            raise ValueError(
+                "values has to be 1d (classic variogram) or 2d dimensional (cross-variogram)"
+            )
+        elif _y.ndim == 2:
+            if _y.shape[1] > 2:
+                raise ValueError(
+                    "Use the utility function to create a grid of cross-variograms"
+                )
+            elif _y.shape[1] == 2:
+                # set the co-variable
+                self._co_variable = _y[:, 1].flatten()
+
+                # generate a warning if the cross variogram flag was set to False
+                if self._is_cross is not None and not self._is_cross:
+                    warnings.warn("You passed two variables as observation and " +
+                        "effectively turned this instance into a cross-variogram.")
+                self._is_cross = True
+
+                # by definition, the first axis is the observation
+                _y = _y[:, 0].flatten()
+        else:
+            self._is_cross = False
 
         # check if all input values are the same
         if len(set(_y)) < 2:
@@ -504,7 +532,7 @@ class Variogram(object):
         self._diff = None
 
         # set new values
-        self._values = np.asarray(values)
+        self._values = np.asarray(_y)
 
         # recalculate the pairwise differences
         if calc_diff:
@@ -1308,6 +1336,11 @@ class Variogram(object):
         self.cof = None
         self.cov = None
 
+    @property
+    def is_cross_variogram(self) -> bool:
+        """Read-only flag indicating if the current instance is a cross-variogram"""
+        return self._is_cross
+
     def update_kwargs(self, **kwargs):
         """
         .. versionadded:: 0.3.7
@@ -1381,10 +1414,13 @@ class Variogram(object):
         """
         # get the diffs
         diffs = self.pairwise_diffs
-        
+
+        # get the groups
+        groups = self.lag_groups()
+
         # yield all groups
         for i in range(len(self.bins)):
-            yield diffs[np.where(self.lag_groups() == i)]
+            yield diffs[np.where(groups == i)]
 
     def preprocessing(self, force=False):
         """Preprocessing function
@@ -1427,10 +1463,10 @@ class Variogram(object):
         .. versionchanged:: 0.3.10
             added 'ml' and 'custom' method.
 
-        .. versionchanged:: 1.0.1 
+        .. versionchanged:: 1.0.1
             use_nugget is now flagged implicitly, whenever a nugget > 0 is
-            passed in manual fitting.    
-        
+            passed in manual fitting.
+
         Parameters
         ----------
         force : bool
@@ -1657,9 +1693,6 @@ class Variogram(object):
         if self.cof is None:
             self.fit(force=True)
 
-        # get the pars
-        cof = self.cof
-
         return self.fitted_model_function(self._model, self.cof)
 
     @classmethod
@@ -1693,8 +1726,58 @@ class Variogram(object):
         exec(code, loc, loc)
         return loc['fitted_model']
 
+    def _format_values_stack(self, values: np.ndarray) -> np.ndarray:
+        """
+        Create a numpy column stack to calculate differences between two value arrays.
+        The format function will handle sparse matrices, as these do not include
+        pairwise differences that are separated beyond maxlag. 
+        The dense numpy.array matrices contain all point pairs.
+
+        """
+        # handle sparse matrix
+        if isinstance(self.distance_matrix, sparse.spmatrix):
+            # get triangular distance matrices
+            c = r = self.triangular_distance_matrix
+
+            # get the sparse CSR matrix
+            if not isinstance(c, sparse.csr.csr_matrix):
+                c = c.tocsr()
+            if not isinstance(r, sparse.csc.csc_matrix):
+                r = r.tocsc()
+
+            # get the cols
+            Vcol = sparse.csr_matrix(
+                (values[c.indices], c.indices, c.indptr)
+            )
+
+            # The sparse rows are always the observations
+            Vrow = sparse.csc_matrix(
+                (values[r.indices], r.indices, r.indptr)
+            ).tocsr()
+
+            # self._diff will have same shape as self.distances, even
+            # when that's not in diagonal format...
+            # Note: it might be compelling to do np.abs(Vrow -
+            # Vcol).data instead here, but that might optimize away
+            # some zeros, leaving _diff in a different shape
+            return np.abs(Vrow.data - Vcol.data)
+
+        else:
+            # Append a column of zeros to make pdist happy
+            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
+            return pdist(
+                np.column_stack((values, np.zeros(len(values)))),
+                metric="euclidean"
+            )
+
     def _calc_diff(self, force=False):
-        """Calculates the pairwise differences
+        """
+        Calculates the pairwise differences for all coordinate locations.
+        If the Variogram is a cross-variogram, the differences are calculated
+        between the main variable (self.values) and the co-variable.
+
+        .. versionchanged:: 1.0.5
+            calculates co-variate differences
 
         Returns
         -------
@@ -1705,35 +1788,18 @@ class Variogram(object):
         if self._diff is not None and not force:
             return
 
-        v = self.values
+        # format into column-stack for faster calculation
+        diffs = self._format_values_stack(self.values)
 
-        # handle sparse matrix
-        if isinstance(self.distance_matrix, sparse.spmatrix):
-            c = r = self.triangular_distance_matrix
-            if not isinstance(c, sparse.csr.csr_matrix):
-                c = c.tocsr()
-            if not isinstance(r, sparse.csc.csc_matrix):
-                r = r.tocsc()
-            Vcol = sparse.csr_matrix(
-                (self.values[c.indices], c.indices, c.indptr)
-            )
-            Vrow = sparse.csc_matrix(
-                (self.values[r.indices], r.indices, r.indptr)
-            ).tocsr()
+        # check if this is a cross-variogram
+        if self.is_cross_variogram:
+            co_diffs = self._format_values_stack(self._co_variable)
 
-            # self._diff will have same shape as self.distances, even
-            # when that's not in diagonal format...
-            # Note: it might be compelling to do np.abs(Vrow -
-            # Vcol).data instead here, but that might optimize away
-            # some zeros, leaving _diff in a different shape
-            self._diff = np.abs(Vrow.data - Vcol.data)
-        else:
-            # Append a column of zeros to make pdist happy
-            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
-            self._diff = pdist(
-                np.column_stack((v, np.zeros(len(v)))),
-                metric="euclidean"
-            )
+            # multiply to cross-difference
+            diffs *= co_diffs
+
+        # set the new differences
+        self._diff = diffs
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array

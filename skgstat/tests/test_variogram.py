@@ -14,7 +14,7 @@ except ImportError:
     print('No plotly installed. Skip plot tests')
     PLOTLY_FOUND = False
 
-from skgstat import Variogram
+from skgstat import Variogram, DirectionalVariogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
@@ -73,7 +73,7 @@ class TestVariogramInstatiation(unittest.TestCase):
 
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
-            
+
     def test_sparse_standard_settings(self):
         V = Variogram(self.c, self.v, maxlag=10000)
 
@@ -127,7 +127,7 @@ class TestVariogramInstatiation(unittest.TestCase):
         with self.assertRaises(AttributeError) as e:
             V = Variogram(self.c, self.v)
             V.set_bin_func(42)
-        
+
         self.assertTrue('of type string' in str(e.exception))
 
     def test_unknown_model(self):
@@ -1048,7 +1048,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
             Variogram(self.c, self.v).residuals
 
         self.assertTrue('residuals is deprecated and will be removed' in str(w.warning))
-  
+
 
 class TestVariogramMethods(unittest.TestCase):
     def setUp(self):
@@ -1266,7 +1266,7 @@ class TestSampling(unittest.TestCase):
             self.assertAlmostEqual(Vf["effective_range"], Vs["effective_range"], delta = Vf["effective_range"] / 5)
             self.assertAlmostEqual(Vf["sill"], Vs["sill"], delta = Vf["sill"] / 5)
 
-       
+
 class TestVariogramPickling(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
@@ -1285,7 +1285,68 @@ class TestVariogramPickling(unittest.TestCase):
         return True
 
 
+class TestCrossVariogram(unittest.TestCase):
+    def setUp(self):
+        # set up default values, whenever c and v are not important
+        np.random.seed(42)
+        self.c = np.random.gamma(10, 4, (100, 2))
+        np.random.seed(42)
+        self.v = np.random.multivariate_normal([10.5, 5.6], [[1.5, 3.2], [3.2, 1.5]], size=100)
+
+    def test_cross_variable_dim_error(self):
+        """Generate values of too high dimensionality"""
+        # generate 3D values
+        np.random.seed(42)
+        v = np.random.normal(10, 4, (100, 3, 3))
+
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, v)
+
+        self.assertTrue('values has to be 1d (classic variogram)' in str(e.exception))
+
+    def test_too_many_cross_variables(self):
+        """Generate too many co-variables"""
+        np.random.seed(42)
+        v = np.random.normal(10, 3, (100, 3))
+
+        with self.assertRaises(ValueError) as e:
+            Variogram(self.c, v)
+
+        self.assertTrue('create a grid of cross-variograms' in str(e.exception))
+
+    def test_cross_instantiation(self):
+        """Create a cross-variogram without error"""
+        vario = Variogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.is_cross_variogram)
+
+    def test_cross_shapes(self):
+        """Check that the cross-variogram does not change the diff shape"""
+        vario = Variogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.pairwise_diffs.ndim == 1)
+
+    def test_covariable(self):
+        """check that the covariable was correctly instantiated"""
+        vario = Variogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.is_cross_variogram)
+        assert_array_almost_equal(self.v[:,1], vario._co_variable)
+
+    def test_directional_instantiation(self):
+        """Check that the directional variogram is also instantiated."""
+        vario = DirectionalVariogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.pairwise_diffs.ndim == 1)
+
+    def test_directional_covariable(self):
+        """Check that the directional variogram instantiated the covariable correctly"""
+        vario = DirectionalVariogram(self.c, self.v, maxlag='median')
+
+        self.assertTrue(vario.is_cross_variogram)
+        assert_array_almost_equal(self.v[:,1], vario._co_variable)
+
+
 if __name__ == '__main__':  # pragma: no cover
-    import os
     os.environ['SKG_SUPRESS'] = 'TRUE'
     unittest.main()
