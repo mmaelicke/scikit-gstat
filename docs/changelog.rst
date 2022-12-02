@@ -7,6 +7,14 @@ Version 1.1-rc
 
 Version 1.0.4
 -------------
+- [Variogram] The variogram now accepts 2D values in ``(n_samples, 2)`` shape. The second column will be 
+  interpreted as a co-variable co-located to the observations and the Variogram then calculates the 
+  **cross-variogram** for ``values[:, 0] ~ values[:, 1]``
+  Note that this only implements the basic calculation of cross-variograms. Utility functions and
+  plotting still need to be updated. A tutorial will also be added in future.
+
+Version 1.0.3
+-------------
 - [Variogram] :func:`Variogram.pairwise_diffs <skgstat.Variogram.pairwise_diffs>` wraps around old ``_diff``
   and should be used instead of directly accessing ``_diff``
 - [Variogram] :func:`Variogram.model_residuals <skgstat.Variogram.model_residuals>` will replace 
