@@ -1,28 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import squareform
 
 try:
-    import plotly.graph_objects as go 
+    import plotly.graph_objects as go
 except ImportError:
     pass
 
 
 def __calculate_plot_data(variogram):
-   # get all distances
-    _dist = variogram.distance
+    # get all distances and residual diffs
+    dist = variogram.distance
+    diff = variogram.pairwise_diffs
 
-    # get all differences
-    if variogram._diff is None:
-        variogram._calc_diff()
-    _diff = variogram._diff
-
-    return _diff, _dist
+    return diff, dist
 
 
 def matplotlib_dd_plot(variogram, ax=None, plot_bins=True, show=True):
-    # get the plotting data 
+    # get the plotting data
     _diff, _dist = __calculate_plot_data(variogram)
-   
+
     # create the plot
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(8, 6))
@@ -62,7 +59,7 @@ def plotly_dd_plot(variogram, fig=None, plot_bins=True, show=True):
     # plot
     fig.add_trace(
         go.Scattergl(
-            x=_dist, y=_diff, 
+            x=_dist, y=_diff,
             mode='markers', marker=dict(color='blue', opacity=0.5)
         )
     )
