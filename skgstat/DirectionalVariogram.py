@@ -94,11 +94,11 @@ class DirectionalVariogram(Variogram):
         bin_func : str
             .. versionchanged:: 0.3.8
                 added 'fd', 'sturges', 'scott', 'sqrt', 'doane'
-            
+
             String identifying the binning function used to find lag class
             edges. All methods calculate bin edges on the interval [0, maxlag[.
             Possible values are:
-            
+
                 * `'even'` (default) finds `n_lags` same width bins
                 * `'uniform'` forms `n_lags` bins of same data count
                 * `'fd'` applies Freedman-Diaconis estimator to find `n_lags`
@@ -245,6 +245,11 @@ class DirectionalVariogram(Variogram):
 
         # set verbosity
         self.verbose = verbose
+
+        # declare a flag to mark if this is a covariogram
+        # this is set to None, as set_values will figure out
+        self._is_cross = None
+        self._co_variable = None
 
         # set values
         self._values = None
@@ -396,7 +401,6 @@ class DirectionalVariogram(Variogram):
         # store the angle or negative angle, depending on the
         # amount of the x coordinate
         self._angles = np.where(ydiff >= 0, pos_angles, -pos_angles)
-
 
     @property
     def azimuth(self):
