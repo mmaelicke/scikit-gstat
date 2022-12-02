@@ -517,6 +517,8 @@ class Variogram(object):
 
                 # by definition, the first axis is the observation
                 _y = _y[:, 0].flatten()
+        else:
+            self._is_cross = False
 
         # check if all input values are the same
         if len(set(_y)) < 2:
