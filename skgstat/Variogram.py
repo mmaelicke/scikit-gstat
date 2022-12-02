@@ -65,7 +65,7 @@ class Variogram(object):
             as distances will only be calculated once, instead of once per
             variogram.
         values : numpy.ndarray
-            .. versionchanged:: 1.0.4
+            .. versionchanged:: 1.0.5
                 Now accepts co-variables for calculating cross variograms.
 
             Array of values observed at the given coordinates. The length of
