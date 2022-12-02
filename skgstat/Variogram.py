@@ -289,7 +289,7 @@ class Variogram(object):
         # set verbosity
         self.verbose = verbose
 
-        # declate a flag to mark if this is a covariogram
+        # declare a flag to mark if this is a covariogram
         # this is set to None, as set_values will figure out.
         self._is_cross = None
         self._co_variable = None
