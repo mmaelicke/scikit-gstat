@@ -8,7 +8,7 @@ from typing import Iterable, Callable, Union, Tuple
 import numpy as np
 from pandas import DataFrame
 from scipy.optimize import curve_fit, minimize, OptimizeWarning
-from scipy.spatial.distance import pdist, cdist, squareform
+from scipy.spatial.distance import pdist, squareform
 from scipy import stats, sparse
 from sklearn.isotonic import IsotonicRegression
 
@@ -1416,10 +1416,6 @@ class Variogram(object):
         # get the groups
         groups = self.lag_groups()
 
-        # if this is a co-variogram -> diff has squareform
-        if self._is_cross:
-            groups = squareform(groups)
-
         # yield all groups
         for i in range(len(self.bins)):
             yield diffs[np.where(groups == i)]
@@ -1695,9 +1691,6 @@ class Variogram(object):
         if self.cof is None:
             self.fit(force=True)
 
-        # get the pars
-        cof = self.cof
-
         return self.fitted_model_function(self._model, self.cof)
 
     @classmethod
@@ -1763,16 +1756,9 @@ class Variogram(object):
             if not isinstance(r, sparse.csc.csc_matrix):
                 r = r.tocsc()
 
-            # create the sparse column of observations
-            # for cross-variograms, this is the co-variable
-            if self._is_cross:
-                col_vals = self._co_variable[c.indices]
-            else:
-                col_vals = v[c.indices]
-
             # get the cols
             Vcol = sparse.csr_matrix(
-                (col_vals, c.indices, c.indptr)
+                (v[c.indices], c.indices, c.indptr)
             )
 
             # The sparse rows are always the observations
@@ -1785,26 +1771,30 @@ class Variogram(object):
             # Note: it might be compelling to do np.abs(Vrow -
             # Vcol).data instead here, but that might optimize away
             # some zeros, leaving _diff in a different shape
-            self._diff = np.abs(Vrow.data - Vcol.data)
+            diffs = np.abs(Vrow.data - Vcol.data)
 
-        # dense matrix - handle cross-variogram
-        elif self._is_cross:
-            # TODO: reflect this in the lag_classes
-            val_stack = np.column_stack((v, np.zeros(len(v))))
-            cov_stack = np.column_stack((
-                self._co_variable,
-                np.zeros(len(self._co_variable))
-            ))
-            self._diff = cdist(val_stack, cov_stack, metric='euclidean')
-
-        # dense matrix - normal variogram
         else:
             # Append a column of zeros to make pdist happy
             # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
-            self._diff = pdist(
+            diffs = pdist(
                 np.column_stack((v, np.zeros(len(v)))),
                 metric="euclidean"
             )
+
+        # if this is a cross-variogram - get the co-variable resids.
+        if self.is_cross_variogram:
+            co_diffs = pdist(np.column_stack((
+                self._co_variable,
+                np.zeros(len(self._co_variable))
+                )),
+                metric='euclidean'
+            )
+
+            # multiply cross-differences
+            diffs *= co_diffs
+
+        # set the differences
+        self._diff = diffs
 
     def _calc_groups(self, force=False):
         """Calculate the lag class mask array
