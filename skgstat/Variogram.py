@@ -1724,6 +1724,50 @@ class Variogram(object):
         exec(code, loc, loc)
         return loc['fitted_model']
 
+    def _format_values_stack(self, values: np.ndarray) -> np.ndarray:
+        """
+        Create a numpy column stack to calculate differences between two value arrays.
+        The format function will handle sparse matrices, as these do not include
+        pairwise differences that are separated beyond maxlag. 
+        The dense numpy.array matrices contain all point pairs.
+
+        """
+        # handle sparse matrix
+        if isinstance(self.distance_matrix, sparse.spmatrix):
+            # get triangular distance matrices
+            c = r = self.triangular_distance_matrix
+
+            # get the sparse CSR matrix
+            if not isinstance(c, sparse.csr.csr_matrix):
+                c = c.tocsr()
+            if not isinstance(r, sparse.csc.csc_matrix):
+                r = r.tocsc()
+
+            # get the cols
+            Vcol = sparse.csr_matrix(
+                (values[c.indices], c.indices, c.indptr)
+            )
+
+            # The sparse rows are always the observations
+            Vrow = sparse.csc_matrix(
+                (values[r.indices], r.indices, r.indptr)
+            ).tocsr()
+
+            # self._diff will have same shape as self.distances, even
+            # when that's not in diagonal format...
+            # Note: it might be compelling to do np.abs(Vrow -
+            # Vcol).data instead here, but that might optimize away
+            # some zeros, leaving _diff in a different shape
+            return np.abs(Vrow.data - Vcol.data)
+
+        else:
+            # Append a column of zeros to make pdist happy
+            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
+            return pdist(
+                np.column_stack((values, np.zeros(len(values)))),
+                metric="euclidean"
+            )
+
     def _calc_diff(self, force=False):
         """
         Calculates the pairwise differences for all coordinate locations.
@@ -1742,58 +1786,17 @@ class Variogram(object):
         if self._diff is not None and not force:
             return
 
-        # get the observation values
-        v = self.values
+        # format into column-stack for faster calculation
+        diffs = self._format_values_stack(self.values)
 
-        # handle sparse matrix
-        if isinstance(self.distance_matrix, sparse.spmatrix):
-            # get triangular distance matrices
-            c = r = self.triangular_distance_matrix
-
-            # get the sparse CSR matrix
-            if not isinstance(c, sparse.csr.csr_matrix):
-                c = c.tocsr()
-            if not isinstance(r, sparse.csc.csc_matrix):
-                r = r.tocsc()
-
-            # get the cols
-            Vcol = sparse.csr_matrix(
-                (v[c.indices], c.indices, c.indptr)
-            )
-
-            # The sparse rows are always the observations
-            Vrow = sparse.csc_matrix(
-                (self.values[r.indices], r.indices, r.indptr)
-            ).tocsr()
-
-            # self._diff will have same shape as self.distances, even
-            # when that's not in diagonal format...
-            # Note: it might be compelling to do np.abs(Vrow -
-            # Vcol).data instead here, but that might optimize away
-            # some zeros, leaving _diff in a different shape
-            diffs = np.abs(Vrow.data - Vcol.data)
-
-        else:
-            # Append a column of zeros to make pdist happy
-            # euclidean: sqrt((a-b)**2 + (0-0)**2) == sqrt((a-b)**2)
-            diffs = pdist(
-                np.column_stack((v, np.zeros(len(v)))),
-                metric="euclidean"
-            )
-
-        # if this is a cross-variogram - get the co-variable resids.
+        # check if this is a cross-variogram
         if self.is_cross_variogram:
-            co_diffs = pdist(np.column_stack((
-                self._co_variable,
-                np.zeros(len(self._co_variable))
-                )),
-                metric='euclidean'
-            )
+            co_diffs = self._format_values_stack(self._co_variable)
 
-            # multiply cross-differences
+            # multiply to cross-difference
             diffs *= co_diffs
 
-        # set the differences
+        # set the new differences
         self._diff = diffs
 
     def _calc_groups(self, force=False):
