@@ -65,10 +65,17 @@ class Variogram(object):
             as distances will only be calculated once, instead of once per
             variogram.
         values : numpy.ndarray
+            .. versionchanged:: 1.0.4
+                Now accepts co-variables for calculating cross variograms.
+
             Array of values observed at the given coordinates. The length of
             the values array has to match the m dimension of the coordinates
             array. Will be used to calculate the dependent variable of the
             variogram.
+            If the values are of shape ``(n_samples, 2)``, a cross-variogram
+            will be calculated. This assumes the main variable and the
+            co-variable to be co-located under Markov-model 1 assumptions,
+            meaning the variable need to be conditionally independent.
         estimator : str, callable
             String identifying the semi-variance estimator to be used.
             Defaults to the Matheron estimator. Possible values are:
@@ -2655,7 +2662,7 @@ class Variogram(object):
         gstools.Krige
 
         """
-        # fit 
+        # fit
         self.fit()
         return skgstat_to_krige(self, **kwargs)
 
