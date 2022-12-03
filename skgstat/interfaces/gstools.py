@@ -1,5 +1,6 @@
 """GSTools Interface."""
 import numpy as np
+import warnings
 
 
 def stable_rescale(describe):
@@ -46,6 +47,12 @@ def skgstat_to_gstools(variogram, **kwargs):
     ValueError
         When given Variogram model is not supported ('harmonize').
 
+    Warns
+    -----
+    Warning
+        If the Variogram is a cross-variogram
+
+
     Returns
     -------
     model : :any:`CovModel <gstools.CovModel>`
@@ -70,6 +77,12 @@ def skgstat_to_gstools(variogram, **kwargs):
     # at least gstools>=1.3.0 is needed
     if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
         raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
+
+    # if Variogram is a cross-variogram warn the user
+    if variogram.is_cross_variogram:
+        warnings.warn("This instance is a cross-variogram!!" + 
+            " GSTools.CovModel will most likely not handle this Variogram correctly.")
+
 
     # gstolls needs the spatial dimension
     kwargs.setdefault("dim", variogram.dim)
@@ -135,6 +148,11 @@ def skgstat_to_krige(variogram, **kwargs):
         When GSTools version is not v1.3 or greater.
     ValueError
         When given Variogram model is not supported ('harmonize').
+
+    Warns
+    -----
+    Warning
+        If the Variogram is a cross-variogram
 
     Returns
     -------

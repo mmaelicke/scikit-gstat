@@ -2605,6 +2605,11 @@ class Variogram(object):
         ValueError
             When given Variogram model is not supported ('harmonize').
 
+        Warns
+        -----
+        Warning
+            If the Variogram is a cross-variogram
+
         Returns
         -------
         :any:`CovModel`
@@ -2651,6 +2656,11 @@ class Variogram(object):
             When GSTools version is not v1.3 or greater.
         ValueError
             When given Variogram model is not supported ('harmonize').
+
+        Warns
+        -----
+        Warning
+            If the Variogram is a cross-variogram
 
         Returns
         -------
