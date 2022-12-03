@@ -43,7 +43,8 @@ def field(fname: str, band: Union[int, str] = 0) -> np.ndarray:
         fname += '.png'
 
     # read image
-    img = imageio.imread(os.path.join(PATH, 'rf', fname))
+    # TODO: with imageio v3 this can be switched to imageio.imread - the result should be the same here
+    img = imageio.v2.imread(os.path.join(PATH, 'rf', fname))
 
     # switch band
     if isinstance(band, int):
