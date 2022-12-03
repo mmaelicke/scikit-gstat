@@ -1,6 +1,7 @@
 import unittest
 import os
 import pickle
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -159,16 +160,22 @@ class TestVariogramInstatiation(unittest.TestCase):
 
     def test_value_error_on_set_trf(self):
         """Test the Attribute error when switching to TRF on single value input"""
-        with self.assertRaises(AttributeError) as e:
-            v = Variogram(self.c, [42] * 30, fit_method='lm')
-            v.fit_method = 'trf'
+        # catch the same input value warning
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            with self.assertRaises(AttributeError) as e:
+                v = Variogram(self.c, [42] * 30, fit_method='lm')
+                v.fit_method = 'trf'
 
         self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
     
     def test_value_error_trf(self):
         """Test the Attribute error on TRF instantiation on single value input"""
-        with self.assertRaises(AttributeError) as e:
-            v = Variogram(self.c, [42] * 30, fit_method='trf')
+        # catch the same input value warning
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            with self.assertRaises(AttributeError) as e:
+                v = Variogram(self.c, [42] * 30, fit_method='trf')
 
         self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
 
@@ -402,7 +409,10 @@ class TestVariogramArguments(unittest.TestCase):
         )
 
     def test_set_dist_func(self):
-        V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
+        # The covariance cannot be estimated here - ignore the warning
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
         # use Manhattan distance
         V.set_dist_function('cityblock')
@@ -432,7 +442,11 @@ class TestVariogramArguments(unittest.TestCase):
         )
 
     def test_callable_dist_function(self):
-        V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
+        """Test to pass a callable as dist function, which always returns 1"""
+        # The covariance cannot be estimated here - ignore the warning
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
         def dfunc(u, v):
             return 1
@@ -551,6 +565,7 @@ class TestVariogramArguments(unittest.TestCase):
         self.assertLessEqual(np.max(V.bins), 1.0)
 
     def test_distance_matrix(self):
+        """Test the distance matrix property for correct shape"""
         coor = [[0, 0], [1, 0], [0, 1], [1, 1]]
         vals = [0, 1, 2, 3]
         dist_mat = np.asarray([
@@ -560,7 +575,10 @@ class TestVariogramArguments(unittest.TestCase):
             [1.414, 1, 1, 0]
         ])
 
-        V = Variogram(coor, vals)
+        # The covariance cannot be estimated here - ignore the warning
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            V = Variogram(coor, vals)
 
         assert_array_almost_equal(V.distance_matrix, dist_mat, decimal=3)
 
@@ -1287,6 +1305,10 @@ class TestVariogramPickling(unittest.TestCase):
 
 class TestCrossVariogram(unittest.TestCase):
     def setUp(self):
+        # ignore scipy runtime warnings as for this random data
+        # the covariance may not be positive-semidefinite
+        warnings.simplefilter('ignore', category=RuntimeWarning)
+        
         # set up default values, whenever c and v are not important
         np.random.seed(42)
         self.c = np.random.gamma(10, 4, (100, 2))
