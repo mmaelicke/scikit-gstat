@@ -8,6 +8,6 @@ from . import data
 from . import util
 
 # set some stuff
-__version__ = '1.0.5'
+from .__version__ import __version__
 __author__ = 'Mirko Maelicke <mirko.maelicke@kit.edu>'
 __backend__ = 'matplotlib'

@@ -7,8 +7,10 @@ def readme():
 
 
 def version():
-    with open('VERSION') as f:
-        return f.read().strip()
+    with open('skgstat/__version__.py') as f:
+        loc = dict()
+        exec(f.read(), loc, loc)
+        return loc['__version__']
 
 
 def requirements():
