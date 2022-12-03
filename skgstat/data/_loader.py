@@ -1,10 +1,14 @@
 from typing import Union, Tuple, List
 import os
-import imageio
 from glob import glob
 import numpy as np
 import pandas as pd
 
+# for python 3.6 compability
+try:
+    from imageio.v3 import imread
+except ImportError:
+    from imageio import imread
 
 PATH = os.path.abspath(os.path.dirname(__file__))
 
@@ -43,7 +47,8 @@ def field(fname: str, band: Union[int, str] = 0) -> np.ndarray:
         fname += '.png'
 
     # read image
-    img = imageio.imread(os.path.join(PATH, 'rf', fname))
+    # TODO: with imageio v3 this can be switched to imageio.imread - the result should be the same here
+    img = imread(os.path.join(PATH, 'rf', fname))
 
     # switch band
     if isinstance(band, int):

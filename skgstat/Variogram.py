@@ -1115,7 +1115,7 @@ class Variogram(object):
         c = m.tocsc()
         c.data = c.indices
         rows = c.tocsr()
-        filt = sparse.csr.csr_matrix(
+        filt = sparse.csr_matrix(
             (m.indices < rows.data, m.indices, m.indptr),
             m.shape
         )
@@ -1747,9 +1747,9 @@ class Variogram(object):
             c = r = self.triangular_distance_matrix
 
             # get the sparse CSR matrix
-            if not isinstance(c, sparse.csr.csr_matrix):
+            if not isinstance(c, sparse.csr_matrix):
                 c = c.tocsr()
-            if not isinstance(r, sparse.csc.csc_matrix):
+            if not isinstance(r, sparse.csc_matrix):
                 r = r.tocsc()
 
             # get the cols
@@ -2105,7 +2105,7 @@ class Variogram(object):
         -------
         float
         """
-        return np.nanmean(np.fromiter(map(np.abs, self.residuals), float))
+        return np.nanmean(np.fromiter(map(np.abs, self.model_residuals), float))
 
     @property
     def rmse(self):
@@ -2605,6 +2605,11 @@ class Variogram(object):
         ValueError
             When given Variogram model is not supported ('harmonize').
 
+        Warns
+        -----
+        Warning
+            If the Variogram is a cross-variogram
+
         Returns
         -------
         :any:`CovModel`
@@ -2651,6 +2656,11 @@ class Variogram(object):
             When GSTools version is not v1.3 or greater.
         ValueError
             When given Variogram model is not supported ('harmonize').
+
+        Warns
+        -----
+        Warning
+            If the Variogram is a cross-variogram
 
         Returns
         -------

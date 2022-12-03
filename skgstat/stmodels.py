@@ -18,7 +18,7 @@ def stvariogram(func):
 
 @stvariogram
 def sum(lags, Vx, Vt):
-    """Sum space-time model
+    r"""Sum space-time model
 
     Separable space-time variogram model. This is the most basic model as the
     two marginal models of the space and time axis are simply summed up for
@@ -78,7 +78,7 @@ def sum(lags, Vx, Vt):
 
 @stvariogram
 def product(lags, Vx, Vt, Cx, Ct):
-    """Product model
+    r"""Product model
 
     Separable space-time variogram model. This model is based on the product
     of the marginal space and time models.
@@ -130,7 +130,7 @@ def product(lags, Vx, Vt, Cx, Ct):
 
 @stvariogram
 def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
-    """Product-Sum space-time model
+    r"""Product-Sum space-time model
 
     Separable space-time variogram model, based on a combination of 'sum' and
     'product' models. Both base models are based on separated marginal
@@ -176,8 +176,8 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
     De Cesare et. al [15]_, [16]_:
 
     .. math::
-        \\gamma_{ST}(h_s, h_t) = [k_1C_T(0) + k_2]*\\gamma_S(h_s) +
-        [k_1C_s(0) + k_3]\\gamma_T(h_t) - k_1\\gamma_s(h_s) x \\gamma_T(h_t)
+        \gamma_{ST}(h_s, h_t) = [k_1C_T(0) + k_2]*\gamma_S(h_s) +
+        [k_1C_s(0) + k_3]\gamma_T(h_t) - k_1\gamma_s(h_s) x \gamma_T(h_t)
 
     References
     ----------

@@ -287,7 +287,7 @@ class TestGstoolsInterface(unittest.TestCase):
         assert_array_almost_equal(
             model.variogram(self.xi), self.yi, decimal=2
         )
-
+    
 
 class TestGstoolsAllModels(unittest.TestCase):
     def setUp(self):

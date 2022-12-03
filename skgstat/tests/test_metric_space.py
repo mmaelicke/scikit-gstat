@@ -1,4 +1,5 @@
 import pytest
+import warnings
 import numpy as np
 import skgstat as skg
 import scipy
@@ -78,7 +79,6 @@ def test_metric_pair_max_dist():
         assert 'same max_dist' in e.value
 
 def test_raster_metric():
-
     # Generate a gridded dataset
     shape = (100, 100)
     np.random.seed(42)
@@ -100,14 +100,17 @@ def test_raster_metric():
     # Minimal check of the output
     assert rems.max_dist == pytest.approx(140,rel=0.01)
     assert rems.res == pytest.approx(1, rel=0.0001)
-    assert isinstance(rems.dists, scipy.sparse.csr.csr_matrix)
+    assert isinstance(rems.dists, scipy.sparse.csr_matrix)
     assert rems.dists.shape == (10000, 10000)
 
     # Check the random state provides the same final center
     assert all(rems._centers[-1] == np.array([62, 52]))
 
     # Check the interface with a Variogram object works
-    V = skg.Variogram(rems, vals)
+    with warnings.catch_warnings():
+        # this will throw a optimze warning on random data
+        warnings.simplefilter('ignore')
+        V = skg.Variogram(rems, vals)
 
     assert V.bin_count is not None
     # Check the variogram is always the same with the random state given
@@ -118,11 +121,17 @@ def test_raster_metric():
     vals_sub = vals[0::1000]
     rems_sub = skg.RasterEquidistantMetricSpace(coords_sub, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=100, runs=10,
                                             rnd=42)
-    V = skg.Variogram(rems_sub, vals_sub)
+    with warnings.catch_warnings():
+        # this will throw a optimze warning on random data
+        warnings.simplefilter('ignore')
+        V = skg.Variogram(rems_sub, vals_sub)
 
     # Check with a single isolated point possibly being used as center
     coords_sub = np.concatenate(([coords[0]], coords[-10:]))
     vals_sub = np.concatenate(([vals[0]], vals[-10:]))
     rems_sub = skg.RasterEquidistantMetricSpace(coords_sub, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=100, runs=11,
                                             rnd=42)
-    V = skg.Variogram(rems_sub, vals_sub)
+    with warnings.catch_warnings():
+        # this will throw a optimze warning on random data
+        warnings.simplefilter('ignore')
+        V = skg.Variogram(rems_sub, vals_sub)
