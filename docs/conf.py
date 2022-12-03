@@ -19,14 +19,16 @@ sys.path.insert(0, os.path.abspath('.'))
 
 def get_version():
     B = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(B, '..', 'VERSION'), 'r') as f:
-        return f.read().strip()
+    with open(os.path.join(B, '..', 'skgstat', '__version__.py'), 'r') as f:
+        loc = dict()
+        exec(f.read(), loc, loc)
+        return loc['__version__']
 
 # -- Project information -----------------------------------------------------
 
 
 project = 'SciKit GStat'
-copyright = '2021, Mirko Mälicke'
+copyright = '2022, Mirko Mälicke'
 author = 'Mirko Mälicke'
 
 # The short X.Y version

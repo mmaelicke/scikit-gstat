@@ -5,11 +5,16 @@ Changelog
 Version 1.1-rc
 ==============
 
-Version 1.0.6
+Version 1.0.7
 -------------
 - [Variogram] The Variogram instance now removed all usages of the deprecated ``Variogram.residuals`` property
 - [tests] All warnings in the tests have been resolved, mostly by updating imports
 - [tests] Expected warnings in unittests are ignored now.
+
+Version 1.0.6
+-------------
+This is technically the same as the 1.0.5 as I screwed up and uplaoded to PyPI without merging the changes.
+
 
 Version 1.0.5
 -------------
