@@ -1307,8 +1307,10 @@ class TestCrossVariogram(unittest.TestCase):
     def setUp(self):
         # ignore scipy runtime warnings as for this random data
         # the covariance may not be positive-semidefinite
+        # this is caused by the multivariate_normal - thus no problem
+        # see here: https://stackoverflow.com/questions/41515522/numpy-positive-semi-definite-warning
         warnings.simplefilter('ignore', category=RuntimeWarning)
-        
+
         # set up default values, whenever c and v are not important
         np.random.seed(42)
         self.c = np.random.gamma(10, 4, (100, 2))
