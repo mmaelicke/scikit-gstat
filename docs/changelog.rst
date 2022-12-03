@@ -5,6 +5,12 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.6
+-------------
+- [Variogram] The Variogram instance now removed all usages of the deprecated ``Variogram.residuals`` property
+- [tests] All warnings in the tests have been resolved, mostly by updating imports
+- [tests] Expected warnings in unittests are ignored now.
+
 Version 1.0.5
 -------------
 - [Variogram] The variogram now accepts 2D values in ``(n_samples, 2)`` shape. The second column will be 
