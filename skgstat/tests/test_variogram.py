@@ -1370,6 +1370,15 @@ class TestCrossVariogram(unittest.TestCase):
         self.assertTrue(vario.is_cross_variogram)
         assert_array_almost_equal(self.v[:,1], vario._co_variable)
 
+    def test_cross_variogram_warns(self):
+        """Test warning when cross-variogram is exported to gstools"""
+        vario = Variogram(self.c, self.v)
+
+        with self.assertWarns(Warning) as w:
+            vario.to_gstools()
+        
+        self.assertTrue("This instance is a cross-variogram!!" in str(w.warning))
+
 
 if __name__ == '__main__':  # pragma: no cover
     os.environ['SKG_SUPRESS'] = 'TRUE'
