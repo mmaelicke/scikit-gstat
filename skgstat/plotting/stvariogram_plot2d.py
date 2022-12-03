@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.ndimage.interpolation import zoom
+from scipy.ndimage import zoom
 from scipy.interpolate import griddata
 
 try:
