@@ -943,7 +943,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
     def test_residuals(self):
         V = Variogram(self.c, self.v)
         assert_array_almost_equal(
-            V.residuals,
+            V.model_residuals,
             np.array(
                 [-3.43e-08, -1.33e-01, 2.11e+00, 4.89e+00, 1.37e+00, 1.50e+00,
                  -3.83e+00, -6.89e+00, 3.54e+00, -2.55e+00]),

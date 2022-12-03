@@ -2105,7 +2105,7 @@ class Variogram(object):
         -------
         float
         """
-        return np.nanmean(np.fromiter(map(np.abs, self.residuals), float))
+        return np.nanmean(np.fromiter(map(np.abs, self.model_residuals), float))
 
     @property
     def rmse(self):
