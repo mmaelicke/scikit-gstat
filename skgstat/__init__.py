@@ -6,6 +6,7 @@ from .MetricSpace import MetricSpace, MetricSpacePair, ProbabalisticMetricSpace,
 from . import interfaces
 from . import data
 from . import util
+from .util.cross_variogram import cross_variograms
 
 # set some stuff
 from .__version__ import __version__

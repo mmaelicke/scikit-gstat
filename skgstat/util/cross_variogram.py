@@ -8,7 +8,8 @@ from typing import List
 
 import numpy as np
 
-from skgstat import Variogram,DirectionalVariogram
+from skgstat.Variogram import Variogram
+from skgstat.DirectionalVariogram import DirectionalVariogram
 
 def cross_variograms(coordinates: np.ndarray, values: np.ndarray, **kwargs) -> List[List[Variogram]]:
     """
