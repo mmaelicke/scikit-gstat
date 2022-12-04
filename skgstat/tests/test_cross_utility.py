@@ -2,7 +2,9 @@ import unittest
 import warnings
 
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 
+from skgstat import Variogram
 from skgstat.util.cross_variogram import cross_variogram
 
 
@@ -32,3 +34,20 @@ class TestCrossUtility(unittest.TestCase):
         # check shape
         mat = np.asarray(mat, dtype='object')
         self.assertTrue(mat.shape, (4, 4))
+    
+    def test_cross_matrix_diagonal(self):
+        """Test that the primary variograms are correct"""
+        # get the cross variogram matrix
+        mat = cross_variogram(self.c, self.v, maxlag='median')
+
+        # calculate the first and third primary variogram
+        first = Variogram(self.c, self.v[:, 0], maxlag='median')
+        third = Variogram(self.c, self.v[:, 2], maxlag='median')
+
+        # assert first empirical variogram
+        assert_array_almost_equal(mat[0][0].experimental, first.experimental, 2)
+        assert_array_almost_equal(mat[0][0].bins, first.bins, 1)
+
+        # assert thrird empirical variogram
+        assert_array_almost_equal(mat[2][2].experimental, third.experimental, 2)
+        assert_array_almost_equal(mat[2][2].bins, third.bins, 1)
