@@ -10,7 +10,7 @@ import numpy as np
 
 from skgstat import Variogram,DirectionalVariogram
 
-def cross_variogram(coordinates: np.ndarray, values: np.ndarray, **kwargs) -> List[List[Variogram]]:
+def cross_variograms(coordinates: np.ndarray, values: np.ndarray, **kwargs) -> List[List[Variogram]]:
     """
     Cross-variogram matrix calculation. Similar to a cross-correlation table.
     For all combinations of ``(n_samples, N)`` given values a

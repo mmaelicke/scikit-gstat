@@ -4,8 +4,8 @@ import warnings
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
-from skgstat import Variogram
-from skgstat.util.cross_variogram import cross_variogram
+from skgstat import Variogram, DirectionalVariogram
+from skgstat.util.cross_variogram import cross_variograms
 
 
 class TestCrossUtility(unittest.TestCase):
@@ -29,7 +29,7 @@ class TestCrossUtility(unittest.TestCase):
 
     def test_cross_matrix_shape(self):
         """Test the shape of the cross-variogram matrix for 4 variables"""
-        mat = cross_variogram(self.c, self.v)
+        mat = cross_variograms(self.c, self.v)
 
         # check shape
         mat = np.asarray(mat, dtype='object')
@@ -38,7 +38,7 @@ class TestCrossUtility(unittest.TestCase):
     def test_cross_matrix_diagonal(self):
         """Test that the primary variograms are correct"""
         # get the cross variogram matrix
-        mat = cross_variogram(self.c, self.v, maxlag='median')
+        mat = cross_variograms(self.c, self.v, maxlag='median')
 
         # calculate the first and third primary variogram
         first = Variogram(self.c, self.v[:, 0], maxlag='median')
@@ -54,7 +54,7 @@ class TestCrossUtility(unittest.TestCase):
 
     def test_check_cross_variogram(self):
         """Test two of the cross-variograms in the matrix"""
-        mat = cross_variogram(self.c, self.v, n_lags=15)
+        mat = cross_variograms(self.c, self.v, n_lags=15)
 
         # calculate two cross-variograms
         first = Variogram(self.c, self.v[:, [1, 3]], n_lags=15)
@@ -67,3 +67,11 @@ class TestCrossUtility(unittest.TestCase):
         # assert second variogram
         assert_array_almost_equal(mat[0][2].experimental, second.experimental, 2)
         assert_array_almost_equal(mat[0][2].bins, second.bins, 1)
+
+    def test_for_directional_variograms(self):
+        """Check that DirectionalVariograms are also calcualted correctly"""
+        mat = cross_variograms(self.c, self.v, azimuth=90)
+
+        mat = np.asarray(mat, dtype='object').flatten()
+
+        self.assertTrue(all([isinstance(v, DirectionalVariogram) for v in mat]))
