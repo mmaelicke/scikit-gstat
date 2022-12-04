@@ -77,8 +77,10 @@ def cross_variogram(coordinates: np.ndarray, values: np.ndarray, **kwargs) -> Li
                 cross_row.append(BaseCls(coordinates, values[:, i], **kwargs))
             else:
                 # extract the two datasets
-                cross_row.append(None)
-                pass
+                v = values[:, [i, j]]
+
+                # append the cross-variogram
+                cross_row.append(BaseCls(coordinates, v, **kwargs))
 
         # append
         cross_m.append(cross_row)
