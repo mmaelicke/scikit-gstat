@@ -51,3 +51,19 @@ class TestCrossUtility(unittest.TestCase):
         # assert thrird empirical variogram
         assert_array_almost_equal(mat[2][2].experimental, third.experimental, 2)
         assert_array_almost_equal(mat[2][2].bins, third.bins, 1)
+
+    def test_check_cross_variogram(self):
+        """Test two of the cross-variograms in the matrix"""
+        mat = cross_variogram(self.c, self.v, n_lags=15)
+
+        # calculate two cross-variograms
+        first = Variogram(self.c, self.v[:, [1, 3]], n_lags=15)
+        second = Variogram(self.c, self.v[:, [0, 2]], n_lags=15)
+
+        # assert first variogram
+        assert_array_almost_equal(mat[1][3].experimental, first.experimental, 2)
+        assert_array_almost_equal(mat[1][3].bins, first.bins, 1)
+
+        # assert second variogram
+        assert_array_almost_equal(mat[0][2].experimental, second.experimental, 2)
+        assert_array_almost_equal(mat[0][2].bins, second.bins, 1)
