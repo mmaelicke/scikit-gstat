@@ -8,6 +8,7 @@ from .directtional_variogram import matplotlib_pair_field, plotly_pair_field
 from .stvariogram_plot3d import matplotlib_plot_3d, plotly_plot_3d
 from .stvariogram_plot2d import matplotlib_plot_2d, plotly_plot_2d
 from .stvariogram_marginal import matplotlib_marginal, plotly_marginal
+from .cross_variogram_matrix import matplotlib_cv_matrix, plotly_cv_matrix
 
 
 ALLOWED_BACKENDS = [
