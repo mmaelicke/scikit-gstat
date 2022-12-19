@@ -59,3 +59,12 @@ def test_meuse_loads():
         data.meuse(variable='unknown')
 
     assert 'variable has to be in' in str(e.value)
+
+def test_cor_var():
+    np.random.seed(42)
+    d = np.random.multivariate_normal([1.0, 10.0], [[1.2, 3.3], [3.3, 1.2]], size=50)
+
+    # test the data provider
+    p = data.corr_variable(50, [1.0, 10.0], vars=None, cov=[[1.2, 3.3], [3.3, 1.2]], seed=42).get('sample')[1]
+
+    assert_array_almost_equal(d, p, decimal=1)
