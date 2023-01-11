@@ -73,4 +73,44 @@ jobs:
           target_branch: gh-pages
           build_dir: docs/_build/html
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}     
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+
+  release:
+    name: Create Github release
+    runs-on: ubuntu-20.04
+    needs: tests
+    if: startsWith(github.event.ref, 'refs/tag/v') && endsWith(github.event.ref, '.0')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: RELEASE.md
+          generate_release_notes: true
+
+  publish:
+    name: Publish to PyPi
+    runs-on: ubuntu-20.04
+    needs: tests
+    if: startsWith(github.event.ref, 'refs/tag/v')  
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+    - name: Build package
+      run: python -m build
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }} 
