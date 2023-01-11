@@ -5,6 +5,12 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.9
+-------------
+- [binning] fixed a deprecation warning raised by a future change to KMeans to preserve the current behavior
+- [data] Added a data generator for creating :func:`random multivariate data <skgstat.data.corr_variable>`
+- [tests] Added tests for :func:`random multivariate data <skgstat.data.corr_variable>`
+
 Verison 1.0.8
 -------------
 - [util] added :func:`cross_variograms <skgstat.cross_variograms>` for calculating cross-variograms for 
