@@ -158,6 +158,10 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
     specific value. You can change the seed by passing another seed to
     :class:`Variogram <skgstat.Variogram>` as `binning_random_state`.
 
+    .. versionchanged:: 1.0.9
+        KMeans is now initialized as ``KMeans(n_init=10)`` as this default value
+        will change in SciKit-Learn 1.4.
+
     """
     # maxlags larger than maximum separating distance will be ignored
     if maxlag is None or maxlag > np.nanmax(distances):
@@ -173,7 +177,7 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
 
         # cluster the filtered distances
         try:
-            km = KMeans(n_clusters=n, random_state=binning_random_state).fit(d.reshape(-1, 1))
+            km = KMeans(n_clusters=n, random_state=binning_random_state, n_init=10).fit(d.reshape(-1, 1))
         except ConvergenceWarning:
             raise ValueError("KMeans failed to converge. Maybe you need to use a different n_lags.")
 
