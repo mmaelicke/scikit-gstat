@@ -1,4 +1,6 @@
-import pandas as pd
+from typing import List, Union
+
+import numpy as np
 
 from skgstat.data import _loader
 from skgstat.data._loader import field_names, sample_to_df
@@ -8,16 +10,24 @@ names = field_names()
 
 origins = dict(
     pancake="""Image of a pancake with apparent spatial structure.
-    Copyright Mirko Mälicke, 2020. If you use this data,
-    cite SciKit-GStat: https://doi.org/10.5281/zenodo.1345584
+    Copyright Mirko Mälicke, 2020. If you use this data cite SciKit-GStat: 
+
+      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation 
+        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532, 
+        https://doi.org/10.5194/gmd-15-2505-2022, 2022.
+
     """,
     aniso="""Random field greyscale image with geometric anisotropy.
     The anisotropy in North-East direction has a factor of 3. The random
     field was generated using gstools.
-    Copyright Mirko Mälicke, 2020. If you use this data,
-    cite SciKit-GStat: https://doi.org/10.5281/zenodo.1345584
+    Copyright Mirko Mälicke, 2020. If you use this data, cite SciKit-GStat: 
+
+      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation 
+        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532, 
+        https://doi.org/10.5194/gmd-15-2505-2022, 2022.
+
     """,
-    meuse=""""Sample dataset of real measurements of heavy metal pollutions
+    meuse="""Sample dataset of real measurements of heavy metal pollutions
     in the topsoil on a 15x15 meter plot along the river Meuse.
     The data is distributed along with the R-package sp.
     IMPORTANT: If you use this data, cite Pebesma and Bivand (2005)
@@ -28,6 +38,18 @@ origins = dict(
 
       Bivand RS, Pebesma E, Gomez-Rubio V (2013). Applied spatial data
       analysis with R, Second edition. Springer, NY. https://asdar-book.org/.
+
+    """,
+    corr_var="""Random sample at random locations created using numpy.
+    The sample can be created for multiple variables, which will be 
+    cross-correlated. The statistical moment of each variable can be specified
+    as well as the co-variance matrix can be given.
+    IMPORTANT: This data generator is part of SciKit-GStat and is built on
+    Numpy. If you use it, please cite:
+
+      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation 
+        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532, 
+        https://doi.org/10.5194/gmd-15-2505-2022, 2022.
 
     """
 )
@@ -303,4 +325,102 @@ def meuse(variable='lead', as_dataframe=False):
     return dict(
         sample=sample,
         origin=origins.get('meuse')
+    )
+
+
+def corr_variable(
+    size : int = 150,
+    means: List[float] = [1., 1.],
+    vars: List[float] = None,
+    cov: Union[float, List[float], List[List[float]]] = None,
+    coordinates: np.ndarray = None,
+    seed: int = None
+):
+    """
+    Returns random cross-correlated variables assigned to random coordinate
+    locations. These can be used for testing cross-variograms, or as a
+    random benchmark for cross-variograms in method development, aka. does
+    actual correlated data exhibit different cross-variograms of random 
+    variables of the same correlation coefficient matrix.
+
+    Parameters
+    ----------
+    size : int
+        Length of the spatial sample. If coordinates are supplied, the
+        length has to match size.
+    means : List[float]
+        Mean values of the variables, defaults to two variables with
+        mean of 1. The number of means determines the number of 
+        variables, which will be returned.
+    vars : List[float]
+        Univariate variances for each of the random variables. 
+        If None, and cov is given, the diagonal of the correlation
+        coefficient matrix will be used. If cov is None, the 
+        correlation will be random, but the variance will match.
+        If vars is None, random variances will be used.
+    cov : list, float
+        Co-variance matrix. The co-variances and variances for all 
+        created random variables can be given directly, as matrix of shape
+        ``(len(means), len(means))``.
+        If cov is a float, the same matrix will be created using the same
+        co-variance for all combinations. 
+    coordinates : np.ndarray
+        Coordinates to be used for the sample. If None, random locations
+        are created.
+    seed : int
+        Optional. If the seed is given, the random number generator is
+        seeded and the function will return the same sample.
+
+    Returns
+    -------
+    result : dict
+        Dictionary of the sample and a citation information.
+ 
+    """
+    # Handle coordinates
+    if coordinates is None:
+        np.random.seed(seed)
+        coordinates = np.random.normal(10, 5, size=(size, 2))
+    
+    # get the number of variables
+    N = len(means)
+
+    # derive the univariate variances
+    if vars is None:
+        np.random.seed(seed)
+        # use 0...1 ratio of m for variance
+        vars = [np.random.random() * m for m in means]
+    
+    # check the cov matrix
+    if cov is None:
+        np.random.seed(seed)
+        # completely random
+        cov = np.random.rand(N, N)
+        np.fill_diagonal(cov, vars)
+
+    # same co-variance
+    elif isinstance(cov, (int, float)):
+        cov = np.ones((N, N)) * cov
+        np.fill_diagonal(cov, vars)
+    
+    # matrix already
+    elif isinstance(cov, (np.ndarray, list, tuple)) and np.asarray(cov).ndim == 2:
+        # overwrite variances
+        cov = np.asarray(cov)
+        vars = np.diag(cov)
+    
+    else:
+        raise ValueError("if cov is given it has to be either one uniform co-variance, or a co-variance matrix.")
+    
+    # create the values
+    np.random.seed(seed)
+    values = np.random.multivariate_normal(means, cov, size=size)
+
+    # create the sample
+    sample = (coordinates, values, )
+
+    # return
+    return dict(
+        sample=sample,
+        origin=origins.get('corr_var')
     )

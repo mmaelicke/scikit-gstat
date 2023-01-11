@@ -59,3 +59,48 @@ def test_meuse_loads():
         data.meuse(variable='unknown')
 
     assert 'variable has to be in' in str(e.value)
+
+
+def test_corr_var():
+    np.random.seed(42)
+    d = np.random.multivariate_normal([1.0, 10.0], [[1.2, 3.3], [3.3, 1.2]], size=50)
+
+    # test the data provider
+    p = data.corr_variable(50, [1.0, 10.0], vars=None, cov=[[1.2, 3.3], [3.3, 1.2]], seed=42).get('sample')[1]
+
+    assert_array_almost_equal(d, p, decimal=1)
+
+
+def test_corr_var_derirved():
+    # Test random covariance generation
+    vars = [1.2, 1.5]
+    np.random.seed(42)
+    cov = np.random.rand(2, 2)
+    np.fill_diagonal(cov, vars)
+
+    # generate test sample
+    np.random.seed(42)
+    d = np.random.multivariate_normal([1.0, 10.0], cov, size=50)
+
+    p = data.corr_variable(50, [1.0, 10.0], vars=vars, cov=None, seed=42).get('sample')[1]
+
+    assert_array_almost_equal(d, p, decimal=1)
+
+    # test uniform covariance
+    cov = np.ones((2, 2)) * 0.8
+    np.fill_diagonal(cov, vars)
+    
+    # generate test sample
+    np.random.seed(42)
+    d = np.random.multivariate_normal([1.0, 10.0], cov, size=50)
+
+    p = data.corr_variable(50, [1.0, 10.0], vars=vars, cov=0.8, seed=42).get('sample')[1]
+
+    assert_array_almost_equal(d, p, decimal=1)
+
+
+def test_corr_var_matrix_error():
+    with pytest.raises(ValueError) as e:
+        data.corr_variable(50, [1.0, 2.0], cov='NotAllowed')
+    
+    assert 'uniform co-variance, or a co-variance matrix' in str(e.value)
