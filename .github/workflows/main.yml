@@ -78,7 +78,7 @@ jobs:
   release:
     name: Create Github release
     runs-on: ubuntu-20.04
-    needs: tests
+    needs: test
     if: startsWith(github.event.ref, 'refs/tag/v') && endsWith(github.event.ref, '.0')
 
     steps:
@@ -94,7 +94,7 @@ jobs:
   publish:
     name: Publish to PyPi
     runs-on: ubuntu-20.04
-    needs: tests
+    needs: test
     if: startsWith(github.event.ref, 'refs/tag/v')  
 
     steps:
