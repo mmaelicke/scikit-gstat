@@ -393,6 +393,7 @@ def corr_variable(
     
     # check the cov matrix
     if cov is None:
+        np.random.seed(seed)
         # completely random
         cov = np.random.rand(N, N)
         np.fill_diagonal(cov, vars)
