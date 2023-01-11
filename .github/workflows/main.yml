@@ -79,7 +79,7 @@ jobs:
     name: Create Github release
     runs-on: ubuntu-20.04
     needs: test
-    if: startsWith(github.event.ref, 'refs/tag/v') && endsWith(github.event.ref, '.0')
+    if: startsWith(github.event.ref, 'refs/tags/v') && endsWith(github.event.ref, '.0')
 
     steps:
       - name: Checkout
@@ -95,7 +95,7 @@ jobs:
     name: Publish to PyPi
     runs-on: ubuntu-20.04
     needs: test
-    if: startsWith(github.event.ref, 'refs/tag/v')  
+    if: startsWith(github.event.ref, 'refs/tags/v')  
 
     steps:
     - uses: actions/checkout@v3
@@ -118,7 +118,7 @@ jobs:
   ci_develop:    
     name: Print Github Context for Development
     runs-on: ubuntu-20.04
-    if: false
+    if: true
     
     steps:
     - name: Dump GitHub context
