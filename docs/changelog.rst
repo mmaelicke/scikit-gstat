@@ -5,6 +5,15 @@ Changelog
 Version 1.1-rc
 ==============
 
+Verison 1.0.8
+-------------
+- [util] added :func:`cross_variograms <skgstat.cross_variograms>` for calculating cross-variograms for 
+  all combinations of ``N`` input variables. Variograms are returned in a 2D List (matrix) with all
+  primary variograms on the diagonal.
+- [util] added support for :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` in case azimuth,
+  tolerance or bandwith are passed as keyword arguments to :func:`cross_variograms <skgstat.cross_variograms>`
+- [util] added tests for new cross_variograms function to be implemented.
+
 Version 1.0.7
 -------------
 - [Variogram] The Variogram instance now removed all usages of the deprecated ``Variogram.residuals`` property
