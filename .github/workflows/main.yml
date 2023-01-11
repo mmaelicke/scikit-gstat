@@ -114,3 +114,15 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }} 
+    
+  ci_develop:    
+    name: Print Github Context for Development
+    runs-on: ubuntu-20.04
+    if: true
+    steps:
+    
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
