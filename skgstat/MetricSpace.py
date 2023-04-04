@@ -107,7 +107,10 @@ class MetricSpace(DistanceMethods):
 
         # Check if self.dist_metric is valid
         try:
-            pdist(self.coords[:1, :], metric=self.dist_metric)
+            if self.dist_metric=='mahalanobis':
+                _ = pdist(self.coords[:self.coords.shape[1]+1, :], metric=self.dist_metric)
+            else:
+                pdist(self.coords[:1, :], metric=self.dist_metric)
         except ValueError as e:
             raise e
 
