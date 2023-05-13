@@ -2556,6 +2556,9 @@ class Variogram(object):
         instance. The n and force parameter control the calaculation,
         refer to the data funciton for more info.
 
+        .. deprecated:: 1.0.10
+            The return value of this function will change with a future release
+
         Parameters
         ----------
         n : integer
@@ -2575,6 +2578,7 @@ class Variogram(object):
         Variogram.data
 
         """
+        warnings.warn('The return value of this function will change in a future release.', FutureWarning)
         lags, data = self.data(n=n, force=force)
 
         return DataFrame({
