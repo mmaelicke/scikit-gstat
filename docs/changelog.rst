@@ -5,6 +5,14 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.11
+--------------
+- [models] the models now use `@numba.jit(nopython=True)` as this will be the default behaviour starting with `numba==0.59.0`
+
+Version 1.0.10
+--------------
+- [MetricSpace] now supports the Mahalanobis distance as well
+
 Version 1.0.9
 -------------
 - [binning] fixed a deprecation warning raised by a future change to KMeans to preserve the current behavior
