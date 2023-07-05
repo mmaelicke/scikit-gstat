@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from skgstat.Variogram import Variogram
     from skgstat.DirectionalVariogram import DirectionalVariogram
 
-try:
+try:  # pragma: no cover
     import gstatsim as gss
     GSTATSIM_AVAILABLE = True
     HAS_VERBOSE = 'verbose' in inspect.signature(gss.Interpolation.okrige_sgs).parameters
@@ -86,10 +86,9 @@ class Grid:
             raise AttributeError('Either resolution or rows/cols must be set')
 
         # get the resolution and rows/cols
-        if resolution is not None:
-            self._resolution = resolution
-            self._rows = None
-            self._cols = None
+        self._resolution = resolution
+        self._rows = rows
+        self._cols = cols
 
         # finally infer the bounding box from the variogram
         self._infer_bbox(bbox)
@@ -153,12 +152,12 @@ class Grid:
 
         """
         # if resolution is set, infer cols and rows
-        if self._resolution is not None:
+        if self._resolution is not None and self._rows is None and self._cols is None:
             self._rows = int(np.rint((self._ymax - self._ymin + self._resolution) / self._resolution))
             self._cols = int(np.rint((self._xmax - self._xmin + self._resolution) / self._resolution))
         
         # if rows and cols are set, infer resolution
-        elif self._rows is not None and self._cols is not None:
+        elif self._rows is not None and self._cols is not None and self._resolution is None:
             xres = (self._xmax - self._xmin) / self._cols
             yres = (self._ymax - self._ymin) / self._rows
             
@@ -171,6 +170,21 @@ class Grid:
                 self._rows = None
                 self._cols = None
                 self._infer_resolution()
+
+        # only rows or only cols are set
+        elif self._rows is not None and self._cols is None:
+            if self._resolution is None:
+                self._resolution = (self._ymax - self._ymin) / self._rows
+                self._cols = int(np.rint((self._xmax - self._xmin + self._resolution) / self._resolution))
+            else:
+                self._cols = int(np.rint((self._xmax - self._xmin + self._resolution) / self._resolution))
+            
+        elif self._rows is None and self._cols is not None:
+            if self._resolution is None:
+                self._resolution = (self._xmax - self._xmin) / self._cols
+                self._rows = int(np.rint((self._ymax - self._ymin + self._resolution) / self._resolution))
+            else:
+                self._rows = int(np.rint((self._ymax - self._ymin + self._resolution) / self._resolution))
             
     @property
     def resolution(self) -> Union[int, float]:
@@ -194,6 +208,7 @@ class Grid:
     def rows(self, rows: int) -> None:
         # set rows
         self._rows = rows
+        self._cols = None
         
         # recalculate the resolution
         self._resolution = None
@@ -207,6 +222,7 @@ class Grid:
     def cols(self, cols: int) -> None:
         # set cols
         self._cols = cols
+        self._rows = None
         
         # recalculate the resolution
         self._resolution = None
