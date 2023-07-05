@@ -2,8 +2,9 @@
 Variogram class
 """
 import copy
+from typing_extensions import Literal
 import warnings
-from typing import Iterable, Callable, Union, Tuple
+from typing import Iterable, Callable, List, Optional, Union, Tuple
 
 import numpy as np
 from pandas import DataFrame
@@ -17,6 +18,7 @@ from skgstat import plotting
 from skgstat.util import shannon_entropy
 from .MetricSpace import MetricSpace, ProbabalisticMetricSpace
 from skgstat.interfaces.gstools import skgstat_to_gstools, skgstat_to_krige
+from skgstat.interfaces import gstatsim_mod 
 
 
 class Variogram(object):
@@ -2585,6 +2587,27 @@ class Variogram(object):
             'lags': lags,
             self._model.__name__: data}
         ).copy()
+
+    def gstatsim_prediction_grid(self, resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None, as_numpy: bool = False) -> Union[gstatsim_mod.Grid, np.ndarray]:
+        """
+        """
+        grid = gstatsim_mod.prediction_grid(self, resolution, rows, cols, as_numpy=as_numpy)
+        return grid
+    
+    def simulation(
+        self, 
+        grid: Optional[Union[gstatsim_mod.Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None, 
+        num_points: int = 20, 
+        radius: Optional[Union[int, float]] = None,
+        method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
+        verbose: bool = False,
+        n_jobs: int = 1,
+        size: int  = 1,
+        **kwargs,
+    ) -> List[np.ndarray]:
+        """"""
+        fields = gstatsim_mod.simulate(self, grid, num_points, radius, method, verbose, n_jobs, size, **kwargs)
+        return fields
 
     def to_gstools(self, **kwargs):
         """
