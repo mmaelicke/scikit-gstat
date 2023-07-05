@@ -11,6 +11,7 @@ from typing import Any, overload, Optional, Union, Tuple, List, TYPE_CHECKING
 from typing_extensions import Literal
 import warnings
 import inspect
+import sys
 from joblib import Parallel, delayed
 
 import numpy as np
@@ -26,6 +27,26 @@ try:  # pragma: no cover
 except ImportError:
     GSTATSIM_AVAILABLE = False
     HAS_VERBOSE = False
+
+
+def __check_gstatsim_available() -> bool: # pragma: no cover
+    """
+    Check if GStatSim is available.
+
+    Returns
+    -------
+    bool
+        True if GStatSim is available, False otherwise.
+
+    """
+    if sys.version_info.minor <= 6:
+        warnings.warn('GStatSim is not compatible with Python 3.6 and below. Please upgrade to Python 3.7 or higher.')
+        return False
+    
+    if GSTATSIM_AVAILABLE:
+        return True
+    else:
+        raise ImportError('GStatSim is not available. Please install it with `pip install gstatsim`')
 
 
 # type the bounding box of a 2D grid
@@ -78,8 +99,7 @@ class Grid:
 
         """
         # check if gstatsim is available
-        if not self.__check_gstatsim_available():
-            raise ImportError('GStatSim is not available. Please install it with `pip install gstatsim`')
+        __check_gstatsim_available()            
         
         # check the resolution and rows/cols:
         if resolution is None and rows is None and cols is None:
@@ -95,21 +115,6 @@ class Grid:
 
         # infer the resolution from the bounding box
         self._infer_resolution()
-
-    def __check_gstatsim_available(self) -> bool: # pragma: no cover
-        """
-        Check if GStatSim is available.
-
-        Returns
-        -------
-        bool
-            True if GStatSim is available, False otherwise.
-
-        """
-        if GSTATSIM_AVAILABLE:
-            return True
-        else:
-            return False
 
     def _infer_bbox(self, bbox: Union[BBOX, 'Variogram']) -> None:
         """
