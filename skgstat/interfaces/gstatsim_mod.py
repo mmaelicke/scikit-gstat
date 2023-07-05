@@ -7,7 +7,7 @@ You need to install GStatSim separately, as it is not a dependency of SciKit-GSt
 pip install gstatsim
 ```
 """
-from typing import Any, overload, Optional, Union, Tuple, List
+from typing import Any, overload, Optional, Union, Tuple, List, TYPE_CHECKING
 from typing_extensions import Literal
 import warnings
 import inspect
@@ -15,8 +15,9 @@ from joblib import Parallel, delayed
 
 import numpy as np
 import pandas as pd
-from skgstat.Variogram import Variogram
-from skgstat.DirectionalVariogram import DirectionalVariogram
+if TYPE_CHECKING:
+    from skgstat.Variogram import Variogram
+    from skgstat.DirectionalVariogram import DirectionalVariogram
 
 try:
     import gstatsim as gss
@@ -25,7 +26,6 @@ try:
 except ImportError:
     GSTATSIM_AVAILABLE = False
     HAS_VERBOSE = False
-
 
 
 # type the bounding box of a 2D grid
@@ -37,10 +37,10 @@ class Grid:
     with some additional meta-data about the grid.
     """
     @overload
-    def __init__(self, bbox: Variogram, resolution: int) -> None:
+    def __init__(self, bbox: 'Variogram', resolution: int) -> None:
         ...
     @overload
-    def __init__(self, bbox: Variogram, resolution=..., rows: int=..., cols: int=...) -> None:
+    def __init__(self, bbox: 'Variogram', resolution=..., rows: int=..., cols: int=...) -> None:
         ...
     @overload
     def __init__(self, bbox: BBOX, resolution: int) -> None:
@@ -48,7 +48,35 @@ class Grid:
     @overload
     def __init__(self, bbox: BBOX, resolution=..., rows: int=..., cols: int=...) -> None:
         ...
-    def __init__(self, bbox: Union[BBOX, Variogram], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None) -> None:
+    def __init__(self, bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None) -> None:
+        """
+        Initialize a new Grid instance.
+
+        Parameters
+        ----------
+        bbox : Union[BBOX, Variogram]
+            The bounding box or variogram to use for the grid.
+        resolution : Optional[int], optional
+            The resolution of the grid, by default None.
+        rows : Optional[int], optional
+            The number of rows in the grid, by default None.
+        cols : Optional[int], optional
+            The number of columns in the grid, by default None.
+
+        Raises
+        ------
+        ImportError
+            If the `gstatsim` package is not available.
+        AttributeError
+            If neither `resolution` nor `rows`/`cols` are set.
+
+        Notes
+        -----
+        If `resolution` is set, it will be used as cell size and `rows` and `cols` are ignored.
+        If `rows` and `cols` are set, the grid will have `rows` rows and `cols` columns and
+        `resolution` has to be set to `None`.
+
+        """
         # check if gstatsim is available
         if not self.__check_gstatsim_available():
             raise ImportError('GStatSim is not available. Please install it with `pip install gstatsim`')
@@ -84,12 +112,27 @@ class Grid:
         else:
             return False
 
-    def _infer_bbox(self, bbox: Union[BBOX, Variogram]) -> None:
+    def _infer_bbox(self, bbox: Union[BBOX, 'Variogram']) -> None:
         """
-        Infer the bounding box from the variogram.
+        Infer the bounding box from the variogram or bounding box.
+
+        Parameters
+        ----------
+        bbox : Union[BBOX, Variogram]
+            The bounding box or variogram to infer the bounding box from.
+
+        Raises
+        ------
+        TypeError
+            If `bbox` is not a `BBOX` or `Variogram` instance.
+
+        Notes
+        -----
+        If `bbox` is a `Variogram` instance, the bounding box is inferred from the coordinates of the variogram.
+        If `bbox` is a `BBOX` instance, the bounding box is set to the values of the instance.
         """
         # check the type of the bbox
-        if isinstance(bbox, Variogram):            
+        if isinstance(bbox, 'Variogram'):            
             # get the bounding box
             self._xmax = bbox.coordinates[:, 0].max()
             self._xmin = bbox.coordinates[:, 0].min()
@@ -101,6 +144,11 @@ class Grid:
     def _infer_resolution(self) -> None:
         """
         Infer the resolution from the bounding box.
+        If `resolution` is set, the number of rows and columns are inferred from the bounding box.
+        If `rows` and `cols` are set, the resolution is inferred from the number of rows and columns.
+        If neither `resolution` nor `rows`/`cols` are set, a warning is issued and the 
+        resolution is set to the minimum of the x and y resolutions.
+
         """
         # if resolution is set, infer cols and rows
         if self._resolution is not None:
@@ -182,18 +230,18 @@ class Grid:
 
 
 @overload
-def prediction_grid(bbox: Variogram, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy: Literal[False] = False) -> Grid:
+def prediction_grid(bbox: 'Variogram', resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = False) -> Grid:
     ...
 @overload
-def prediction_grid(bbox: Variogram, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy: Literal[True]) -> np.ndarray:
+def prediction_grid(bbox: 'Variogram', resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = True) -> np.ndarray:
     ...
 @overload
-def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy: Literal[False] = False) -> Grid:
+def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = False) -> Grid:
     ...
 @overload
-def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy: Literal[True]) -> np.ndarray:
+def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = True) -> np.ndarray:
     ...
-def prediction_grid(bbox: Union[BBOX, Variogram], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None, as_numpy: bool = False) -> Union[Grid, np.ndarray]:
+def prediction_grid(bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None, as_numpy: bool = False) -> Union[Grid, np.ndarray]:
     if resolution is not None:
         grid = Grid(bbox, resolution=resolution)
     elif rows is not None and cols is not None:
@@ -208,7 +256,7 @@ def prediction_grid(bbox: Union[BBOX, Variogram], resolution: Optional[int] = No
 
 
 def simulation_params(
-        variogram: Variogram,
+        variogram: 'Variogram',
         grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None,
         minor_range: Optional[Union[int, float]] = None,
 ) -> Tuple[Union[Grid, np.ndarray], pd.DataFrame, list]:
@@ -239,7 +287,9 @@ def simulation_params(
     sill = variogram.parameters[1]
     vtype = variogram.model.__name__
 
-        # extract the azimuth
+    # due to circular imports we need to import it here
+    from skgstat import DirectionalVariogram
+    # extract the azimuth
     if isinstance(variogram, DirectionalVariogram):
         azimuth = variogram.azimuth
         if minor_range is None:
@@ -294,7 +344,7 @@ def run_simulation(
 
 
 def simulate(
-    variogram: Variogram,
+    variogram: 'Variogram',
     grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None,
     num_points: int = 20, 
     radius: Optional[Union[int, float]] = None,
