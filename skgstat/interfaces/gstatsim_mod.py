@@ -97,7 +97,7 @@ class Grid:
         # infer the resolution from the bounding box
         self._infer_resolution()
 
-    def __check_gstatsim_available(self) -> bool:
+    def __check_gstatsim_available(self) -> bool: # pragma: no cover
         """
         Check if GStatSim is available.
 
@@ -131,8 +131,10 @@ class Grid:
         If `bbox` is a `Variogram` instance, the bounding box is inferred from the coordinates of the variogram.
         If `bbox` is a `BBOX` instance, the bounding box is set to the values of the instance.
         """
+        # import the Variogram class only here to avoid circular imports
+        from skgstat import Variogram
         # check the type of the bbox
-        if isinstance(bbox, 'Variogram'):            
+        if isinstance(bbox, Variogram):            
             # get the bounding box
             self._xmax = bbox.coordinates[:, 0].max()
             self._xmin = bbox.coordinates[:, 0].min()
@@ -269,7 +271,7 @@ def prediction_grid(bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = 
     AttributeError
         If neither `resolution` nor `rows` and `cols` are set.
 
-    """.
+    """
     if resolution is not None:
         grid = Grid(bbox, resolution=resolution)
     elif rows is not None and cols is not None:
