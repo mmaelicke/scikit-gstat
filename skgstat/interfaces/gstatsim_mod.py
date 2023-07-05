@@ -29,7 +29,7 @@ except ImportError:
     HAS_VERBOSE = False
 
 
-def __check_gstatsim_available() -> bool: # pragma: no cover
+def check_gstatsim_available() -> bool: # pragma: no cover
     """
     Check if GStatSim is available.
 
@@ -99,7 +99,7 @@ class Grid:
 
         """
         # check if gstatsim is available
-        __check_gstatsim_available()            
+        check_gstatsim_available()            
         
         # check the resolution and rows/cols:
         if resolution is None and rows is None and cols is None:
