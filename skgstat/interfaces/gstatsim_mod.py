@@ -242,6 +242,34 @@ def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], 
 def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = True) -> np.ndarray:
     ...
 def prediction_grid(bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None, as_numpy: bool = False) -> Union[Grid, np.ndarray]:
+    """
+    Generate a prediction grid as used by `gstatsim.Interpolation` methods.
+
+    Parameters
+    ----------
+    bbox : Union[BBOX, Variogram]
+        The bounding box defining the spatial extent of the prediction grid. It can be either a BBOX object or a Variogram object.
+    resolution : Optional[int], optional
+        The resolution of the prediction grid. The number of cells along each axis.
+        Either `resolution` or `rows` and `cols` should be set. Default is None.
+    rows : Optional[int], optional
+        The number of rows in the prediction grid. Required only when `resolution` is not provided. Default is None.
+    cols : Optional[int], optional
+        The number of columns in the prediction grid. Required only when `resolution` is not provided. Default is None.
+    as_numpy : bool, optional
+        If True, return the prediction grid as a numpy array. If False, return as a Grid object. Default is False.
+
+    Returns
+    -------
+    Union[Grid, np.ndarray]
+        The prediction grid either as a Grid object or a numpy array, based on the value of `as_numpy`.
+
+    Raises
+    ------
+    AttributeError
+        If neither `resolution` nor `rows` and `cols` are set.
+
+    """.
     if resolution is not None:
         grid = Grid(bbox, resolution=resolution)
     elif rows is not None and cols is not None:
@@ -256,10 +284,40 @@ def prediction_grid(bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = 
 
 
 def simulation_params(
-        variogram: 'Variogram',
-        grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None,
-        minor_range: Optional[Union[int, float]] = None,
+    variogram: 'Variogram',
+    grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None, 
+    minor_range: Optional[Union[int, float]] = None
 ) -> Tuple[Union[Grid, np.ndarray], pd.DataFrame, list]:
+    """
+    Generate simulation parameters for the `Interpolation.skrige_sgs` and
+    `Interpolation.okrige_sgs`methods of GStatSim.
+
+    Parameters
+    ----------
+    variogram : 'Variogram'
+        The variogram object used for simulation.
+    grid : Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]], optional
+        The grid object or array defining the simulation grid. 
+        It can be either a :class:`Grid <skgstat.interface.gstatsim_mod.Grid>` object, 
+        a :class:`numpy array <numpy.ndarray>`, a resolution value (int or float), 
+        or a tuple/list of rows and columns. If None, the resolution is inferred from the variogram.
+    minor_range : Optional[Union[int, float]], optional
+        The minor range for directional variograms. Required only for directional variograms. 
+        Default is None.
+
+    Returns
+    -------
+    Tuple[Union[Grid, np.ndarray], pd.DataFrame, list]
+        A tuple containing the simulation grid, the condition data as a pandas DataFrame, and a list of simulation parameters.
+
+    Raises
+    ------
+    AttributeError
+        If grid is not a Grid object, a numpy array, a resolution value, or a tuple/list of rows and columns.
+    AttributeError
+        If minor_range is not set for directional variograms.
+
+    """
     # the simulation needs the condition data as pd.DataFrame
     data = np.concatenate((variogram.coordinates, variogram.values.reshape(-1, 1)), axis=1)
     df = pd.DataFrame(data, columns=['x', 'y', 'v'])
@@ -313,6 +371,39 @@ def run_simulation(
     method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
     verbose: bool = False
 ) -> np.ndarray:
+    """
+    Run a sequential gaussian simulation using GStatSim.
+
+    Parameters
+    ----------
+    grid : Union[Grid, np.ndarray]
+        The grid object or array representing the simulation grid.
+    cond_data : pd.DataFrame
+        The condition data as a pandas DataFrame containing the coordinates and values.
+    vario_params : list
+        A list of variogram parameters used for simulation.
+    num_points : int, optional
+        The number of neighboring points used for interpolation. Default is 20.
+    radius : Optional[Union[int, float]], optional
+        The search radius for neighboring points. If not provided, it is calculated as 
+        3 times the major range from the variogram parameters.
+    method : Union[Literal['simple'], Literal['ordinary']], optional
+        The interpolation method to use. Either 'simple' for simple kriging 
+        or 'ordinary' for ordinary kriging. Default is 'simple'.
+    verbose : bool, optional
+        If True, enable verbose output during the simulation. Default is False.
+
+    Returns
+    -------
+    np.ndarray
+        The simulated field as a numpy array.
+
+    Raises
+    ------
+    AttributeError
+        If the provided method is neither 'simple' nor 'ordinary'.
+
+    """
     # get the radius
     if radius is None:
         radius = vario_params[2] * 3
@@ -354,6 +445,42 @@ def simulate(
     size: int  = 1,
     **kwargs,
 ) -> List[np.ndarray]:
+    """
+    Perform spatial simulation using GStatSim. The GStatSim simulation is
+    can be run in parallel using joblib. Note that this will enable the
+    parallel execution of **multiple** simulations, it does not parallelize
+    the simulation itself.
+
+    Parameters
+    ----------
+    variogram : 'Variogram'
+        The variogram object used for simulation.
+    grid : Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]], optional
+        The grid object or array representing the simulation grid. 
+        It can be either a Grid object, a numpy array, a resolution value (int or float),
+        or a tuple/list of rows and columns. If None, the resolution is inferred from the variogram.
+    num_points : int, optional
+        The number of neighboring points used for interpolation. Default is 20.
+    radius : Optional[Union[int, float]], optional
+        The search radius for neighboring points. If not provided, it is calculated based on the major 
+        range from the variogram parameters.
+    method : Union[Literal['simple'], Literal['ordinary']], optional
+        The interpolation method to use. Either 'simple' for simple kriging or 'ordinary' for ordinary kriging. Default is 'simple'.
+    verbose : bool, optional
+        If True, enable verbose output during the simulation. Default is False.
+    n_jobs : int, optional
+        The number of parallel jobs to run. Default is 1 (no parallelization).
+    size : int, optional
+        The number of simulation realizations to generate. Default is 1.
+    **kwargs : optional keyword arguments
+        Additional arguments to pass to the simulation_params function.
+
+    Returns
+    -------
+    List[np.ndarray]
+        A list of simulated fields, each represented as a numpy array.
+
+    """
     # extract minor_range
     minor_range = kwargs.get('minor_range', None)
 
