@@ -23,10 +23,10 @@ if TYPE_CHECKING:
 try:  # pragma: no cover
     import gstatsim as gss
     GSTATSIM_AVAILABLE = True
-    HAS_VERBOSE = 'verbose' in inspect.signature(gss.Interpolation.okrige_sgs).parameters
+    HAS_QUIET = 'quiet' in inspect.signature(gss.Interpolation.okrige_sgs).parameters
 except ImportError:
     GSTATSIM_AVAILABLE = False
-    HAS_VERBOSE = False
+    HAS_QUIET = False
 
 
 def check_gstatsim_available() -> bool: # pragma: no cover
@@ -250,6 +250,7 @@ class Grid:
     
     def __str__(self) -> str:
         return f'<Grid with {self._rows} rows and {self._cols} cols at {self._resolution} resolution>'
+    
 
 
 @overload
@@ -392,7 +393,7 @@ def run_simulation(
     num_points: int = 20, 
     radius: Optional[Union[int, float]] = None,
     method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
-    verbose: bool = False
+    quiet: bool = True
 ) -> np.ndarray:
     """
     Run a sequential gaussian simulation using GStatSim.
@@ -413,8 +414,8 @@ def run_simulation(
     method : Union[Literal['simple'], Literal['ordinary']], optional
         The interpolation method to use. Either 'simple' for simple kriging 
         or 'ordinary' for ordinary kriging. Default is 'simple'.
-    verbose : bool, optional
-        If True, enable verbose output during the simulation. Default is False.
+    quiet : bool, optional
+        If True, disables progressbar output during the simulation. Default is True.
 
     Returns
     -------
@@ -446,8 +447,8 @@ def run_simulation(
         pred_grid = grid
 
     # run the simulation
-    if HAS_VERBOSE:
-        field: np.ndarray = sim_func(pred_grid, cond_data, 'x', 'y', 'v', num_points, vario_params, radius, verbose)
+    if HAS_QUIET:
+        field: np.ndarray = sim_func(pred_grid, cond_data, 'x', 'y', 'v', num_points, vario_params, radius, quiet)
     else:
         field: np.ndarray = sim_func(pred_grid, cond_data, 'x', 'y', 'v', num_points, vario_params, radius)
 
@@ -463,7 +464,7 @@ def simulate(
     num_points: int = 20, 
     radius: Optional[Union[int, float]] = None,
     method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
-    verbose: bool = False,
+    quiet: bool = True,
     n_jobs: int = 1,
     size: int  = 1,
     **kwargs,
@@ -489,8 +490,8 @@ def simulate(
         range from the variogram parameters.
     method : Union[Literal['simple'], Literal['ordinary']], optional
         The interpolation method to use. Either 'simple' for simple kriging or 'ordinary' for ordinary kriging. Default is 'simple'.
-    verbose : bool, optional
-        If True, enable verbose output during the simulation. Default is False.
+    quiet : bool, optional
+        If True, disables progressbar output during the simulation. Default is True.
     n_jobs : int, optional
         The number of parallel jobs to run. Default is 1 (no parallelization).
     size : int, optional
@@ -513,14 +514,14 @@ def simulate(
     # multiprocessing?
     if n_jobs > 1 and size > 1:
         # build th pool
-        pool = Parallel(n_jobs=n_jobs, verbose=0 if not verbose else 10)
+        pool = Parallel(n_jobs=n_jobs, verbose=0 if quiet else 10)
         
         # wrapper
-        gen = (delayed(run_simulation)(grid, cond_data, vario_params, num_points, radius, method, verbose) for _ in range(size))
+        gen = (delayed(run_simulation)(grid, cond_data, vario_params, num_points, radius, method, quiet) for _ in range(size))
 
         # run the simulation
         fields = pool(gen)
         return fields
     else:
-        field = run_simulation(grid, cond_data, vario_params, num_points, radius, method, verbose)
+        field = run_simulation(grid, cond_data, vario_params, num_points, radius, method, quiet)
         return [field]
