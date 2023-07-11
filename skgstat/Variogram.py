@@ -2600,13 +2600,13 @@ class Variogram(object):
         num_points: int = 20, 
         radius: Optional[Union[int, float]] = None,
         method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
-        verbose: bool = False,
+        quiet: bool = True,
         n_jobs: int = 1,
         size: int  = 1,
         **kwargs,
     ) -> List[np.ndarray]:
         """"""
-        fields = gstatsim_mod.simulate(self, grid, num_points, radius, method, verbose, n_jobs, size, **kwargs)
+        fields = gstatsim_mod.simulate(self, grid, num_points, radius, method, quiet, n_jobs, size, **kwargs)
         return fields
 
     def to_gstools(self, **kwargs):
