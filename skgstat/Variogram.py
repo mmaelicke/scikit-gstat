@@ -2590,7 +2590,39 @@ class Variogram(object):
 
     def gstatsim_prediction_grid(self, resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None, as_numpy: bool = False) -> Union[gstatsim_mod.Grid, np.ndarray]:
         """
+        Generate a structured gried of coordinates from this Variogram instance.
+        The grid has the shape (N, 2), where N is the number of grid points.
+        It can be created by specifiying the resolution or the number of rows and cols.
+        If rows and cols are used, the grid will have the same resolution in both directions,
+        which means, that the final grid will have a different number of rows, cols
+        than specified.
+
+        Parameters
+        ----------
+        resolution : int, optional
+            The resolution of the grid, by default None
+        rows : int, optional
+            The number of rows, by default None
+        cols : int, optional
+            The number of cols, by default None
+        as_numpy : bool, optional
+            If True, the grid will be returned as a numpy.ndarray, by default False
+
+        Raises
+        ------
+        ValueError
+            If the Variogram instance is not 2D
+
+        Returns
+        -------
+        Union[gstatsim_mod.Grid, np.ndarray]
+            The grid as a gstatsim_mod.Grid instance or a numpy.ndarray
         """
+        # this does only work in 2D
+        if self.dim != 2:
+            raise ValueError('This function only works in 2D')
+
+        # generate the grid
         grid = gstatsim_mod.prediction_grid(self, resolution, rows, cols, as_numpy=as_numpy)
         return grid
     
