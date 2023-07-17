@@ -117,6 +117,31 @@ def test_prediction_grid_cols_rows():
     assert grid.shape == (2652 , 2)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_prediction_grid_interface():
+    coords, vals = skg.data.pancake(N=60, seed=42).get('sample')
+    vario = skg.Variogram(coords, vals, maxlag=0.6, n_lags=12)
+
+    # create the grid
+    grid = vario.gstatsim_prediction_grid(resolution=5)
+
+    assert isinstance(grid, Grid)
+    assert grid.rows == 94
+    assert grid.cols == 96
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_prediction_grid_interface_as_numpy():
+    coords, vals = skg.data.pancake(N=60).get('sample')
+    vario = skg.Variogram(coords, vals, maxlag=0.6, n_lags=12)
+
+    # create the grid
+    grid = vario.gstatsim_prediction_grid(resolution=5, as_numpy=True)
+
+    assert isinstance(grid, np.ndarray)
+    assert grid.shape == (96 * 94, 2)
+
+
 # Run the tests
 if __name__ == '__main__':
     pytest.main()
