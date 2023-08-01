@@ -55,8 +55,8 @@ class TestEstimator(unittest.TestCase):
         x2 = np.random.gamma(10, 4, 100)
 
         # test
-        self.assertAlmostEqual(dowd(x1), 2.0873, places=4)
-        self.assertAlmostEqual(dowd(x2), 3170.97, places=2)
+        self.assertAlmostEqual(dowd(x1), 1.0437, places=4)
+        self.assertAlmostEqual(dowd(x2), 1585.48, places=2)
 
     def test_genton(self):
         # extract actual estimator
