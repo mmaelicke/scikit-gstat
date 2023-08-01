@@ -175,7 +175,7 @@ def dowd(x):
 
     """
     # convert
-    return 2.198 * np.nanmedian(x)**2
+    return 2.198 * np.nanmedian(x)**2 / 2
 
 
 @jit(forceobj=True)
