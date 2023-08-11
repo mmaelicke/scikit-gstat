@@ -294,6 +294,7 @@ class DirectionalVariogram(Variogram):
 
         # set the directional model
         self._directional_model = None
+        self._is_model_custom = False
         self.set_directional_model(model_name=directional_model)
 
         # the binning settings

@@ -336,7 +336,7 @@ class Variogram(object):
 
         # model can be a function or a string
         self._model = None
-        self._custom_model = False
+        self._is_model_custom = False
         self.set_model(model_name=model)
 
         # specify if the lag should be given absolute or relative to the maxlag
@@ -975,7 +975,7 @@ class Variogram(object):
                     ) % model_name
                 )
         else:  # pragma: no cover
-            self._custom_model = True
+            self._is_model_custom = True
             self._model = model_name
 
     def _build_harmonized_model(self):
@@ -1567,7 +1567,7 @@ class Variogram(object):
             return
 
         # For a supported model, wrap the function depending on nugget and get logical bounds
-        if not self._custom_model:
+        if not self._is_model_custom:
             # Switch the method
             # wrap the model to include or exclude the nugget
             if self.use_nugget:
