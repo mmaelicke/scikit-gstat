@@ -19,6 +19,7 @@ from skgstat import Variogram, DirectionalVariogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
+from skgstat.models import variogram, spherical, matern
 
 
 class TestSpatiallyCorrelatedData(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
             self.assertAlmostEqual(x, y, places=3)
 
 
-class TestVariogramInstatiation(unittest.TestCase):
+class TestVariogramInstantiation(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
         np.random.seed(42)
@@ -948,6 +949,18 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         V.fit(method='manual', sill=5., nugget=2.)
 
         self.assertTrue(abs(V.parameters[-1] - 2.) < 1e-10)
+
+    def test_fit_custom_model(self):
+
+        # Define a custom variogram and run the fit
+        @variogram
+        def sum_spherical(h, r1, c1, r2, c2, b1, b2):
+            return spherical(h, r1, c1, b1) + spherical(h, r2, c2, b2)
+
+        V = Variogram(self.c, self.v, use_nugget=True, model=sum_spherical)
+
+        # Check that 6 parameters were found
+        assert len(V.cof) == 6
 
 
 class TestVariogramQualityMeasures(unittest.TestCase):
