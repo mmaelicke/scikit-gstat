@@ -988,9 +988,9 @@ class Variogram(object):
             self._model = model_name
             self._model_name = model_name.__name__
 
-    def _get_argpos_sum_models(self, list_model_names: list[str]) -> list[slice]:
+    def _get_argpos_sum_models(self, list_model_names):
         """
-        Get argument slice position for each model of a list of models (to build from total args, or all fit parameters)
+        Get arg slice position (list of slices) for the sum of model of a list of model names (list of strings).
         """
 
         # Doing this here for other functions (fit, describe, etc), even though already done in _build_sum_models
@@ -2696,9 +2696,10 @@ class Variogram(object):
                     d['nugget'+id]
                 ])
 
-        # Get parameters for a sum of models
+        # For a custom model, just pass cof in order
         if self._is_model_custom:
             list_params = self.cof
+        # Get parameters for a sum of models
         elif '+' in self._model_name:
             list_model_names = self._model_name.split('+')
             list_params = []
