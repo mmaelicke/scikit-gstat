@@ -1655,8 +1655,8 @@ class Variogram(object):
         # Else, inspect the function for the number of arguments
         else:
             # The number of arguments of argspec minus one is what we initialized
-            argspec = inspect.getfullargspec(self._model)
-            nb_args = len(argspec) - 1
+            argspec = inspect.getfullargspec(self._model.__wrapped__)
+            nb_args = len(argspec.args) - 1
             if bounds is None:
                 bounds = (0, [np.maximum(np.nanmax(x), np.nanmax(y))] * nb_args)
             if p0 is None:
@@ -2593,13 +2593,18 @@ class Variogram(object):
 
             return d
 
+        # for a custom model: we list the optimized params for the function wrapped by the variogram decorator
+        if self._is_model_custom:
+            custom_arg_names = inspect.getfullargspec(self._model.__wrapped__).args
+            all_params = {"param"+str(i+1)+"_"+custom_arg_names[i+1]: cof[i] for i in range(len(custom_arg_names) - 1)}
+
         # for a sum of models
-        if "+" in self._model_name:
+        elif "+" in self._model_name:
             list_model_names = self._model_name.split("+")
             list_argslices = self._get_argpos_sum_models(list_model_names=list_model_names)
             all_params = {}
             # add the parameters for each model, with parameter suffix from 1 to the total number
-            for i in range(list_model_names):
+            for i in range(len(list_model_names)):
                 model_params = create_dict_for_model(model_name=list_model_names[i], cof=cof[list_argslices[i]],
                                                   maxlag=maxlag, maxvar=maxvar, use_nugget=self.use_nugget, id=str(i+1))
                 all_params.update(model_params)
@@ -2652,6 +2657,7 @@ class Variogram(object):
             [range, sill, nugget] for most models and
             [range, sill, shape, nugget] for matern and stable model.
             [range1, sill1, nugget1, range2, still2, nugget2] for a sum of 2 models.
+            [param1, param2, param3, ...] in order for a custom model.
 
         """
         d = self.describe()
@@ -2691,7 +2697,9 @@ class Variogram(object):
                 ])
 
         # Get parameters for a sum of models
-        if '+' in self._model_name:
+        if self._is_model_custom:
+            list_params = self.cof
+        elif '+' in self._model_name:
             list_model_names = self._model_name.split('+')
             list_params = []
             for i in range(len(list_model_names)):

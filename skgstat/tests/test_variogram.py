@@ -1027,8 +1027,8 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, rmse in zip(
-                ['spherical', 'gaussian', 'stable'],
-                [3.3705, 3.3707, 3.193]
+                ['spherical', 'gaussian', 'stable', 'spherical+gaussian'],
+                [3.3705, 3.3707, 3.193, 3.0653]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.rmse, rmse, places=4)
@@ -1037,8 +1037,8 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, mr in zip(
-            ['spherical', 'cubic', 'stable'],
-            [2.6803, 2.6803, 2.6966]
+            ['spherical', 'cubic', 'stable', 'spherical+gaussian'],
+            [2.6803, 2.6803, 2.6966, 2.4723]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.mean_residual, mr, places=4)
@@ -1047,8 +1047,8 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v, n_lags=15)
 
         for model, nrmse in zip(
-            ['spherical', 'gaussian', 'stable', 'exponential'],
-            [0.3536, 0.3535, 0.3361, 0.3499]
+            ['spherical', 'gaussian', 'stable', 'exponential', 'spherical+gaussian'],
+            [0.3536, 0.3535, 0.3361, 0.3499, 0.3264]
         ):
             V.set_model(model)
             self.assertAlmostEqual(V.nrmse, nrmse, places=4)
@@ -1215,7 +1215,75 @@ class TestVariogramMethods(unittest.TestCase):
             [0., 13.97, 13.97, 13.97, 13.97],
             decimal=2
         )
-    
+
+    def test_set_model(self):
+        """Test setting model: individual, sum or custom"""
+        V = self.V.clone()
+
+        # Individual model
+        for model_name in ['spherical', 'gaussian', 'exponential', 'cubic', 'matern', 'stable']:
+            V.set_model(model_name)
+            assert V._model_name == model_name
+            assert V._model == globals()[model_name]
+            assert V._is_model_custom is False
+
+        # Sum of models
+        for model_name in ['spherical+gaussian', 'cubic+matern+stable']:
+            V.set_model(model_name)
+            assert V._model_name == model_name
+            assert V._is_model_custom is False
+
+        # Custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1, b1) + x
+
+        V.set_model(custom_model)
+        assert V._model_name == "custom_model"
+        assert V._model == custom_model
+        assert V._is_model_custom is True
+
+    def test_describe(self):
+        """Test the describe functions for different models"""
+        V = self.V.clone()
+
+        keys_model = ['normalized_effective_range', 'normalized_sill', 'normalized_nugget',
+                      'effective_range', 'sill', 'nugget']
+
+        # Individual model: normal keys should be in dict
+        for model_name in ['spherical', 'gaussian', 'exponential', 'cubic', 'matern', 'stable']:
+            V.set_model(model_name)
+            dict = V.describe()
+            for key in keys_model:
+                assert key in dict
+            if model_name == 'matern':
+                assert 'smoothness' in dict
+            if model_name == 'stable':
+                assert 'shape' in dict
+
+        # Sum of models: keys with a numbered ID should be in dict
+        V.set_model('spherical+gaussian')
+        dict = V.describe()
+        for key in [k+'_1' for k in keys_model] + [k+'_2' for k in keys_model]:
+            assert key in dict
+
+        V.set_model('cubic+matern+stable')
+        dict = V.describe()
+        for key in [k + '_1' for k in keys_model] + [k + '_2' for k in keys_model] + [k + '_3' for k in keys_model]:
+            assert key in dict
+        assert 'smoothness_2' in dict
+        assert 'shape_3' in dict
+
+        # Custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+        V.set_model(custom_model)
+        dict = V.describe()
+        custom_keys = ["param1_r1", "param2_c1", "param3_x"]
+        for key in custom_keys:
+            assert key in dict
+
     def test_parameter_property_matern(self):
         V = self.V.clone()
         
@@ -1230,6 +1298,31 @@ class TestVariogramMethods(unittest.TestCase):
         # test stable
         param = [42.3, 15.79, 0.45,  0.]
         V.set_model('stable')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+
+    def test_parameter_property_sum_models(self):
+        V = self.V.clone()
+
+        # Using models with 3 parameters (range, sill, nugget)
+        param = [3.67, 10.61, 0, 42.3, 5.02, 0]
+        V.set_model('spherical+gaussian')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+
+        # Using a stable model with 4 parameters
+        param2 = [35.77, 10.97, 0, 0, 42.3, 4.74, 0]
+        V.set_model('stable+cubic')
+        assert_array_almost_equal(V.parameters, param2, decimal=2)
+
+    def test_parameter_property_custom_model(self):
+        V = self.V.clone()
+
+        # Custom model will give parameters back in the order of the custom function
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        param = [42.3, 5.76, 9.79]
+        V.set_model(custom_model)
         assert_array_almost_equal(V.parameters, param, decimal=2)
 
 
