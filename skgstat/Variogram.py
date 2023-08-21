@@ -965,6 +965,8 @@ class Variogram(object):
             if model_name.lower() == 'harmonize':
                 self._harmonize = True
                 self._model = self._build_harmonized_model()
+            elif "+" in model_name:
+                self._model = self._build_sum_models(model_name)
             elif hasattr(models, model_name.lower()):
                 self._model = getattr(models, model_name.lower())
             else:
@@ -977,6 +979,53 @@ class Variogram(object):
         else:  # pragma: no cover
             self._is_model_custom = True
             self._model = model_name
+
+    def _build_sum_models(self, sum_models_name: str):
+        """
+        Build sum of theoretical models.
+        """
+
+        # Remove all whitespaces in the string, in case the user wrote someting like "spherical + gaussian"
+        sum_models_name = ''.join(sum_models_name.split())
+
+        # Get individual model names
+        list_model_names = sum_models_name.split("+")
+
+        # Check that all models exist in the "models" module
+        if not all(hasattr(models, model_name.lower()) for model_name in list_model_names):
+            raise ValueError(
+                (
+                    'One of the theoretical models in the list "%s" is not'
+                    ' understood, please provide existing model names separated by "+".'
+                ) % ", ".join(list_model_names)
+            )
+
+        # Build the variogram function for the sum of models
+        # First, build the models from their py_func (ignoring variogram decorator) and get args per model
+        list_models = [getattr(models, model_name.lower()).py_func for model_name in list_model_names]
+        nb_args_per_model = [len(inspect.getfullargspec(model).args) for model in list_models]
+
+        # If nugget is used
+        if self.use_nugget:
+
+            # Compute cumulative number of args removing the lags
+            cum_args_minus_lag = np.cumsum(np.array(nb_args_per_model) - 1)
+
+        # If nugget is not used
+        else:
+            # Same removing also the nugget
+            cum_args_minus_lag = np.cumsum(np.array(nb_args_per_model) - 2)
+
+        # Prepare argument slices to distribute to submodels
+        args_indices = np.insert(cum_args_minus_lag, 0, 0)  # We add the first indice of 0
+        args_slices = [(slice(args_indices[i], args_indices[i + 1])) for i in range(len(args_indices) - 1)]
+
+        # Distribute first argument (lag) and use all others in order (nugget ignored when last argument not passed)
+        @models.variogram
+        def sum_models(h, *args):
+            return np.sum(list_models[i](h, *args[args_slices[i]]) for i in range(len(list_models)))
+
+        return sum_models
 
     def _build_harmonized_model(self):
         x = self.bins

@@ -19,7 +19,7 @@ from skgstat import Variogram, DirectionalVariogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
-from skgstat.models import variogram, spherical, matern
+from skgstat.models import variogram, spherical, gaussian, exponential, cubic, stable, matern
 
 
 class TestSpatiallyCorrelatedData(unittest.TestCase):
@@ -961,6 +961,48 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         # Check that 6 parameters were found
         assert len(V.cof) == 6
+
+    def test_build_sum_models(self):
+
+        # Initiate variogram without fitting
+        V = Variogram(self.c, self.v, fit_method=None)
+
+        # 1/ Check that errors are raised if argument is not good
+        # Should accept upper case and spaces
+        V._build_sum_models("Spherical  +     spherical")
+
+        # Raises an error if model does not exist
+        with self.assertRaises(ValueError) as e:
+            V._build_sum_models("Notamodel  + spherical")
+            self.assertTrue('One of the theoretical models in the list' in str(e.exception))
+
+        # 2/ Build a sum of two spherical models
+        sum_spherical = V._build_sum_models("spherical+spherical")
+
+        # Testing the same way as in test_models/test_sum_spherical
+        # Parameters for the two spherical models
+        params = [1, 0.3, 10, 0.7]
+
+        # Values at which we'll evaluate the function and its expected result
+        vals = [0, 1, 100]
+        res = [0, 0.3 + spherical(1, 10, 0.7), 1]
+
+        for r, c in zip(res, sum_spherical(vals, *params)):
+            self.assertEqual(r, c)
+
+        # 3/ Build a sum of all models
+        sum_spherical = V._build_sum_models("spherical+gaussian+exponential+cubic+stable+matern")
+        min_nb_args = 2 + 2 + 2 + 2 + 3 + 3
+
+        # Check that the function fails for a number of args of 13 (lower than 14)
+        with self.assertRaises(TypeError) as e:
+            sum_spherical(0, *[1,]*(min_nb_args - 1))
+            self.assertTrue('positional arguments' in str(e.exception))
+
+        # Check that it runs for 14 and that the result is correct
+        sum_res = sum(model(0, 1, 1) for model in [spherical, gaussian, exponential, cubic]) + \
+                  sum((model(0, 1, 1, 1)) for model in [stable, matern])
+        assert sum_spherical(0, *[1, ] * min_nb_args) == sum_res
 
 
 class TestVariogramQualityMeasures(unittest.TestCase):
