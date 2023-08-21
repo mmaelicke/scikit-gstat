@@ -636,7 +636,8 @@ class TestVariogramArguments(unittest.TestCase):
 
     def test_model(self):
         """
-        Test that all types of models instantiate (test_set_model() only checks overwriting already instantiated vario)
+        Test that all types of models instantiate properly
+        (to complement test_set_model() that only checks already instantiated vario)
         """
 
         # Individual model
@@ -1362,7 +1363,15 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
         self.c = np.random.gamma(10, 4, (150, 2))
         np.random.seed(42)
         self.v = np.random.normal(10, 4, 150)
+        # V = individual model
         self.V = Variogram(self.c, self.v)
+        # V2 = sum of models
+        self.V2 = Variogram(self.c, self.v, model='spherical+gaussian')
+        # V3 = custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+        self.V3 = Variogram(self.c, self.v, model=custom_model)
 
     def test_plotly_main_plot(self):
         if PLOTLY_FOUND:
@@ -1371,6 +1380,14 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
 
             self.assertTrue(
                 isinstance(self.V.plot(show=False), go.Figure)
+            )
+
+            self.assertTrue(
+                isinstance(self.V2.plot(show=False), go.Figure)
+            )
+
+            self.assertTrue(
+                isinstance(self.V3.plot(show=False), go.Figure)
             )
 
             plotting.backend('matplotlib')
