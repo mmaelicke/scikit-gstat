@@ -334,6 +334,10 @@ class Variogram(object):
         if fit_method is not None:
             self.preprocessing(force=True)
 
+        # set if nugget effect shall be used
+        self._use_nugget = None
+        self.use_nugget = use_nugget
+
         # model can be a function or a string
         self._model = None
         self._model_name = None
@@ -342,10 +346,6 @@ class Variogram(object):
 
         # specify if the lag should be given absolute or relative to the maxlag
         self._normalized = normalize
-
-        # set if nugget effect shall be used
-        self._use_nugget = None
-        self.use_nugget = use_nugget
 
         # set the fitting method and sigma array
         self._fit_method = None

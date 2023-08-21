@@ -634,6 +634,35 @@ class TestVariogramArguments(unittest.TestCase):
         assert V.cov is None
         assert V.cof is None
 
+    def test_model(self):
+        """
+        Test that all types of models instantiate (test_set_model() only checks overwriting already instantiated vario)
+        """
+
+        # Individual model
+        for model_name in ['spherical', 'gaussian', 'exponential', 'cubic', 'matern', 'stable']:
+            V = Variogram(self.c, self.v, model=model_name)
+            assert V._model_name == model_name
+            assert V._model == globals()[model_name]
+            assert V._is_model_custom is False
+
+        # Sum of models
+        for model_name in ['spherical+gaussian', 'cubic+matern+stable']:
+            V = Variogram(self.c, self.v, model=model_name)
+            assert V._model_name == model_name
+            assert V._is_model_custom is False
+
+        # Custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1, b1) + x
+
+        V = Variogram(self.c, self.v, model=custom_model)
+        assert V._model_name == "custom_model"
+        assert V._model == custom_model
+        assert V._is_model_custom is True
+
+
     def test_get_bin_count(self):
 
         V = Variogram(self.c, self.v)
