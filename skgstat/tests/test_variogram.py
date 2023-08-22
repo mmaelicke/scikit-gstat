@@ -1407,8 +1407,11 @@ class TestVariogramMethods(unittest.TestCase):
         def custom_model(h, r1, c1, x):
             return spherical(h, r1, c1) + x
 
-        param = [1., -0.33, 14.]
+        param = [42.3, 5.76, 9.79]
         V.set_model(custom_model)
+
+        # Provide bounds to avoid a random fit
+        V.fit(bounds=(0, [np.max(V.bins), np.max(V.experimental), np.max(V.experimental)]))
         assert_array_almost_equal(V.parameters, param, decimal=2)
 
 

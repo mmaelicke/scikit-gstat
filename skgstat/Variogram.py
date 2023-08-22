@@ -1704,7 +1704,7 @@ class Variogram(object):
                 bounds = ([-np.inf] * nb_args, [np.inf] * nb_args)
             if p0 is None:
                 # If all bounds are infinite (not defined, pass 1)
-                if all(~np.isfinite(bounds).flatten()):
+                if bounds == ([-np.inf] * nb_args, [np.inf] * nb_args):
                     p0 = np.ones(nb_args)
                 # Else pass the upper bounds
                 else:
