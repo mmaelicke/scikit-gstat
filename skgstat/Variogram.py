@@ -95,7 +95,7 @@ class Variogram(object):
         model : str | Callable
             .. versionchanged:: 1.0.12
                 Added support for sum of models (e.g., "spherical+gaussian"), or custom model (Callable). Using
-                `fit_bounds` to optimized the fit is recommended for custom models, and can be useful for sum of models.
+                `fit_bounds` to optimize the fit is recommended for custom models, and can be useful for sum of models.
 
             String or callable identifying the theoretical variogram function to be used
             to describe the experimental variogram. Can be one of:
