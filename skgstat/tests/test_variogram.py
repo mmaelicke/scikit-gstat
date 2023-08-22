@@ -658,10 +658,13 @@ class TestVariogramArguments(unittest.TestCase):
         def custom_model(h, r1, c1, x):
             return spherical(h, r1, c1) + x
 
-        V = Variogram(self.c, self.v, model=custom_model)
+        with self.assertWarns(UserWarning):
+            V = Variogram(self.c, self.v, model=custom_model)
+
         assert V._model_name == "custom_model"
         assert V._model == custom_model
         assert V._is_model_custom is True
+
 
 
     def test_get_bin_count(self):
@@ -987,7 +990,8 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         def sum_spherical(h, r1, c1, r2, c2, b1, b2):
             return spherical(h, r1, c1, b1) + spherical(h, r2, c2, b2)
 
-        V = Variogram(self.c, self.v, use_nugget=True, model=sum_spherical)
+        with self.assertWarns(UserWarning) as w:
+            V = Variogram(self.c, self.v, use_nugget=True, model=sum_spherical)
 
         # Check that 6 parameters were found
         assert len(V.cof) == 6
@@ -1088,7 +1092,8 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             return spherical(h, r1, c1) + x
 
         p0_custom = (np.max(Vnofit.bins), np.max(Vnofit.experimental), np.max(Vnofit.experimental))
-        Variogram(self.c, self.v, model=custom_model, fit_p0=p0_custom)
+        with self.assertWarns(UserWarning) as w:
+            Variogram(self.c, self.v, model=custom_model, fit_p0=p0_custom)
 
 
 class TestVariogramQualityMeasures(unittest.TestCase):
@@ -1365,7 +1370,8 @@ class TestVariogramMethods(unittest.TestCase):
         def custom_model(h, r1, c1, x):
             return spherical(h, r1, c1) + x
         V.set_model(custom_model)
-        dict = V.describe()
+        with self.assertWarns(UserWarning) as w:
+            dict = V.describe()
         custom_keys = ["param1_r1", "param2_c1", "param3_x"]
         for key in custom_keys:
             assert key in dict
@@ -1430,7 +1436,8 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
         @variogram
         def custom_model(h, r1, c1, x):
             return spherical(h, r1, c1) + x
-        self.V3 = Variogram(self.c, self.v, model=custom_model)
+        self.V3 = Variogram(self.c, self.v, model=custom_model,
+                            fit_bounds=(0, [np.max(self.V.bins), np.max(self.V.experimental), np.max(self.V.experimental)]))
 
     def test_plotly_main_plot(self):
         if PLOTLY_FOUND:

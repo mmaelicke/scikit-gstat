@@ -1070,7 +1070,7 @@ class Variogram(object):
         # Distribute first argument (lag) and use all others in order (nugget ignored when last argument not passed)
         @models.variogram
         def sum_models(h, *args):
-            return np.sum(list_models[i](h, *args[args_slices[i]]) for i in range(len(list_models)))
+            return sum(list_models[i](h, *args[args_slices[i]]) for i in range(len(list_models)))
 
         return sum_models
 
