@@ -92,8 +92,12 @@ class Variogram(object):
             differences, aligned to the 1D distance matrix (flattened upper
             triangle) and return a scalar, that converges towards small
             values for similarity (high covariance).
-        model : str
-            String identifying the theoretical variogram function to be used
+        model : str | Callable
+            .. versionchanged:: 1.0.12
+                Added support for sum of models (e.g., "spherical+gaussian"), or custom model (Callable). Using
+                `fit_bounds` to optimized the fit is recommended for custom models, and can be useful for sum of models.
+
+            String or callable identifying the theoretical variogram function to be used
             to describe the experimental variogram. Can be one of:
 
               * spherical       [Spherical, default]
@@ -103,6 +107,8 @@ class Variogram(object):
               * stable          [Stable model]
               * matern          [Matérn model]
               * nugget          [nugget effect variogram]
+
+            Any number of these theoretical models can be summed using "+" iteratively, e.g. "spherical+cubic+matern".
 
         dist_func : str
             String identifying the distance function. Defaults to
