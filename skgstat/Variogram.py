@@ -246,6 +246,24 @@ class Variogram(object):
             If present, the plot will indicate the confidence interval as
             error bars around the experimental variogram.
 
+        fit_bounds: 2-tuple of array_like or Bounds, optional
+            .. versionadded:: 1.0.12
+
+            Lower and upper bounds on parameters passed to scipy.optimize.curve_fit.
+
+            Order is typically (range, sill, nugget) or (range, sill, smoothness, nugget) for individual models, or
+            (range1, sill1, nugget1, range2, sill2, nugget2) for a sum of 2 models.
+            Recommended for custom models, where bounds cannot be determined logically.
+            For internal models, defaults to known min/max values for the sill (0, max variance), range (0, max lag)
+            and smoothness (0, 2) or (0, 20) for stable and matern, respectively.
+
+        fit_p0: array_like, optional
+            .. versionadded:: 1.0.12
+
+            Initial guess for the parameters passed to scipy.optimize.curve_fit.
+
+            Same order as for fit_bounds.
+            Defaults to upper bounds values. For custom models, if no bounds are defined, defaults to 1.
         """
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
@@ -363,7 +381,9 @@ class Variogram(object):
 
         # do the preprocessing and fitting upon initialization
         # Note that fit() calls preprocessing
-        self.fit(force=True)
+        fit_bounds = self._kwargs.get('fit_bounds') # returns None if empty
+        fit_p0 = self._kwargs.get('fit_p0')
+        self.fit(force=True, bounds=fit_bounds, p0=fit_p0)
 
         # finally check if any of the uncertainty propagation kwargs are set
         self._experimental_conf_interval = None
@@ -1576,6 +1596,21 @@ class Variogram(object):
             Uncertainty array for the bins. Has to have the same dimension as
             self.bins. Refer to Variogram.fit_sigma for more information.
 
+        bounds: 2-tuple of array_like or Bounds, optional
+            Lower and upper bounds on parameters passed to scipy.optimize.curve_fit.
+
+            Order is typically (range, sill, nugget) or (range, sill, smoothness, nugget) for individual models, or
+            (range1, sill1, nugget1, range2, sill2, nugget2) for a sum of 2 models.
+            Recommended for custom models, where bounds cannot be determined logically.
+            For internal models, defaults to known min/max values for the sill (0, max variance), range (0, max lag)
+            and smoothness (0, 2) or (0, 20) for stable and matern, respectively.
+
+        p0: array_like, optional
+            Initial guess for the parameters passed to scipy.optimize.curve_fit.
+
+            Same order as for fit_bounds.
+            Defaults to upper bounds values. For custom models, if no bounds are defined, defaults to 1.
+
         Returns
         -------
         void
@@ -1658,9 +1693,16 @@ class Variogram(object):
             argspec = inspect.getfullargspec(self._model.__wrapped__)
             nb_args = len(argspec.args) - 1
             if bounds is None:
-                bounds = (0, [np.maximum(np.nanmax(x), np.nanmax(y))] * nb_args)
+                warnings.warn("Parameter bounds cannot be logically derived for a custom model during the fit. "
+                              "User bounds can be passed using fit(..., bounds=) or Variogram(..., fit_bounds=).", UserWarning)
+                bounds = ([-np.inf] * nb_args, [np.inf] * nb_args)
             if p0 is None:
-                p0 = np.asarray(bounds[1])
+                # If all bounds are infinite (not defined, pass 1)
+                if all(~np.isfinite(bounds).flatten()):
+                    p0 = np.ones(nb_args)
+                # Else pass the upper bounds
+                else:
+                    p0 = np.asarray(bounds[1])
 
             def wrapped(*args):
                 return self._model(*args)

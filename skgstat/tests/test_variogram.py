@@ -656,7 +656,7 @@ class TestVariogramArguments(unittest.TestCase):
         # Custom model
         @variogram
         def custom_model(h, r1, c1, x):
-            return spherical(h, r1, c1, b1) + x
+            return spherical(h, r1, c1) + x
 
         V = Variogram(self.c, self.v, model=custom_model)
         assert V._model_name == "custom_model"
@@ -1034,6 +1034,62 @@ class TestVariogramFittingProcedure(unittest.TestCase):
                   sum((model(0, 1, 1, 1)) for model in [stable, matern])
         assert sum_spherical(0, *[1, ] * min_nb_args) == sum_res
 
+    def test_fit_bounds(self):
+        """
+        Test the fit_bounds kwarg of Variogram and bounds args of fit()
+        """
+        Vnofit =  Variogram(self.c, self.v, fit_method=None)
+
+        bounds=(0, [np.max(Vnofit.bins), np.max(Vnofit.experimental)])
+
+        # Initiate variogram with bounds for fit
+        V = Variogram(self.c, self.v, fit_bounds=bounds)
+        # Same but calling fit
+        V.fit(bounds=bounds)
+
+        # For a sum of models
+        V = Variogram(self.c, self.v, model='spherical+gaussian', fit_bounds=(0, bounds[1]*2))
+        # Same but calling fit
+        V.fit(bounds=(0, bounds[1]*2))
+
+        # Check an error is raised for a custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        with self.assertWarns(UserWarning):
+            Variogram(self.c, self.v, model=custom_model)
+
+        bounds_custom = [(0, 0, 0), (np.max(self.c), np.max(self.v), np.max(self.v))]
+
+        # And that no error is raised otherwise
+        Variogram(self.c, self.v, model=custom_model, fit_bounds=bounds_custom)
+
+    def test_fit_p0(self):
+        """
+        Test the fit_p0 kwarg of Variogram and bounds args of fit()
+        """
+        Vnofit =  Variogram(self.c, self.v, fit_method=None)
+        p0 = (np.max(Vnofit.bins), np.max(Vnofit.experimental))
+
+        # Initiate variogram with bounds for fit
+        V = Variogram(self.c, self.v, fit_p0=p0)
+        # Same but calling fit
+        V.fit(p0=p0)
+
+        # For a sum of models
+        V = Variogram(self.c, self.v, model='spherical+gaussian', fit_p0=p0 * 2)
+        # Same but calling fit
+        V.fit(p0=p0 * 2)
+
+        # For a custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        p0_custom = (np.max(Vnofit.bins), np.max(Vnofit.experimental), np.max(Vnofit.experimental))
+        Variogram(self.c, self.v, model=custom_model, fit_p0=p0_custom)
+
 
 class TestVariogramQualityMeasures(unittest.TestCase):
     def setUp(self):
@@ -1266,7 +1322,7 @@ class TestVariogramMethods(unittest.TestCase):
         # Custom model
         @variogram
         def custom_model(h, r1, c1, x):
-            return spherical(h, r1, c1, b1) + x
+            return spherical(h, r1, c1) + x
 
         V.set_model(custom_model)
         assert V._model_name == "custom_model"
@@ -1351,7 +1407,7 @@ class TestVariogramMethods(unittest.TestCase):
         def custom_model(h, r1, c1, x):
             return spherical(h, r1, c1) + x
 
-        param = [42.3, 5.76, 9.79]
+        param = [1., -0.33, 14.]
         V.set_model(custom_model)
         assert_array_almost_equal(V.parameters, param, decimal=2)
 
