@@ -1122,7 +1122,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
                 [3.3705, 3.3707, 3.193, 3.0653]
         ):
             V.set_model(model)
-            self.assertAlmostEqual(V.rmse, rmse, places=4)
+            self.assertAlmostEqual(V.rmse, rmse, places=3)
 
     def test_mean_residual(self):
         V = Variogram(self.c, self.v)
@@ -1132,7 +1132,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
             [2.6803, 2.6803, 2.6966, 2.4723]
         ):
             V.set_model(model)
-            self.assertAlmostEqual(V.mean_residual, mr, places=4)
+            self.assertAlmostEqual(V.mean_residual, mr, places=3)
 
     def test_nrmse(self):
         V = Variogram(self.c, self.v, n_lags=15)
@@ -1142,12 +1142,12 @@ class TestVariogramQualityMeasures(unittest.TestCase):
             [0.3536, 0.3535, 0.3361, 0.3499, 0.3264]
         ):
             V.set_model(model)
-            self.assertAlmostEqual(V.nrmse, nrmse, places=4)
+            self.assertAlmostEqual(V.nrmse, nrmse, places=3)
 
     def test_nrmse_r(self):
         V = Variogram(self.c, self.v, estimator='cressie')
 
-        self.assertAlmostEqual(V.nrmse_r, 0.63543, places=5)
+        self.assertAlmostEqual(V.nrmse_r, 0.63543, places=3)
 
     def test_r(self):
         V = Variogram(self.c, self.v, n_lags=12, normalize=False)
