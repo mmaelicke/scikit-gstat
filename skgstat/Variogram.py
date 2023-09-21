@@ -2112,7 +2112,7 @@ class Variogram(object):
 
         # we append all bounds (for one or several models)
         all_bounds = []
-        for mname in list_mname:
+        for i, mname in enumerate(list_mname):
 
             # use range, sill and smoothness parameter
             if mname == 'matern':
@@ -2134,8 +2134,8 @@ class Variogram(object):
                 # a is max(x), C0 is max(y)
                 bounds = [np.nanmax(x), np.nanmax(y)]
 
-            # if use_nugget is True add the nugget
-            if self.use_nugget:
+            # if use_nugget is True add the nugget (for the last model only in case it is a sum)
+            if self.use_nugget and i == (len(list_mname) - 1):
                 bounds.append(0.99*np.nanmax(y))
 
             all_bounds += bounds

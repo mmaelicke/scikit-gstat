@@ -990,11 +990,23 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         def sum_spherical(h, r1, c1, r2, c2, b1, b2):
             return spherical(h, r1, c1, b1) + spherical(h, r2, c2, b2)
 
-        with self.assertWarns(UserWarning) as w:
+        with self.assertWarns(UserWarning):
+            # Custom models should ignore the nugget setting, so let's try both and check
             V = Variogram(self.c, self.v, use_nugget=True, model=sum_spherical)
+            V2 = Variogram(self.c, self.v, use_nugget=False, model=sum_spherical)
 
         # Check that 6 parameters were found
-        assert len(V.cof) == 6
+        assert len(V.cof) == len(V2.cof) == 6
+
+    def test_fit_sum_models_nugget(self):
+
+        # Define a sum of variogram and run the fit
+        V = Variogram(self.c, self.v, model="spherical+spherical", use_nugget=False)
+        V2 = Variogram(self.c, self.v, model="spherical+spherical", use_nugget=True)
+
+        # Check that 4 parameters were found without nugget, 5 otherwise
+        assert len(V.cof) == 4
+        assert len(V2.cof) == 5
 
     def test_build_sum_models(self):
 
