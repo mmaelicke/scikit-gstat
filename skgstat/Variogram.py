@@ -109,6 +109,7 @@ class Variogram(object):
               * nugget          [nugget effect variogram]
 
             Any number of these theoretical models can be summed using "+" iteratively, e.g. "spherical+cubic+matern".
+            The nugget parameters of the models are removed except for the last model (sum of nuggets = single nugget).
 
         dist_func : str
             String identifying the distance function. Defaults to
@@ -192,7 +193,8 @@ class Variogram(object):
             Defaults to False. If True, a nugget effet will be added to all
             Variogram.models as a third (or fourth) fitting parameter. A
             nugget is essentially the y-axis interception of the theoretical
-            variogram function.
+            variogram function. For a sum of variogram, the nugget is defined
+            in its last model.
         maxlag : float, str
             Can specify the maximum lag distance directly by giving a value
             larger than 1. The binning function will not find any lag class
@@ -1016,25 +1018,20 @@ class Variogram(object):
 
     def _get_argpos_sum_models(self, list_model_names):
         """
-        Get arg slice position (list of slices) for the sum of model of a list of model names (list of strings).
+        Get argument slice position (list of slices) for the sum of models from a list of model names (list of strings).
         """
 
         # Doing this here for other functions (fit, describe, etc), even though already done in _build_sum_models
         list_models = [getattr(models, model_name.lower()).py_func for model_name in list_model_names]
 
-        # Get the number of arguments per model
-        nb_args_per_model = [len(inspect.getfullargspec(model).args) for model in list_models]
+        # Get the number of arguments per model (e.g., [3, 4, 4])
+        nb_args_per_model = np.array([len(inspect.getfullargspec(model).args) for model in list_models])
 
-        # If nugget is used
-        if self.use_nugget:
-
-            # Compute cumulative number of args removing the lags
-            cum_args_minus_lag = np.cumsum(np.array(nb_args_per_model) - 1)
-
-        # If nugget is not used
-        else:
-            # Same removing also the nugget
-            cum_args_minus_lag = np.cumsum(np.array(nb_args_per_model) - 2)
+        # We remove the nugget and lags parameters, except nugget for the last model (sum of nuggets = single nugget)
+        nb_args_per_model -= 2
+        nb_args_per_model[-1] += 1
+        # Compute cumulative number of args removing 2 args everywhere (all lags and nuggets, last one will compensate)
+        cum_args_minus_lag = np.cumsum(nb_args_per_model)
 
         # Prepare argument slices to distribute to submodels
         args_indices = np.insert(cum_args_minus_lag, 0, 0)  # We add the first indice of 0
