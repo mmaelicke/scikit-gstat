@@ -1378,7 +1378,7 @@ class TestCrossVariogram(unittest.TestCase):
         assert_array_almost_equal(self.v[:,1], vario._co_variable)
 
     def test_cross_variogram_warns(self):
-        """Test warning when cross-variogram is exported to gstools"""
+        """Test warning when cross-variogram is exported to gstools (only if GSTools is installed)"""
         vario = Variogram(self.c, self.v)
 
         if GSTOOLS_AVAILABLE:
