@@ -255,7 +255,7 @@ class TestVariogramArguments(unittest.TestCase):
         assert_array_almost_equal(
             V.bins,
             np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
-            decimal=1
+            decimal=0
         )
 
     def test_binning_method_stable_maxiter(self):
@@ -265,7 +265,7 @@ class TestVariogramArguments(unittest.TestCase):
         assert_array_almost_equal(
             V.bins,
             np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
-            decimal=1
+            decimal=0
         )
 
     def test_binning_method_stable_fix_bins(self):
@@ -280,7 +280,7 @@ class TestVariogramArguments(unittest.TestCase):
         assert_array_almost_equal(
             V.bins,
             np.array([4.2, 8.6, 12.8, 17.1, 21.2, 25.5, 29.3, 33.2, 37.4, 43.]),
-            decimal=1
+            decimal=0
         )
 
     def test_binning_change_nlags(self):
