@@ -73,7 +73,7 @@ From my personal point of view, there are three main issues with this approach:
 
 Therefore one will have to understand how the
 :class:`Variogram Class <skgstat.Variogram>` works along with some basic
-knowledge about variography in oder to be able to properly use ``scikit-gstat``.
+knowledge about variography in order to be able to properly use ``scikit-gstat``.
 
 However, what we can discuss from the figure, is what a variogram actually is.
 At its core it relates a dependent variable to an independent variable and,
@@ -373,7 +373,7 @@ the input data.
     :func:`experimental <skgstat.Variogram.experimental>`, thus it is a tuple of
     two 1D arrays.
 
-The previous sections summarized how distance is calculated and handeled 
+The previous sections summarized how distance is calculated and handled 
 by the :class:`Variogram class <skgstat.Variogram>`. 
 The :func:`lag_groups <skgstat.Variogram.lag_groups>` function makes it 
 possible to find corresponding observation value pairs for all distance 
@@ -804,7 +804,7 @@ angle of the azimutal vector to the x-axis, with an
 :func:`tolerance <skgstat.DirectionalVariogram.tolerance>` in degrees added to the 
 exact azimutal orientation clockwise and counter clockwise.
 
-The angle :math:`\Phi` between two vetors ``u,v`` is given like:
+The angle :math:`\Phi` between two vectors ``u,v`` is given like:
 
 .. math::
 
@@ -830,7 +830,7 @@ The angle :math:`\Phi` between two vetors ``u,v`` is given like:
 
 The described definition of orientation is illustrated in the figure above. 
 There are two observation points, :math:`A (0,0)` and :math:`B (2, 1)`. To decide
-wether to account for them when calculating the semi-variance at their separating 
+whether to account for them when calculating the semi-variance at their separating 
 distance lag, their orientation is used. Only if the direction of the varigram includes
 this orientation, the points are used. Imagine the azimuth and tolerance would be 
 ``45°``, then anything between ``0°`` (East) and ``90°`` orientation would be included.
@@ -840,7 +840,7 @@ vector :math:`\overrightarrow{AB}` is included.
 Calculating orientations
 ------------------------
 
-SciKit-GStat implements a slightly adaped version of the formula given in the 
+SciKit-GStat implements a slightly adapted version of the formula given in the 
 last section. It makes use of symmetric search areas (tolerance is applied clockwise 
 and counter clockwise) und therefore any calculated angle might be the result 
 of calculating the orientation of :math:`\overrightarrow{AB}` or 

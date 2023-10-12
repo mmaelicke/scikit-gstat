@@ -83,7 +83,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
 
         self.assertEqual(DV.n_lags, 5)
 
-        # go through the n_lags chaning procedure
+        # go through the n_lags changing procedure
         DV.bin_func = 'scott'
 
         # with scott, there are 6 classes now

@@ -406,7 +406,7 @@ class DirectionalVariogram(Variogram):
     def azimuth(self):
         """Direction azimuth
 
-        Main direction for te selection of points in the formation of point
+        Main direction for the selection of points in the formation of point
         pairs. East of the coordinate plane is defined to be 0° and then the
         azimuth is set clockwise up to 180°and count-clockwise to -180°.
 
