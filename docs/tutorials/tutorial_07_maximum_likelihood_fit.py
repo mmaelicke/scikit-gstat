@@ -90,7 +90,7 @@ t3 = time()
 res = minimize(likelihood, p0, bounds=bounds, method='SLSQP')
 t4 = time()
 
-# some priting
+# some printing
 print(f"Processing time {np.round(t4 - t3, 2)} seconds")
 print('initial guess:     ', p0.round(1))
 print('optimal parameters:', res.x.round(1))
@@ -103,7 +103,7 @@ print('optimal parameters:', res.x.round(1))
 # Apply the optimized parameters. For comparison, the three method-of-moment methods
 # from SciKit-GStat are applied as well. Note that the used sample is quite dense.
 # Thus we do not expect a different between the MoM based procedures.
-# They should all find the same paramters.
+# They should all find the same parameters.
 
 # use 100 steps
 x = np.linspace(0, V.bins[-1], 100)

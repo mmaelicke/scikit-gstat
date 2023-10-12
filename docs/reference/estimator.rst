@@ -2,7 +2,7 @@
 Estimator Functions
 ===================
 
-Scikit-GStat implements various semi-variance estimators. These fucntions can
+Scikit-GStat implements various semi-variance estimators. These functions can
 be found in the skgstat.estimators submodule. Each of these functions can be
 used independently from Variogram class. In this case the estimator is
 expecting an array of pairwise differences to calculate the semi-variance.

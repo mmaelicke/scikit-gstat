@@ -69,7 +69,7 @@ class TestCrossUtility(unittest.TestCase):
         assert_array_almost_equal(mat[0][2].bins, second.bins, 1)
 
     def test_for_directional_variograms(self):
-        """Check that DirectionalVariograms are also calcualted correctly"""
+        """Check that DirectionalVariograms are also calculated correctly"""
         mat = cross_variograms(self.c, self.v, azimuth=90)
 
         mat = np.asarray(mat, dtype='object').flatten()

@@ -155,7 +155,7 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
         Fitting parameter. k1 has to be positive or zero and may not be larger
         than all marginal sill values.
     k2 : float
-        Fitting paramter. k2 has to be positive or zero and may not be larger
+        Fitting parameter. k2 has to be positive or zero and may not be larger
         than all marginal sill values.
     k3 : float
         Fitting parameter. k3 has to be positive and may not be larger than

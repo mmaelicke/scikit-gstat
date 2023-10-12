@@ -127,7 +127,7 @@ print(edge_model)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Now, with the example `from the GSTools docs <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/index.html#id3>`_ working,
-# we can start chaning the arguments to create quite different empirical variograms.
+# we can start changing the arguments to create quite different empirical variograms.
 #
 # **Note**: This should just illustrate the available possibilities, the result is by no means producing a better
 # estimate of the initially created Gaussian random field.
@@ -232,7 +232,7 @@ malformed.plot()
 # 6.3 ``to_gs_krige``
 # ~~~~~~~~~~~~~~~~~~~
 #
-# Finally, after carefully esitmating and fitting a variogram using SciKit-GStat, 
+# Finally, after carefully estimating and fitting a variogram using SciKit-GStat, 
 # you can also export it directly into a :any:`GSTools Krige <gstools.krige.Krige>` instance. 
 # We use the variogram as in the other sections:
 

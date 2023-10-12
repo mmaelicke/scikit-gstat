@@ -1,5 +1,5 @@
 """
-Cross-variogram utility function. This module can be used to calcualte
+Cross-variogram utility function. This module can be used to calculate
 cross-variograms for more than two variables, by creating a variogram
 for each combination of variables.
 

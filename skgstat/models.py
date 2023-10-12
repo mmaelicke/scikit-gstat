@@ -20,7 +20,7 @@ def variogram(func):
 
 @variogram
 @jit(nopython=True)
-def spherical(h, r, c0, b=0):
+def spherical(h, r, c0, b=0.0):
     r"""Spherical Variogram function
 
     Implementation of the spherical variogram function. Calculates the
