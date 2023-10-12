@@ -1,0 +1,13 @@
+repos:
+        # Fix common spelling mistakes
+        - repo: https://github.com/codespell-project/codespell
+          rev: v2.2.1
+          hooks:
+                - id: codespell
+                  args: [
+#                    '--ignore-words-list', 'nd,alos,inout',
+#                    '--ignore-regex', '\bhist\b',
+                    '--'
+                  ]
+                  types_or: [python, rst, markdown]
+                  files: ^(skgstat|docs|tutorials)/
