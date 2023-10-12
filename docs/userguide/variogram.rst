@@ -188,7 +188,7 @@ The available methods are:
 * :func:`doane <skgstat.binning.auto_derived_lags>` - derive number of bins by Doane's rule
 * :func:`fd <skgstat.binning.auto_derived_lags>` - derive number of bins by Freedmann-Diaconis estimator
 * :func:`kmeans <skgstat.binning.kmeans>` - derive bins by K-Means clustering
-* :func:`ward <skgstat.binning.ward>` - derive bins by hierachical clustering and Ward's criterion
+* :func:`ward <skgstat.binning.ward>` - derive bins by hierarchical clustering and Ward's criterion
 * :func:`stable_entropy <skgstat.binning.stable_entropy_lags>` - derive bins from stable entropy setting
 
 ``['even', 'uniform', 'kmeans', 'ward', 'stable_entropy']`` methods will use two parameters 
@@ -253,7 +253,7 @@ Observation differences
 -----------------------
 
 By the term *observation differences*, the distance between the 
-observed values are meant. As already layed out, the main idea of 
+observed values are meant. As already laid out, the main idea of 
 a variogram is to systematially relate similarity of observations 
 to their spatial proximity. The spatial part was covered in the 
 sections above, finalized with the calculation of a suitable 
@@ -327,7 +327,7 @@ The bin edges are therefore ``140. < x < 160.``.
 Consequently, the binning and grouping worked fine.
 
 If you want to access all value pairs at a given group, it would of 
-course be possible to use the machanism above to find the correct points.
+course be possible to use the mechanism above to find the correct points.
 However, :class:`Variogram <skgstat.Variogram>` offers an iterator 
 that already does that for you: 
 :func:`lag_classes <skgstat.Variogram.lag_classes>`. This iterator 
@@ -355,9 +355,9 @@ Experimental variograms
 The last stage before a variogram function can be modeled is to define 
 an experimental variogram, also known as *empirical variogram*, which
 will be used to parameterize a variogram model.
-However, the expermental variogram already contains a lot of information 
+However, the experimental variogram already contains a lot of information 
 about spatial relationships in the data. Therefore, it's worth looking 
-at more closely. Last but not least a poor expermental variogram will 
+at more closely. Last but not least a poor experimental variogram will 
 also affect the variogram model, which is ultimatively used to interpolate
 the input data.
 
@@ -446,7 +446,7 @@ a semi-variance value. One big advantage of these models is, that we
 can assure different things, like positive definitenes. Most models
 are also monotonically increasing and approach an upper bound.
 Usually these models need three parameters to fit to the experimental
-variogram. All three parameters have a meaning and are usefull
+variogram. All three parameters have a meaning and are useful
 to learn something about the data. This upper bound a model approaches
 is called *sill*. The distance at which 95% of the sill are approached 
 is called the *effective range*. 
@@ -556,7 +556,7 @@ The default for :class:`Variogram <skgstat.Variogram>` is
 Trust-Region Reflective (TRF), which is also the default for
 :class:`Variogram <skgstat.Variogram>`. It uses a valid parameter space as bounds
 and therefore won't fail in finding parameters.
-You can, hoever, switch to Levenberg-Marquardt
+You can, however, switch to Levenberg-Marquardt
 by setting the :class:`Variogram.fit_method <skgstat.Variogram.fit_method>` 
 to 'lm'. 
 
@@ -707,7 +707,7 @@ spatial relationship between semi-variance and distance.
 Following the Gaussian model, observations are assumed to 
 be similar up to intermediate distances, showing just a 
 gentle increase in semi-variance. Then, the semi-variance 
-increases dramatically wihtin just a few distance units up 
+increases dramatically within just a few distance units up 
 to the sill, which is again approached asymtotically.
 The model can be used to simulate very sudden and sharp 
 changes in the variable at a specific distance, 
@@ -732,8 +732,8 @@ Matérn model
 ~~~~~~~~~~~~
 
 Another, quite powerful model is the Matérn model. 
-Especially in cases where you cannot chose the appropiate model a priori so easily.
-The Matérn model takes an additional smoothness paramter, that can 
+Especially in cases where you cannot chose the appropriate model a priori so easily.
+The Matérn model takes an additional smoothness parameter, that can 
 change the shape of the function in between an exponential 
 model shape and a Gaussian one. 
 
@@ -776,7 +776,7 @@ The classic approach to calculate a variogram is based on the
 assumption that covariance between observations can be related to 
 their separating distance. For this, point pairs of all observation 
 points are formed and it is assumed that they can be formed without any restriction.
-The only paramter to be influenced is a limiting distance, beyond which 
+The only parameter to be influenced is a limiting distance, beyond which 
 a point pair does not make sense anymore. 
 
 This assumption might not always hold. Especially in landscapes, processes do 
@@ -791,7 +791,7 @@ orientation, which is called :func:`azimuth <skgstat.DirectionalVariogram.azimut
 and a :func:`tolerance <skgstat.DirectionalVariogram.tolerance>`, which is an 
 offset from the given azimuth, at which a point pair will still be accepted.
 
-Defining orientiation
+Defining orientation
 ---------------------
 
 One has to decide how orientation of two points is determined. In scikit-gstat,
@@ -889,7 +889,7 @@ The main difference to the internal structure storing the orientation angles for
 angles.
 To use the class on only five points, we need to prevent the class from fitting, as 
 fitting on only 5 points will not work. But this does not affect the orientation calculations.
-Therefore, the :func:`fit <skgstat.DirectionalVariogram.fit>` mehtod is overwritten.
+Therefore, the :func:`fit <skgstat.DirectionalVariogram.fit>` method is overwritten.
 
 .. ipython:: python
     :okwarning:
@@ -969,5 +969,5 @@ dependency is thus directed in North-South direction.
 
 
 To perform Kriging, you would now transform the data, especially in North-West 
-direction, unitl both variograms look the same within the effective range. 
+direction, until both variograms look the same within the effective range. 
 Finally, the Kriging result is back-transformed into the original coordinate system.

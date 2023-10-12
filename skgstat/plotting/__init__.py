@@ -32,7 +32,7 @@ def backend(name=None):
         try:
             import plotly
         except ImportError:
-            print('You need to install plotly >=4.12.0 separatly:\npip install plotly')
+            print('You need to install plotly >=4.12.0 separately:\npip install plotly')
             return
 
     # were are good to set the new backend

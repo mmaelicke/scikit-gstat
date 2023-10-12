@@ -87,7 +87,7 @@ class Variogram(object):
               * minmax          [MinMax Scaler]
               * entropy         [Shannon Entropy]
 
-            If a callable is passed, it has to accept an array of absoulte
+            If a callable is passed, it has to accept an array of absolute
             differences, aligned to the 1D distance matrix (flattened upper
             triangle) and return a scalar, that converges towards small
             values for similarity (high covariance).
@@ -130,7 +130,7 @@ class Variogram(object):
                   :func:`distance <skgstat.Variogram.distance>`
                   as `n_lags`.
                 * `'kmeans'` uses KMeans clustering to well supported bins
-                * `'ward'` uses hierachical clustering to find
+                * `'ward'` uses hierarchical clustering to find
                   minimum-variance clusters.
 
             More details are given in the documentation for
@@ -686,7 +686,7 @@ class Variogram(object):
         between two neighboring clusters. Note: This does not necessarily
         result in even width bins.
 
-        **`'ward'`** uses a hierachical culstering algorithm to iteratively
+        **`'ward'`** uses a hierarchical culstering algorithm to iteratively
         merge pairs of clusters until there are only `n` remaining clusters.
         The merging is done by minimizing the variance for the merged cluster.
 
@@ -774,7 +774,7 @@ class Variogram(object):
 
     def _bin_func_wrapper(self, distances, n, maxlag):
         """
-        Wrapper arounf the call of the actual binning method.
+        Wrapper around the call of the actual binning method.
         This is needed to pass keyword arguments to kmeans or
         stable_entropy binning methods, and respect the slightly
         different function signature of auto_derived_lags.
@@ -1129,8 +1129,8 @@ class Variogram(object):
     def maxlag(self):
         """
         Maximum lag distance to be considered in this Variogram instance.
-        You can limit the distance at which point pairs are calcualted.
-        There are three possible ways how to do that, in absoulte lag units,
+        You can limit the distance at which point pairs are calculated.
+        There are three possible ways how to do that, in absolute lag units,
         which is a number larger one. Secondly, a number ``0 < maxlag < 1``
         can be set, which will use this share of the maximum distance as
         maxlag. Lastly, a string can be set: ``'mean'`` and ``'median'``
@@ -1143,7 +1143,7 @@ class Variogram(object):
         calculated. Hence, it does **not** speed up the calculation
         of large distance matrices, just the estimation of the variogram.
         Thus, if you pre-calcualte the distance matrix using
-        :class:`MetricSpace <skgstat.MetricSpace>`, only absoulte
+        :class:`MetricSpace <skgstat.MetricSpace>`, only absolute
         limits can be used.
 
         """
@@ -1387,7 +1387,7 @@ class Variogram(object):
     def lag_groups(self):
         """Lag class groups
 
-        Retuns a mask array with as many elements as self._diff has,
+        Returns a mask array with as many elements as self._diff has,
         identifying the lag class group for each pairwise difference. Can be
         used to extract all pairwise values within the same lag bin.
 
@@ -2061,7 +2061,7 @@ class Variogram(object):
         corresponding lag values
 
         .. deprecated:: 1.0.4
-            residuals can be ambigious, thus the property is renamed to model_residuals
+            residuals can be ambiguous, thus the property is renamed to model_residuals
 
         Returns
         -------
@@ -2098,7 +2098,7 @@ class Variogram(object):
     def mean_residual(self):
         """Mean Model residuals
 
-        Calculates the mean, absoulte deviations between the experimental
+        Calculates the mean, absolute deviations between the experimental
         variogram and theretical model values.
 
         Returns
@@ -2257,7 +2257,7 @@ class Variogram(object):
         Notes
         -----
         Unlike Variogram.nrmse, nrmse_r is not normalized to the mean of y,
-        but the differece of the maximum y to its mean:
+        but the difference of the maximum y to its mean:
 
         .. math::
             NRMSE_r = \frac{RMSE}{max(y) - mean(y)}
@@ -2273,7 +2273,7 @@ class Variogram(object):
 
         :return:
         """
-        # get the experimental and theoretical variogram and cacluate means
+        # get the experimental and theoretical variogram and calculate means
         experimental, model = self.model_deviations()
         mx = np.nanmean(experimental)
         my = np.nanmean(model)
@@ -2447,7 +2447,7 @@ class Variogram(object):
         maxlag = np.nanmax(self.bins)
         maxvar = np.nanmax(self.experimental)
 
-        # get the fitting coefficents
+        # get the fitting coefficients
         cof = self.cof
 
         # build the dict
@@ -2554,7 +2554,7 @@ class Variogram(object):
 
         Returns the fitted theoretical variogram as a pandas.DataFrame
         instance. The n and force parameter control the calaculation,
-        refer to the data funciton for more info.
+        refer to the data function for more info.
 
         .. deprecated:: 1.0.10
             The return value of this function will change with a future release
@@ -2636,7 +2636,7 @@ class Variogram(object):
 
     def to_gs_krige(self, **kwargs):
         """
-        Instatiate a GSTools Krige class.
+        Instantiate a GSTools Krige class.
 
         This can only export isotropic models.
         Note: the `fit_variogram` is always set to `False`
@@ -2858,7 +2858,7 @@ class Variogram(object):
     def distance_difference_plot(self, ax=None, plot_bins=True, show=True):
         """Raw distance plot
 
-        Plots all absoulte value differences of all point pair combinations
+        Plots all absolute value differences of all point pair combinations
         over their separating distance, without sorting them into a lag.
 
         .. versionchanged:: 0.4.0
@@ -2918,7 +2918,7 @@ class Variogram(object):
     def __str__(self):  # pragma: no cover
         """String Representation
 
-        Descriptive respresentation of this Variogram instance that shall give
+        Descriptive representation of this Variogram instance that shall give
         the main variogram parameters in a print statement.
 
         Returns

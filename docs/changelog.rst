@@ -19,13 +19,13 @@ Version 1.0.9
 - [data] Added a data generator for creating :func:`random multivariate data <skgstat.data.corr_variable>`
 - [tests] Added tests for :func:`random multivariate data <skgstat.data.corr_variable>`
 
-Verison 1.0.8
+Version 1.0.8
 -------------
 - [util] added :func:`cross_variograms <skgstat.cross_variograms>` for calculating cross-variograms for 
   all combinations of ``N`` input variables. Variograms are returned in a 2D List (matrix) with all
   primary variograms on the diagonal.
 - [util] added support for :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` in case azimuth,
-  tolerance or bandwith are passed as keyword arguments to :func:`cross_variograms <skgstat.cross_variograms>`
+  tolerance or bandwidth are passed as keyword arguments to :func:`cross_variograms <skgstat.cross_variograms>`
 - [util] added tests for new cross_variograms function to be implemented.
 
 Version 1.0.7
@@ -36,7 +36,7 @@ Version 1.0.7
 
 Version 1.0.6
 -------------
-This is technically the same as the 1.0.5 as I screwed up and uplaoded to PyPI without merging the changes.
+This is technically the same as the 1.0.5 as I screwed up and uploaded to PyPI without merging the changes.
 
 
 Version 1.0.5
@@ -147,7 +147,7 @@ Version 0.6.3
 -------------
 - [interfaces] If any of the gstools interfaces are used, the Variogram will call :func:`fit <skgstat.Variogram.fit>`
   without forcing a full preprocessing cycle. This fixes edge cases, where a parameter was mutated, but the fitting 
-  not performed before the instance was exported. This should only have happended in very rare occasions.
+  not performed before the instance was exported. This should only have happened in very rare occasions.
 - [data] added the meuse dataset from the R-package ``'sp'``
 
 Version 0.6.2
@@ -238,7 +238,7 @@ Version 0.4.3
 
 Version 0.4.2
 -------------
-- [Variogram] :func:`bins <skgstat.Variogram.bins>` now cases manual setted bin edges automatically
+- [Variogram] :func:`bins <skgstat.Variogram.bins>` now cases manual set bin edges automatically
   to a :func:`numpy.array`.
 - [Variogram] :func:`get_empirical <skgstat.Variogram.get_empirical>` returns the empirical variogram.
   That is a tuple of the current :func:`bins <skgstat.Variogram.bins>` and 
@@ -272,7 +272,7 @@ Version 0.3.10
 - [Variogram] added :func:`fit_method-'manual' <skgstat.Variogram.fit_method>`. This is a manual fitting 
   method that takes the variogram parameters either at instantiation prefixed by `fit_`, or as 
   keyword arguments by :func:`fit <skgstat.Variogram.fit>`. 
-- [Variogram] the manual fitting method will preseve the previous parameters, if the Variogram was 
+- [Variogram] the manual fitting method will preserve the previous parameters, if the Variogram was 
   fitted before and the fitting parameters are not manually overwritten.
 
 
@@ -296,7 +296,7 @@ Version 0.3.8
 
 Version 0.3.7
 -------------
-- [Variogram] now accepts arbitary kwargs. These can be used to further specify functional behavior
+- [Variogram] now accepts arbitrary kwargs. These can be used to further specify functional behavior
   of the class. As of Version `0.3.7` this is used to pass arguments down to the 
   :func:`entropy <skgstat.estimators.entropy>` and :func:`percentile <skgstat.estimators.percentile>` 
   estimators.

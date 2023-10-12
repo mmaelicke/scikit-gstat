@@ -200,7 +200,7 @@ def ward(distances, n, maxlag, **kwargs):
     center. Note: this does not necessarily result in equidistance lag classes.
 
     The clustering is done by merging pairs of clusters that minimize the
-    variance for the merged clusters, unitl `n` clusters are found.
+    variance for the merged clusters, until `n` clusters are found.
 
     Parameters
     ----------

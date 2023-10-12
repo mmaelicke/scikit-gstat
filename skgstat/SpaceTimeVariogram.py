@@ -394,7 +394,7 @@ class SpaceTimeVariogram:
         Parameters
         ----------
         bin_func : str
-            Sepcifies the function to be loaded. Can be either 'even' or
+            Specifies the function to be loaded. Can be either 'even' or
             'uniform'.
         axis : str
             Specifies the axis to be used for binning. Can be either 'space' or
@@ -886,7 +886,7 @@ class SpaceTimeVariogram:
         Notes
         -----
         This is a Python only implementation that can get quite slow as any
-        added obervation on the space or time axis will increase the matrix
+        added observation on the space or time axis will increase the matrix
         dimension by one. It is also slow as 4 loops are needed to loop the
         matrix. I am evaluating at the moment if the function performs better
         using numpys vectorizations or by implementing a Cython, Fortran,
@@ -1327,7 +1327,7 @@ class SpaceTimeVariogram:
         Plot a 2D contour plot of the experimental variogram. The
         experimental semi-variance values are spanned over a space - time lag
         meshgrid. This grid is (linear) interpolated onto the given
-        resolution for visual reasons. Then, contour lines are caluclated
+        resolution for visual reasons. Then, contour lines are calculated
         from the denser grid. Their number can be specified by *levels*.
 
         Parameters
@@ -1354,7 +1354,7 @@ class SpaceTimeVariogram:
             The method used for densifying the meshgrid. Can be one of
             'fast' or 'precise'. Fast will use the scipy.ndimage.zoom method
             to incresae the node density. This is fast, but cannot
-            interpolate *behind* any NaN occurance. 'Precise' performs an
+            interpolate *behind* any NaN occurrence. 'Precise' performs an
             actual linear interpolation between the nodes using
             scipy.interpolate.griddata. This takes more time, but the result
             is less smoothed out.
@@ -1384,7 +1384,7 @@ class SpaceTimeVariogram:
         Plot a 2D filled contour plot of the experimental variogram. The
         experimental semi-variance values are spanned over a space - time lag
         meshgrid. This grid is (linear) interpolated onto the given
-        resolution for visual reasons. Then, contour lines are caluclated
+        resolution for visual reasons. Then, contour lines are calculated
         from the denser grid. Their number can be specified by *levels*.
         Finally, each contour region is filled with a color supplied by the
         specified *cmap*.
@@ -1411,7 +1411,7 @@ class SpaceTimeVariogram:
             The method used for densifying the meshgrid. Can be one of
             'fast' or 'precise'. Fast will use the scipy.ndimage.zoom method
             to incresae the node density. This is fast, but cannot
-            interpolate *behind* any NaN occurance. 'Precise' performs an
+            interpolate *behind* any NaN occurrence. 'Precise' performs an
             actual linear interpolation between the nodes using
             scipy.interpolate.griddata. This takes more time, but the result
             is less smoothed out.

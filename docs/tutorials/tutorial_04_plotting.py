@@ -26,14 +26,14 @@ The data used to create the :class:`Variogram <skgstat.Variogram>` and
 :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` is from 
 Mälicke (2021). Here, pancake dataset is used.
 The spatio-temporal data is derived from Fersch et al. (2020). From that data
-publication, the wireless sensor network data is used. The originaly published
+publication, the wireless sensor network data is used. The originally published
 15 minutes intervals soil temperature data at 20 cm depth was taken for all 55
 stations and aggregated to mean hourly values. To further decrease the data size,
 only every 6th data point is used here. Estimating the full data set will take
 approx. 120GB RAM and processing took about 30 minutes. The results for the
 thinned data sample are very comparable.
 
-Both data samples can either be obtained by the orignial publications,
+Both data samples can either be obtained by the original publications,
 or from the SciKit-GStat documentation. Both samples are published under
 Creative Commons BY 4.0 license. Please cite the original publications if you
 use the data, and **not** SciKit-GStat.

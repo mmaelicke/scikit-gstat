@@ -16,7 +16,7 @@ class DirectionalVariogram(Variogram):
     coordinates and relates them to one of the semi-variance measures of the
     given dependent values.
 
-    The direcitonal version of a Variogram will only form paris of points
+    The directional version of a Variogram will only form paris of points
     that share a specified spatial relationship.
 
     """
@@ -69,7 +69,7 @@ class DirectionalVariogram(Variogram):
               * minmax          [MinMax Scaler]
               * entropy         [Shannon Entropy]
 
-            If a callable is passed, it has to accept an array of absoulte
+            If a callable is passed, it has to accept an array of absolute
             differences, aligned to the 1D distance matrix (flattened upper
             triangle) and return a scalar, that converges towards small
             values for similarity (high covariance).

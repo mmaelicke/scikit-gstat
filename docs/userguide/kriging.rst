@@ -95,7 +95,7 @@ we can just make something up.
   
 Next, we build up a variogram model of spherical shape, that uses a 
 effective range larger than the distances in the matrix. Otherwise, 
-we would just calcualte the arithmetic mean.
+we would just calculate the arithmetic mean.
 
 .. ipython:: python
 
@@ -115,7 +115,7 @@ straightforward.
   
 Of course we could now use the inverse of these semi-variances 
 to weigh the observations, **but that would not be correct.**
-Remeber, that this array `variances` is what we want the 
+Remember, that this array `variances` is what we want the 
 target weights to incorporte. Whatever the weights are, these 
 variances should be respected. At the same time, the five 
 points among each other also have distances and therefore variances
@@ -164,7 +164,7 @@ dot product of the :math:`\gamma_i` and the :math:`a_i` part.
 That might look a bit complicated at first, but we have calculated almost everything. 
 The last matrix are the `variances` that we calculated in the last step.
 The first matrix is of same shape as the sqaureform distance matrix calculated in 
-the very begining. All we need to do is to map the variogram model on it and 
+the very beginning. All we need to do is to map the variogram model on it and 
 solve the system for the matrix of factors :math:`a_1 \ldots a_5`.
 In Python, there are several strategies how you could solve this problem.
 Let's at first build the matrix. We need a distance matrix without 
@@ -193,7 +193,7 @@ And solve it:
     Z_s.dot(a)
 
 That's it. Well, not really. We might have used the 
-variogram and the spatial structure infered from the 
+variogram and the spatial structure inferred from the 
 data for getting better results, but in fact our 
 result is not **unbiased**. That means, the solver 
 can choose any combination that satisfies the equation,
@@ -304,7 +304,7 @@ to obtain the Kriging error.
 
   sum(B[:-1] * weights[:-1]) + weights[-1]
 
-This is really usefull when a whole map is interpolated.
+This is really useful when a whole map is interpolated.
 Using Kriging, you can also produce a map showing
 in which regions the interpolation is more certain.
 
@@ -349,7 +349,7 @@ of the variogram, the estimation will not be calculated and a
 The `max_points` parameter will set the upper bound of the 
 equation system by using in this case at last the 20 nearest points.
 Adding more will most likely not change the estimation, as more points
-will recieve small, if not negligible, weights.
+will receive small, if not negligible, weights.
 But it will increase the processing time, as each added point will 
 increase the Kriging equation system dimensionality by one.
 

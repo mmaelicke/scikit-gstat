@@ -90,7 +90,7 @@ print('Sample variance: %.2f   Variogram sill: %.2f' % (vals.flatten().var(), V.
 
 # %%
 # The ``describe`` method will return the most important parameters as a dictionary. 
-# And we can simply print the variogram ob,ect to the screen, to see all parameters.
+# And we can simply print the variogram ob,etc to the screen, to see all parameters.
 pprint(V.describe())
 
 # %%
@@ -146,7 +146,7 @@ ok = skg.OrdinaryKriging(V, min_points=5, max_points=15, mode='exact')
 # %%
 # The :func:`OrdinaryKriging.transform <skgstat.OrdianryKriging.transform>` method will apply the interpolation for passed arrays of coordinates.
 # It requires each dimension as a single 1D array. We can easily build a meshgrid of 100x100 coordinates and pass them to the interpolator.
-# To recieve a 2D result, we can simply reshape the result. The Kriging error will be available as the ``sigma`` attribute of the interpolator.
+# To receive a 2D result, we can simply reshape the result. The Kriging error will be available as the ``sigma`` attribute of the interpolator.
 
 # build the target grid
 x = coords[:, 0]

@@ -79,7 +79,7 @@ own set of tools, and apparently definitions, and progress is made until
 today. It is not the objective of ``scikit-gstat`` to be a comprehensive
 collection of all available tools. The objective is more to offer some
 common and also more sophisticated tools for variogram analysis.
-Thus, when useing ``scikit-gstat``, you typically need another library for
+Thus, when using ``scikit-gstat``, you typically need another library for
 the actual application, like interpolation. In most cases that will be
 `gstools <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/>`_.
 However, one can split geostatistics into three main fields, each of it with its

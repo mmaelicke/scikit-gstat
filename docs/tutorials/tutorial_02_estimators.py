@@ -127,7 +127,7 @@ for ax, estimator_name in zip(axes, ('matheron', 'cressie', 'dowd')):
 
 # %%
 # The important part is here that the effective range as well as the sill is 
-# changeing for the estimator. This will likely change the Kriging result.
+# changing for the estimator. This will likely change the Kriging result.
 # For Kriging, the difference on the first few lag classes is important,
 # as no points will be used for estimation, that lies outside the range.
 # We will zoom in, to actually use a higher resolution. Thus the results
