@@ -5,7 +5,10 @@ repos:
           hooks:
                 - id: codespell
                   args: [
-#                    '--ignore-words-list', 'nd,alos,inout',
+                    #  Verly is a Name, coo references the SciPy coo sparse matrix
+                    '--ignore-words-list', 'verly,coo',
+                    '--write-changes',
+#                    'nd,alos,inout',
 #                    '--ignore-regex', '\bhist\b',
                     '--'
                   ]
