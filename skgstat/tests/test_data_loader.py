@@ -54,7 +54,7 @@ def test_meuse_loads():
         zinc, df[['zinc']].values, decimal=6
     )
 
-    # check exeption
+    # check exception
     with pytest.raises(AttributeError) as e:
         data.meuse(variable='unknown')
 

@@ -6,7 +6,7 @@ This tutorial will guide you through the theoretical variogram models available 
 
 **In this tutorial you will learn:**
 
-    * how to choose an appropiate model function
+    * how to choose an appropriate model function
     * how to judge fitting quality
     * about sample size influence
 
@@ -23,7 +23,7 @@ skg.plotting.backend('matplotlib')
 # -------------
 # For this example we will use the pancake dataset. You can use the
 # :mod:``skgstat.data`` submodule to directly sample the dataset. This is the
-# red-channel of an image of an actual pancake. The intersting thing about this pancake is,
+# red-channel of an image of an actual pancake. The interesting thing about this pancake is,
 # that it shows some clear spatial structures in its browning, but of different 
 # shapes at different scales. This should be reflectable with different samples.
 s = [30, 80, 300]
@@ -48,7 +48,7 @@ for data, ax in zip((data1, data2, data3), axes.flatten()):
 # --------------------------------
 # One of the features of :mod:`skgstat` is the fact that it is programmed object oriented.
 # That means, we can just instantiate a :class:`Variogram <skgstat.Variogram>` object
-# and start changing arguments unitl it models spatial dependency in our observations well.
+# and start changing arguments until it models spatial dependency in our observations well.
 V1 = skg.Variogram(data1[['x', 'y']].values, data1.v.values, maxlag='median', normalize=False)
 V1.plot(show=False);
 
@@ -182,7 +182,7 @@ pd.DataFrame({'spherical': fields[0].flatten(), 'exponential': fields[1].flatten
 #   3. BUT: the standard deviation is quite different
 #   4. The median of the field can vary by more than 3 units, even if we took the Gaussian model out
 # 
-# You have to remind that we had quite some observations. The selection of model becomes even more arbitrary with smaller samples and more importantly: We have to consider more than one equally probable parameterization of each model when the experimental is more spreaded.
+# You have to remind that we had quite some observations. The selection of model becomes even more arbitrary with smaller samples and more importantly: We have to consider more than one equally probable parameterization of each model when the experimental is more spread.
 
 # Finally, we can calculate the difference between the kriging fields to inspect the spread of estimations spatially:
 #

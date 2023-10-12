@@ -229,7 +229,7 @@ def aniso_field():
     -------
     result : dict
         Dictionary of the sample and a citation information.
-        The sample a numpy array repesenting the image.
+        The sample a numpy array representing the image.
 
     See Also
     --------

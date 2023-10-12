@@ -35,7 +35,7 @@ skg.plotting.backend('plotly')
 # ---------------
 # Loads a data sample and draws `n_samples` from the field.
 # For sampling the field, random samples from a gamma distribution with a fairly
-# high scale are drawn, to ensure there are some outliers in the samle. The
+# high scale are drawn, to ensure there are some outliers in the sample. The
 # values are then re-scaled to the shape of the random field and the values
 # are extracted from it.
 # You can use either of the next two cell to work either on the pancake or
@@ -100,7 +100,7 @@ fig
 # The histogram of the :func:`'uniform' <skgstat.binning.uniform_count_lags>`
 # method will adjust the lag class widths to have the same sample size for each
 # lag class. This can be used, when there must not be any empty lag classes on
-# small data samples, or comparable sample sizes are desireable for the
+# small data samples, or comparable sample sizes are desirable for the
 # semi-variance estimator. 
 
 # apply binning
@@ -181,7 +181,7 @@ fig
 # 
 # 5.3.1 :func:`'sturges' <skgstat.binning.auto_derived_lags>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Sturge's rule is well known and pretty straightforward. It's the defaul
+# Sturge's rule is well known and pretty straightforward. It's the default
 #  method for histograms in R. The number of equidistant lag classes is defined like:
 # 
 # .. math::

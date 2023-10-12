@@ -19,7 +19,7 @@ from skgstat import Variogram
 
 
 DOC_TEMPLATE = """Autocorrelation function.
-This function calcualtes the sptial autocorrelation for any
+This function calculates the spatial autocorrelation for any
 model function only, by setting nugget to 0 and sill to 1.
 This can be used to create an autocorreation matrix as used
 to derive a maximum likelihhod function for the model.
@@ -73,7 +73,7 @@ def _build_A(transformed_func: Callable, params: List[float], dists: np.ndarray)
         a = np.fromiter(map(transformed_func, dists, cycle([r]), cycle([s])), dtype=float)
     else:
         r, c0, b = params
-        # calcualte the upper triangle of A:
+        # calculate the upper triangle of A:
         a = np.fromiter(map(transformed_func, dists, cycle([r])), dtype=float)
 
     # build the full matrix
@@ -92,7 +92,7 @@ def get_likelihood(variogram: Variogram) -> Callable:
     negative log-likelihood for this set of parameters.
     The signature of the reutrned function has the interface as
     needed by :func:`scipy.optimize.minimize`.
-    The paramters for the models are given as ``[r, c0, b]``, which
+    The parameters for the models are given as ``[r, c0, b]``, which
     are the effective range, sill and nugget. For the
     :func:`Matérn <skgstat.models.matern>` and
     :func:`Stable <skgstat.models.stable>` models, the parameters include

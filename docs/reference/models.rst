@@ -5,7 +5,7 @@ Variogram models
 Scikit-GStat implements different theoretical variogram functions. These
 model functions expect a single lag value or an array of lag values as input
 data. Each function has at least a parameter `a` for the effective range and
-a parameter `c0` for the sill. The nugget parameter `b` is optinal and will
+a parameter `c0` for the sill. The nugget parameter `b` is optional and will
 be set to :math:`b:=0` if not given.
 
 Spherical model
