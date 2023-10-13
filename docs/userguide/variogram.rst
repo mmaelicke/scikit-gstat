@@ -766,6 +766,53 @@ variogram is rather showing a Gaussian or exponential behavior.
     If you would like to export a Variogram instance to gstools, the smoothness parameter
     may not be smaller than ``0.2``.
 
+Sum of models
+~~~~~~~~~~~~~
+
+All the above models can be combined into a sum of models, in order to fit more complex empirical variograms that might
+capture signals with multiple correlations ranges.
+To fit with a sum of models, simply add a "+" between any number of models:
+
+.. ipython:: python
+    :okwarning:
+
+    # Fit a sum of two spherical models
+    V.model = "spherical+spherical"
+
+    @savefig sum_of_models.png width=8in
+    V.plot();
+
+Custom model
+~~~~~~~~~~~~
+
+Additionally, any custom model can be passed to the model argument to fit a specific function to the empirical
+variogram. This model needs to be built with the ``@variogram`` decorator, which requires the lag argument
+(typically, ``h``) to be listed first in the custom function.
+
+.. caution::
+
+    When using a custom model, it is highly recommended to define the parameter bounds as these cannot be derived
+    logically by SciKit-GStat as for other models. This is done by passing either ``fit_bounds`` to ``Variogram()``
+    at instantiation or ``bounds`` to ``Variogram.fit()``.
+
+
+.. ipython:: python
+    :okwarning:
+
+    # Build a custom model by applying the @variogram decorator (here adding a linear term to a spherical model)
+    from skgstat.models import variogram, spherical
+    @variogram
+    def custom_model(h, r1, c1, a):
+        return spherical(h, r1, c1) + h * a
+    V.model = custom_model
+
+    # We define the bounds for r1, c1 and a
+    bounds_custom = [(0, 0, 0), (np.max(V.bins), np.max(V.experimental), 2)]
+    V.fit(bounds=bounds_custom)
+
+    @savefig custom_model.png width=8in
+    V.plot();
+
 When direction matters
 ======================
 

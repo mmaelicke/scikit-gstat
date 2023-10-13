@@ -186,6 +186,21 @@ class TestVariogramDecorator(unittest.TestCase):
         for r, c in zip(res, adder([1, 4, 8], 4)):
             self.assertEqual(r, c)
 
+    def test_sum_spherical(self):
+        @variogram
+        def sum_spherical(h, r1, c1, r2, c2, b1=0, b2=0):
+            return spherical(h, r1, c1, b1) + spherical(h, r2, c2, b2)
+
+        # Parameters for the two spherical models
+        params = [1, 0.3, 10, 0.7]
+
+        # Values at which we'll evaluate the function and its expected result
+        vals = [0, 1, 100]
+        res = [0, 0.3 + spherical(1, 10, 0.7), 1]
+
+        for r, c in zip(res, sum_spherical(vals, *params)):
+            self.assertEqual(r, c)
+
 
 if __name__=='__main__':
     unittest.main()

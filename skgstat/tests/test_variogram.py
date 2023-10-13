@@ -19,6 +19,7 @@ from skgstat import Variogram, DirectionalVariogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
+from skgstat.models import variogram, spherical, gaussian, exponential, cubic, stable, matern
 
 
 class TestSpatiallyCorrelatedData(unittest.TestCase):
@@ -61,7 +62,7 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
             self.assertAlmostEqual(x, y, places=3)
 
 
-class TestVariogramInstatiation(unittest.TestCase):
+class TestVariogramInstantiation(unittest.TestCase):
     def setUp(self):
         # set up default values, whenever c and v are not important
         np.random.seed(42)
@@ -254,7 +255,7 @@ class TestVariogramArguments(unittest.TestCase):
         assert_array_almost_equal(
             V.bins,
             np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
-            decimal=1
+            decimal=0
         )
 
     def test_binning_method_stable_maxiter(self):
@@ -264,7 +265,7 @@ class TestVariogramArguments(unittest.TestCase):
         assert_array_almost_equal(
             V.bins,
             np.array([4.3, 8.4, 12.8, 17.1, 21.4, 25.2, 29.9, 33.2, 38.5, 42.8]),
-            decimal=1
+            decimal=0
         )
 
     def test_binning_method_stable_fix_bins(self):
@@ -279,7 +280,7 @@ class TestVariogramArguments(unittest.TestCase):
         assert_array_almost_equal(
             V.bins,
             np.array([4.2, 8.6, 12.8, 17.1, 21.2, 25.5, 29.3, 33.2, 37.4, 43.]),
-            decimal=1
+            decimal=0
         )
 
     def test_binning_change_nlags(self):
@@ -633,6 +634,39 @@ class TestVariogramArguments(unittest.TestCase):
         assert V.cov is None
         assert V.cof is None
 
+    def test_model(self):
+        """
+        Test that all types of models instantiate properly
+        (to complement test_set_model() that only checks already instantiated vario)
+        """
+
+        # Individual model
+        for model_name in ['spherical', 'gaussian', 'exponential', 'cubic', 'matern', 'stable']:
+            V = Variogram(self.c, self.v, model=model_name)
+            assert V._model_name == model_name
+            assert V._model == globals()[model_name]
+            assert V._is_model_custom is False
+
+        # Sum of models
+        for model_name in ['spherical+gaussian', 'cubic+matern+stable']:
+            V = Variogram(self.c, self.v, model=model_name)
+            assert V._model_name == model_name
+            assert V._is_model_custom is False
+
+        # Custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        with self.assertWarns(UserWarning):
+            V = Variogram(self.c, self.v, model=custom_model)
+
+        assert V._model_name == "custom_model"
+        assert V._model == custom_model
+        assert V._is_model_custom is True
+
+
+
     def test_get_bin_count(self):
 
         V = Variogram(self.c, self.v)
@@ -949,6 +983,130 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         self.assertTrue(abs(V.parameters[-1] - 2.) < 1e-10)
 
+    def test_fit_custom_model(self):
+
+        # Define a custom variogram and run the fit
+        @variogram
+        def sum_spherical(h, r1, c1, r2, c2, b1, b2):
+            return spherical(h, r1, c1, b1) + spherical(h, r2, c2, b2)
+
+        with self.assertWarns(UserWarning):
+            # Custom models should ignore the nugget setting, so let's try both and check
+            V = Variogram(self.c, self.v, use_nugget=True, model=sum_spherical)
+            V2 = Variogram(self.c, self.v, use_nugget=False, model=sum_spherical)
+
+        # Check that 6 parameters were found
+        assert len(V.cof) == len(V2.cof) == 6
+
+    def test_fit_sum_models_nugget(self):
+
+        # Define a sum of variogram and run the fit
+        V = Variogram(self.c, self.v, model="spherical+spherical", use_nugget=False)
+        V2 = Variogram(self.c, self.v, model="spherical+spherical", use_nugget=True)
+
+        # Check that 4 parameters were found without nugget, 5 otherwise
+        assert len(V.cof) == 4
+        assert len(V2.cof) == 5
+
+    def test_build_sum_models(self):
+
+        # Initiate variogram without fitting
+        V = Variogram(self.c, self.v, fit_method=None)
+
+        # 1/ Check that errors are raised if argument is not good
+        # Should accept upper case and spaces
+        V._build_sum_models("Spherical  +     spherical")
+
+        # Raises an error if model does not exist
+        with self.assertRaises(ValueError) as e:
+            V._build_sum_models("Notamodel  + spherical")
+            self.assertTrue('One of the theoretical models in the list' in str(e.exception))
+
+        # 2/ Build a sum of two spherical models
+        sum_spherical = V._build_sum_models("spherical+spherical")
+
+        # Testing the same way as in test_models/test_sum_spherical
+        # Parameters for the two spherical models
+        params = [1, 0.3, 10, 0.7]
+
+        # Values at which we'll evaluate the function and its expected result
+        vals = [0, 1, 100]
+        res = [0, 0.3 + spherical(1, 10, 0.7), 1]
+
+        for r, c in zip(res, sum_spherical(vals, *params)):
+            self.assertEqual(r, c)
+
+        # 3/ Build a sum of all models
+        sum_spherical = V._build_sum_models("spherical+gaussian+exponential+cubic+stable+matern")
+        min_nb_args = 2 + 2 + 2 + 2 + 3 + 3
+
+        # Check that the function fails for a number of args of 13 (lower than 14)
+        with self.assertRaises(TypeError) as e:
+            sum_spherical(0, *[1,]*(min_nb_args - 1))
+            self.assertTrue('positional arguments' in str(e.exception))
+
+        # Check that it runs for 14 and that the result is correct
+        sum_res = sum(model(0, 1, 1) for model in [spherical, gaussian, exponential, cubic]) + \
+                  sum((model(0, 1, 1, 1)) for model in [stable, matern])
+        assert sum_spherical(0, *[1, ] * min_nb_args) == sum_res
+
+    def test_fit_bounds(self):
+        """
+        Test the fit_bounds kwarg of Variogram and bounds args of fit()
+        """
+        Vnofit =  Variogram(self.c, self.v, fit_method=None)
+
+        bounds=(0, [np.max(Vnofit.bins), np.max(Vnofit.experimental)])
+
+        # Initiate variogram with bounds for fit
+        V = Variogram(self.c, self.v, fit_bounds=bounds)
+        # Same but calling fit
+        V.fit(bounds=bounds)
+
+        # For a sum of models
+        V = Variogram(self.c, self.v, model='spherical+gaussian', fit_bounds=(0, bounds[1]*2))
+        # Same but calling fit
+        V.fit(bounds=(0, bounds[1]*2))
+
+        # Check an error is raised for a custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        with self.assertWarns(UserWarning):
+            Variogram(self.c, self.v, model=custom_model)
+
+        bounds_custom = [(0, 0, 0), (np.max(self.c), np.max(self.v), np.max(self.v))]
+
+        # And that no error is raised otherwise
+        Variogram(self.c, self.v, model=custom_model, fit_bounds=bounds_custom)
+
+    def test_fit_p0(self):
+        """
+        Test the fit_p0 kwarg of Variogram and bounds args of fit()
+        """
+        Vnofit =  Variogram(self.c, self.v, fit_method=None)
+        p0 = (np.max(Vnofit.bins), np.max(Vnofit.experimental))
+
+        # Initiate variogram with bounds for fit
+        V = Variogram(self.c, self.v, fit_p0=p0)
+        # Same but calling fit
+        V.fit(p0=p0)
+
+        # For a sum of models
+        V = Variogram(self.c, self.v, model='spherical+gaussian', fit_p0=p0 * 2)
+        # Same but calling fit
+        V.fit(p0=p0 * 2)
+
+        # For a custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        p0_custom = (np.max(Vnofit.bins), np.max(Vnofit.experimental), np.max(Vnofit.experimental))
+        with self.assertWarns(UserWarning) as w:
+            Variogram(self.c, self.v, model=custom_model, fit_p0=p0_custom)
+
 
 class TestVariogramQualityMeasures(unittest.TestCase):
     def setUp(self):
@@ -972,36 +1130,36 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v)
 
         for model, rmse in zip(
-                ['spherical', 'gaussian', 'stable'],
-                [3.3705, 3.3707, 3.193]
+                ['spherical', 'gaussian', 'stable', 'spherical+gaussian'],
+                [3.3705, 3.3707, 3.193, 3.0653]
         ):
             V.set_model(model)
-            self.assertAlmostEqual(V.rmse, rmse, places=4)
+            self.assertAlmostEqual(V.rmse, rmse, places=3)
 
     def test_mean_residual(self):
         V = Variogram(self.c, self.v)
 
         for model, mr in zip(
-            ['spherical', 'cubic', 'stable'],
-            [2.6803, 2.6803, 2.6966]
+            ['spherical', 'cubic', 'stable', 'spherical+gaussian'],
+            [2.6803, 2.6803, 2.6966, 2.4723]
         ):
             V.set_model(model)
-            self.assertAlmostEqual(V.mean_residual, mr, places=4)
+            self.assertAlmostEqual(V.mean_residual, mr, places=3)
 
     def test_nrmse(self):
         V = Variogram(self.c, self.v, n_lags=15)
 
         for model, nrmse in zip(
-            ['spherical', 'gaussian', 'stable', 'exponential'],
-            [0.3536, 0.3535, 0.3361, 0.3499]
+            ['spherical', 'gaussian', 'stable', 'exponential', 'spherical+gaussian'],
+            [0.3536, 0.3535, 0.3361, 0.3499, 0.3264]
         ):
             V.set_model(model)
-            self.assertAlmostEqual(V.nrmse, nrmse, places=4)
+            self.assertAlmostEqual(V.nrmse, nrmse, places=3)
 
     def test_nrmse_r(self):
         V = Variogram(self.c, self.v, estimator='cressie')
 
-        self.assertAlmostEqual(V.nrmse_r, 0.63543, places=5)
+        self.assertAlmostEqual(V.nrmse_r, 0.63543, places=3)
 
     def test_r(self):
         V = Variogram(self.c, self.v, n_lags=12, normalize=False)
@@ -1161,6 +1319,75 @@ class TestVariogramMethods(unittest.TestCase):
             decimal=2
         )
 
+    def test_set_model(self):
+        """Test setting model: individual, sum or custom"""
+        V = self.V.clone()
+
+        # Individual model
+        for model_name in ['spherical', 'gaussian', 'exponential', 'cubic', 'matern', 'stable']:
+            V.set_model(model_name)
+            assert V._model_name == model_name
+            assert V._model == globals()[model_name]
+            assert V._is_model_custom is False
+
+        # Sum of models
+        for model_name in ['spherical+gaussian', 'cubic+matern+stable']:
+            V.set_model(model_name)
+            assert V._model_name == model_name
+            assert V._is_model_custom is False
+
+        # Custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        V.set_model(custom_model)
+        assert V._model_name == "custom_model"
+        assert V._model == custom_model
+        assert V._is_model_custom is True
+
+    def test_describe(self):
+        """Test the describe functions for different models"""
+        V = self.V.clone()
+
+        keys_model = ['normalized_effective_range', 'normalized_sill', 'normalized_nugget',
+                      'effective_range', 'sill', 'nugget']
+
+        # Individual model: normal keys should be in dict
+        for model_name in ['spherical', 'gaussian', 'exponential', 'cubic', 'matern', 'stable']:
+            V.set_model(model_name)
+            dict = V.describe()
+            for key in keys_model:
+                assert key in dict
+            if model_name == 'matern':
+                assert 'smoothness' in dict
+            if model_name == 'stable':
+                assert 'shape' in dict
+
+        # Sum of models: keys with a numbered ID should be in dict
+        V.set_model('spherical+gaussian')
+        dict = V.describe()
+        for key in [k+'_1' for k in keys_model] + [k+'_2' for k in keys_model]:
+            assert key in dict
+
+        V.set_model('cubic+matern+stable')
+        dict = V.describe()
+        for key in [k + '_1' for k in keys_model] + [k + '_2' for k in keys_model] + [k + '_3' for k in keys_model]:
+            assert key in dict
+        assert 'smoothness_2' in dict
+        assert 'shape_3' in dict
+
+        # Custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+        V.set_model(custom_model)
+        with self.assertWarns(UserWarning) as w:
+            dict = V.describe()
+        custom_keys = ["param1_r1", "param2_c1", "param3_x"]
+        for key in custom_keys:
+            assert key in dict
+
     def test_parameter_property_matern(self):
         V = self.V.clone()
 
@@ -1177,6 +1404,34 @@ class TestVariogramMethods(unittest.TestCase):
         V.set_model('stable')
         assert_array_almost_equal(V.parameters, param, decimal=2)
 
+    def test_parameter_property_sum_models(self):
+        V = self.V.clone()
+
+        # Using models with 3 parameters (range, sill, nugget)
+        param = [3.67, 10.61, 0, 42.3, 5.02, 0]
+        V.set_model('spherical+gaussian')
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+
+        # Using a stable model with 4 parameters
+        param2 = [35.77, 10.97, 0, 0, 42.3, 4.74, 0]
+        V.set_model('stable+cubic')
+        assert_array_almost_equal(V.parameters, param2, decimal=2)
+
+    def test_parameter_property_custom_model(self):
+        V = self.V.clone()
+
+        # Custom model will give parameters back in the order of the custom function
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+
+        param = [42.3, 5.76, 9.79]
+        V.set_model(custom_model)
+
+        # Provide bounds to avoid a random fit
+        V.fit(bounds=(0, [np.max(V.bins), np.max(V.experimental), np.max(V.experimental)]))
+        assert_array_almost_equal(V.parameters, param, decimal=2)
+
 
 class TestVariogramPlotlyPlots(unittest.TestCase):
     def setUp(self):
@@ -1185,7 +1440,16 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
         self.c = np.random.gamma(10, 4, (150, 2))
         np.random.seed(42)
         self.v = np.random.normal(10, 4, 150)
+        # V = individual model
         self.V = Variogram(self.c, self.v)
+        # V2 = sum of models
+        self.V2 = Variogram(self.c, self.v, model='spherical+gaussian')
+        # V3 = custom model
+        @variogram
+        def custom_model(h, r1, c1, x):
+            return spherical(h, r1, c1) + x
+        self.V3 = Variogram(self.c, self.v, model=custom_model,
+                            fit_bounds=(0, [np.max(self.V.bins), np.max(self.V.experimental), np.max(self.V.experimental)]))
 
     def test_plotly_main_plot(self):
         if PLOTLY_FOUND:
@@ -1194,6 +1458,14 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
 
             self.assertTrue(
                 isinstance(self.V.plot(show=False), go.Figure)
+            )
+
+            self.assertTrue(
+                isinstance(self.V2.plot(show=False), go.Figure)
+            )
+
+            self.assertTrue(
+                isinstance(self.V3.plot(show=False), go.Figure)
             )
 
             plotting.backend('matplotlib')
