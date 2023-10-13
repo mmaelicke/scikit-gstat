@@ -1,16 +1,23 @@
 repos:
-        # Fix common spelling mistakes
-        - repo: https://github.com/codespell-project/codespell
-          rev: v2.2.1
-          hooks:
-                - id: codespell
-                  args: [
-                    #  Verly is a Name, coo references the SciPy coo sparse matrix
-                    '--ignore-words-list', 'verly,coo',
-                    '--write-changes',
-#                    'nd,alos,inout',
-#                    '--ignore-regex', '\bhist\b',
-                    '--'
-                  ]
-                  types_or: [python, rst, markdown]
-                  files: ^(skgstat|docs|tutorials)/
+  # Fix common spelling mistakes
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.1
+    hooks:
+      - id: codespell
+        args: [
+          #  Verly is a Name, coo references the SciPy coo sparse matrix
+          '--ignore-words-list', 'verly,coo',
+          '--write-changes',
+  #                    'nd,alos,inout',
+  #                    '--ignore-regex', '\bhist\b',
+          '--'
+        ]
+        types_or: [python, rst, markdown]
+        files: ^(skgstat|docs|tutorials)/
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
