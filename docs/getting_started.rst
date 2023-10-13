@@ -58,7 +58,7 @@ step classes to `'uniform'` distribution in the lag classes.
 Mutating
 --------
 
-One of the main strenghs of :class:`Variogram <skgstat.Variogram>` is its 
+One of the main strenghs of :class:`Variogram <skgstat.Variogram>` is its
 ability to change arguments in place. Any dependent result or parameter
 will be invalidated and re-caluculated.
 You can i.e. increase the number of lag classes:
@@ -76,4 +76,3 @@ You can i.e. increase the number of lag classes:
 
 Note, how the experimental variogram was updated and the model was
 fitted to the new data automatically.
-

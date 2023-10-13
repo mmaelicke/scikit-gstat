@@ -52,8 +52,8 @@ def sum(lags, Vx, Vt):
 
     .. math::
         \gamma (h,t) = \gamma_x (h) + \gamma_t (t)
-    
-    Where :math:`\gamma_x(h)` is the spatial marginal variogram and 
+
+    Where :math:`\gamma_x(h)` is the spatial marginal variogram and
     :math:`\gamma_t(t)` is the temporal marginal variogram.
 
     It is not a good idea to use this model in almost any case, as it assumes
@@ -113,9 +113,9 @@ def product(lags, Vx, Vt, Cx, Ct):
     The product sum model is implemented following [14]_:
 
     .. math::
-        \gamma (h,t) = C_x * \gamma_t(t) + C_t * \gamma_x(h) - \gamma_x(h) * \gamma_t(t) 
-    
-    Where :math:`\gamma_x(h)` is the spatial marginal variogram and 
+        \gamma (h,t) = C_x * \gamma_t(t) + C_t * \gamma_x(h) - \gamma_x(h) * \gamma_t(t)
+
+    Where :math:`\gamma_x(h)` is the spatial marginal variogram and
     :math:`\gamma_t(t)` is the temporal marginal variogram.
 
     References
@@ -155,7 +155,7 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
         Fitting parameter. k1 has to be positive or zero and may not be larger
         than all marginal sill values.
     k2 : float
-        Fitting paramter. k2 has to be positive or zero and may not be larger
+        Fitting parameter. k2 has to be positive or zero and may not be larger
         than all marginal sill values.
     k3 : float
         Fitting parameter. k3 has to be positive and may not be larger than

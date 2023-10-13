@@ -340,7 +340,7 @@ class OrdinaryKriging:
             sigma_index is now always incremented
 
         """
-        # indicate if this esimation raised an error
+        # indicate if this estimation raised an error
         did_error = False
 
         # reun estimation
@@ -397,7 +397,7 @@ class OrdinaryKriging:
         .. math::
             \hat{Z} = \sum_i(w_i * z_i)
 
-        where :math:`w_i` is the calulated kriging weight for the i-th point
+        where :math:`w_i` is the calculated kriging weight for the i-th point
         and :math:`z_i` is the observed value at that point.
 
         The kriging variance :math:`\sigma^2` (sigma) is calculate as follows:

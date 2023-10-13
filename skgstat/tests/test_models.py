@@ -153,7 +153,7 @@ class TestModels(unittest.TestCase):
 
         for r, m in zip(result, model):
             self.assertAlmostEqual(r, m, places=2)
-    
+
     def test_matern_r_switch(self):
         # run the default with an extreme s value
 

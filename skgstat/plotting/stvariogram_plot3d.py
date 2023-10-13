@@ -131,7 +131,7 @@ def plotly_plot_3d(stvariogram, kind='scatter', fig=None, **kwargs):
         xaxis_title='space',
         yaxis_title='time',
         zaxis_title='semivariance [%s]' % stvariogram.estimator.__name__
-    )) 
+    ))
 
     # return
     return fig

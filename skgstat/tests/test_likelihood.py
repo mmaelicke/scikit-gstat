@@ -61,7 +61,7 @@ def test_likelihood():
     # get the likelihood function
     like = li.get_likelihood(vario)
 
-    # cretae the optimization attributes
+    # create the optimization attributes
     sep_mean = vario.distance.mean()
     sam_var = vario.values.var()
 

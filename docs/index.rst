@@ -8,7 +8,7 @@ Welcome to SciKit GStat
 `Download the docs as PDF <https://mmaelicke.github.io/scikit-gstat/SciKitGStat.pdf>`_
 
 
-SciKit-Gstat is a scipy-styled analysis module for variogram analysis. 
+SciKit-Gstat is a scipy-styled analysis module for variogram analysis.
 The base class is called :class:`Variogram <skgstat.Variogram>`, which is probably the
 only import needed. However, several other classes exist:
 
@@ -17,8 +17,8 @@ only import needed. However, several other classes exist:
 * :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` for interpolation
 * :class:`MetricSpace <skgstat.MetricSpace>` for pre-computed spatial samples
 
-The variogram classes have a similar interface and can compute experimental variograms 
-and fit theoretical variogram model functions. 
+The variogram classes have a similar interface and can compute experimental variograms
+and fit theoretical variogram model functions.
 The module makes use of a rich selection of semi-variance estimators, variogram model functions
 and sptial binning functions, while being extensible at the same time.
 
@@ -47,4 +47,3 @@ The code itself is published and has a DOI. It can be cited as:
     technical/technical
     reference/reference
     changelog
-

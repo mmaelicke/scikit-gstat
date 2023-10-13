@@ -33,7 +33,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_min_points_type_check(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=4.0)
-        
+
         self.assertEqual(
             str(e.exception), 'min_points has to be an integer.'
         )
@@ -41,7 +41,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_min_points_negative(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=-2)
-        
+
         self.assertEqual(
             str(e.exception), 'min_points can\'t be negative.'
         )
@@ -49,7 +49,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_min_points_larger_max_points(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, min_points=10, max_points=5)
-        
+
         self.assertEqual(
             str(e.exception), 'min_points can\'t be larger than max_points.'
         )
@@ -57,7 +57,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_max_points_type_check(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, max_points=16.0)
-        
+
         self.assertEqual(
             str(e.exception), 'max_points has to be an integer.'
         )
@@ -66,7 +66,7 @@ class TestKrigingInstantiation(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             ok = OrdinaryKriging(self.V, max_points=10)
             ok.max_points = - 2
-            
+
         self.assertEqual(
             str(e.exception), 'max_points can\'t be negative.'
         )
@@ -75,7 +75,7 @@ class TestKrigingInstantiation(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             ok = OrdinaryKriging(self.V, min_points=3, max_points=5)
             ok.max_points = 2
-        
+
         self.assertEqual(
             str(e.exception), 'max_points can\'t be smaller than min_points.'
         )
@@ -94,7 +94,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_mode_unknown(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, mode='foo')
-            
+
         self.assertEqual(
             str(e.exception), "mode has to be one of 'exact', 'estimate'."
         )
@@ -102,7 +102,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_precision_TypeError(self):
         with self.assertRaises(TypeError) as e:
             OrdinaryKriging(self.V, precision='5.5')
-            
+
         self.assertEqual(
             str(e.exception), 'precision has to be of type int'
         )
@@ -110,7 +110,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_precision_ValueError(self):
         with self.assertRaises(ValueError) as e:
             OrdinaryKriging(self.V, precision=0)
-            
+
         self.assertEqual(
             str(e.exception), 'The precision has be be > 1'
         )
@@ -118,7 +118,7 @@ class TestKrigingInstantiation(unittest.TestCase):
     def test_solver_AttributeError(self):
         with self.assertRaises(AttributeError) as e:
             OrdinaryKriging(self.V, solver='peter')
-            
+
         self.assertEqual(
             str(e.exception), "solver has to be ['inv', 'numpy', 'scipy']"
         )

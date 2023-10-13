@@ -26,12 +26,12 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
     def setUp(self):
         # Generate some random but spatially correlated data
         # with a range of ~20
-        
+
         np.random.seed(42)
         c = np.random.sample((50, 2)) * 60
         np.random.seed(42)
         v = np.random.normal(10, 4, 50)
-        
+
         V = Variogram(c, v).describe()
         V["effective_range"] = 20
         OK = OrdinaryKriging(V, coordinates=c, values=v)
@@ -48,13 +48,13 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
 
         for x, y in zip(Vdense.parameters, Vsparse.parameters):
             self.assertAlmostEqual(x, y, places=3)
-            
+
     def test_sparse_maxlag_50(self):
         V = Variogram(self.c, self.v, maxlag=50)
 
         for x, y in zip(V.parameters, [20.264, 6.478, 0]):
             self.assertAlmostEqual(x, y, places=3)
-            
+
     def test_sparse_maxlag_30(self):
         V = Variogram(self.c, self.v, maxlag=30)
 
@@ -169,7 +169,7 @@ class TestVariogramInstantiation(unittest.TestCase):
                 v.fit_method = 'trf'
 
         self.assertTrue("'trf' is bounded and therefore" in str(e.exception))
-    
+
     def test_value_error_trf(self):
         """Test the Attribute error on TRF instantiation on single value input"""
         # catch the same input value warning
@@ -193,7 +193,7 @@ class TestVariogramInstantiation(unittest.TestCase):
         diff = pdist(np.column_stack((self.v, np.zeros(len(self.v)))), metric='euclidean')
 
         assert_array_almost_equal(V.pairwise_diffs, diff, decimal=2)
-    
+
     def test_pairwise_diffs_preprocessing(self):
         """
         Remove the diffs and then request the diffs again to check preprocessing
@@ -425,7 +425,7 @@ class TestVariogramArguments(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             V.set_dist_function('notadistance')
-        
+
         self.assertEqual(
             str(e.exception),
             'Unknown Distance Metric: notadistance'
@@ -436,7 +436,7 @@ class TestVariogramArguments(unittest.TestCase):
 
         with self.assertRaises(ValueError) as e:
             V.set_dist_function(55)
-            
+
         self.assertEqual(
             str(e.exception),
             'Input not supported. Pass a string or callable.'
@@ -464,7 +464,7 @@ class TestVariogramArguments(unittest.TestCase):
         # Distance can no longer be explicitly set
         # it would require setting the whole MetricSpace, with a
         # non-sparse diagonal matrix
-        
+
         V = Variogram([(0, 0), (4, 1), (1, 1)], [1, 2, 3], n_lags=2)
 
         V.distance = np.array([0, 0, 100])
@@ -723,7 +723,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         with self.assertRaises(AttributeError) as e:
             self.V.fit_sigma
-        
+
         self.assertTrue(
             'len(fit_sigma)' in str(e.exception)
         )
@@ -935,7 +935,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         )
 
         self.assertEqual(V.parameters, [10., 5., 0.0])
-    
+
     def test_manual_fit_change(self):
         V = Variogram(
             self.c,
@@ -971,7 +971,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
             params,
             decimal=1
         )
-    
+
     def test_implicit_nugget(self):
         V = Variogram(self.c, self.v, use_nugget=False)
 
@@ -1165,7 +1165,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v, n_lags=12, normalize=False)
 
         for model, r in zip(
-            ('gaussian', 'exponential', 'stable'), 
+            ('gaussian', 'exponential', 'stable'),
             [0.39, 0.55, 0.60]
         ):
             V.set_model(model)
@@ -1179,7 +1179,7 @@ class TestVariogramQualityMeasures(unittest.TestCase):
             [0.0206, 0.0206, 0.0206]
         ):
             self.assertAlmostEqual(V.NS, NS, places=4)
-        
+
     def test_mae(self):
         V = Variogram(self.c, self.v, n_lags=15)
 
@@ -1245,7 +1245,7 @@ class TestVariogramMethods(unittest.TestCase):
         # test
         assert_array_almost_equal(bins, emp_x)
         assert_array_almost_equal(exp, emp_y)
-    
+
     def test_get_empirical_center(self):
         V = Variogram(self.c, self.v)
 
@@ -1268,7 +1268,7 @@ class TestVariogramMethods(unittest.TestCase):
 
         assert_array_almost_equal(
             lags,
-            [0.,  4.7,  9.4, 14.1, 18.8, 23.5, 28.2, 32.9, 37.6, 42.3], 
+            [0.,  4.7,  9.4, 14.1, 18.8, 23.5, 28.2, 32.9, 37.6, 42.3],
             decimal=2
         )
 
@@ -1282,7 +1282,7 @@ class TestVariogramMethods(unittest.TestCase):
         # Distance can no longer be explicitly set
         # it would require setting the whole MetricSpace, with a
         # non-sparse diagonal matrix
-        
+
         # should work if _dist is corccupted
         self.V._dist = self.V._dist * 5.
         self.V.cof = None
@@ -1390,12 +1390,12 @@ class TestVariogramMethods(unittest.TestCase):
 
     def test_parameter_property_matern(self):
         V = self.V.clone()
-        
+
         # test matern
         param = [42.3, 16.2, 0.1, 0.]
         V.set_model('matern')
         assert_array_almost_equal(V.parameters, param, decimal=2)
-    
+
     def test_parameter_property_stable(self):
         V = self.V.clone()
 
@@ -1502,7 +1502,7 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
             )
 
             plotting.backend('matplotlib')
-    
+
     def test_undefined_backend(self):
         # force the backend into an undefined state
         import skgstat
@@ -1516,7 +1516,7 @@ class TestVariogramPlotlyPlots(unittest.TestCase):
                     str(e.exception),
                     'The plotting backend has an undefined state.'
                 )
-        
+
         # make the backend valid again
         skgstat.__backend__ = 'matplotlib'
 
@@ -1551,7 +1551,7 @@ class TestSampling(unittest.TestCase):
                 self.data[['x', 'y']].values,
                 self.data.z.values, samples=sample_size,
                 binning_random_state=44).describe()
-        
+
             self.assertAlmostEqual(Vf["normalized_effective_range"], Vs["normalized_effective_range"], delta = Vf["normalized_effective_range"] / 5)
             self.assertAlmostEqual(Vf["effective_range"], Vs["effective_range"], delta = Vf["effective_range"] / 5)
             self.assertAlmostEqual(Vf["sill"], Vs["sill"], delta = Vf["sill"] / 5)
@@ -1648,7 +1648,7 @@ class TestCrossVariogram(unittest.TestCase):
 
         with self.assertWarns(Warning) as w:
             vario.to_gstools()
-        
+
         self.assertTrue("This instance is a cross-variogram!!" in str(w.warning))
 
 

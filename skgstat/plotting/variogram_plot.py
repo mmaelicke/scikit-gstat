@@ -115,7 +115,7 @@ def matplotlib_variogram_plot(
                 linestyles='dashed'
             )
 
-        # anotate
+        # annotate
         ax2.axes.set_ylabel('N')
 
     # show the figure
@@ -151,7 +151,7 @@ def plotly_variogram_plot(
     else:
         raise ValueError('axes has to be None or a plotly.Figure.')
 
-    # handle error bars on exerimental
+    # handle error bars on experimental
     conf = variogram._experimental_conf_interval
     if conf is not None:
         error_y = dict(
