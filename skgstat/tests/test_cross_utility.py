@@ -19,11 +19,11 @@ class TestCrossUtility(unittest.TestCase):
         # set up default values, whenever c and v are not important
         np.random.seed(42)
         self.c = np.random.gamma(10, 4, (100, 2))
-        
+
         # build the multivariate sample
         means = [1, 10, 100, 1000]
         cov = [[1, 0.8, 0.7, 0.6], [0.8, 1, 0.2, 0.2], [0.7, 0.2, 1.0, 0.2], [0.6, 0.2, 0.2, 1.0]]
-        
+
         np.random.seed(42)
         self.v = np.random.multivariate_normal(means, cov, size=100)
 
@@ -34,7 +34,7 @@ class TestCrossUtility(unittest.TestCase):
         # check shape
         mat = np.asarray(mat, dtype='object')
         self.assertTrue(mat.shape, (4, 4))
-    
+
     def test_cross_matrix_diagonal(self):
         """Test that the primary variograms are correct"""
         # get the cross variogram matrix
@@ -69,7 +69,7 @@ class TestCrossUtility(unittest.TestCase):
         assert_array_almost_equal(mat[0][2].bins, second.bins, 1)
 
     def test_for_directional_variograms(self):
-        """Check that DirectionalVariograms are also calcualted correctly"""
+        """Check that DirectionalVariograms are also calculated correctly"""
         mat = cross_variograms(self.c, self.v, azimuth=90)
 
         mat = np.asarray(mat, dtype='object').flatten()

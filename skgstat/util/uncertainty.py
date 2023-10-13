@@ -94,9 +94,9 @@ def propagate(
     Notes
     -----
     For each member of the evaluated property, the lower and upper bound
-    along with the median value is retuned as ``[low, median, up]``.
+    along with the median value is returned as ``[low, median, up]``.
     Thus the returned array has the shape ``(N, 3)``.
-    N is the lengh of evaluated property, which is
+    N is the length of evaluated property, which is
     :func:`n_lags <skgstat.Variogram.n_lags` for ``'experimental'``,
     either ``3`` for ``'parameter'`` or ``4`` if
     :func:`Variogram.model = 'stable' | 'matern' <skgstat.Variogram.model>`

@@ -43,11 +43,11 @@ Note
 ----
 
 On Windows, you might run into problems installing all requirements
-in a clean Python environment, especially if C++ redistributables are missing. 
+in a clean Python environment, especially if C++ redistributables are missing.
 This can happen i.e. on *bare* VMs and the compilation of libraries required by
 scipy, numpy or numba package are the ones failing.
 In these cases, install the libraries first, and then SciKit-GStat or move to
-the conda-forge package 
+the conda-forge package
 
 .. code-block:: bash
 

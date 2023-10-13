@@ -22,7 +22,7 @@ class VariogramEstimator(BaseEstimator):
                  ):
         r"""VariogramEstimator class
 
-        Interface class for usage with scikit-learn. This class is intentended
+        Interface class for usage with scikit-learn. This class is intended
         for usage with the GridSearchCV or Pipeline classes of scikit-learn.
 
         The input parameters are the same as for the
@@ -31,7 +31,7 @@ class VariogramEstimator(BaseEstimator):
 
         The only parameter specific to the Estimator class is the `use_score`
         attribute. This can be the root mean squared error (rmse), mean squared
-        error (mse) or mean absoulte error (mae). The Estimater can either calculate
+        error (mse) or mean absolute error (mae). The Estimater can either calculate
         the score based on the model fit (model ~ experimental) or using a
         leave-one-out cross-validation of a OrdinaryKriging using the model
 
