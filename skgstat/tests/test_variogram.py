@@ -1656,7 +1656,7 @@ class TestCrossVariogram(unittest.TestCase):
         if GSTOOLS_AVAILABLE:
             with self.assertWarns(Warning) as w:
                 vario.to_gstools()
-        
+
             self.assertTrue("This instance is a cross-variogram!!" in str(w.warning))
 
 
