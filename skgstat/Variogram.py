@@ -1044,7 +1044,7 @@ class Variogram(object):
         Build sum of theoretical models, variogram-decorated function.
         """
 
-        # Remove all whitespaces in the string, in case the user wrote someting like "spherical + gaussian"
+        # Remove all whitespaces in the string, in case the user wrote something like "spherical + gaussian"
         sum_models_name = ''.join(sum_models_name.split()).lower()
 
         # Get individual model names

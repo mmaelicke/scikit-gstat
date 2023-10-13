@@ -1026,7 +1026,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
         sum_spherical = V._build_sum_models("spherical+spherical")
 
         # Testing the same way as in test_models/test_sum_spherical
-        # Parameters for the two spherical models 
+        # Parameters for the two spherical models
         params = [1, 0.3, 10, 0.7]
 
         # Values at which we'll evaluate the function and its expected result
