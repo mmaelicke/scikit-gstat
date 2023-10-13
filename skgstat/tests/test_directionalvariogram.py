@@ -16,7 +16,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
 
     def test_standard_settings(self):
         DV = DirectionalVariogram(self.c, self.v, normalize=True)
-        
+
         assert_array_almost_equal(DV.describe()["normalized_effective_range"], 436., decimal=0)
         assert_array_almost_equal(DV.describe()["normalized_sill"], 2706., decimal=0)
         assert_array_almost_equal(DV.describe()["normalized_nugget"], 0., decimal=0)
@@ -77,7 +77,7 @@ class TestDirectionalVariogramInstantiation(unittest.TestCase):
                 'model name, or it has to be the search area '
                 'itself'
             )
-    
+
     def test_binning_change_nlags(self):
         DV = DirectionalVariogram(self.c, self.v, n_lags=5)
 

@@ -5,14 +5,14 @@
       "Info": "These files are part of the dataset published with the data-paper mentioned below.",
       "cite-as": "Fersch, B., Francke, T., Heistermann, M., Schrön, M., Döpper, V., Jakobi, J. et. al (2020): A dense network of cosmic-ray neutron sensors for soilmoisture observation in a highly instrumented pre-alpine headwater catchment in Germany. Earth System Science Data. https://doi.org/10.5194/essd-2020-48"
    },
-      
+
    "Provider": {
       "Name": "Benjamin Fersch",
       "Institution": "KIT Campus Alpin",
       "Email": "fersch@kit.edu",
-      "Comment": "" 
+      "Comment": ""
    },
-   
+
    "SpaceTimeCoverage": {
       "StartDate": "2019-05-01",
       "EndDate": "2019-07-31",
@@ -23,14 +23,14 @@
       "Elevation": "595 m ASL",
       "Weblink": "https://geoportal.bayern.de/bayernatlas/?zoom=15&lang=de&topic=ba&bgLayer=atkis&E=654197&N=5299736&catalogNodes=122,11&layers=luftbild&crosshair=marker"
    },
-   
+
    "Source": {
       "Name": "Benjamin Fersch",
       "Institution": "KIT Campus Alpin",
       "LinkToOriginalSource": "https://www.imk-ifu.kit.edu/tereno.php"
    },
-   
-   
+
+
    "Variables": {
       "time": "time of measurement",
       "lat": "profile latitude coordinate",
@@ -45,7 +45,7 @@
       "T_a": "soil temperature (sensor group a)",
       "T_b": "soil temperature (sensor group b)"
    },
-   
+
    "Units": {
       "time": "minutes since 2019-05-01 00:00:00",
       "lat": "degree north",
@@ -60,20 +60,20 @@
       "T_a": "degree Celsius",
       "T_b": "degree Celsius"
    },
-   
+
    "SpatialReferenceSystem": {
       "Name": "WGS 84",
-      "EPSG": "4326" 
+      "EPSG": "4326"
    },
-   
-  
+
+
    "TemporalReferenceSystem": {
       "TimeZone": "UTC",
       "IntervalLength": "15 minutes",
       "IntervalAggregation": "instantaneous",
       "TimestampAtEndOfInterval": "FALSE"
    },
-   
+
    "Remarks": "Each profile is equipped with 2 redundant sensors (a, and b)\n Metadata also contained in NetCDF header."
 }
- 
+

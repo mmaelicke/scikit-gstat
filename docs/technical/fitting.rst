@@ -226,6 +226,3 @@ variograms used so far.
 
 
 That's it.
-
-
-

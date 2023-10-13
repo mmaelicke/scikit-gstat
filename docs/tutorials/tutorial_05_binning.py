@@ -7,7 +7,7 @@ Usually, lag class generation, or binning, is not really focused in
 geostatistical literature. The main reason is, that usually, the same method is
 used. A user-set amount of equidistant lag classes is formed with ``0`` as lower
 bound and ``maxlag`` as upper bound. Maxlag is often set to the median or 60%
-percentile of all pairwise separating distances. 
+percentile of all pairwise separating distances.
 
 In SciKit-GStat this is also the default behavior, but only one of dozen of
 different implemented methods. Thus, we want to shed some light onto the other
@@ -53,7 +53,7 @@ fig.update_layout(width=900, height=450, template='plotly_white')
 fig
 
 # %%
-# .. note:: 
+# .. note::
 #   You need to comment the next cell to use the pancake dataset. This cell will
 #   will overwrite the ``coords`` and ``vals`` array create in the last cell.
 coords, vals = skg.data.meuse().get('sample')
@@ -101,7 +101,7 @@ fig
 # method will adjust the lag class widths to have the same sample size for each
 # lag class. This can be used, when there must not be any empty lag classes on
 # small data samples, or comparable sample sizes are desirable for the
-# semi-variance estimator. 
+# semi-variance estimator.
 
 # apply binning
 bins, _ = skg.binning.uniform_count_lags(V.distance, N, None)
@@ -121,9 +121,9 @@ fig
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The distance matrix is clustered by a K-Means algorithm.
 # The centroids are used as lag class centers. Each lag class is then formed
-# by taking half the distance to each sorted neighboring centroid as a bound. 
+# by taking half the distance to each sorted neighboring centroid as a bound.
 # This will most likely result in non-equidistant lag classes.
-# 
+#
 # One important note about K-Means clustering is, that it is not a
 # deterministic method, as the starting points for clustering are taken randomly.
 # Thus, the decision was made to seed the random start values. Therefore, the
@@ -148,17 +148,17 @@ fig
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The other clustering algorithm is a hierarchical clustering algorithm.
 # This algorithm groups values together based on their similarity, which is
-# expressed by Ward's criterion. 
+# expressed by Ward's criterion.
 # Agglomerative algorithms work iteratively and deterministic, as at first
 # iteration each value forms a cluster on its own. Each cluster is then merged
 # with the most similar other cluster, one at a time, until all clusters are
-# merged, or the clustering is interrupted. 
+# merged, or the clustering is interrupted.
 # Here, the clustering is interrupted as soon as the specified number of lag
 # classes is reached. The lag classes are then formed similar to the K-Means
 # method, either by taking the cluster mean or median as center.
-# 
+#
 # Ward's criterion defines the one other cluster as the closest, that results
-# in the smallest intra-cluster variance for the merged clusters. 
+# in the smallest intra-cluster variance for the merged clusters.
 # The main downside is the processing speed. You will see a significant
 # difference for ``'ward'`` and should not use it on medium and large datasets.
 
@@ -178,16 +178,16 @@ fig
 # %%
 #  5.3 Lag class binning - adjustable ``N``
 # -----------------------------------------
-# 
+#
 # 5.3.1 :func:`'sturges' <skgstat.binning.auto_derived_lags>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Sturge's rule is well known and pretty straightforward. It's the default
 #  method for histograms in R. The number of equidistant lag classes is defined like:
-# 
+#
 # .. math::
-# 
+#
 #   n =log_2 (x + 1)
-# 
+#
 # Sturge's rule works good for small, normal distributed datasets.
 
 # apply binning
@@ -208,13 +208,13 @@ fig
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Scott's rule is another quite popular approach to estimate histograms.
 # The rule is defined like:
-# 
+#
 # .. math::
-# 
+#
 #   h = \sigma \frac{24 * \sqrt{\pi}}{x}^{\frac{1}{3}}
-# 
+#
 # Other than Sturge's rule, it will estimate the lag class width from the
-# sample size standard deviation. Thus, it is also quite sensitive to outliers. 
+# sample size standard deviation. Thus, it is also quite sensitive to outliers.
 
 # apply binning
 bins, n = skg.binning.auto_derived_lags(V.distance, 'scott', None)
@@ -232,13 +232,13 @@ fig
 # %%
 # 5.3.3 :func:`'sqrt' <skgstat.binning.auto_derived_lags>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# The only advantage of this method is its speed. The number of lag classes 
+# The only advantage of this method is its speed. The number of lag classes
 # is simply defined like:
-# 
+#
 # .. math::
-#   
+#
 #   n = \sqrt{x} $$
-# 
+#
 # Thus, it's usually not really a good choice, unless you have a lot of samples.
 
 # apply binning
@@ -257,14 +257,14 @@ fig
 # %%
 # 5.3.4 :func:`'fd' <skgstat.binning.auto_derived_lags>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# 
-# The Freedman-Diaconis estimator can be used to derive the number of lag
-# classes again from an optimal lag class width like: 
 #
-# .. math:: 
-# 
+# The Freedman-Diaconis estimator can be used to derive the number of lag
+# classes again from an optimal lag class width like:
+#
+# .. math::
+#
 #   h = 2\frac{IQR}{x^{1/3}}
-# 
+#
 # As it is based on the interquartile range (IQR), it is very robust to outlier.
 # That makes it a suitable method to estimate lag classes on non-normal distance
 # matrices. On the other side it usually over-estimates the $n$ for small
@@ -286,13 +286,13 @@ fig
 # %%
 # 5.3.5 :func:`'doane' <skgstat.binning.auto_derived_lags>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# 
+#
 # Doane's rule is an extension to Sturge's rule that takes the skewness of the
 # distance matrix into account. It was found to be a very reasonable choice on
 # most datasets where the other estimators didn't yield good results.
-# 
+#
 # It is defined like:
-# 
+#
 # .. math::
 #     \begin{split}
 #         n = 1 + \log_{2}(s) + \log_2\left(1 + \frac{|g|}{k}\right) \\
@@ -321,7 +321,7 @@ fig
 # all variograms, so any change is due to the lag class binning. The variogram
 # will use a maximum lag of ``200`` to get rid of the very thin last bins at
 # large distances.
-# 
+#
 # The ``maxlag`` is very close to the effective range of the variogram, thus you
 # can only see differences in sill. But the variogram fitting is not at the
 # focus of this tutorial. You can also change the parameter and fit a more
@@ -362,7 +362,7 @@ fig
 # %%
 # 5.4.3 :func:`'kmeans' <skgstat.binning.kmeans>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# 
+#
 
 # set the new binning method
 V.bin_func = 'kmeans'
@@ -447,7 +447,7 @@ fig
 # %%
 # 5.4.9 :func:`'doane' <skgstat.binning.auto_derived_lags>` lag classes
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# 
+#
 # In[23]:
 
 
@@ -459,4 +459,3 @@ fig = V.plot(show=False)
 print(f'"{V._bin_func_name}" adjusted {V.n_lags} lag classes - range: {np.round(V.cof[0], 1)} sill: {np.round(V.cof[1], 1)}')
 fig.update_layout(template='plotly_white')
 fig
-

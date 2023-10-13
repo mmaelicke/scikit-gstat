@@ -1,6 +1,6 @@
 # Scikit-GStat
 
-SciKit-Gstat is a scipy-styled variogram estimation and analysis module for geostatistics. 
+SciKit-Gstat is a scipy-styled variogram estimation and analysis module for geostatistics.
 It includes classes for variogram estimation and ordinary kriging. More advanced use-cases
 like directional variograms and space-time variograms are included as well.
 

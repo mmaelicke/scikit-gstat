@@ -89,7 +89,7 @@ def test_corr_var_derirved():
     # test uniform covariance
     cov = np.ones((2, 2)) * 0.8
     np.fill_diagonal(cov, vars)
-    
+
     # generate test sample
     np.random.seed(42)
     d = np.random.multivariate_normal([1.0, 10.0], cov, size=50)
@@ -102,5 +102,5 @@ def test_corr_var_derirved():
 def test_corr_var_matrix_error():
     with pytest.raises(ValueError) as e:
         data.corr_variable(50, [1.0, 2.0], cov='NotAllowed')
-    
+
     assert 'uniform co-variance, or a co-variance matrix' in str(e.value)

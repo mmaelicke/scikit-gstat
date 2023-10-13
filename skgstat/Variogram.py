@@ -1737,7 +1737,7 @@ class Variogram(object):
         """
         Create a numpy column stack to calculate differences between two value arrays.
         The format function will handle sparse matrices, as these do not include
-        pairwise differences that are separated beyond maxlag. 
+        pairwise differences that are separated beyond maxlag.
         The dense numpy.array matrices contain all point pairs.
 
         """

@@ -1,12 +1,12 @@
 [run]
-omit = 
+omit =
     skgstat/tests/*
     skgstat/plotting/*
     docs/*
     setup.py
 
 [report]
-exclude_lines = 
+exclude_lines =
     pragma: no cover
     def __repr__
     def __str__

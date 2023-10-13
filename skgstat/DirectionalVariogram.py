@@ -628,7 +628,7 @@ class DirectionalVariogram(Variogram):
         cmap : string
             Any color-map name that is supported by matplotlib
         points : 'all', int, list
-            If not ``'all'``, only the given coordinate (int) or 
+            If not ``'all'``, only the given coordinate (int) or
             list of coordinates (list) will be plotted. Recommended, if
             the input data is quite large.
         add_points : bool
@@ -636,7 +636,7 @@ class DirectionalVariogram(Variogram):
         alpha : float
             Alpha value for the colors to make overlapping vertices
             visualize better. Defaults to ``0.3``.
-            
+
         """
         # get the backend
         used_backend = plotting.backend()
@@ -644,7 +644,7 @@ class DirectionalVariogram(Variogram):
         if used_backend == 'matplotlib':
             return plotting.matplotlib_pair_field(self, ax=ax, cmap=cmap, points=points, add_points=add_points, alpha=alpha, **kwargs)
         elif used_backend == 'plotly':
-            return plotting.plotly_pair_field(self, fig=ax, points=points, add_points=add_points, alpha=alpha, **kwargs)       
+            return plotting.plotly_pair_field(self, fig=ax, points=points, add_points=add_points, alpha=alpha, **kwargs)
 
     def _triangle(self, angles, dists):
         r"""Triangular Search Area

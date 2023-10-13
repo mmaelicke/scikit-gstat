@@ -20,7 +20,7 @@ def cross_variograms(coordinates: np.ndarray, values: np.ndarray, **kwargs) -> L
     The diagonal of the *'matrix'* holds primary variograms (without cross option)
     for the respective column.
     The function accepts all keyword arguments that are also accepted by
-    :class:`Variogram <skgstat.Variogram>` and 
+    :class:`Variogram <skgstat.Variogram>` and
     :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` and passes them
     down to the respective function. The directional variogram will be used as
     base class if any of the specific arguments are present: azimuth, bandwidth

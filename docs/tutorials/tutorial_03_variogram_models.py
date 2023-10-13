@@ -2,7 +2,7 @@
 3 - Variogram Models
 ====================
 
-This tutorial will guide you through the theoretical variogram models available for the :class:`Variogram <skgstat.Variogram>` class. 
+This tutorial will guide you through the theoretical variogram models available for the :class:`Variogram <skgstat.Variogram>` class.
 
 **In this tutorial you will learn:**
 
@@ -24,7 +24,7 @@ skg.plotting.backend('matplotlib')
 # For this example we will use the pancake dataset. You can use the
 # :mod:``skgstat.data`` submodule to directly sample the dataset. This is the
 # red-channel of an image of an actual pancake. The interesting thing about this pancake is,
-# that it shows some clear spatial structures in its browning, but of different 
+# that it shows some clear spatial structures in its browning, but of different
 # shapes at different scales. This should be reflectable with different samples.
 s = [30, 80, 300]
 data1 = skg.data.pancake(N=s[0], seed=42, as_dataframe=True).get('sample')
@@ -52,7 +52,7 @@ for data, ax in zip((data1, data2, data3), axes.flatten()):
 V1 = skg.Variogram(data1[['x', 'y']].values, data1.v.values, maxlag='median', normalize=False)
 V1.plot(show=False);
 
-# %% 
+# %%
 # Plot the others as well
 V2 = skg.Variogram(data2[['x', 'y']].values, data2.v.values, maxlag='median', normalize=False)
 V3 = skg.Variogram(data3[['x', 'y']].values, data3.v.values, maxlag='median', normalize=False)
@@ -100,12 +100,12 @@ for i in range(3):
         if i == 2:
             v.bin_func = 'scott'
             axes[i][j].set_xlabel('Lag (-)')
-        
+
         # plot
         axes[i][j].plot(v.bins, v.experimental, '.b')
         axes[i][j].plot(x, v.fitted_model(x), '-g')
         axes[i][j].grid(which='major', axis='x')
-        
+
         # label first col
         if j == 0:
             axes[i][j].set_ylabel(col_lab[i])
@@ -115,7 +115,7 @@ for i in range(3):
 plt.tight_layout()
 
 # %%
-# That actually demonstrates how the selection of the experimental variogram can 
+# That actually demonstrates how the selection of the experimental variogram can
 # have huge influence on the base data for fitting. Now consider the center column.
 # In each of the plots, the selection of model is not deterministic.
 # You can argue for at least two different models here, that might actually be supported by the empirical data.
@@ -140,13 +140,13 @@ for i, model in enumerate(('spherical', 'exponential', 'gaussian', 'matern', 'st
 # %%
 # This is quite important. We find all 6 models to describe the experimental
 # variogram more or less equally well in terms of RMSE. Think of the
-# implications: We basically can use any model we like. 
+# implications: We basically can use any model we like.
 # This is a problem as i.e. the gaussian and the spherical model describe
 # fundamentally different spatial properties. Thus, our model selection
 # should be driven by interpretation of the variogram, and not the difference
 # in RMSE of only 0.4%, which might very likely not be significant at all.
-# 
-# 
+#
+#
 # But what does this difference look like, when it comes to interpolation?
 
 def interpolate(V, ax):
@@ -176,12 +176,12 @@ pd.DataFrame({'spherical': fields[0].flatten(), 'exponential': fields[1].flatten
 
 # %%
 # This should illustrate, how important the selection of model is, even if no observation uncertainties are propagated into the analysis.
-# 
+#
 #   1. Gaussian model is far off, producing estimations far outside the observed value ranges
 #   2. All other models seem produce quite comparable mean values
 #   3. BUT: the standard deviation is quite different
 #   4. The median of the field can vary by more than 3 units, even if we took the Gaussian model out
-# 
+#
 # You have to remind that we had quite some observations. The selection of model becomes even more arbitrary with smaller samples and more importantly: We have to consider more than one equally probable parameterization of each model when the experimental is more spread.
 
 # Finally, we can calculate the difference between the kriging fields to inspect the spread of estimations spatially:
@@ -195,7 +195,7 @@ plt.colorbar(m)
 
 # %%
 # The colorbar is spanning the entire value range. Thus, given the minor differences in the fitting of the models, we would have to reject just any estimation based on an automatic fit, which is considering some uncertainties in the selection of parameters, because the RMSE values were too close.
-# 
+#
 # To use the result from above, we need to justfy the selection of model first and manually fit the model based on expert knowledge.
 
 # %%
@@ -205,11 +205,11 @@ plt.colorbar(m)
 V1.plot(show=False);
 
 # %%
-# This is a nugget-effect variogram. Thus we have to reject any geostatistical 
-# analysis based on this sample. It just does not expose any spatial pattern that 
+# This is a nugget-effect variogram. Thus we have to reject any geostatistical
+# analysis based on this sample. It just does not expose any spatial pattern that
 # can be exploited.
-# 
-# What about the denser sample. Increasing the sample size should reject some 
+#
+# What about the denser sample. Increasing the sample size should reject some
 # of the models. Remind, that we are sampling at more short distances and thus,
 # the variogram will be governed by the short ranged patterns of the field, while
 # the other samples are more dependent on the medium and large range patterns, as
@@ -226,9 +226,9 @@ for i, model in enumerate(('spherical', 'exponential', 'gaussian', 'matern', 'st
     axes[i].set_ylim(0, 2000)
 
 # %%
-# We can now clearly reject the cubic, gaussian and exponential model. 
+# We can now clearly reject the cubic, gaussian and exponential model.
 # I personally would also reject the spherical model we used in the fist place,
-# as it is systematically underestimating the semi-variance on short distances. 
+# as it is systematically underestimating the semi-variance on short distances.
 d_fields = []
 fig, _a = plt.subplots(2,3, figsize=(18, 12), sharex=True, sharey=True)
 axes = _a.flatten()

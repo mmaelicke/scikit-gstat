@@ -24,7 +24,7 @@ def backend(name=None):
 
     elif name not in ALLOWED_BACKENDS:
         raise ValueError(
-            "'%s' is not an allowed plotting backend.\nOptions are: [%s]" % 
+            "'%s' is not an allowed plotting backend.\nOptions are: [%s]" %
             (name, ','.join(["'%s'" % _ for _ in ALLOWED_BACKENDS]))
         )
 

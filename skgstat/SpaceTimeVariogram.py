@@ -337,7 +337,7 @@ class SpaceTimeVariogram:
                 raise ValueError("Only 'max' supported as string argument.")
         elif self._t_lags is None:
             self._t_lags = len(self.tbins)
-        
+
         return self._t_lags
 
     @t_lags.setter

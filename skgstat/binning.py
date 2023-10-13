@@ -170,7 +170,7 @@ def kmeans(distances, n, maxlag, binning_random_state=42, **kwargs):
     # filter for distances < maxlag
     d = distances[np.where(distances <= maxlag)]
 
-    # filter the sklearn convervence warning, because working with 
+    # filter the sklearn convervence warning, because working with
     # undefined state in binning does not make any sense
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
@@ -308,7 +308,7 @@ def stable_entropy_lags(distances, n, maxlag, **kwargs):
         return np.sum(np.abs(np.diff(h)))
 
     # minimize the loss function
-    opt = dict(maxiter=kwargs.get('binning_maxiter', 5000)) 
+    opt = dict(maxiter=kwargs.get('binning_maxiter', 5000))
     res = minimize(loss, initial_guess, method='Nelder-Mead', options=opt)
 
     if res.success:

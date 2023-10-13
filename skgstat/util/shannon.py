@@ -18,7 +18,7 @@ def shannon_entropy(x, bins):
     bins : list, int
         upper edges of the bins used to calculate the histogram
         of x.
-    
+
     Returns
     -------
     h : float

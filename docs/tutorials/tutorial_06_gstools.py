@@ -2,12 +2,12 @@
 6 - GSTools
 ===========
 With version ``0.5`` ``scikit-gstat`` offers an interface to the awesome `gstools <https://github.com/GeoStat-Framework/GSTools>`_
-library. This way, you can use a :class:`Variogram <skgstat.Variogram>` estimated with ``scikit-gstat`` 
+library. This way, you can use a :class:`Variogram <skgstat.Variogram>` estimated with ``scikit-gstat``
 in `gstools <https://github.com/GeoStat-Framework/GSTools>`_  to perform random field generation, kriging and much, much more.
 
-For a :class:`Variogram <skgstat.Variogram>` instance, there are three possibilities to export into `gstools <https://github.com/GeoStat-Framework/GSTools>`_ : 
+For a :class:`Variogram <skgstat.Variogram>` instance, there are three possibilities to export into `gstools <https://github.com/GeoStat-Framework/GSTools>`_ :
 
-    1. :func:`Variogram.get_empirical(bin_center=True) <skgstat.Variogram.get_empirical>` returns a pair of distance lag bins and experimental semi-variance values, like `gstools.variogram.vario_estimate <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/generated/gstools.variogram.vario_estimate.html>`_. 
+    1. :func:`Variogram.get_empirical(bin_center=True) <skgstat.Variogram.get_empirical>` returns a pair of distance lag bins and experimental semi-variance values, like `gstools.variogram.vario_estimate <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/generated/gstools.variogram.vario_estimate.html>`_.
     2. :func:`Variogram.to_gstools <skgstat.Variogram.to_gstools>` returns a parameterized :any:`CovModel <gstools.covmodel.CovModel>` derived from the Variogram.
     3. :func:`Variogram.to_gs_krige <skgstat.Variogram.to_gs_krige>` returns a :any:`GSTools Krige <gstools.krige.Krige>` instance based on the variogram
 
@@ -18,8 +18,8 @@ For a :class:`Variogram <skgstat.Variogram>` instance, there are three possibili
 6.1.1 Reproducing the gstools example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can reproduce the `Getting Started example for variogram estimation from GSTools docs <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/index.html#id3>`_ 
-with ``scikit-gstat``, and replace the calculation of the empirical variogram with :class:`skg.Variogram <sggstat.Variogram>`. 
+You can reproduce the `Getting Started example for variogram estimation from GSTools docs <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/index.html#id3>`_
+with ``scikit-gstat``, and replace the calculation of the empirical variogram with :class:`skg.Variogram <sggstat.Variogram>`.
 
 Note: This does only make sense if you want to use a distance metric, binning procedure or semi-variance estimator, that is not included in `gstools` or are bound to `scikit-gstat` for any other reason. :class:`Variogram <skgstat.Variogram>` will _always_ perform a full model fitting cycle on instantiation, which could lead to some substantial overhead here.
 This behavior might change in a future version of `scikit-gstat`.
@@ -60,7 +60,7 @@ coords = np.column_stack((x, y))
 #   bin_center, gamma = gs.vario_estimate((x, y), field)
 #
 #
-# Here, we can use :class:`skg.Variogram <skgstat.Variogram>`. 
+# Here, we can use :class:`skg.Variogram <skgstat.Variogram>`.
 # From the shown arguments, :func:`estimator <skgstat.Variogram.estimator>` and
 # :func:`bin_func <skgstat.Variogram.bin_func>` are using the default values:
 
@@ -172,7 +172,7 @@ print(fit_model)
 # 6.2.1 exporting :class:`Variogram <skgstat.Variogram>`
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# In this example, the same Variogram from above is estimated, but we use the :func:`exponential <skgstat.models.exponential>` model. 
+# In this example, the same Variogram from above is estimated, but we use the :func:`exponential <skgstat.models.exponential>` model.
 # An exponential covariance function was used in the first place to create the field that was sampled.
 
 skg.plotting.backend('plotly')
@@ -197,7 +197,7 @@ ax.scatter(bins, gamma)
 # and you want to use the :class:`Variogram.coordinates <skgstat.Variogram.coordinates>`, you **must** transpose them.
 #
 # .. code-block:: python
-# 
+#
 #   # variogram is a skgstat.Variogram instance
 #   model = variogram.to_gstools()
 #   cond_pos = variogram.coordinates.T
@@ -224,16 +224,16 @@ malformed.structured([x, y])
 malformed.plot()
 
 # %%
-# Notice how the spatial properties as well as the value range has changed. 
-# That's why it is important to estimate :class:`Variogram <skgstat.Variogram>` or :any:`CovModel <gstools.covmodel.CovModel>` 
+# Notice how the spatial properties as well as the value range has changed.
+# That's why it is important to estimate :class:`Variogram <skgstat.Variogram>` or :any:`CovModel <gstools.covmodel.CovModel>`
 # carefully and not let the GIS do that for you somewhere hidden in the dark.
 
 # %%
 # 6.3 ``to_gs_krige``
 # ~~~~~~~~~~~~~~~~~~~
 #
-# Finally, after carefully estimating and fitting a variogram using SciKit-GStat, 
-# you can also export it directly into a :any:`GSTools Krige <gstools.krige.Krige>` instance. 
+# Finally, after carefully estimating and fitting a variogram using SciKit-GStat,
+# you can also export it directly into a :any:`GSTools Krige <gstools.krige.Krige>` instance.
 # We use the variogram as in the other sections:
 
 # export

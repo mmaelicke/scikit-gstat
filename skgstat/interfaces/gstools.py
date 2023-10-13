@@ -80,7 +80,7 @@ def skgstat_to_gstools(variogram, **kwargs):
 
     # if Variogram is a cross-variogram warn the user
     if variogram.is_cross_variogram:
-        warnings.warn("This instance is a cross-variogram!!" + 
+        warnings.warn("This instance is a cross-variogram!!" +
             " GSTools.CovModel will most likely not handle this Variogram correctly.")
 
 

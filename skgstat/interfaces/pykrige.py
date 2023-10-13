@@ -61,7 +61,7 @@ def pykrige_params(variogram):
     if not __check_pykrige_available():
         return
 
-    # get the parameters into the correct order. 
+    # get the parameters into the correct order.
     pars = variogram.parameters
 
     return [pars[1], pars[0], pars[2]]
@@ -74,7 +74,7 @@ def pykrige_as_kwargs(variogram, adjust_maxlag=False, adjust_nlags=False):
     if not __check_pykrige_available():
         return
 
-    # as far as I get it, there is no maximum lag in pykrige. 
+    # as far as I get it, there is no maximum lag in pykrige.
     if adjust_maxlag:
         variogram.maxlag = None
     else:

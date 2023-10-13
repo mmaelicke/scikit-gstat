@@ -4,8 +4,8 @@ The definition is taken from [601]_:
 
 References
 ----------
-[601]   Lark, R. M. "Estimating variograms of soil properties by the 
-        method‐of‐moments and maximum likelihood." European Journal 
+[601]   Lark, R. M. "Estimating variograms of soil properties by the
+        method‐of‐moments and maximum likelihood." European Journal
         of Soil Science 51.4 (2000): 717-728.
 """
 from typing import Callable, List
@@ -35,8 +35,8 @@ The sample of the variogram instance contained ``{n}`` points.
 
 References
 ----------
-[601]   Lark, R. M. "Estimating variograms of soil properties by the 
-        method‐of‐moments and maximum likelihood." European Journal 
+[601]   Lark, R. M. "Estimating variograms of soil properties by the
+        method‐of‐moments and maximum likelihood." European Journal
         of Soil Science 51.4 (2000): 717-728.
 """
 
