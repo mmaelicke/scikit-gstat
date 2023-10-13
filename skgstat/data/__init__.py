@@ -10,20 +10,20 @@ names = field_names()
 
 origins = dict(
     pancake="""Image of a pancake with apparent spatial structure.
-    Copyright Mirko Mälicke, 2020. If you use this data cite SciKit-GStat: 
+    Copyright Mirko Mälicke, 2020. If you use this data cite SciKit-GStat:
 
-      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation 
-        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532, 
+      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation
+        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532,
         https://doi.org/10.5194/gmd-15-2505-2022, 2022.
 
     """,
     aniso="""Random field greyscale image with geometric anisotropy.
     The anisotropy in North-East direction has a factor of 3. The random
     field was generated using gstools.
-    Copyright Mirko Mälicke, 2020. If you use this data, cite SciKit-GStat: 
+    Copyright Mirko Mälicke, 2020. If you use this data, cite SciKit-GStat:
 
-      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation 
-        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532, 
+      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation
+        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532,
         https://doi.org/10.5194/gmd-15-2505-2022, 2022.
 
     """,
@@ -41,14 +41,14 @@ origins = dict(
 
     """,
     corr_var="""Random sample at random locations created using numpy.
-    The sample can be created for multiple variables, which will be 
+    The sample can be created for multiple variables, which will be
     cross-correlated. The statistical moment of each variable can be specified
     as well as the co-variance matrix can be given.
     IMPORTANT: This data generator is part of SciKit-GStat and is built on
     Numpy. If you use it, please cite:
 
-      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation 
-        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532, 
+      Mälicke, M.: SciKit-GStat 1.0: a SciPy-flavored geostatistical variogram estimation
+        toolbox written in Python, Geosci. Model Dev., 15, 2505–2532,
         https://doi.org/10.5194/gmd-15-2505-2022, 2022.
 
     """
@@ -229,7 +229,7 @@ def aniso_field():
     -------
     result : dict
         Dictionary of the sample and a citation information.
-        The sample a numpy array repesenting the image.
+        The sample a numpy array representing the image.
 
     See Also
     --------
@@ -340,7 +340,7 @@ def corr_variable(
     Returns random cross-correlated variables assigned to random coordinate
     locations. These can be used for testing cross-variograms, or as a
     random benchmark for cross-variograms in method development, aka. does
-    actual correlated data exhibit different cross-variograms of random 
+    actual correlated data exhibit different cross-variograms of random
     variables of the same correlation coefficient matrix.
 
     Parameters
@@ -350,20 +350,20 @@ def corr_variable(
         length has to match size.
     means : List[float]
         Mean values of the variables, defaults to two variables with
-        mean of 1. The number of means determines the number of 
+        mean of 1. The number of means determines the number of
         variables, which will be returned.
     vars : List[float]
-        Univariate variances for each of the random variables. 
+        Univariate variances for each of the random variables.
         If None, and cov is given, the diagonal of the correlation
-        coefficient matrix will be used. If cov is None, the 
+        coefficient matrix will be used. If cov is None, the
         correlation will be random, but the variance will match.
         If vars is None, random variances will be used.
     cov : list, float
-        Co-variance matrix. The co-variances and variances for all 
+        Co-variance matrix. The co-variances and variances for all
         created random variables can be given directly, as matrix of shape
         ``(len(means), len(means))``.
         If cov is a float, the same matrix will be created using the same
-        co-variance for all combinations. 
+        co-variance for all combinations.
     coordinates : np.ndarray
         Coordinates to be used for the sample. If None, random locations
         are created.
@@ -375,13 +375,13 @@ def corr_variable(
     -------
     result : dict
         Dictionary of the sample and a citation information.
- 
+
     """
     # Handle coordinates
     if coordinates is None:
         np.random.seed(seed)
         coordinates = np.random.normal(10, 5, size=(size, 2))
-    
+
     # get the number of variables
     N = len(means)
 
@@ -390,7 +390,7 @@ def corr_variable(
         np.random.seed(seed)
         # use 0...1 ratio of m for variance
         vars = [np.random.random() * m for m in means]
-    
+
     # check the cov matrix
     if cov is None:
         np.random.seed(seed)
@@ -402,16 +402,16 @@ def corr_variable(
     elif isinstance(cov, (int, float)):
         cov = np.ones((N, N)) * cov
         np.fill_diagonal(cov, vars)
-    
+
     # matrix already
     elif isinstance(cov, (np.ndarray, list, tuple)) and np.asarray(cov).ndim == 2:
         # overwrite variances
         cov = np.asarray(cov)
         vars = np.diag(cov)
-    
+
     else:
         raise ValueError("if cov is given it has to be either one uniform co-variance, or a co-variance matrix.")
-    
+
     # create the values
     np.random.seed(seed)
     values = np.random.multivariate_normal(means, cov, size=size)

@@ -85,25 +85,25 @@ print('bounds:        ', bounds)
 # load the likelihood function for this variogram
 likelihood = get_likelihood(V)
 
-# minimize the likelihood function 
+# minimize the likelihood function
 t3 = time()
 res = minimize(likelihood, p0, bounds=bounds, method='SLSQP')
 t4 = time()
 
-# some priting
+# some printing
 print(f"Processing time {np.round(t4 - t3, 2)} seconds")
 print('initial guess:     ', p0.round(1))
 print('optimal parameters:', res.x.round(1))
 
 # %%
 # Here, you can see one of the main limitations for ML approaches: runtime.
-# A sample size of 300 is rather small and the ML is running 
+# A sample size of 300 is rather small and the ML is running
 # considerably slower that MoM.
-# 
+#
 # Apply the optimized parameters. For comparison, the three method-of-moment methods
 # from SciKit-GStat are applied as well. Note that the used sample is quite dense.
 # Thus we do not expect a different between the MoM based procedures.
-# They should all find the same paramters.
+# They should all find the same parameters.
 
 # use 100 steps
 x = np.linspace(0, V.bins[-1], 100)
@@ -154,7 +154,7 @@ def f(h, a):
         return 0.
     return (3*h) / (2*a) - 0.5 * (h / a)**3
 
-# create the autocovariance matrix 
+# create the autocovariance matrix
 def get_A(r, s, b, dists):
     a = np.array([f(d, r) for d in dists])
     A = squareform((s / (s + b)) * (1 - a))
@@ -182,7 +182,7 @@ def like(r, s, b, z, dists):
 # %%
 # You can adjust the autocorrelation function above to any other model and
 # implement other approaches by adjusting the ``like`` function.
-# Finally, minimizing this function is the same like before. You also have to 
+# Finally, minimizing this function is the same like before. You also have to
 # take care of the SciPy interface, as you need to wrap the custom likelihood
 # function to provide the parameters in the right format.
 from scipy.optimize import minimize

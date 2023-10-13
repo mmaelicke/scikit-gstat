@@ -89,7 +89,7 @@ random coordinates, the visualization is shown below.
 
     @savefig dv1.png width=6in
     DV.pair_field(plt.gca())
-    
+
 The model can easily be changed, using the
 :func:`set_directional_model <skgstat.DirectionalVariogram.set_directional_model>`
 function:
@@ -130,4 +130,3 @@ All other methods and attributes can be used in the same way.
 
     - :func:`DirectionalVariogram.bins <skgstat.DirectionalVariogram.bins>`
     - :func:`DirectionalVariogram._calc_groups <skgstat.DirectionalVariogram._calc_groups>`
-

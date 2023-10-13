@@ -76,11 +76,11 @@ def skgstat_to_gstools(variogram, **kwargs):
 
     # at least gstools>=1.3.0 is needed
     if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
-        raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
+        raise ValueError("to_gstools: GSTools v1.3 or greater required.")
 
     # if Variogram is a cross-variogram warn the user
     if variogram.is_cross_variogram:
-        warnings.warn("This instance is a cross-variogram!!" + 
+        warnings.warn("This instance is a cross-variogram!!" +
             " GSTools.CovModel will most likely not handle this Variogram correctly.")
 
 
@@ -124,7 +124,7 @@ def skgstat_to_gstools(variogram, **kwargs):
 
 def skgstat_to_krige(variogram, **kwargs):
     """
-    Instatiate a GSTools Krige class.
+    Instantiate a GSTools Krige class.
 
     This can only export isotropic models.
     Note: the `fit_variogram` is always set to `False`
@@ -172,7 +172,7 @@ def skgstat_to_krige(variogram, **kwargs):
 
     # at least gstools>=1.3.0 is needed
     if list(map(int, gs.__version__.split(".")[:2])) < [1, 3]:  # pragma: no cover
-        raise ValueError("to_gstools: GSTools v1.3 or greater requiered.")
+        raise ValueError("to_gstools: GSTools v1.3 or greater required.")
 
     # convert variogram to a CovModel
     model = skgstat_to_gstools(variogram=variogram)

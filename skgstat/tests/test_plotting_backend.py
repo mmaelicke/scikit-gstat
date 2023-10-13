@@ -2,7 +2,7 @@ import pytest
 from skgstat.plotting import backend
 
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go 
+import plotly.graph_objects as go
 
 
 def test_backend_no_args():

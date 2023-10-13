@@ -79,8 +79,8 @@ PyPI
 
   pip install scikit-gstat
 
-**Note:** It can happen that the installation of numba or numpy is failing using pip. Especially on Windows systems. 
-Usually, a missing Dll (see eg. `#31 <https://github.com/mmaelicke/scikit-gstat/issues/31>`_) or visual c++ redistributable is the reason. 
+**Note:** It can happen that the installation of numba or numpy is failing using pip. Especially on Windows systems.
+Usually, a missing Dll (see eg. `#31 <https://github.com/mmaelicke/scikit-gstat/issues/31>`_) or visual c++ redistributable is the reason.
 
 GIT:
 ^^^^

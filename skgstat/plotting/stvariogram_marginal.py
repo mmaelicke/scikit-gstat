@@ -81,7 +81,7 @@ def plotly_marginal(stvariogram, fig=None, include_model=False, **kwargs):
     try:
         fig.set_subplots(rows=1, cols=2, shared_yaxes=shared_yaxes)
     except ValueError:
-        # figure has alredy subplots
+        # figure has already subplots
         pass
 
     # get some settings

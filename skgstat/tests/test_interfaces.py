@@ -93,7 +93,7 @@ class TestVariogramEstimator(unittest.TestCase):
 
         gs = gs.fit(self.c, self.v)
 
-        # Python 3.6 yields 'exponential', 
+        # Python 3.6 yields 'exponential',
         # while 3.7, 3.8 yield 'gaussian' - this is so stupid
         self.assertTrue(gs.best_params_['model'] in ['gaussian', 'exponential'])
 
@@ -287,7 +287,7 @@ class TestGstoolsInterface(unittest.TestCase):
         assert_array_almost_equal(
             model.variogram(self.xi), self.yi, decimal=2
         )
-    
+
 
 class TestGstoolsAllModels(unittest.TestCase):
     def setUp(self):
