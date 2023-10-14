@@ -16,7 +16,7 @@ class DirectionalVariogram(Variogram):
     coordinates and relates them to one of the semi-variance measures of the
     given dependent values.
 
-    The direcitonal version of a Variogram will only form paris of points
+    The directional version of a Variogram will only form paris of points
     that share a specified spatial relationship.
 
     """
@@ -69,7 +69,7 @@ class DirectionalVariogram(Variogram):
               * minmax          [MinMax Scaler]
               * entropy         [Shannon Entropy]
 
-            If a callable is passed, it has to accept an array of absoulte
+            If a callable is passed, it has to accept an array of absolute
             differences, aligned to the 1D distance matrix (flattened upper
             triangle) and return a scalar, that converges towards small
             values for similarity (high covariance).
@@ -294,6 +294,7 @@ class DirectionalVariogram(Variogram):
 
         # set the directional model
         self._directional_model = None
+        self._is_model_custom = False
         self.set_directional_model(model_name=directional_model)
 
         # the binning settings
@@ -406,7 +407,7 @@ class DirectionalVariogram(Variogram):
     def azimuth(self):
         """Direction azimuth
 
-        Main direction for te selection of points in the formation of point
+        Main direction for the selection of points in the formation of point
         pairs. East of the coordinate plane is defined to be 0° and then the
         azimuth is set clockwise up to 180°and count-clockwise to -180°.
 
@@ -628,7 +629,7 @@ class DirectionalVariogram(Variogram):
         cmap : string
             Any color-map name that is supported by matplotlib
         points : 'all', int, list
-            If not ``'all'``, only the given coordinate (int) or 
+            If not ``'all'``, only the given coordinate (int) or
             list of coordinates (list) will be plotted. Recommended, if
             the input data is quite large.
         add_points : bool
@@ -636,7 +637,7 @@ class DirectionalVariogram(Variogram):
         alpha : float
             Alpha value for the colors to make overlapping vertices
             visualize better. Defaults to ``0.3``.
-            
+
         """
         # get the backend
         used_backend = plotting.backend()
@@ -644,7 +645,7 @@ class DirectionalVariogram(Variogram):
         if used_backend == 'matplotlib':
             return plotting.matplotlib_pair_field(self, ax=ax, cmap=cmap, points=points, add_points=add_points, alpha=alpha, **kwargs)
         elif used_backend == 'plotly':
-            return plotting.plotly_pair_field(self, fig=ax, points=points, add_points=add_points, alpha=alpha, **kwargs)       
+            return plotting.plotly_pair_field(self, fig=ax, points=points, add_points=add_points, alpha=alpha, **kwargs)
 
     def _triangle(self, angles, dists):
         r"""Triangular Search Area

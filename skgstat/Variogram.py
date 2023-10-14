@@ -2,6 +2,7 @@
 Variogram class
 """
 import copy
+import inspect
 import warnings
 from typing import Iterable, Callable, Union, Tuple
 
@@ -87,12 +88,16 @@ class Variogram(object):
               * minmax          [MinMax Scaler]
               * entropy         [Shannon Entropy]
 
-            If a callable is passed, it has to accept an array of absoulte
+            If a callable is passed, it has to accept an array of absolute
             differences, aligned to the 1D distance matrix (flattened upper
             triangle) and return a scalar, that converges towards small
             values for similarity (high covariance).
-        model : str
-            String identifying the theoretical variogram function to be used
+        model : str | Callable
+            .. versionchanged:: 1.0.12
+                Added support for sum of models (e.g., "spherical+gaussian"), or custom model (Callable). Using
+                `fit_bounds` to optimize the fit is recommended for custom models, and can be useful for sum of models.
+
+            String or callable identifying the theoretical variogram function to be used
             to describe the experimental variogram. Can be one of:
 
               * spherical       [Spherical, default]
@@ -102,6 +107,9 @@ class Variogram(object):
               * stable          [Stable model]
               * matern          [Matérn model]
               * nugget          [nugget effect variogram]
+
+            Any number of these theoretical models can be summed using "+" iteratively, e.g. "spherical+cubic+matern".
+            The nugget parameters of the models are removed except for the last model (sum of nuggets = single nugget).
 
         dist_func : str
             String identifying the distance function. Defaults to
@@ -130,7 +138,7 @@ class Variogram(object):
                   :func:`distance <skgstat.Variogram.distance>`
                   as `n_lags`.
                 * `'kmeans'` uses KMeans clustering to well supported bins
-                * `'ward'` uses hierachical clustering to find
+                * `'ward'` uses hierarchical clustering to find
                   minimum-variance clusters.
 
             More details are given in the documentation for
@@ -185,7 +193,8 @@ class Variogram(object):
             Defaults to False. If True, a nugget effet will be added to all
             Variogram.models as a third (or fourth) fitting parameter. A
             nugget is essentially the y-axis interception of the theoretical
-            variogram function.
+            variogram function. For a sum of variogram, the nugget is defined
+            in its last model.
         maxlag : float, str
             Can specify the maximum lag distance directly by giving a value
             larger than 1. The binning function will not find any lag class
@@ -245,6 +254,24 @@ class Variogram(object):
             If present, the plot will indicate the confidence interval as
             error bars around the experimental variogram.
 
+        fit_bounds: 2-tuple of array_like or Bounds, optional
+            .. versionadded:: 1.0.12
+
+            Lower and upper bounds on parameters passed to scipy.optimize.curve_fit.
+
+            Order is typically (range, sill, nugget) or (range, sill, smoothness, nugget) for individual models, or
+            (range1, sill1, nugget1, range2, sill2, nugget2) for a sum of 2 models.
+            Recommended for custom models, where bounds cannot be determined logically.
+            For internal models, defaults to known min/max values for the sill (0, max variance), range (0, max lag)
+            and smoothness (0, 2) or (0, 20) for stable and matern, respectively.
+
+        fit_p0: array_like, optional
+            .. versionadded:: 1.0.12
+
+            Initial guess for the parameters passed to scipy.optimize.curve_fit.
+
+            Same order as for fit_bounds.
+            Defaults to upper bounds values. For custom models, if no bounds are defined, defaults to 1.
         """
         # Before we do anything else, make kwargs available
         self._kwargs = self._validate_kwargs(**kwargs)
@@ -333,16 +360,18 @@ class Variogram(object):
         if fit_method is not None:
             self.preprocessing(force=True)
 
+        # set if nugget effect shall be used
+        self._use_nugget = None
+        self.use_nugget = use_nugget
+
         # model can be a function or a string
         self._model = None
+        self._model_name = None
+        self._is_model_custom = False
         self.set_model(model_name=model)
 
         # specify if the lag should be given absolute or relative to the maxlag
         self._normalized = normalize
-
-        # set if nugget effect shall be used
-        self._use_nugget = None
-        self.use_nugget = use_nugget
 
         # set the fitting method and sigma array
         self._fit_method = None
@@ -360,7 +389,9 @@ class Variogram(object):
 
         # do the preprocessing and fitting upon initialization
         # Note that fit() calls preprocessing
-        self.fit(force=True)
+        fit_bounds = self._kwargs.get('fit_bounds') # returns None if empty
+        fit_p0 = self._kwargs.get('fit_p0')
+        self.fit(force=True, bounds=fit_bounds, p0=fit_p0)
 
         # finally check if any of the uncertainty propagation kwargs are set
         self._experimental_conf_interval = None
@@ -686,7 +717,7 @@ class Variogram(object):
         between two neighboring clusters. Note: This does not necessarily
         result in even width bins.
 
-        **`'ward'`** uses a hierachical culstering algorithm to iteratively
+        **`'ward'`** uses a hierarchical culstering algorithm to iteratively
         merge pairs of clusters until there are only `n` remaining clusters.
         The merging is done by minimizing the variance for the merged cluster.
 
@@ -774,7 +805,7 @@ class Variogram(object):
 
     def _bin_func_wrapper(self, distances, n, maxlag):
         """
-        Wrapper arounf the call of the actual binning method.
+        Wrapper around the call of the actual binning method.
         This is needed to pass keyword arguments to kmeans or
         stable_entropy binning methods, and respect the slightly
         different function signature of auto_derived_lags.
@@ -961,10 +992,15 @@ class Variogram(object):
             # at first reset harmonize
             self._harmonize = False
             if model_name.lower() == 'harmonize':
+                mname = 'harmonize'
                 self._harmonize = True
                 self._model = self._build_harmonized_model()
+            elif "+" in model_name:
+                mname =  ''.join(model_name.split()).lower() # Remove all whitespaces
+                self._model = self._build_sum_models(mname)
             elif hasattr(models, model_name.lower()):
-                self._model = getattr(models, model_name.lower())
+                mname = model_name.lower()
+                self._model = getattr(models, mname)
             else:
                 raise ValueError(
                     (
@@ -972,8 +1008,68 @@ class Variogram(object):
                         ' understood, please provide the function'
                     ) % model_name
                 )
+            # Set model name attribute
+            self._model_name = mname
+
         else:  # pragma: no cover
+            self._is_model_custom = True
             self._model = model_name
+            self._model_name = model_name.__name__
+
+    def _get_argpos_sum_models(self, list_model_names):
+        """
+        Get argument slice position (list of slices) for the sum of models from a list of model names (list of strings).
+        """
+
+        # Doing this here for other functions (fit, describe, etc), even though already done in _build_sum_models
+        list_models = [getattr(models, model_name.lower()).py_func for model_name in list_model_names]
+
+        # Get the number of arguments per model (e.g., [3, 4, 4])
+        nb_args_per_model = np.array([len(inspect.getfullargspec(model).args) for model in list_models])
+
+        # We remove the nugget and lags parameters, except nugget for the last model (sum of nuggets = single nugget)
+        nb_args_per_model -= 2
+        nb_args_per_model[-1] += 1
+        # Compute cumulative number of args removing 2 args everywhere (all lags and nuggets, last one will compensate)
+        cum_args_minus_lag = np.cumsum(nb_args_per_model)
+
+        # Prepare argument slices to distribute to submodels
+        args_indices = np.insert(cum_args_minus_lag, 0, 0)  # We add the first indice of 0
+        args_slices = [(slice(args_indices[i], args_indices[i + 1])) for i in range(len(args_indices) - 1)]
+
+        return args_slices
+
+    def _build_sum_models(self, sum_models_name: str):
+        """
+        Build sum of theoretical models, variogram-decorated function.
+        """
+
+        # Remove all whitespaces in the string, in case the user wrote something like "spherical + gaussian"
+        sum_models_name = ''.join(sum_models_name.split()).lower()
+
+        # Get individual model names
+        list_model_names = sum_models_name.split("+")
+
+        # Check that all models exist in the "models" module
+        if not all(hasattr(models, model_name.lower()) for model_name in list_model_names):
+            raise ValueError(
+                (
+                    'One of the theoretical models in the list "%s" is not'
+                    ' understood, please provide existing model names separated by "+".'
+                ) % ", ".join(list_model_names)
+            )
+
+        # First, build the models from their py_func (ignoring variogram decorator) and get args per model
+        list_models = [getattr(models, model_name.lower()).py_func for model_name in list_model_names]
+        # Get the argument positions for the model sum (function uses model names to be called by other methods)
+        args_slices = self._get_argpos_sum_models(list_model_names=list_model_names)
+
+        # Distribute first argument (lag) and use all others in order (nugget ignored when last argument not passed)
+        @models.variogram
+        def sum_models(h, *args):
+            return sum(list_models[i](h, *args[args_slices[i]]) for i in range(len(list_models)))
+
+        return sum_models
 
     def _build_harmonized_model(self):
         x = self.bins
@@ -1129,8 +1225,8 @@ class Variogram(object):
     def maxlag(self):
         """
         Maximum lag distance to be considered in this Variogram instance.
-        You can limit the distance at which point pairs are calcualted.
-        There are three possible ways how to do that, in absoulte lag units,
+        You can limit the distance at which point pairs are calculated.
+        There are three possible ways how to do that, in absolute lag units,
         which is a number larger one. Secondly, a number ``0 < maxlag < 1``
         can be set, which will use this share of the maximum distance as
         maxlag. Lastly, a string can be set: ``'mean'`` and ``'median'``
@@ -1143,7 +1239,7 @@ class Variogram(object):
         calculated. Hence, it does **not** speed up the calculation
         of large distance matrices, just the estimation of the variogram.
         Thus, if you pre-calcualte the distance matrix using
-        :class:`MetricSpace <skgstat.MetricSpace>`, only absoulte
+        :class:`MetricSpace <skgstat.MetricSpace>`, only absolute
         limits can be used.
 
         """
@@ -1387,7 +1483,7 @@ class Variogram(object):
     def lag_groups(self):
         """Lag class groups
 
-        Retuns a mask array with as many elements as self._diff has,
+        Returns a mask array with as many elements as self._diff has,
         identifying the lag class group for each pairwise difference. Can be
         used to extract all pairwise values within the same lag bin.
 
@@ -1454,7 +1550,7 @@ class Variogram(object):
         self._calc_diff(force=force)
         self._calc_groups(force=force)
 
-    def fit(self, force=False, method=None, sigma=None, **kwargs):
+    def fit(self, force=False, method=None, sigma=None, bounds=None, p0=None, **kwargs):
         """Fit the variogram
 
         The fit function will fit the theoretical variogram function to the
@@ -1502,6 +1598,21 @@ class Variogram(object):
         sigma : string, array
             Uncertainty array for the bins. Has to have the same dimension as
             self.bins. Refer to Variogram.fit_sigma for more information.
+
+        bounds: 2-tuple of array_like or Bounds, optional
+            Lower and upper bounds on parameters passed to scipy.optimize.curve_fit.
+
+            Order is typically (range, sill, nugget) or (range, sill, smoothness, nugget) for individual models, or
+            (range1, sill1, nugget1, range2, sill2, nugget2) for a sum of 2 models.
+            Recommended for custom models, where bounds cannot be determined logically.
+            For internal models, defaults to known min/max values for the sill (0, max variance), range (0, max lag)
+            and smoothness (0, 2) or (0, 20) for stable and matern, respectively.
+
+        p0: array_like, optional
+            Initial guess for the parameters passed to scipy.optimize.curve_fit.
+
+            Same order as for fit_bounds.
+            Defaults to upper bounds values. For custom models, if no bounds are defined, defaults to 1.
 
         Returns
         -------
@@ -1563,18 +1674,41 @@ class Variogram(object):
             self.cof = [r, s, n]
             return
 
-        # Switch the method
-        # wrap the model to include or exclude the nugget
-        if self.use_nugget:
+        # For a supported model, wrap the function depending on nugget and get logical bounds
+        if not self._is_model_custom:
+            # Switch the method
+            # wrap the model to include or exclude the nugget
+            if self.use_nugget:
+                def wrapped(*args):
+                    return self._model(*args)
+            else:
+                def wrapped(*args):
+                    return self._model(*args, 0)
+
+            # get p0
+            if bounds is None:
+                bounds = (0, self.__get_fit_bounds(x, y))
+            if p0 is None:
+                p0 = np.asarray(bounds[1])
+        # Else, inspect the function for the number of arguments
+        else:
+            # The number of arguments of argspec minus one is what we initialized
+            argspec = inspect.getfullargspec(self._model.__wrapped__)
+            nb_args = len(argspec.args) - 1
+            if bounds is None:
+                warnings.warn("Parameter bounds cannot be logically derived for a custom model during the fit. "
+                              "User bounds can be passed using fit(..., bounds=) or Variogram(..., fit_bounds=).", UserWarning)
+                bounds = ([-np.inf] * nb_args, [np.inf] * nb_args)
+            if p0 is None:
+                # If all bounds are infinite (not defined, pass 1)
+                if bounds == ([-np.inf] * nb_args, [np.inf] * nb_args):
+                    p0 = np.ones(nb_args)
+                # Else pass the upper bounds
+                else:
+                    p0 = np.asarray(bounds[1])
+
             def wrapped(*args):
                 return self._model(*args)
-        else:
-            def wrapped(*args):
-                return self._model(*args, 0)
-
-        # get p0
-        bounds = (0, self.__get_fit_bounds(x, y))
-        p0 = np.asarray(bounds[1])
 
         # Trust Region Reflective
         if self.fit_method == 'trf':
@@ -1644,10 +1778,10 @@ class Variogram(object):
             n = kwargs.get('nugget', self._kwargs.get('fit_nugget', old_params.get('nugget', 0.0)))
 
             # check if a s parameter is needed
-            if self._model.__name__ in ('stable', 'matern'):
-                if self._model.__name__ == 'stable':
+            if self._model_name in ('stable', 'matern'):
+                if self._model_name == 'stable':
                     s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('shape',2.0)))
-                if self._model.__name__ == 'matern':
+                if self._model_name == 'matern':
                     s2 = kwargs.get('shape', self._kwargs.get('fit_shape', old_params.get('smoothness', 2.0)))
 
                 # set
@@ -1737,7 +1871,7 @@ class Variogram(object):
         """
         Create a numpy column stack to calculate differences between two value arrays.
         The format function will handle sparse matrices, as these do not include
-        pairwise differences that are separated beyond maxlag. 
+        pairwise differences that are separated beyond maxlag.
         The dense numpy.array matrices contain all point pairs.
 
         """
@@ -1968,33 +2102,45 @@ class Variogram(object):
         list
 
         """
-        mname = self._model.__name__
+        all_mname = self._model_name
 
-        # use range, sill and smoothness parameter
-        if mname == 'matern':
-            # a is max(x), C0 is max(y) s is limited to 20?
-            bounds = [np.nanmax(x), np.nanmax(y), 20.]
-
-        # use range, sill and shape parameter
-        elif mname == 'stable':
-            # a is max(x), C0 is max(y) s is limited to 2?
-            bounds = [np.nanmax(x), np.nanmax(y), 2.]
-
-        # use only sill
-        elif mname == 'nugget':
-            # a is max(x):
-            bounds = [np.nanmax(x)]
-
-        # use range and sill
+        # for a sum of models, create a list
+        if "+" in all_mname:
+            list_mname = all_mname.split("+")
         else:
-            # a is max(x), C0 is max(y)
-            bounds = [np.nanmax(x), np.nanmax(y)]
+            list_mname = [all_mname]
 
-        # if use_nugget is True add the nugget
-        if self.use_nugget:
-            bounds.append(0.99*np.nanmax(y))
+        # we append all bounds (for one or several models)
+        all_bounds = []
+        for i, mname in enumerate(list_mname):
 
-        return bounds
+            # use range, sill and smoothness parameter
+            if mname == 'matern':
+                # a is max(x), C0 is max(y) s is limited to 20?
+                bounds = [np.nanmax(x), np.nanmax(y), 20.]
+
+            # use range, sill and shape parameter
+            elif mname == 'stable':
+                # a is max(x), C0 is max(y) s is limited to 2?
+                bounds = [np.nanmax(x), np.nanmax(y), 2.]
+
+            # use only sill
+            elif mname == 'nugget':
+                # a is max(x):
+                bounds = [np.nanmax(x)]
+
+            # use range and sill
+            else:
+                # a is max(x), C0 is max(y)
+                bounds = [np.nanmax(x), np.nanmax(y)]
+
+            # if use_nugget is True add the nugget (for the last model only in case it is a sum)
+            if self.use_nugget and i == (len(list_mname) - 1):
+                bounds.append(0.99*np.nanmax(y))
+
+            all_bounds += bounds
+
+        return all_bounds
 
     def data(self, n=100, force=False):
         """Theoretical variogram function
@@ -2061,7 +2207,7 @@ class Variogram(object):
         corresponding lag values
 
         .. deprecated:: 1.0.4
-            residuals can be ambigious, thus the property is renamed to model_residuals
+            residuals can be ambiguous, thus the property is renamed to model_residuals
 
         Returns
         -------
@@ -2098,7 +2244,7 @@ class Variogram(object):
     def mean_residual(self):
         """Mean Model residuals
 
-        Calculates the mean, absoulte deviations between the experimental
+        Calculates the mean, absolute deviations between the experimental
         variogram and theretical model values.
 
         Returns
@@ -2257,7 +2403,7 @@ class Variogram(object):
         Notes
         -----
         Unlike Variogram.nrmse, nrmse_r is not normalized to the mean of y,
-        but the differece of the maximum y to its mean:
+        but the difference of the maximum y to its mean:
 
         .. math::
             NRMSE_r = \frac{RMSE}{max(y) - mean(y)}
@@ -2273,7 +2419,7 @@ class Variogram(object):
 
         :return:
         """
-        # get the experimental and theoretical variogram and cacluate means
+        # get the experimental and theoretical variogram and calculate means
         experimental, model = self.model_deviations()
         mx = np.nanmean(experimental)
         my = np.nanmean(model)
@@ -2447,7 +2593,7 @@ class Variogram(object):
         maxlag = np.nanmax(self.bins)
         maxvar = np.nanmax(self.experimental)
 
-        # get the fitting coefficents
+        # get the fitting coefficients
         cof = self.cof
 
         # build the dict
@@ -2464,29 +2610,63 @@ class Variogram(object):
         rdict = dict(
             model=fnname(self._model) if not self._harmonize else "harmonize",
             estimator=fnname(self._estimator),
-            dist_func=fnname(self.dist_function),
+            dist_func=fnname(self.dist_function))
 
-            normalized_effective_range=cof[0] * maxlag,
-            normalized_sill=cof[1] * maxvar,
-            normalized_nugget=cof[-1] * maxvar if self.use_nugget else 0,
+        def create_dict_for_model(model_name, cof, maxlag, maxvar, use_nugget, id = ''):
+            """
+            Create dictionary of parameters for an individual model.
+            Optionally, append a model ID to the key (for the case of summed models).
+            """
+            # id appended to the param key name to differentiate models for a sum
+            if id != '':
+                id = '_' + id
 
-            effective_range=cof[0],
-            sill=cof[1],
-            nugget=cof[-1] if self.use_nugget else 0,
-        )
+            d = {
+                'normalized_effective_range' + id: cof[0] * maxlag,
+                'normalized_sill' + id: cof[1] * maxvar,
+                'normalized_nugget' + id: cof[-1] * maxvar if use_nugget else 0,
+                'effective_range' + id: cof[0],
+                'sill' + id: cof[1],
+                'nugget' + id: cof[-1] if use_nugget else 0,
+            }
 
-        # handle s parameters for matern and stable model
-        if self._model.__name__ == 'matern':
-            rdict['smoothness'] = cof[2]
-        elif self._model.__name__ == 'stable':
-            rdict['shape'] = cof[2]
+            # handle s parameters for matern and stable model
+            if model_name == 'matern':
+                d['smoothness' + id] = cof[2]
+            elif model_name == 'stable':
+                d['shape' + id] = cof[2]
+
+            return d
+
+        # for a custom model: we list the optimized params for the function wrapped by the variogram decorator
+        if self._is_model_custom:
+            custom_arg_names = inspect.getfullargspec(self._model.__wrapped__).args
+            all_params = {"param"+str(i+1)+"_"+custom_arg_names[i+1]: cof[i] for i in range(len(custom_arg_names) - 1)}
+
+        # for a sum of models
+        elif "+" in self._model_name:
+            list_model_names = self._model_name.split("+")
+            list_argslices = self._get_argpos_sum_models(list_model_names=list_model_names)
+            all_params = {}
+            # add the parameters for each model, with parameter suffix from 1 to the total number
+            for i in range(len(list_model_names)):
+                model_params = create_dict_for_model(model_name=list_model_names[i], cof=cof[list_argslices[i]],
+                                                  maxlag=maxlag, maxvar=maxvar, use_nugget=self.use_nugget, id=str(i+1))
+                all_params.update(model_params)
+
+        # for a single model
+        else:
+            all_params = create_dict_for_model(model_name=self._model_name, cof=cof, maxlag=maxlag, maxvar=maxvar,
+                                                use_nugget=self.use_nugget)
+        # update dictionary
+        rdict.update(all_params)
 
         # add other stuff if not short version requested
         if not short:
             kwargs = self._kwargs
             params = dict(
                 estimator=self._estimator.__name__,
-                model=self._model.__name__,
+                model=self._model_name,
                 dist_func=str(self.dist_function),
                 bin_func=self._bin_func_name,
                 normalize=self.normalized,
@@ -2521,40 +2701,68 @@ class Variogram(object):
         params : list
             [range, sill, nugget] for most models and
             [range, sill, shape, nugget] for matern and stable model.
+            [range1, sill1, nugget1, range2, still2, nugget2] for a sum of 2 models.
+            [param1, param2, param3, ...] in order for a custom model.
 
         """
         d = self.describe()
         if 'error' in d:
             return [None, None, None]
-        elif self._model.__name__ == 'matern':
-            return list([
-                d['effective_range'],
-                d['sill'],
-                d['smoothness'],
-                d['nugget']
-            ])
-        elif self._model.__name__ == 'stable':
-            return list([
-                d['effective_range'],
-                d['sill'],
-                d['shape'],
-                d['nugget']
-            ])
-        elif self._model.__name__ == 'nugget':
-            return list([d['nugget']])
+
+        def get_params_list_from_dict(d, model_name, id=''):
+
+            # ID used to differentiate params for a sum of models
+            if id != '':
+                id = '_'+id
+
+            # Get specific smoothness and shape parameters for matern and stable
+            if model_name == 'matern':
+                return list([
+                    d['effective_range'+id],
+                    d['sill'+id],
+                    d['smoothness'+id],
+                    d['nugget'+id]
+                ])
+            elif model_name == 'stable':
+                return list([
+                    d['effective_range'+id],
+                    d['sill'+id],
+                    d['shape'+id],
+                    d['nugget'+id]
+                ])
+            # Get nugget for only-nugget
+            elif model_name == 'nugget':
+                return list([d['nugget'+id]])
+            # Or get classic parameters
+            else:
+                return list([
+                    d['effective_range'+id],
+                    d['sill'+id],
+                    d['nugget'+id]
+                ])
+
+        # For a custom model, just pass cof in order
+        if self._is_model_custom:
+            list_params = self.cof
+        # Get parameters for a sum of models
+        elif '+' in self._model_name:
+            list_model_names = self._model_name.split('+')
+            list_params = []
+            for i in range(len(list_model_names)):
+                params = get_params_list_from_dict(d, model_name=list_model_names[i], id=str(i+1))
+                list_params += params
+        # Or for a single model
         else:
-            return list([
-                d['effective_range'],
-                d['sill'],
-                d['nugget']
-            ])
+            list_params = get_params_list_from_dict(d, model_name=self._model_name)
+
+        return list_params
 
     def to_DataFrame(self, n=100, force=False):
         """Variogram DataFrame
 
         Returns the fitted theoretical variogram as a pandas.DataFrame
-        instance. The n and force parameter control the calaculation,
-        refer to the data funciton for more info.
+        instance. The n and force parameter control the calculation,
+        refer to the data function for more info.
 
         .. deprecated:: 1.0.10
             The return value of this function will change with a future release
@@ -2583,7 +2791,7 @@ class Variogram(object):
 
         return DataFrame({
             'lags': lags,
-            self._model.__name__: data}
+            self._model_name: data}
         ).copy()
 
     def to_gstools(self, **kwargs):
@@ -2636,7 +2844,7 @@ class Variogram(object):
 
     def to_gs_krige(self, **kwargs):
         """
-        Instatiate a GSTools Krige class.
+        Instantiate a GSTools Krige class.
 
         This can only export isotropic models.
         Note: the `fit_variogram` is always set to `False`
@@ -2858,7 +3066,7 @@ class Variogram(object):
     def distance_difference_plot(self, ax=None, plot_bins=True, show=True):
         """Raw distance plot
 
-        Plots all absoulte value differences of all point pair combinations
+        Plots all absolute value differences of all point pair combinations
         over their separating distance, without sorting them into a lag.
 
         .. versionchanged:: 0.4.0
@@ -2909,7 +3117,7 @@ class Variogram(object):
         :return:
         """
         try:
-            _name = self._model.__name__
+            _name = self._model_name
             _b = int(len(self.bins))
         except Exception:
             return "< abstract Variogram >"
@@ -2918,7 +3126,7 @@ class Variogram(object):
     def __str__(self):  # pragma: no cover
         """String Representation
 
-        Descriptive respresentation of this Variogram instance that shall give
+        Descriptive representation of this Variogram instance that shall give
         the main variogram parameters in a print statement.
 
         Returns

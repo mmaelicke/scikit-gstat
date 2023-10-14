@@ -2,7 +2,7 @@
 # use the minimal jupyter notebook
 FROM jupyter/minimal-notebook:ad3574d3c5c7
 
-# build tutorials folder 
+# build tutorials folder
 USER root
 RUN mkdir tutorials
 
@@ -12,7 +12,7 @@ USER $NB_USER
 # copy the tutorials content
 COPY ./docs/tutorials ./tutorials
 
-# install the latest version 
+# install the latest version
 COPY ./ ./scikit-gstat
 
 # use the latest
@@ -20,7 +20,7 @@ RUN cd scikit-gstat && \
     pip install . && \
     cd ..
 
-# the interfaces has two additional 
+# the interfaces has two additional
 # optional dependencies: pykrige and gstools
 RUN pip install pykrige gstools
 

@@ -13,9 +13,9 @@ jobs:
    name: Run Unittest
    runs-on: ubuntu-20.04
    strategy:
-    matrix: 
+    matrix:
       python: ['3.6', '3.7', '3.8', '3.9', '3.10']
-   
+
    steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install SciKit-GStat
-        run: | 
+        run: |
           pip3 install -r requirements.txt
           python3 setup.py install
       - name: Install PyTest requirements
@@ -51,7 +51,7 @@ jobs:
         with:
           python-version: '3.8'
       - name: Install SciKit-GStat
-        run: | 
+        run: |
           pip3 install -r requirements.txt
           python3 setup.py install
       - name: Install Sphinx requirements
@@ -61,13 +61,13 @@ jobs:
       - name: Install pdflatex
         run: sudo apt install texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
       - name: make HTML & LaTeX docs
-        run: | 
+        run: |
           cd docs
-          make html 
+          make html
           make latex
         continue-on-error: true
       - name: compile LaTeX
-        run: | 
+        run: |
           cd docs/_build/latex
           pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
           cd ../..
@@ -79,7 +79,7 @@ jobs:
           target_branch: gh-pages
           build_dir: docs/_build/html
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release:
     name: Create Github release
@@ -101,7 +101,7 @@ jobs:
     name: Publish to PyPi
     runs-on: ubuntu-20.04
     needs: test
-    if: startsWith(github.event.ref, 'refs/tags/v')  
+    if: startsWith(github.event.ref, 'refs/tags/v')
 
     steps:
     - uses: actions/checkout@v3
@@ -119,13 +119,13 @@ jobs:
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
         user: __token__
-        password: ${{ secrets.PYPI_TOKEN }} 
-    
-  ci_develop:    
+        password: ${{ secrets.PYPI_TOKEN }}
+
+  ci_develop:
     name: Print Github Context for Development
     runs-on: ubuntu-20.04
     if: true
-    
+
     steps:
     - name: Dump GitHub context
       env:

@@ -307,7 +307,7 @@ class ProbabalisticMetricSpace(MetricSpace):
         self._ltree = None
         self._rtree = None
         self._dists = None
-        # Do a very quick check to see throw exceptions 
+        # Do a very quick check to see throw exceptions
         # if self.dist_metric is invalid...
         pdist(self.coords[:1, :], metric=self.dist_metric)
 
@@ -385,7 +385,7 @@ class ProbabalisticMetricSpace(MetricSpace):
         return self._dists
 
 
-# Subfunctions used in RasterEquidistantMetricSpace 
+# Subfunctions used in RasterEquidistantMetricSpace
 # (outside class so that they can be pickled by multiprocessing)
 def _get_disk_sample(
     coords: np.ndarray,
@@ -407,7 +407,7 @@ def _get_disk_sample(
     count = np.count_nonzero(idx1)
     indices1 = np.argwhere(idx1)
 
-    # Second index: randomly select half of the valid pixels, 
+    # Second index: randomly select half of the valid pixels,
     # so that the other half can be used by the equidist
     # sample for low distances
     indices2 = rnd_func.choice(count, size=min(count, sample_count), replace=False)

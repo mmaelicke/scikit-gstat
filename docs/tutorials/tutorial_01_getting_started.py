@@ -30,7 +30,7 @@ import skgstat as skg
 # 1.1 Load data
 # -------------
 # SciKit-GStat includes a data submodule, that contains some sample datasets. It also offers some basic random sampling on data sources.
-# Here we use the well-known Meuse dataset from the R package ``sp`` (https://cran.r-project.org/web/packages/st/index.html). 
+# Here we use the well-known Meuse dataset from the R package ``sp`` (https://cran.r-project.org/web/packages/st/index.html).
 # If not specified different, the loading function will only export the lead measurements from the data source.
 #
 # **Note:** The data is distributed along with the package sp under a GPL-3 license.
@@ -61,12 +61,12 @@ plt.colorbar(art)
 # As a quick reminder, the variogram relates pair-wise separating distances of `coordinates` and relates them to the *semi-variance* of the corresponding `values` pairs. The default estimator used is the Matheron estimator:
 #
 # .. math::
-# 
+#
 #   \gamma (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}(Z(x_i) - Z(x_{i + h}))^2
-# 
+#
 # For more details, please refer to the `User Guide <https://mmaelicke.github.io/scikit-gstat/userguide/variogram.html#experimental-variograms>`_.
 #
-# The :class:`Variogram <skgstat.Variogram>` class takes at least two arguments. 
+# The :class:`Variogram <skgstat.Variogram>` class takes at least two arguments.
 # The :func:`coordinates <skgstat.Variogram.coordinates>` and the :func:`values <skgstat.Variogram.values>` observed at these locations.
 # If you use older versions, <ou should also at least set the ``normalize`` parameter to explicitly, as it changed it's default value in
 # version `0.2.8` to ``False``. This attribute affects only the plotting, not the variogram values.
@@ -89,8 +89,8 @@ fig = V.plot(show=False)
 print('Sample variance: %.2f   Variogram sill: %.2f' % (vals.flatten().var(), V.describe()['sill']))
 
 # %%
-# The ``describe`` method will return the most important parameters as a dictionary. 
-# And we can simply print the variogram ob,ect to the screen, to see all parameters.
+# The ``describe`` method will return the most important parameters as a dictionary.
+# And we can simply print the variogram ob,etc to the screen, to see all parameters.
 pprint(V.describe())
 
 # %%
@@ -131,14 +131,14 @@ print(V)
 #
 # For more information, please refer to the `User Guide <https://mmaelicke.github.io/scikit-gstat/userguide/kriging.html#kriging-equation-system>`_.
 #
-# Consequently, the :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` class needs a :class:`Variogram <skgstat.Variogram>` 
+# Consequently, the :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` class needs a :class:`Variogram <skgstat.Variogram>`
 # object as a mandatory attribute. Two very important optional attributes are ``min_points`` and ``max_points```.
 # They will limit the size of the Kriging equation system. As we have 200 observations,
 # we can require at least 5 neighbors within the range. More than 15 will only unnecessarily slow down the computation.
 # The ``mode='exact'`` attribute will advise the class to build and solve the system above for each location.
 #
 # **Note:** The recommended way for kriging applications is to use the interface to :any:`gstools`.
-# There is an easy-to-use interface via :func:`Variogram.to_gstools <skgstat.Variogram.to_gstools>` 
+# There is an easy-to-use interface via :func:`Variogram.to_gstools <skgstat.Variogram.to_gstools>`
 # and :func:`Variogram.to_gs_krige <skgstat.Variogram.to_gs_krige>`.
 # The getting started tutorial will use the builtin kriging class, anyway.
 ok = skg.OrdinaryKriging(V, min_points=5, max_points=15, mode='exact')
@@ -146,7 +146,7 @@ ok = skg.OrdinaryKriging(V, min_points=5, max_points=15, mode='exact')
 # %%
 # The :func:`OrdinaryKriging.transform <skgstat.OrdianryKriging.transform>` method will apply the interpolation for passed arrays of coordinates.
 # It requires each dimension as a single 1D array. We can easily build a meshgrid of 100x100 coordinates and pass them to the interpolator.
-# To recieve a 2D result, we can simply reshape the result. The Kriging error will be available as the ``sigma`` attribute of the interpolator.
+# To receive a 2D result, we can simply reshape the result. The Kriging error will be available as the ``sigma`` attribute of the interpolator.
 
 # build the target grid
 x = coords[:, 0]

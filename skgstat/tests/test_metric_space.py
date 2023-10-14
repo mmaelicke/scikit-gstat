@@ -108,7 +108,7 @@ def test_raster_metric():
 
     # Check the interface with a Variogram object works
     with warnings.catch_warnings():
-        # this will throw a optimze warning on random data
+        # this will throw a optimize warning on random data
         warnings.simplefilter('ignore')
         V = skg.Variogram(rems, vals)
 
@@ -122,7 +122,7 @@ def test_raster_metric():
     rems_sub = skg.RasterEquidistantMetricSpace(coords_sub, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=100, runs=10,
                                             rnd=42)
     with warnings.catch_warnings():
-        # this will throw a optimze warning on random data
+        # this will throw a optimize warning on random data
         warnings.simplefilter('ignore')
         V = skg.Variogram(rems_sub, vals_sub)
 
@@ -132,6 +132,6 @@ def test_raster_metric():
     rems_sub = skg.RasterEquidistantMetricSpace(coords_sub, shape=shape, extent=(x[0],x[-1],y[0],y[-1]), samples=100, runs=11,
                                             rnd=42)
     with warnings.catch_warnings():
-        # this will throw a optimze warning on random data
+        # this will throw a optimize warning on random data
         warnings.simplefilter('ignore')
         V = skg.Variogram(rems_sub, vals_sub)

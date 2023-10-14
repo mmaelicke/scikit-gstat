@@ -24,7 +24,7 @@ def backend(name=None):
 
     elif name not in ALLOWED_BACKENDS:
         raise ValueError(
-            "'%s' is not an allowed plotting backend.\nOptions are: [%s]" % 
+            "'%s' is not an allowed plotting backend.\nOptions are: [%s]" %
             (name, ','.join(["'%s'" % _ for _ in ALLOWED_BACKENDS]))
         )
 
@@ -32,7 +32,7 @@ def backend(name=None):
         try:
             import plotly
         except ImportError:
-            print('You need to install plotly >=4.12.0 separatly:\npip install plotly')
+            print('You need to install plotly >=4.12.0 separately:\npip install plotly')
             return
 
     # were are good to set the new backend
