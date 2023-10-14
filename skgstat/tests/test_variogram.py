@@ -15,6 +15,13 @@ except ImportError:
     print('No plotly installed. Skip plot tests')
     PLOTLY_FOUND = False
 
+try:
+    import gstools
+    print(f'Found PyKrige: {gstools.__version__}')
+    GSTOOLS_AVAILABLE = True
+except ImportError:
+    GSTOOLS_AVAILABLE = False  # pragma: no cover
+
 from skgstat import Variogram, DirectionalVariogram
 from skgstat import OrdinaryKriging
 from skgstat import estimators
@@ -1643,13 +1650,14 @@ class TestCrossVariogram(unittest.TestCase):
         assert_array_almost_equal(self.v[:,1], vario._co_variable)
 
     def test_cross_variogram_warns(self):
-        """Test warning when cross-variogram is exported to gstools"""
+        """Test warning when cross-variogram is exported to gstools (only if GSTools is installed)"""
         vario = Variogram(self.c, self.v)
 
-        with self.assertWarns(Warning) as w:
-            vario.to_gstools()
+        if GSTOOLS_AVAILABLE:
+            with self.assertWarns(Warning) as w:
+                vario.to_gstools()
 
-        self.assertTrue("This instance is a cross-variogram!!" in str(w.warning))
+            self.assertTrue("This instance is a cross-variogram!!" in str(w.warning))
 
 
 if __name__ == '__main__':  # pragma: no cover
