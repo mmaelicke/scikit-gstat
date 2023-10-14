@@ -203,7 +203,7 @@ variograms used so far.
 
     cm = plt.get_cmap('gist_earth')
 
-    # increase the distance by one, to aviod zeros
+    # increase the distance by one, to avoid zeros
     X = np.asarray([(_ + 1) for _ in x])
 
     s1 = X / np.max(X)
@@ -226,6 +226,3 @@ variograms used so far.
 
 
 That's it.
-
-
-

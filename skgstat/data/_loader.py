@@ -4,7 +4,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 
-# for python 3.6 compability
+# for python 3.6 compatibility
 try:
     from imageio.v3 import imread
 except ImportError:
@@ -31,7 +31,7 @@ def field(fname: str, band: Union[int, str] = 0) -> np.ndarray:
     ----------
     fname : str
         The filename (not path) of the field. The file
-        extenstion can be omitted.
+        extension can be omitted.
     band : int, str
         The band to use, can either be an integer or the
         literal ``'mean'``, which will average all bands
@@ -77,7 +77,7 @@ def get_sample(
     ----------
     fname : str
         The filename (not path) of the field. The file
-        extenstion can be omitted.
+        extension can be omitted.
     N : int
         Sample size
     seed : int

@@ -33,7 +33,7 @@ data3 = skg.data.pancake(N=s[2], seed=42, as_dataframe=True).get('sample')
 
 
 # %%
-# 
+#
 def plot_scatter(data, ax):
     art = ax.scatter(data.x, data.y, 50, c=data.v, cmap='plasma')
     plt.colorbar(art, ax=ax)
@@ -57,16 +57,16 @@ V3 = skg.Variogram(data2[['x', 'y']].values, data2.v.values, normalize=False, n_
 vario = V2
 
 # %%
-# The default estimator configured in :class:`Variogram <skgstat.Variogram>` 
+# The default estimator configured in :class:`Variogram <skgstat.Variogram>`
 # is the :func:`Mathéron estimator <skgstat.estimators.matheron>`
 # (Mathéron, 1963). It is defined like:
-# 
+#
 # .. math::
-# 
+#
 #   \gamma (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}(Z(x_i) - Z(x_{i+h}))^2
-# 
+#
 # where:
-# 
+#
 #   * :math:`h` is the distance lag
 #   * :math:`h` is the number of observation pairs in :math:`h`-lag class
 #   * :math:`Z(x_i)` is the observation at the :math:`i`-th location :math:`x`
@@ -89,35 +89,35 @@ vario.plot(show=False);
 # Setting :func:`estimator='cressie' <skgstat.estimators.cressie>`
 # will set the Cressie-Hawkins estimator.
 # It is implemented as follows (Cressie and Hawkins, 1980):
-# 
+#
 # .. math::
-# 
+#
 #   2\gamma (h) = \frac{\left(\frac{1}{N(h)} \sum_{i=1}^{N(h)} |Z(x_i) - Z(x_{i+h})|^{0.5}\right)^4}{0.457 + \frac{0.494}{N(h)} + \frac{0.045}{N^2(h)}}
-# 
+#
 # By setting :func:`estimator='dowd' <skgstat.estimators.dowd>`,
 # the Dowd estimator (Dowd, 1984) will be used:
-# 
+#
 # .. matho::
-#   
-#   2\gamma (h) = 2.198 * {median(Z(x_i) - Z(x_{i+h}))}^2 
-# 
+#
+#   2\gamma (h) = 2.198 * {median(Z(x_i) - Z(x_{i+h}))}^2
+#
 # Finally, :func:`estimator='genton' <skgstat.estimators.genton>`
 # will set the Genton estimator (Genton, 1998):
-# 
+#
 # .. math::
-# 
+#
 #   \gamma (h) = 2.2191\{|V_i(h) - V_j(h)|; i < j\}_{(k)}
-# 
-# with: 
-# 
+#
+# with:
+#
 # .. math::
 #   k = \binom{[N_h / 2] + 1}{2}
-# 
+#
 # and:
-# 
+#
 # .. math::
 #   q = \binom{N_h}{2}
-# 
+#
 fig, _a = plt.subplots(1, 3, figsize=(12, 3), sharey=True)
 axes = _a.flatten()
 for ax, estimator_name in zip(axes, ('matheron', 'cressie', 'dowd')):
@@ -126,8 +126,8 @@ for ax, estimator_name in zip(axes, ('matheron', 'cressie', 'dowd')):
     ax.set_title(estimator_name.capitalize())
 
 # %%
-# The important part is here that the effective range as well as the sill is 
-# changeing for the estimator. This will likely change the Kriging result.
+# The important part is here that the effective range as well as the sill is
+# changing for the estimator. This will likely change the Kriging result.
 # For Kriging, the difference on the first few lag classes is important,
 # as no points will be used for estimation, that lies outside the range.
 # We will zoom in, to actually use a higher resolution. Thus the results
@@ -187,14 +187,14 @@ plt.tight_layout()
 # the upper left corner not as quite well as the other estimators. One can also
 # see, that a substantial amount of the deviations are caused by the noisy
 # character of the original image. Note that we loaded the field without
-# applying any kind of filter to it. 
+# applying any kind of filter to it.
 #
 # 2.4 References
 # --------------
 # Cressie, N., and D. Hawkins (1980): Robust estimation of the variogram. Math. Geol., 12, 115-125.
-# 
+#
 # Dowd, P. A., (1984): The variogram and kriging: Robust and resistant estimators, in Geostatistics for Natural Resources Characterization. Edited by G. Verly et al., pp. 91 - 106, D. Reidel, Dordrecht.
-# 
+#
 # Genton, M. G., (1998): Highly robust variogram estimation, Math. Geol., 30, 213 - 221.
-# 
+#
 # Matheron, G. (1963). Principles of geostatistics. Economic Geology, 58(8), 1246–1266. https://doi.org/10.2113/gsecongeo.58.8.1246

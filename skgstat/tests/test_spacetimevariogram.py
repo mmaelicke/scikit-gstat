@@ -108,7 +108,7 @@ class TestSpaceTimeVariogramArgumets(unittest.TestCase):
     def test_tdist_func(self):
         V = SpaceTimeVariogram(self.c, self.v, tdist_func='jaccard')
 
-        # with jaccard, all shoud disagree
+        # with jaccard, all should disagree
         self.assertTrue(all([_ == 1. for _ in V.tdistance]))
 
     def test_tdist_func_raises_ValueError(self):

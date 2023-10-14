@@ -20,7 +20,7 @@ def variogram(func):
 
 @variogram
 @jit(nopython=True)
-def spherical(h, r, c0, b=0):
+def spherical(h, r, c0, b=0.0):
     r"""Spherical Variogram function
 
     Implementation of the spherical variogram function. Calculates the
@@ -54,7 +54,7 @@ def spherical(h, r, c0, b=0):
     The implementation follows [6]_:
 
     .. math::
-        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*\frac{h}{a}^3}\right)
+        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*(\frac{h}{a})^3}\right)
 
     if :math:`h < r`, and
 
@@ -84,7 +84,7 @@ def spherical(h, r, c0, b=0):
 
 @variogram
 @jit(nopython=True)
-def exponential(h, r, c0, b=0):
+def exponential(h, r, c0, b=0.0):
     r"""Exponential Variogram function
 
     Implementation of the exponential variogram function. Calculates the
@@ -134,7 +134,7 @@ def exponential(h, r, c0, b=0):
     .. [8] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
 
-    .. [9] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
+    .. [9] Journel, A G, and Huijbregts, C J. Mining geostatistics.
         United Kingdom: N. p., 1976.
 
     """
@@ -146,7 +146,7 @@ def exponential(h, r, c0, b=0):
 
 @variogram
 @jit(nopython=True)
-def gaussian(h, r, c0, b=0):
+def gaussian(h, r, c0, b=0.0):
     r""" Gaussian Variogram function
 
     Implementation of the Gaussian variogram function. Calculates the
@@ -199,7 +199,7 @@ def gaussian(h, r, c0, b=0):
 
     .. [10] Chiles, J.P., Delfiner, P. (1999). Geostatistics. Modeling Spatial
        Uncertainty. Wiley Interscience.
-    .. [11] Journel, A G, and Huijbregts, C J. Mining geostatistics. 
+    .. [11] Journel, A G, and Huijbregts, C J. Mining geostatistics.
         United Kingdom: N. p., 1976.
 
     """
@@ -211,7 +211,7 @@ def gaussian(h, r, c0, b=0):
 
 @variogram
 @jit(nopython=True)
-def cubic(h, r, c0, b=0):
+def cubic(h, r, c0, b=0.0):
     r"""Cubic Variogram function
 
     Implementation of the Cubic variogram function. Calculates the
@@ -257,7 +257,7 @@ def cubic(h, r, c0, b=0):
     References
     ----------
 
-    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal 
+    .. [12] Montero, J.-M., Mateu, J., & others. (2015). Spatial and spatio-temporal
         geostatistical modeling and kriging (Vol. 998). John Wiley & Sons.
 
     """
@@ -275,7 +275,7 @@ def cubic(h, r, c0, b=0):
 
 @variogram
 @jit(nopython=True)
-def stable(h, r, c0, s, b=0):
+def stable(h, r, c0, s, b=0.0):
     r"""Stable Variogram function
 
     Implementation of the stable variogram function. Calculates the
@@ -347,7 +347,7 @@ def stable(h, r, c0, s, b=0):
 
 @variogram
 @jit(forceobj=True)
-def matern(h, r, c0, s, b=0):
+def matern(h, r, c0, s, b=0.0):
     r"""Matérn Variogram function
 
     Implementation of the Matérn variogram function. Calculates the

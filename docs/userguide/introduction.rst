@@ -22,7 +22,7 @@ What is geostatistics?
 ======================
 
 The basic idea of geostatistics is to describe and estimate spatial
-covariance, or correlation, in a set of point data. 
+covariance, or correlation, in a set of point data.
 While the main tool, the semi-variogram, is quite easy to implement and use,
 a lot of important assumptions are underlying it.
 The typical application is geostatistics is an interpolation. Therefore,
@@ -79,7 +79,7 @@ own set of tools, and apparently definitions, and progress is made until
 today. It is not the objective of ``scikit-gstat`` to be a comprehensive
 collection of all available tools. The objective is more to offer some
 common and also more sophisticated tools for variogram analysis.
-Thus, when useing ``scikit-gstat``, you typically need another library for
+Thus, when using ``scikit-gstat``, you typically need another library for
 the actual application, like interpolation. In most cases that will be
 `gstools <https://geostat-framework.readthedocs.io/projects/gstools/en/latest/>`_.
 However, one can split geostatistics into three main fields, each of it with its
@@ -95,9 +95,9 @@ own tools:
 
 .. note::
 
-    I am not planning to implement tools from all three fields. 
+    I am not planning to implement tools from all three fields.
     You can rather use one of the interfaces, like :func:`Variogram.to_gstools <skgstat.Variogram.to_gstools>`
-    to export a variogram to another library, that covers kriging and 
+    to export a variogram to another library, that covers kriging and
     spatial random field generation in great detail.
 
 

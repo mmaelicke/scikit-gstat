@@ -110,7 +110,7 @@ def test_propagate_many_targets():
 
     V = Variogram(c, v, n_lags=12)
 
-    # progate many
+    # propagate many
     conf_list = propagate(V, 'values', sigma=10, evalf=['experimental', 'parameter'], num_iter=50)
     assert len(conf_list) == 2
 

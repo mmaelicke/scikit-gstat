@@ -86,7 +86,7 @@ class TestProductSumModel(unittest.TestCase):
 
     def test_default(self):
         assert_array_almost_equal(
-            [stmodels.product_sum(h, self.Vx, self.Vt, 
+            [stmodels.product_sum(h, self.Vx, self.Vt,
                 k1=2.2, k2=2.3, k3=4.3, Cx=5, Ct=7) for h in self.lags],
             [35.55, 101.99, 118.6, 118.6, 113.92, 116.91],
             decimal=2
@@ -94,7 +94,7 @@ class TestProductSumModel(unittest.TestCase):
 
     def test_default_as_array(self):
         assert_array_almost_equal(
-            stmodels.product_sum(self.lags, self.Vx, self.Vt, 
+            stmodels.product_sum(self.lags, self.Vx, self.Vt,
                 k1=2.2, k2=2.3, k3=4.3, Cx=5, Ct=7),
             [35.55, 101.99, 118.6, 118.6, 113.92, 116.91],
             decimal=2
@@ -102,7 +102,7 @@ class TestProductSumModel(unittest.TestCase):
 
     def test_with_zero_ks(self):
         assert_array_almost_equal(
-            stmodels.product_sum(self.lags, self.Vx, self.Vt, 
+            stmodels.product_sum(self.lags, self.Vx, self.Vt,
                 k1=0, k2=0, k3=0, Cx=5, Ct=7),
             [0., 0., 0., 0., 0., 0.],
             decimal=2
@@ -110,7 +110,7 @@ class TestProductSumModel(unittest.TestCase):
 
     def test_with_all_one(self):
         assert_array_almost_equal(
-            stmodels.product_sum(self.lags, self.Vx, self.Vt, 
+            stmodels.product_sum(self.lags, self.Vx, self.Vt,
                 k1=1, k2=1, k3=1, Cx=5, Ct=7),
             [14.71, 41.13, 47.  ,47.  ,44.96, 46.61],
             decimal=2
@@ -118,7 +118,7 @@ class TestProductSumModel(unittest.TestCase):
 
     def test_as_product_model(self):
         assert_array_almost_equal(
-            stmodels.product_sum(self.lags, self.Vx, self.Vt, 
+            stmodels.product_sum(self.lags, self.Vx, self.Vt,
                 k1=1, k2=0, k3=0, Cx=5, Ct=7),
             stmodels.product(self.lags, self.Vx, self.Vt, 5, 7),
             decimal=2
