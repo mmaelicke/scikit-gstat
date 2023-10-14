@@ -54,7 +54,7 @@ def spherical(h, r, c0, b=0.0):
     The implementation follows [6]_:
 
     .. math::
-        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*\frac{h}{a}^3}\right)
+        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*(\frac{h}{a})^3}\right)
 
     if :math:`h < r`, and
 
