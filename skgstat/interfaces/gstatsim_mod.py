@@ -59,16 +59,16 @@ class Grid:
     """
     @overload
     def __init__(self, bbox: 'Variogram', resolution: int) -> None:
-        ...
+        pass
     @overload
     def __init__(self, bbox: 'Variogram', resolution=..., rows: int=..., cols: int=...) -> None:
-        ...
+        pass
     @overload
     def __init__(self, bbox: BBOX, resolution: int) -> None:
-        ...
+        pass
     @overload
     def __init__(self, bbox: BBOX, resolution=..., rows: int=..., cols: int=...) -> None:
-        ...
+        pass
     def __init__(self, bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None) -> None:
         """
         Initialize a new Grid instance.
@@ -255,16 +255,16 @@ class Grid:
 
 @overload
 def prediction_grid(bbox: 'Variogram', resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = False) -> Grid:
-    ...
+    pass
 @overload
 def prediction_grid(bbox: 'Variogram', resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = True) -> np.ndarray:
-    ...
+    pass
 @overload
 def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = False) -> Grid:
-    ...
+    pass
 @overload
 def prediction_grid(bbox: BBOX, resolution: Optional[int], rows: Optional[int], cols: Optional[int], as_numpy = True) -> np.ndarray:
-    ...
+    pass
 def prediction_grid(bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = None, rows: Optional[int] = None, cols: Optional[int] = None, as_numpy: bool = False) -> Union[Grid, np.ndarray]:
     """
     Generate a prediction grid as used by `gstatsim.Interpolation` methods.

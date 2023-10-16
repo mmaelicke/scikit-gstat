@@ -17,5 +17,4 @@ exclude_lines =
     raise NotImplementedError
     raise ModuleNotFoundError
     if __name__ == .__main__.:
-    ...
     if TYPE_CHECKING:
