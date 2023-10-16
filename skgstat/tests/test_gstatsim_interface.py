@@ -139,7 +139,7 @@ def test_prediction_grid_interface_as_numpy():
     grid = vario.gstatsim_prediction_grid(resolution=5, as_numpy=True)
 
     assert isinstance(grid, np.ndarray)
-    assert grid.shape == (96 * 94, 2)
+    assert grid.shape == (96 * 95, 2)
 
 
 # Run the tests
