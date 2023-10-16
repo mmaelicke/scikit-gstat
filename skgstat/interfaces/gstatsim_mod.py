@@ -42,7 +42,7 @@ def check_gstatsim_available() -> bool: # pragma: no cover
     if sys.version_info.minor <= 6:
         warnings.warn('GStatSim is not compatible with Python 3.6 and below. Please upgrade to Python 3.7 or higher.')
         return False
-    
+
     if GSTATSIM_AVAILABLE:
         return True
     else:
@@ -99,8 +99,8 @@ class Grid:
 
         """
         # check if gstatsim is available
-        check_gstatsim_available()            
-        
+        check_gstatsim_available()
+
         # check the resolution and rows/cols:
         if resolution is None and rows is None and cols is None:
             raise AttributeError('Either resolution or rows/cols must be set')
@@ -138,7 +138,7 @@ class Grid:
         # import the Variogram class only here to avoid circular imports
         from skgstat import Variogram
         # check the type of the bbox
-        if isinstance(bbox, Variogram):            
+        if isinstance(bbox, Variogram):
             # get the bounding box
             self._xmax = bbox.coordinates[:, 0].max()
             self._xmin = bbox.coordinates[:, 0].min()
@@ -146,13 +146,13 @@ class Grid:
             self._ymin = bbox.coordinates[:, 1].min()
         else:
             self._xmin, self._xmax, self._ymin, self._ymax = bbox
-    
+
     def _infer_resolution(self) -> None:
         """
         Infer the resolution from the bounding box.
         If `resolution` is set, the number of rows and columns are inferred from the bounding box.
         If `rows` and `cols` are set, the resolution is inferred from the number of rows and columns.
-        If neither `resolution` nor `rows`/`cols` are set, a warning is issued and the 
+        If neither `resolution` nor `rows`/`cols` are set, a warning is issued and the
         resolution is set to the minimum of the x and y resolutions.
 
         """
@@ -160,12 +160,12 @@ class Grid:
         if self._resolution is not None and self._rows is None and self._cols is None:
             self._rows = int(np.rint((self._ymax - self._ymin + self._resolution) / self._resolution))
             self._cols = int(np.rint((self._xmax - self._xmin + self._resolution) / self._resolution))
-        
+
         # if rows and cols are set, infer resolution
         elif self._rows is not None and self._cols is not None and self._resolution is None:
             xres = (self._xmax - self._xmin) / self._cols
             yres = (self._ymax - self._ymin) / self._rows
-            
+
             # check if the resolution is the same in both directions
             if xres == yres:
                 self._resolution = xres
@@ -183,38 +183,38 @@ class Grid:
                 self._cols = int(np.rint((self._xmax - self._xmin + self._resolution) / self._resolution))
             else:
                 self._cols = int(np.rint((self._xmax - self._xmin + self._resolution) / self._resolution))
-            
+
         elif self._rows is None and self._cols is not None:
             if self._resolution is None:
                 self._resolution = (self._xmax - self._xmin) / self._cols
                 self._rows = int(np.rint((self._ymax - self._ymin + self._resolution) / self._resolution))
             else:
                 self._rows = int(np.rint((self._ymax - self._ymin + self._resolution) / self._resolution))
-            
+
     @property
     def resolution(self) -> Union[int, float]:
         return self._resolution
-    
+
     @resolution.setter
     def resolution(self, resolution: Union[int, float]) -> None:
         # set resolution
         self._resolution = resolution
-        
+
         # recalculate the rows and cols
         self._rows = None
         self._cols = None
         self._infer_resolution()
-    
+
     @property
     def rows(self) -> int:
         return self._rows
-    
+
     @rows.setter
     def rows(self, rows: int) -> None:
         # set rows
         self._rows = rows
         self._cols = None
-        
+
         # recalculate the resolution
         self._resolution = None
         self._infer_resolution()
@@ -222,13 +222,13 @@ class Grid:
     @property
     def cols(self) -> int:
         return self._cols
-    
+
     @cols.setter
     def cols(self, cols: int) -> None:
         # set cols
         self._cols = cols
         self._rows = None
-        
+
         # recalculate the resolution
         self._resolution = None
         self._infer_resolution()
@@ -236,7 +236,7 @@ class Grid:
     @property
     def prediction_grid(self) -> np.ndarray:
         grid: np.ndarray = gss.Gridding.prediction_grid(self._xmin, self._xmax, self._ymin, self._ymax, self._resolution)
-        
+
         return grid
 
     @property
@@ -244,13 +244,13 @@ class Grid:
         if self._rows is None or self._cols is None:
             self._infer_resolution()
         return self._rows, self._cols
-        
+
     def __call__(self, *args: Any, **kwds: Any) -> Any:
         return self.prediction_grid
-    
+
     def __str__(self) -> str:
         return f'<Grid with {self._rows} rows and {self._cols} cols at {self._resolution} resolution>'
-    
+
 
 
 @overload
@@ -309,7 +309,7 @@ def prediction_grid(bbox: Union[BBOX, 'Variogram'], resolution: Optional[int] = 
 
 def simulation_params(
     variogram: 'Variogram',
-    grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None, 
+    grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None,
     minor_range: Optional[Union[int, float]] = None
 ) -> Tuple[Union[Grid, np.ndarray], pd.DataFrame, list]:
     """
@@ -321,12 +321,12 @@ def simulation_params(
     variogram : 'Variogram'
         The variogram object used for simulation.
     grid : Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]], optional
-        The grid object or array defining the simulation grid. 
-        It can be either a :class:`Grid <skgstat.interface.gstatsim_mod.Grid>` object, 
-        a :class:`numpy array <numpy.ndarray>`, a resolution value (int or float), 
+        The grid object or array defining the simulation grid.
+        It can be either a :class:`Grid <skgstat.interface.gstatsim_mod.Grid>` object,
+        a :class:`numpy array <numpy.ndarray>`, a resolution value (int or float),
         or a tuple/list of rows and columns. If None, the resolution is inferred from the variogram.
     minor_range : Optional[Union[int, float]], optional
-        The minor range for directional variograms. Required only for directional variograms. 
+        The minor range for directional variograms. Required only for directional variograms.
         Default is None.
 
     Returns
@@ -345,7 +345,7 @@ def simulation_params(
     # the simulation needs the condition data as pd.DataFrame
     data = np.concatenate((variogram.coordinates, variogram.values.reshape(-1, 1)), axis=1)
     df = pd.DataFrame(data, columns=['x', 'y', 'v'])
-    
+
     # build the grid
     if isinstance(grid, (int, float)):
         # resolution is given
@@ -358,7 +358,7 @@ def simulation_params(
         grid = Grid(variogram, resolution=1)
         new_res = min((grid._xmax - grid._xmin) / 100., (grid._ymax - grid._ymin) / 100.)
         grid.resolution = new_res
-    
+
     # now grid should be a Grid object or a numpy.ndarray
     if not isinstance(grid, (Grid, np.ndarray)):
         raise AttributeError('grid must be either a Grid object, a resolution or a tuple/list of rows and cols')
@@ -387,10 +387,10 @@ def simulation_params(
 
 
 def run_simulation(
-    grid: Union[Grid, np.ndarray], 
-    cond_data: pd.DataFrame, 
-    vario_params: list, 
-    num_points: int = 20, 
+    grid: Union[Grid, np.ndarray],
+    cond_data: pd.DataFrame,
+    vario_params: list,
+    num_points: int = 20,
     radius: Optional[Union[int, float]] = None,
     method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
     quiet: bool = True
@@ -409,10 +409,10 @@ def run_simulation(
     num_points : int, optional
         The number of neighboring points used for interpolation. Default is 20.
     radius : Optional[Union[int, float]], optional
-        The search radius for neighboring points. If not provided, it is calculated as 
+        The search radius for neighboring points. If not provided, it is calculated as
         3 times the major range from the variogram parameters.
     method : Union[Literal['simple'], Literal['ordinary']], optional
-        The interpolation method to use. Either 'simple' for simple kriging 
+        The interpolation method to use. Either 'simple' for simple kriging
         or 'ordinary' for ordinary kriging. Default is 'simple'.
     quiet : bool, optional
         If True, disables progressbar output during the simulation. Default is True.
@@ -461,7 +461,7 @@ def run_simulation(
 def simulate(
     variogram: 'Variogram',
     grid: Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None,
-    num_points: int = 20, 
+    num_points: int = 20,
     radius: Optional[Union[int, float]] = None,
     method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
     quiet: bool = True,
@@ -480,13 +480,13 @@ def simulate(
     variogram : 'Variogram'
         The variogram object used for simulation.
     grid : Optional[Union[Grid, np.ndarray, Union[int, float], Tuple[int, int]]], optional
-        The grid object or array representing the simulation grid. 
+        The grid object or array representing the simulation grid.
         It can be either a Grid object, a numpy array, a resolution value (int or float),
         or a tuple/list of rows and columns. If None, the resolution is inferred from the variogram.
     num_points : int, optional
         The number of neighboring points used for interpolation. Default is 20.
     radius : Optional[Union[int, float]], optional
-        The search radius for neighboring points. If not provided, it is calculated based on the major 
+        The search radius for neighboring points. If not provided, it is calculated based on the major
         range from the variogram parameters.
     method : Union[Literal['simple'], Literal['ordinary']], optional
         The interpolation method to use. Either 'simple' for simple kriging or 'ordinary' for ordinary kriging. Default is 'simple'.
@@ -515,7 +515,7 @@ def simulate(
     if n_jobs > 1 and size > 1:
         # build th pool
         pool = Parallel(n_jobs=n_jobs, verbose=0 if quiet else 10)
-        
+
         # wrapper
         gen = (delayed(run_simulation)(grid, cond_data, vario_params, num_points, radius, method, quiet) for _ in range(size))
 

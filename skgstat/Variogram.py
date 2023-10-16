@@ -19,7 +19,7 @@ from skgstat import plotting
 from skgstat.util import shannon_entropy
 from .MetricSpace import MetricSpace, ProbabalisticMetricSpace
 from skgstat.interfaces.gstools import skgstat_to_gstools, skgstat_to_krige
-from skgstat.interfaces import gstatsim_mod 
+from skgstat.interfaces import gstatsim_mod
 
 
 class Variogram(object):
@@ -2800,7 +2800,7 @@ class Variogram(object):
         """
         Generate a structured gried of coordinates from this Variogram instance.
         The grid has the shape (N, 2), where N is the number of grid points.
-        It can be created by specifiying the resolution or the number of rows and cols.
+        It can be created by specifying the resolution or the number of rows and cols.
         If rows and cols are used, the grid will have the same resolution in both directions,
         which means, that the final grid will have a different number of rows, cols
         than specified.
@@ -2833,11 +2833,11 @@ class Variogram(object):
         # generate the grid
         grid = gstatsim_mod.prediction_grid(self, resolution, rows, cols, as_numpy=as_numpy)
         return grid
-    
+
     def simulation(
-        self, 
-        grid: Optional[Union[gstatsim_mod.Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None, 
-        num_points: int = 20, 
+        self,
+        grid: Optional[Union[gstatsim_mod.Grid, np.ndarray, Union[int, float], Tuple[int, int]]] = None,
+        num_points: int = 20,
         radius: Optional[Union[int, float]] = None,
         method: Union[Literal['simple'], Literal['ordinary']] = 'simple',
         quiet: bool = True,

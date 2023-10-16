@@ -14,7 +14,7 @@ variogram = skg.Variogram(coords, vals, maxlag=0.6, n_lags=12)
 def test_grid_initialization_resolution():
     # Initialize grid with resolution
     grid = Grid(variogram, resolution=0.1)
-    
+
     assert grid.resolution == 0.1
     assert grid.rows == 4661
     assert grid.cols == 4731
@@ -52,10 +52,10 @@ def test_grid_resolution_setting():
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
 def test_grid_rows_setting():
     grid = Grid(variogram, resolution=5)
-    
+
     # Set rows
     grid.rows = 50
-    
+
     assert grid.cols == 52
     assert grid.rows == 50
     assert np.abs(grid.resolution - 9.32) < 0.01
@@ -64,10 +64,10 @@ def test_grid_rows_setting():
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
 def test_grid_cols_setting():
     grid = Grid(variogram, resolution=5)
-    
+
     # Set cols
     grid.cols = 100
-    
+
     assert grid.cols == 100
     assert grid.rows == 100
     assert np.abs(grid.resolution - 4.73) < 0.01
