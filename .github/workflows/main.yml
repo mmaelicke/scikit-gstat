@@ -34,7 +34,7 @@ jobs:
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage.xml
+          file: ./coverage.xml
           env_vars: OS, PYTHON
 
   docs:
