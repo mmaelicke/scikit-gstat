@@ -61,6 +61,31 @@ def test_grid_resolution_from_bbox():
 
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_grid_init_symetric_bbox():
+    bbox = [0, 100, 0, 100]
+    grid = Grid(bbox=bbox, resolution=5)
+
+    assert grid.rows == 21
+    assert grid.cols == 21
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_grid_init_bbox_row_and_resolution():
+    bbox = [0, 100, 0, 100]
+    grid = Grid(bbox=bbox, rows=21, resolution=5)
+
+    assert grid.shape == (21, 21)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_grid_init_bbox_col_and_resolution():
+    bbox = [0, 100, 0, 100]
+    grid = Grid(bbox=bbox, cols=21, resolution=5)
+
+    assert grid.shape == (21, 21)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
 def test_grid_rows_setting():
     grid = Grid(variogram, resolution=5)
 
