@@ -50,6 +50,17 @@ def test_grid_resolution_setting():
 
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_grid_resolution_from_bbox():
+    # get the bbox from the variogram
+    bbox = [variogram.coordinates[:, 0].min(), variogram.coordinates[:, 0].max(), variogram.coordinates[:, 1].min(), variogram.coordinates[:, 1].max()]
+
+    grid = Grid(bbox=bbox, resolution = 5)
+
+    assert grid.rows == 94
+    assert grid.cols == 96
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
 def test_grid_rows_setting():
     grid = Grid(variogram, resolution=5)
 
