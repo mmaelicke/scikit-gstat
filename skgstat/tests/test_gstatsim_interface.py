@@ -207,10 +207,10 @@ def test_simulation():
     sim = variogram.simulation(grid, size=1)
 
     assert isinstance(sim, list)
-    
+
     assert_array_almost_equal(
         sim[0],
-        np.array([182.6, 173.2, 176.2, 160.1, 170.9, 150.7, 214.8, 223.3, 188.]), 
+        np.array([182.6, 173.2, 176.2, 160.1, 170.9, 150.7, 214.8, 223.3, 188.]),
         decimal=1
     )
 
