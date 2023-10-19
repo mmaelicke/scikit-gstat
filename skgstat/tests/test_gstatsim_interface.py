@@ -1,7 +1,9 @@
 import pytest
 import numpy as np
+from numpy.testing import assert_array_almost_equal
 import skgstat as skg
 import sys
+import random
 
 from skgstat.interfaces.gstatsim_mod import Grid, prediction_grid
 
@@ -176,6 +178,41 @@ def test_prediction_grid_interface_as_numpy():
 
     assert isinstance(grid, np.ndarray)
     assert grid.shape == (96 * 95, 2)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_variogram_interface_2d_error():
+    # generate 3d coordinates
+    coords = np.random.random((100, 3))
+    vals = np.random.random(100)
+
+    vario = skg.Variogram(coords, vals, maxlag=0.6, n_lags=12)
+
+    with pytest.raises(ValueError) as exc:
+        # call the interface
+        grid = vario.gstatsim_prediction_grid(resolution=5, as_numpy=True)
+
+    # assert that the error message is correct
+    assert 'only works in 2D' in str(exc.value)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="requires Python >= 3.8 or higher")
+def test_simulation():
+    # get a really coarse grid
+    grid = variogram.gstatsim_prediction_grid(resolution=250, as_numpy=True)
+
+    # simulate
+    random.seed(42)
+    np.random.seed(42)
+    sim = variogram.simulation(grid, size=1)
+
+    assert isinstance(sim, list)
+    
+    assert_array_almost_equal(
+        sim[0],
+        np.array([182.6, 173.2, 176.2, 160.1, 170.9, 150.7, 214.8, 223.3, 188.]), 
+        decimal=1
+    )
 
 
 # Run the tests
