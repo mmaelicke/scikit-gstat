@@ -42,8 +42,10 @@ class DirectionalVariogram(Variogram):
                  ):
         r"""Variogram Class
 
-        Directional Variogram. The calculation is not performant and not
-        tested yet.
+        Directional Variogram. Works similar to the base class, but one can
+        define a ``azimuth`` and a ``tolerance`` angle to only account for
+        point pairs in a user-defined direction. Directional variograms are
+        used to describe anisotropy in the data.
 
         Parameters
         ----------
