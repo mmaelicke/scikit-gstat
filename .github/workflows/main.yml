@@ -58,22 +58,22 @@ jobs:
         run: pip3 install -r requirements.rtd.txt
 #      - name: Upgrade
 #        run: sudo apt update && sudo apt -y upgrade
-      - name: Install pdflatex
-        run: sudo apt install --fix-missing texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
-        continue-on-error: true
+#      - name: Install pdflatex
+#        run: sudo apt install --fix-missing texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
+#        continue-on-error: true
       - name: make HTML & LaTeX docs
         run: |
           cd docs
           make html
-          make latex
+#          make latex
         continue-on-error: true
-      - name: compile LaTeX
-        run: |
-          cd docs/_build/latex
-          pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
-          cd ../..
-          cp _build/latex/SciKitGStat.pdf _build/html
-        continue-on-error: true
+#      - name: compile LaTeX
+#        run: |
+#          cd docs/_build/latex
+#          pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
+#          cd ../..
+#          cp _build/latex/SciKitGStat.pdf _build/html
+#        continue-on-error: true
       - name: deploy to gh pages
         uses: crazy-max/ghaction-github-pages@v1
         with:
