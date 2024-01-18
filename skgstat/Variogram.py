@@ -2219,6 +2219,7 @@ class Variogram(object):
             DeprecationWarning
         )
         return self.model_residuals
+    
 
     @property
     def model_residuals(self) -> np.ndarray:
@@ -2382,6 +2383,33 @@ class Variogram(object):
 
         """
         return self.rmse / np.nanmean(self.experimental)
+    @property
+    def root_mean_square(self):
+        """Root Mean Square (RMS) of the residuals
+
+        Calculates the square root of the mean of squared residuals.
+
+        Returns
+        -------
+        float
+            Root Mean Square of the residuals.
+        """
+        return np.sqrt(np.nanmean(np.square(self.model_residuals)))
+    @property
+    def residual_sum_of_squares(self):
+        """Residual Sum of Squares (RSS)
+
+        Calculates the sum of squared differences between the experimental
+        variogram and theoretical model values.
+
+        Returns
+        -------
+        float
+            Residual sum of squares (RSS), a measure of the overall model fit
+            representing the sum of squared deviations between the observed
+            experimental variogram and the corresponding theoretical model values.
+        """
+        return np.nansum(np.square(self.model_residuals))
 
     @property
     def nrmse_r(self):
