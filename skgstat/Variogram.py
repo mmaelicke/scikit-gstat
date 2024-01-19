@@ -2219,7 +2219,7 @@ class Variogram(object):
             DeprecationWarning
         )
         return self.model_residuals
-    
+
 
     @property
     def model_residuals(self) -> np.ndarray:
