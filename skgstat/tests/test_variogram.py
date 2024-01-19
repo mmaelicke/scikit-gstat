@@ -1196,6 +1196,11 @@ class TestVariogramQualityMeasures(unittest.TestCase):
         V = Variogram(self.c, self.v, n_lags=15)
 
         self.assertAlmostEqual(np.sqrt(V.mse), V.rmse, places=6)
+    
+    def test_rss(self):
+        V = Variogram(self.c, self.v, n_lags=15)
+
+        self.assertAlmostEqual(V.rss, 357.76, places=2)
 
     def test_update_kwargs(self):
         V = Variogram(self.c, self.v, percentile=.3)

@@ -2290,7 +2290,7 @@ class Variogram(object):
 
     @property
     def mse(self):
-        r"""RMSE
+        r"""MSE
 
         Calculate the Mean squared error between the experimental
         variogram and the theoretical model values at corresponding lags.
@@ -2383,6 +2383,7 @@ class Variogram(object):
 
         """
         return self.rmse / np.nanmean(self.experimental)
+
     @property
     def root_mean_square(self):
         """Root Mean Square (RMS) of the residuals
@@ -2395,6 +2396,7 @@ class Variogram(object):
             Root Mean Square of the residuals.
         """
         return np.sqrt(np.nanmean(np.square(self.model_residuals)))
+
     @property
     def residual_sum_of_squares(self):
         """Residual Sum of Squares (RSS)
@@ -2410,6 +2412,10 @@ class Variogram(object):
             experimental variogram and the corresponding theoretical model values.
         """
         return np.nansum(np.square(self.model_residuals))
+
+    @property
+    def rss(self):
+        return self.residual_sum_of_squares
 
     @property
     def nrmse_r(self):
