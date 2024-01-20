@@ -5,10 +5,10 @@ on: push
 jobs:
   test:
    name: Run Unittest
-   runs-on: ubuntu-20.04
+   runs-on: ubuntu-22.04
    strategy:
     matrix:
-      python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+      python: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
    steps:
       - name: Checkout
@@ -26,10 +26,10 @@ jobs:
       - name: Run tests
         run: pytest --cov-config=.coveragerc --cov=./ --cov-report=xml
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
-          env_vars: OS, PYTHON
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   docs:
     name: Build and deploy documentation
@@ -50,24 +50,24 @@ jobs:
           python3 setup.py install
       - name: Install Sphinx requirements
         run: pip3 install -r requirements.rtd.txt
-#      - name: Upgrade
-#        run: sudo apt update && sudo apt -y upgrade
-#      - name: Install pdflatex
-#        run: sudo apt install --fix-missing texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
-#        continue-on-error: true
+      - name: Upgrade
+        run: sudo apt update && sudo apt -y upgrade
+      - name: Install pdflatex
+        run: sudo apt install --fix-missing texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
+        continue-on-error: true
       - name: make HTML & LaTeX docs
         run: |
           cd docs
           make html
-#          make latex
+          make latex
         continue-on-error: true
-#      - name: compile LaTeX
-#        run: |
-#          cd docs/_build/latex
-#          pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
-#          cd ../..
-#          cp _build/latex/SciKitGStat.pdf _build/html
-#        continue-on-error: true
+      - name: compile LaTeX
+        run: |
+          cd docs/_build/latex
+          pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
+          cd ../..
+          cp _build/latex/SciKitGStat.pdf _build/html
+        continue-on-error: true
       - name: deploy to gh pages
         uses: crazy-max/ghaction-github-pages@v1
         with:
@@ -78,7 +78,7 @@ jobs:
 
   release:
     name: Create Github release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: startsWith(github.event.ref, 'refs/tags/v') && endsWith(github.event.ref, '.0')
 
@@ -94,7 +94,7 @@ jobs:
 
   publish:
     name: Publish to PyPi
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: test
     if: startsWith(github.event.ref, 'refs/tags/v')
 
@@ -118,7 +118,7 @@ jobs:
 
   ci_develop:
     name: Print Github Context for Development
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: true
 
     steps:
