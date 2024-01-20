@@ -2278,15 +2278,7 @@ class Variogram(object):
             RMSE = \sqrt{\frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}}
 
         """
-        # get the deviations
-        experimental, model = self.model_deviations()
-
-        # get the sum of squares
-        rsum = np.nansum(np.fromiter(
-            map(lambda x, y: (x - y)**2, experimental, model), float)
-        )
-
-        return np.sqrt(rsum / len(model))
+        return self.root_mean_square
 
     @property
     def mse(self):
