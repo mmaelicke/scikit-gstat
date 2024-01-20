@@ -2220,6 +2220,7 @@ class Variogram(object):
         )
         return self.model_residuals
 
+
     @property
     def model_residuals(self) -> np.ndarray:
         """
@@ -2277,19 +2278,11 @@ class Variogram(object):
             RMSE = \sqrt{\frac{\sum_{i=0}^{i=N(x)} (x-y)^2}{N(x)}}
 
         """
-        # get the deviations
-        experimental, model = self.model_deviations()
-
-        # get the sum of squares
-        rsum = np.nansum(np.fromiter(
-            map(lambda x, y: (x - y)**2, experimental, model), float)
-        )
-
-        return np.sqrt(rsum / len(model))
+        return self.root_mean_square
 
     @property
     def mse(self):
-        r"""RMSE
+        r"""MSE
 
         Calculate the Mean squared error between the experimental
         variogram and the theoretical model values at corresponding lags.
@@ -2382,6 +2375,39 @@ class Variogram(object):
 
         """
         return self.rmse / np.nanmean(self.experimental)
+
+    @property
+    def root_mean_square(self):
+        """Root Mean Square (RMS) of the residuals
+
+        Calculates the square root of the mean of squared residuals.
+
+        Returns
+        -------
+        float
+            Root Mean Square of the residuals.
+        """
+        return np.sqrt(np.nanmean(np.square(self.model_residuals)))
+
+    @property
+    def residual_sum_of_squares(self):
+        """Residual Sum of Squares (RSS)
+
+        Calculates the sum of squared differences between the experimental
+        variogram and theoretical model values.
+
+        Returns
+        -------
+        float
+            Residual sum of squares (RSS), a measure of the overall model fit
+            representing the sum of squared deviations between the observed
+            experimental variogram and the corresponding theoretical model values.
+        """
+        return np.nansum(np.square(self.model_residuals))
+
+    @property
+    def rss(self):
+        return self.residual_sum_of_squares
 
     @property
     def nrmse_r(self):
