@@ -13,6 +13,7 @@ Code Reference
     estimator
     models
     kriging
+    interfaces
     data
     metric_space
     util
