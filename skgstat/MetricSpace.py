@@ -781,7 +781,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
             dists = sparse.csr_matrix((d, (c, eq)), shape=(len(self.coords), len(self.coords)))
 
             # comment mmaelicke: We need to fall back to the slower solution as dok._update is not supported in scipy 1.0 anymore
-            # 
+            #
             # Solution 5+ times faster than the preceding, but relies on _update() which might change in scipy (which
             # only has an implemented method for summing duplicates, and not ignoring them yet)
             # dok = sparse.dok_matrix((len(self.coords), len(self.coords)))
