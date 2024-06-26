@@ -3164,9 +3164,9 @@ class Variogram(object):
         """
         par = self.describe()
 
-        _sill = np.NaN if 'error' in par else par['sill']
-        _range = np.NaN if 'error' in par else par['effective_range']
-        _nugget = np.NaN if 'error' in par else par['nugget']
+        _sill = np.nan if 'error' in par else par['sill']
+        _range = np.nan if 'error' in par else par['effective_range']
+        _nugget = np.nan if 'error' in par else par['nugget']
 
         s = "{0} Variogram\n".format(par['model'])
         s += "-" * (len(s) - 1) + "\n"

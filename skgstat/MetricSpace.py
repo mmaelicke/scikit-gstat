@@ -7,9 +7,9 @@ import numpy as np
 import multiprocessing as mp
 
 
-def _sparse_dok_get(m, fill_value=np.NaN):
+def _sparse_dok_get(m, fill_value=np.nan):
     """Like m.toarray(), but setting empty values to `fill_value`, by
-    default `np.NaN`, rather than 0.0.
+    default `np.nan`, rather than 0.0.
 
     Parameters
     ----------
@@ -777,14 +777,16 @@ class RasterEquidistantMetricSpace(MetricSpace):
             # from https://stackoverflow.com/questions/28677162/ignoring-duplicate-entries-in-sparse-matrix
 
             # Stable solution but a bit slow
-            # c, eq, d = zip(*set(zip(c, eq, d)))
-            # dists = sparse.csr_matrix((d, (c, eq)), shape=(len(self.coords), len(self.coords)))
+            c, eq, d = zip(*set(zip(c, eq, d)))
+            dists = sparse.csr_matrix((d, (c, eq)), shape=(len(self.coords), len(self.coords)))
 
+            # comment mmaelicke: We need to fall back to the slower solution as dok._update is not supported in scipy 1.0 anymore
+            #
             # Solution 5+ times faster than the preceding, but relies on _update() which might change in scipy (which
             # only has an implemented method for summing duplicates, and not ignoring them yet)
-            dok = sparse.dok_matrix((len(self.coords), len(self.coords)))
-            dok._update(zip(zip(c, eq), d))
-            dists = dok.tocsr()
+            # dok = sparse.dok_matrix((len(self.coords), len(self.coords)))
+            # dok._update(zip(zip(c, eq), d))
+            # dists = dok.tocsr()
 
             self._dists = dists
 

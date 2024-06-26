@@ -896,7 +896,7 @@ class TestVariogramFittingProcedure(unittest.TestCase):
 
         assert_array_almost_equal(
             V.transform(x),
-            [np.NaN, 0.57, 1.01, 1.12, 1.15, 1.15, 1.15, 1.15, 1.21, 1.65],
+            [np.nan, 0.57, 1.01, 1.12, 1.15, 1.15, 1.15, 1.15, 1.21, 1.65],
             decimal=2
         )
 
