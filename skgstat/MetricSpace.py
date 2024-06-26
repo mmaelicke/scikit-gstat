@@ -7,9 +7,9 @@ import numpy as np
 import multiprocessing as mp
 
 
-def _sparse_dok_get(m, fill_value=np.NaN):
+def _sparse_dok_get(m, fill_value=np.nan):
     """Like m.toarray(), but setting empty values to `fill_value`, by
-    default `np.NaN`, rather than 0.0.
+    default `np.nan`, rather than 0.0.
 
     Parameters
     ----------

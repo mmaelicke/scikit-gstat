@@ -35,7 +35,7 @@ def spherical(h, r, c0, b=0.0):
         The effective range. Note this is not the range parameter! However,
         for the spherical variogram the range and effective range are the same.
     c0 : float
-        The sill of the variogram, where it will flatten out. The function
+        The partial sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
     b : float
         The nugget of the variogram. This is the value of independent
@@ -102,7 +102,7 @@ def exponential(h, r, c0, b=0.0):
         sill are exceeded. This is needed as the sill is only approached
         asymptotically by an exponential function.
     c0 : float
-        The sill of the variogram, where it will flatten out. The function
+        The partial sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
     b : float
         The nugget of the variogram. This is the value of independent
@@ -164,7 +164,7 @@ def gaussian(h, r, c0, b=0.0):
         sill are exceeded. This is needed as the sill is only approached
         asymptotically by an exponential function.
     c0 : float
-        The sill of the variogram, where it will flatten out. The function
+        The partial sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
     b : float
         The nugget of the variogram. This is the value of independent
@@ -226,7 +226,7 @@ def cubic(h, r, c0, b=0.0):
         The effective range. Note this is not the range parameter! However,
         for the cubic variogram the range and effective range are the same.
     c0 : float
-        The sill of the variogram, where it will flatten out. The function
+        The partial sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
     b : float
         The nugget of the variogram. This is the value of independent
@@ -297,7 +297,7 @@ def stable(h, r, c0, s, b=0.0):
         only approached asymptotically by the e-function part of the stable
         model.
     c0 : float
-        The sill of the variogram, where it will flatten out. The function
+        The partial sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
     s : float
         Shape parameter. For s <= 2 the model will be shaped more like a
@@ -369,7 +369,7 @@ def matern(h, r, c0, s, b=0.0):
         where 95% of the sill are exceeded. This is needed as the sill is
         only approached asymptotically by Matérn model.
     c0 : float
-        The sill of the variogram, where it will flatten out. The function
+        The partial sill of the variogram, where it will flatten out. The function
         will not return a value higher than C0 + b.
     s : float
         Smoothness parameter. The smoothness parameter can shape a smooth or
