@@ -6,3 +6,4 @@ numba
 scikit-learn
 imageio
 tqdm
+typing_extensions
