@@ -122,9 +122,9 @@ class OrdinaryKriging:
         self.n_jobs = n_jobs
         self.perf = perf
 
-        self.range = variogram["effective_range"]
-        self.nugget = variogram["nugget"]
-        self.sill = variogram["sill"]
+        self.range = variogram['effective_range']
+        self.nugget = variogram['nugget']
+        self.sill = variogram['sill']
         if isinstance(coordinates, MetricSpace):
             self.dist_metric = coordinates.dist_metric
             self.dist_metric_kwargs = coordinates.dist_metric_kwargs
@@ -179,9 +179,7 @@ class OrdinaryKriging:
             self.perf_solv = list()
 
     def dist(self, x):
-        return Variogram.wrapped_distance_function(
-            self.dist_metric, x, **self.dist_metric_kwargs
-        )
+        return Variogram.wrapped_distance_function(self.dist_metric, x, **self.dist_metric_kwargs)
 
     @classmethod
     def _remove_duplicated_coordinates(cls, coords, values):

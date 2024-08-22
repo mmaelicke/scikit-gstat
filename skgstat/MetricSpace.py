@@ -84,7 +84,7 @@ class MetricSpace(DistanceMethods):
     cloud in space. However, it slows things down for small datasets.
     """
 
-    def __init__(self, coords, dist_metric="euclidean", max_dist=None, dist_metric_kwargs):
+    def __init__(self, coords, dist_metric="euclidean", max_dist=None, dist_metric_kwargs={}):
         """ProbabalisticMetricSpace class
 
         Parameters
@@ -111,11 +111,7 @@ class MetricSpace(DistanceMethods):
                     self.coords[: self.coords.shape[1] + 1, :], metric=self.dist_metric
                 )
             else:
-                pdist(
-                    self.coords[:1, :],
-                    metric=self.dist_metric,
-                    **self.dist_metric_kwargs
-                )
+                pdist(self.coords[:1, :], metric=self.dist_metric, **self.dist_metric_kwargs)
         except ValueError as e:
             raise e
 
@@ -153,9 +149,7 @@ class MetricSpace(DistanceMethods):
             # otherwise use pdist
             else:
                 self._dists = squareform(
-                    pdist(
-                        self.coords, metric=self.dist_metric, **self.dist_metric_kwargs
-                    )
+                    pdist(self.coords, metric=self.dist_metric, **self.dist_metric_kwargs)
                 )
 
         # return
@@ -254,7 +248,7 @@ class MetricSpacePair(DistanceMethods):
                 self._dists = cdist(
                     self.ms1.coords,
                     self.ms2.coords,
-                    metric=self.ms1.dist_metric,
+                    metric=self.ms1.dist_metric
                     **self.ms1.dist_metric_kwargs
                 )
 
