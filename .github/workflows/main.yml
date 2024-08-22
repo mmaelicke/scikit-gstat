@@ -1,7 +1,7 @@
 name: Test and build docs
 
-on: 
-  - push 
+on:
+  - push
   - pull_request
 
 jobs:
