@@ -3,7 +3,6 @@ The kriging module offers only an Ordinary Kriging routine (OK) that can be
 used together with the skgstat.Variogram class. The usage of the class is
 inspired by the scipy.interpolate classes.
 """
-
 import time
 
 import numpy as np
@@ -34,18 +33,18 @@ def inv_solve(a, b):
 
 class OrdinaryKriging:
     def __init__(
-        self,
-        variogram,
-        min_points=5,
-        max_points=15,
-        mode="exact",
-        precision=100,
-        solver="inv",
-        n_jobs=1,
-        perf=False,
-        sparse=False,
-        coordinates=None,
-        values=None,
+            self,
+            variogram,
+            min_points=5,
+            max_points=15,
+            mode='exact',
+            precision=100,
+            solver='inv',
+            n_jobs=1,
+            perf=False,
+            sparse=False,
+            coordinates=None,
+            values=None
     ):
         """Ordinary Kriging routine
 
@@ -130,25 +129,14 @@ class OrdinaryKriging:
             self.dist_metric_kwargs = coordinates.dist_metric_kwargs
         else:
             self.dist_metric = variogram["dist_func"]
-            self.dist_metric_kwargs = {}
 
         # coordinates and semivariance function
         if not isinstance(coordinates, MetricSpace):
-            coordinates, values = self._remove_duplicated_coordinates(
-                coordinates, values
-            )
-            coordinates = MetricSpace(
-                coordinates.copy(),
-                self.dist_metric,
-                self.range if self.sparse else None,
-            )
+            coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
+            coordinates = MetricSpace(coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
         else:
-            assert (
-                self.dist_metric == coordinates.dist_metric
-            ), "Distance metric of variogram differs from distance metric of coordinates"
-            assert (
-                coordinates.max_dist is None or coordinates.max_dist == self.range
-            ), "Sparse coordinates must have max_dist == variogram.effective_range"
+            assert self.dist_metric == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
+            assert coordinates.max_dist is None or coordinates.max_dist == self.range, "Sparse coordinates must have max_dist == variogram.effective_range"
         self.values = values.copy()
         self.coords = coordinates
         self.gamma_model = Variogram.fitted_model_function(**variogram)
@@ -209,11 +197,11 @@ class OrdinaryKriging:
     def min_points(self, value):
         # check the value
         if not isinstance(value, int):
-            raise ValueError("min_points has to be an integer.")
+            raise ValueError('min_points has to be an integer.')
         if value < 0:
-            raise ValueError("min_points can't be negative.")
+            raise ValueError('min_points can\'t be negative.')
         if value > self._maxp:
-            raise ValueError("min_points can't be larger than max_points.")
+            raise ValueError('min_points can\'t be larger than max_points.')
 
         # set
         self._minp = value
@@ -226,11 +214,11 @@ class OrdinaryKriging:
     def max_points(self, value):
         # check the value
         if not isinstance(value, int):
-            raise ValueError("max_points has to be an integer.")
+            raise ValueError('max_points has to be an integer.')
         if value < 0:
-            raise ValueError("max_points can't be negative.")
+            raise ValueError('max_points can\'t be negative.')
         if value < self._minp:
-            raise ValueError("max_points can't be smaller than min_points.")
+            raise ValueError('max_points can\'t be smaller than min_points.')
 
         # set
         self._maxp = value
@@ -241,10 +229,10 @@ class OrdinaryKriging:
 
     @mode.setter
     def mode(self, value):
-        if value == "exact":
+        if value == 'exact':
             self._prec_g = None
             self._prec_dist = None
-        elif value == "estimate":
+        elif value == 'estimate':
             self._precalculate_matrix()
         else:
             raise ValueError("mode has to be one of 'exact', 'estimate'.")
@@ -257,9 +245,9 @@ class OrdinaryKriging:
     @precision.setter
     def precision(self, value):
         if not isinstance(value, int):
-            raise TypeError("precision has to be of type int")
+            raise TypeError('precision has to be of type int')
         if value < 1:
-            raise ValueError("The precision has be be > 1")
+            raise ValueError('The precision has be be > 1')
         self._precision = value
         self._precalculate_matrix()
 
@@ -269,11 +257,11 @@ class OrdinaryKriging:
 
     @solver.setter
     def solver(self, value):
-        if value == "numpy":
+        if value == 'numpy':
             self._solve = numpy_solve
-        elif value == "scipy":
+        elif value == 'scipy':
             self._solve = scipy_solve
-        elif value == "inv":
+        elif value == 'inv':
             self._solve = inv_solve
         else:
             raise AttributeError("solver has to be ['inv', 'numpy', 'scipy']")
@@ -310,46 +298,34 @@ class OrdinaryKriging:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
         if len(x) != 1 or not isinstance(x[0], MetricSpace):
-            self.transform_coords = MetricSpace(
-                np.column_stack(x).copy(),
-                self.dist_metric,
-                self.range if self.sparse else None,
-            )
+            self.transform_coords = MetricSpace(np.column_stack(x).copy(), self.dist_metric, self.range if self.sparse else None)
         else:
             self.transform_coords = x[0]
         self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
 
         # DEV: this is dirty, not sure how to do it better at the moment
-        # self.sigma = np.empty(len(x[0]))
+        #self.sigma = np.empty(len(x[0]))
         self.sigma = np.ones(len(x[0])) * np.nan
         self.__sigma_index = 0
 
         # if multi-core, than here
         if self.n_jobs is None or self.n_jobs == 1:
-            z = np.fromiter(
-                map(self._estimator, range(len(self.transform_coords))), dtype=float
-            )
+            z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
         else:
-
             def f(idxs):
                 return self._estimator(idxs)
-
             with Pool(self.n_jobs) as p:
                 z = p.starmap(f, range(len(self.transform_coords)))
 
         # print warnings
         if self.singular_error > 0:
-            print("Warning: %d kriging matrices were singular." % self.singular_error)
+            print('Warning: %d kriging matrices were singular.' % self.singular_error)
         if self.no_points_error > 0:
-            print(
-                "Warning: for %d locations, not enough neighbors were "
-                "found within the range." % self.no_points_error
-            )
+            print('Warning: for %d locations, not enough neighbors were '
+                  'found within the range.' % self.no_points_error)
         if self.ill_matrix > 0:
-            print(
-                "Warning: %d kriging matrices were ill-conditioned."
-                " The result may not be accurate." % self.ill_matrix
-            )
+            print('Warning: %d kriging matrices were ill-conditioned.'
+                  ' The result may not be accurate.' % self.ill_matrix)
 
         # store the field in the instance itself
         self.z = np.array(z)
@@ -452,7 +428,11 @@ class OrdinaryKriging:
 
         # get the point and index
         p = self.transform_coords.coords[idx, :]
-        idx = self.transform_coords_pair.find_closest(idx, self.range, self._maxp)
+        idx = self.transform_coords_pair.find_closest(
+            idx,
+            self.range,
+            self._maxp
+        )
 
         # raise an error if not enough points are found
         if idx.size < self._minp:
@@ -469,7 +449,7 @@ class OrdinaryKriging:
             self.perf_dist.append(t1 - t0)
 
         # build the kriging Matrix; needs N + 1 dimensionality
-        if self.mode == "exact":
+        if self.mode == 'exact':
             a = self._build_matrix(dist_mat)
         else:
             a = self._estimate_matrix(dist_mat)
@@ -488,7 +468,7 @@ class OrdinaryKriging:
 
         # build the matrix of solutions A
         _p = np.concatenate(([p], in_range))
-        _dists = self.dist(_p)[: len(_p) - 1]
+        _dists = self.dist(_p)[:len(_p) - 1]
         _g = self.gamma_model(_dists)
         b = np.concatenate((_g, [1]))
 
@@ -497,18 +477,18 @@ class OrdinaryKriging:
             _lambda = self._solve(a, b)
         except LinAlgError as e:
             print(a)
-            if str(e) == "Matrix is singular.":
+            if str(e) == 'Matrix is singular.':
                 raise SingularMatrixError
             else:
                 raise e
         except RuntimeWarning as w:
-            if "Ill-conditioned matrix" in str(w):
+            if 'Ill-conditioned matrix' in str(w):
                 print(a)
                 raise IllMatrixError
             else:
                 raise w
         except ValueError as e:
-            print("[DEBUG]: print variogram matrix and distance matrix:")
+            print('[DEBUG]: print variogram matrix and distance matrix:')
             print(a)
             print(_dists)
             raise e
