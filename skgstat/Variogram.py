@@ -1148,11 +1148,11 @@ class Variogram(object):
         return self._X.dist_metric
 
     @classmethod
-    def wrapped_distance_function(cls, dist_func, x):
+    def wrapped_distance_function(cls, dist_func, x, **kwargs):
         if callable(dist_func):
-            return dist_func(x)
+            return dist_func(x, **kwargs)
         else:
-            return pdist(X=x, metric=dist_func)
+            return pdist(X=x, metric=dist_func, **kwargs)
 
     @dist_function.setter
     def dist_function(self, func):

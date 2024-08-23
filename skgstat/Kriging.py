@@ -124,8 +124,12 @@ class OrdinaryKriging:
         self.range = variogram['effective_range']
         self.nugget = variogram['nugget']
         self.sill = variogram['sill']
-        self.dist_metric = variogram["dist_func"]
-
+        if isinstance(coordinates, MetricSpace):
+            self.dist_metric = coordinates.dist_metric
+            self.dist_metric_kwargs = coordinates.dist_metric_kwargs
+        else:
+            self.dist_metric = variogram["dist_func"]
+            self.dist_metric_kwargs = {}
         # coordinates and semivariance function
         if not isinstance(coordinates, MetricSpace):
             coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
@@ -163,7 +167,7 @@ class OrdinaryKriging:
             self.perf_solv = list()
 
     def dist(self, x):
-        return Variogram.wrapped_distance_function(self.dist_metric, x)
+        return Variogram.wrapped_distance_function(self.dist_metric, x, **self.dist_metric_kwargs)
 
     @classmethod
     def _remove_duplicated_coordinates(cls, coords, values):
