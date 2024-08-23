@@ -129,7 +129,7 @@ class OrdinaryKriging:
             self.dist_metric_kwargs = coordinates.dist_metric_kwargs
         else:
             self.dist_metric = variogram["dist_func"]
-
+            self.dist_metric_kwargs = {}
         # coordinates and semivariance function
         if not isinstance(coordinates, MetricSpace):
             coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
