@@ -1,6 +1,8 @@
 name: Test and build docs
 
-on: push
+on:
+  - push
+  - pull_request
 
 jobs:
   test:
@@ -8,7 +10,7 @@ jobs:
    runs-on: ubuntu-20.04
    strategy:
     matrix:
-      python: ['3.6', '3.7', '3.8', '3.9', '3.10']
+      python: ['3.9', '3.10', '3.11']
 
    steps:
       - name: Checkout
@@ -118,7 +120,7 @@ jobs:
 
   ci_develop:
     name: Print Github Context for Development
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: true
 
     steps:
