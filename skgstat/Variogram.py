@@ -42,6 +42,7 @@ class Variogram(object):
                  maxlag=None,
                  samples=None,
                  n_lags=10,
+                 special=False,
                  verbose=False,
                  **kwargs,
                  ):
@@ -215,6 +216,8 @@ class Variogram(object):
         n_lags : int
             Specify the number of lag classes to be defined by the binning
             function.
+        special: bool
+            If set to True, the Variogram will be performed on high D data.
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
@@ -320,6 +323,7 @@ class Variogram(object):
         # pairwise differences
         self._diff = None
 
+        self.special = special
         # set verbosity
         self.verbose = verbose
 
@@ -531,35 +535,39 @@ class Variogram(object):
 
         # use an array
         _y = np.asarray(values)
-
         # check if this is should be a cross-variogram
         # TODO: run tests for this
         if _y.ndim > 2:
             raise ValueError(
                 "values has to be 1d (classic variogram) or 2d dimensional (cross-variogram)"
             )
+            
         elif _y.ndim == 2:
-            if _y.shape[1] > 2:
-                raise ValueError(
+            if self.special:
+                warnings.warn(f'Perform analysis on {_y.ndim} dimension data')
+                self._is_cross = False
+            else:
+                if _y.shape[1] > 2:
+                    raise ValueError(
                     "Use the utility function to create a grid of cross-variograms"
                 )
-            elif _y.shape[1] == 2:
-                # set the co-variable
-                self._co_variable = _y[:, 1].flatten()
+                elif _y.shape[1] == 2:
+                    # set the co-variable
+                    self._co_variable = _y[:, 1].flatten()
 
-                # generate a warning if the cross variogram flag was set to False
-                if self._is_cross is not None and not self._is_cross:
-                    warnings.warn("You passed two variables as observation and " +
-                        "effectively turned this instance into a cross-variogram.")
-                self._is_cross = True
+                    # generate a warning if the cross variogram flag was set to False
+                    if self._is_cross is not None and not self._is_cross:
+                        warnings.warn("You passed two variables as observation and " +
+                            "effectively turned this instance into a cross-variogram.")
+                    self._is_cross = True
 
-                # by definition, the first axis is the observation
-                _y = _y[:, 0].flatten()
+                    # by definition, the first axis is the observation
+                    _y = _y[:, 0].flatten()
         else:
             self._is_cross = False
 
         # check if all input values are the same
-        if len(set(_y)) < 2:
+        if len(set(_y.flatten())) < 2:
             self.__single_input = True
             warnings.warn('All input values are the same.')
         else:
@@ -1927,7 +1935,18 @@ class Variogram(object):
             return
 
         # format into column-stack for faster calculation
-        diffs = self._format_values_stack(self.values)
+        if len(self.values.shape) == 1:
+            diffs = self._format_values_stack(self.values)
+        else:
+            for i in range(self.values.shape[1]):
+                if i == 0:
+                    diffs = self._format_values_stack(self.values[:, i])
+                else:
+                    diffs = np.vstack((diffs, self._format_values_stack(self.values[:, i])))
+            # Each row is a different variable
+            # We need to calculate the squared root of the sum of squares   
+            diffs = np.sqrt(np.sum(diffs**2, axis=0))
+     
 
         # check if this is a cross-variogram
         if self.is_cross_variogram:
@@ -1935,7 +1954,6 @@ class Variogram(object):
 
             # multiply to cross-difference
             diffs *= co_diffs
-
         # set the new differences
         self._diff = diffs
 
