@@ -54,7 +54,7 @@ def spherical(h, r, c0, b=0.0):
     The implementation follows [6]_:
 
     .. math::
-        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*(\frac{h}{a})^3}\right)
+        \gamma = b + C_0 * \left({1.5*\frac{h}{a} - 0.5*\left(\frac{h}{a}\right)^3}\right)
 
     if :math:`h < r`, and
 
@@ -160,7 +160,7 @@ def gaussian(h, r, c0, b=0.0):
     r : float
         The effective range. Note this is not the range parameter! For the
         exponential variogram function the range parameter a is defined to be
-        :math:`a=\frac{r}{3}`. The effetive range is the lag where 95% of the
+        :math:`a=\frac{r}{2}`. The effetive range is the lag where 95% of the
         sill are exceeded. This is needed as the sill is only approached
         asymptotically by an exponential function.
     c0 : float
