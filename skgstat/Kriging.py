@@ -4,6 +4,7 @@ used together with the skgstat.Variogram class. The usage of the class is
 inspired by the scipy.interpolate classes.
 """
 import time
+import warnings
 
 import numpy as np
 from scipy.spatial.distance import squareform
@@ -13,6 +14,14 @@ from multiprocessing import Pool
 
 from .Variogram import Variogram
 from .MetricSpace import MetricSpace, MetricSpacePair
+
+def custom_warning_format(message, category, filename, lineno, file=None, line=None):
+    print(f"{category.__name__}: {message}")
+
+warnings.showwarning = custom_warning_format
+
+class KrigingWarning(Warning):
+    pass
 
 
 class LessPointsError(RuntimeError):
@@ -319,13 +328,13 @@ class OrdinaryKriging:
 
         # print warnings
         if self.singular_error > 0:
-            print('Warning: %d kriging matrices were singular.' % self.singular_error)
+            warnings.warn('%d kriging matrices were singular.' % self.singular_error, KrigingWarning)
         if self.no_points_error > 0:
-            print('Warning: for %d locations, not enough neighbors were '
-                  'found within the range.' % self.no_points_error)
+            warnings.warn('For %d locations, not enough neighbors were '
+                  'found within the range.' % self.no_points_error, KrigingWarning)
         if self.ill_matrix > 0:
-            print('Warning: %d kriging matrices were ill-conditioned.'
-                  ' The result may not be accurate.' % self.ill_matrix)
+            warnings.warn('%d kriging matrices were ill-conditioned.'
+                  ' The result may not be accurate.' % self.ill_matrix, KrigingWarning)
 
         # store the field in the instance itself
         self.z = np.array(z)
