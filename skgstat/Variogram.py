@@ -526,7 +526,7 @@ class Variogram(object):
         """
         # check dimensions
         if not len(values) == len(self.coordinates):  # pragma: no cover
-            raise ValueError('The length of the values array has to match' +
+            raise ValueError('The length of the values array has to match ' +
                              'the length of coordinates')
 
         # use an array
