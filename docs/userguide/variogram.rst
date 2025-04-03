@@ -553,8 +553,7 @@ That's a commonly used, very fast least squares implementation.
 However, sometimes it fails to find good parameters, as it is
 unbounded and *searching* an invalid parameter space.
 The default for :class:`Variogram <skgstat.Variogram>` is
-Trust-Region Reflective (TRF), which is also the default for
-:class:`Variogram <skgstat.Variogram>`. It uses a valid parameter space as bounds
+Trust-Region Reflective (TRF). It uses a valid parameter space as bounds
 and therefore won't fail in finding parameters.
 You can, however, switch to Levenberg-Marquardt
 by setting the :class:`Variogram.fit_method <skgstat.Variogram.fit_method>`
