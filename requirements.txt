@@ -1,3 +1,4 @@
+setuptools
 scipy
 numpy
 pandas
