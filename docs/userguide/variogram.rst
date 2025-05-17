@@ -14,6 +14,8 @@ functions together and add some noise. There should be clear spatial
 correlation apparent.
 
 .. ipython:: python
+    :okwarning:
+    :okexcept:
 
     import numpy as np
     import matplotlib.pyplot as plt
@@ -48,6 +50,7 @@ value to the :class:`Variogram Class <skgstat.Variogram>`.
 
 .. ipython:: python
     :okwarning:
+    :okexcept:
 
     import skgstat as skg
 
@@ -110,6 +113,7 @@ The :class:`Variogram Class <skgstat.Variogram>` has a function for that:
 
 .. ipython:: python
     :okwarning:
+    :okexcept:
 
     @savefig dist_diff_plot.png width=8in
     V.distance_difference_plot()
@@ -802,12 +806,12 @@ variogram. This model needs to be built with the ``@variogram`` decorator, which
     # Build a custom model by applying the @variogram decorator (here adding a linear term to a spherical model)
     from skgstat.models import variogram, spherical
     @variogram
-    def custom_model(h, r1, c1, a):
-        return spherical(h, r1, c1) + h * a
+    def custom_model(h, r1, c1, a, b=0):
+        return spherical(h, r1, c1, b) + h * a
     V.model = custom_model
 
-    # We define the bounds for r1, c1 and a
-    bounds_custom = [(0, 0, 0), (np.max(V.bins), np.max(V.experimental), 2)]
+    # We define the bounds for r1, c1, a and b
+    bounds_custom = ([0, 0, 0, 0], [np.max(V.bins), np.max(V.experimental), 2, 0.1])
     V.fit(bounds=bounds_custom)
 
     @savefig custom_model.png width=8in

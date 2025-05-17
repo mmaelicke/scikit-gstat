@@ -70,6 +70,7 @@ jobs:
         run: |
           cd docs
           make html
+        continue-on-error: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -12,3 +12,4 @@ pydata_sphinx_theme
 gstools>=1.3.0
 plotly
 nbformat
+pickleshare

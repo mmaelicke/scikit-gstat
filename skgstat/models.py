@@ -235,9 +235,8 @@ def cubic(h, r, c0, b=0.0):
 
     Returns
     -------
-    gamma : numpy.float64
-        Unlike in most variogram function formulas, which define the function
-        for :math:`2*\gamma`, this function will return :math:`\gamma` only.
+    gamma : numpy.ndarray
+        Cubic variogram model values
 
     Notes
     -----

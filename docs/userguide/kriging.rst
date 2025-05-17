@@ -11,7 +11,7 @@ Kriging, a South-African mining engineer called Dave Krige.
 He published the method in 1951.
 In many text books you will also find the term *prediction*, but
 be aware that Kriging is still based on the assumption
-that the variable is a random field. THerefore I prefer the
+that the variable is a random field. Therefore I prefer the
 term *estimation* and would label the Kriging method a *BLUE*,
 **B** est **L** inear **U** nbiased **E** stimator.
 In general terms, the objective is to estimate a variable at
@@ -101,7 +101,7 @@ we would just calculate the arithmetic mean.
 
   from skgstat.models import spherical
 
-  # range= 7. sill = 2. nugget = 0.
+  # range = 7.0, sill = 2.0, nugget = 0.0
   model = lambda h: spherical(h, 7.0, 2.0, 0.0)
 
 The distances to the first point `s0` are the first 5 elements in

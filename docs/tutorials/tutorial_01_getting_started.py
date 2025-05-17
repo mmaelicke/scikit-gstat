@@ -8,10 +8,10 @@ There are other tutorials that will explain specific methods or attributes in ``
 
 **What you will learn in this tutorial**
 
-    * How to instantiate :class:`Variogram <skgstat.Variogram>` and :class:`OrdinaryKriging <skgstat.OrdinaryKriging>`
-    * How to read a variogram
-    * Perform an interpolation
-    * Most basic plotting
+* How to instantiate :class:`Variogram <skgstat.Variogram>` and :class:`OrdinaryKriging <skgstat.OrdinaryKriging>`
+* How to read a variogram
+* Perform an interpolation
+* Most basic plotting
 
 """
 import numpy as np
@@ -68,7 +68,7 @@ plt.colorbar(art)
 #
 # The :class:`Variogram <skgstat.Variogram>` class takes at least two arguments.
 # The :func:`coordinates <skgstat.Variogram.coordinates>` and the :func:`values <skgstat.Variogram.values>` observed at these locations.
-# If you use older versions, <ou should also at least set the ``normalize`` parameter to explicitly, as it changed it's default value in
+# If you use older versions, you should also at least set the ``normalize`` parameter explicitly, as it changed its default value in
 # version `0.2.8` to ``False``. This attribute affects only the plotting, not the variogram values.
 # Additionally, the number of bins is set to 15, because we have fairly many observations and the default value of 10 is unnecessarily small.
 # The ``maxlag`` set the maximum distance for the last bin. As we have no other additional information about expected correlation lengths,
@@ -78,19 +78,19 @@ V = skg.Variogram(coords, vals.flatten(), maxlag='median', n_lags=15, normalize=
 fig = V.plot(show=False)
 
 # %%
-# The upper subplot show the histogram for the count of point-pairs in each lag class. You can see various things here:
+# The upper subplot shows the histogram for the count of point-pairs in each lag class. You can see various things here:
 #
-#   * As expected, there is a clear spatial dependency, because semi-variance increases with distance (blue dots)
-#   * The default `spherical` variogram model is well fitted to the experimental data
-#   * The shape of the dependency is **not** captured quite well, but fair enough for this example
-#   * The first two bins are not well captured, suggesting either the use of a nugget, or a different model.
+# * As expected, there is a clear spatial dependency, because semi-variance increases with distance (blue dots)
+# * The default `spherical` variogram model is well fitted to the experimental data
+# * The shape of the dependency is **not** captured quite well, but fair enough for this example
+# * The first two bins are not well captured, suggesting either the use of a nugget, or a different model
 #
 # The sill of the variogram should correspond with the field variance. The field is unknown, but we can compare the sill to the *sample* variance:
 print('Sample variance: %.2f   Variogram sill: %.2f' % (vals.flatten().var(), V.describe()['sill']))
 
 # %%
 # The ``describe`` method will return the most important parameters as a dictionary.
-# And we can simply print the variogram ob,etc to the screen, to see all parameters.
+# And we can simply print the variogram object to the screen to see all parameters.
 pprint(V.describe())
 
 # %%
@@ -132,7 +132,7 @@ print(V)
 # For more information, please refer to the `User Guide <https://mmaelicke.github.io/scikit-gstat/userguide/kriging.html#kriging-equation-system>`_.
 #
 # Consequently, the :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` class needs a :class:`Variogram <skgstat.Variogram>`
-# object as a mandatory attribute. Two very important optional attributes are ``min_points`` and ``max_points```.
+# object as a mandatory attribute. Two very important optional attributes are ``min_points`` and ``max_points``.
 # They will limit the size of the Kriging equation system. As we have 200 observations,
 # we can require at least 5 neighbors within the range. More than 15 will only unnecessarily slow down the computation.
 # The ``mode='exact'`` attribute will advise the class to build and solve the system above for each location.
@@ -144,7 +144,7 @@ print(V)
 ok = skg.OrdinaryKriging(V, min_points=5, max_points=15, mode='exact')
 
 # %%
-# The :func:`OrdinaryKriging.transform <skgstat.OrdianryKriging.transform>` method will apply the interpolation for passed arrays of coordinates.
+# The :func:`OrdinaryKriging.transform <skgstat.OrdinaryKriging.transform>` method will apply the interpolation for passed arrays of coordinates.
 # It requires each dimension as a single 1D array. We can easily build a meshgrid of 100x100 coordinates and pass them to the interpolator.
 # To receive a 2D result, we can simply reshape the result. The Kriging error will be available as the ``sigma`` attribute of the interpolator.
 

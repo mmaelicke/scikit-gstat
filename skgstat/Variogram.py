@@ -1020,8 +1020,7 @@ class Variogram(object):
         """
         Get argument slice position (list of slices) for the sum of models from a list of model names (list of strings).
         """
-
-        # Doing this here for other functions (fit, describe, etc), even though already done in _build_sum_models
+        # Get the models
         list_models = [getattr(models, model_name.lower()).py_func for model_name in list_model_names]
 
         # Get the number of arguments per model (e.g., [3, 4, 4])

@@ -33,8 +33,8 @@ origins = dict(
     IMPORTANT: If you use this data, cite Pebesma and Bivand (2005)
     and Bivand et al (2013):
 
-      Pebesma EJ, Bivand RS (2005). “Classes and methods for spatial
-      data in R.” R News, 5(2), 9–13. https://CRAN.R-project.org/doc/Rnews/.
+      Pebesma EJ, Bivand RS (2005). "Classes and methods for spatial
+      data in R." R News, 5(2), 9–13. https://CRAN.R-project.org/doc/Rnews/.
 
       Bivand RS, Pebesma E, Gomez-Rubio V (2013). Applied spatial data
       analysis with R, Second edition. Springer, NY. https://asdar-book.org/.
@@ -93,11 +93,11 @@ def pancake(N=500, band=0, seed=42, as_dataframe=False):
     The image was cropped to an 500x500 pixel extent keeping the
     center of the original photograph.
     If you use this example somewhere else, please cite
-    SciKit-GStat [501]_, as it is distributed with the library.
+    SciKit-GStat [502]_, as it is distributed with the library.
 
     References
     ----------
-    .. [501] Mirko Mälicke, Helge David Schneider, Sebastian Müller,
+    .. [502] Mirko Mälicke, Helge David Schneider, Sebastian Müller,
         & Egil Möller. (2021, April 20). mmaelicke/scikit-gstat: A scipy
         flavoured geostatistical variogram analysis toolbox (Version v0.5.0).
         Zenodo. http://doi.org/10.5281/zenodo.4704356

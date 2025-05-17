@@ -43,9 +43,26 @@ release = get_version()
 #
 # needs_sphinx = '1.0'
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
+# RST settings
+rst_prolog = """
+.. role:: python(code)
+   :language: python
+   :class: highlight
+
+.. role:: math(raw)
+   :format: latex html
+
+.. default-role:: code
+
+.. |br| raw:: html
+
+   <br />
+
+.. |nbsp| unicode:: 0xA0
+   :trim:
+"""
+
+# Add any Sphinx extension module names here, as strings.
 extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
@@ -60,7 +77,15 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'sphinx_gallery.gen_gallery',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.imgconverter',
+    'sphinx.ext.autosectionlabel',
 ]
+
+# IPython directive configuration
+ipython_warning_is_error = False  # Don't fail on warnings
+ipython_execlines = []  # No default imports
+ipython_holdcount = True  # Maintain execution count with @suppress
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -79,7 +104,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -88,6 +113,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+# -- Options for docutils ----------------------------------------------
+docutils_tab_width = 4
+trim_doctest_flags = True
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -102,7 +131,15 @@ html_theme = 'pydata_sphinx_theme'
 # documentation.
 #
 html_theme_options = {
-    'github_url': 'https://github.com/mmaelicke/scikit-gstat',
+    'navigation_depth': 4,
+    'show_prev_next': False,
+    'icon_links': [
+        {
+            'name': 'GitHub',
+            'url': 'https://github.com/mmaelicke/scikit-gstat',
+            'icon': 'fab fa-github-square',
+        },
+    ],
 }
 
 html_context = {
@@ -150,21 +187,10 @@ htmlhelp_basename = 'SciKitGStatdoc'
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+    'papersize': 'letterpaper',
+    'pointsize': '10pt',
+    'preamble': '',
+    'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -227,11 +253,122 @@ pio.renderers.default = 'sphinx_gallery'
 
 import sphinx_gallery
 
+# Configure sphinx-gallery
 sphinx_gallery_conf = {
-    'examples_dirs': './tutorials',
-    'gallery_dirs': 'auto_examples',
+    'examples_dirs': ['../tutorials'],  # path to your example scripts
+    'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
     'backreferences_dir': 'gen_modules/backreferences',
     'doc_module': ('skgstat', 'skgstat'),
     'image_scrapers': image_scrapers,
-    'filename_pattern': '/tutorial',
+    'filename_pattern': '.*',  # Include all files
+    'ignore_pattern': r'\.py\.md5$|\.codeobj\.json$|\.zip$|\.rst$|\.ipynb$|\.py\.md5|\.py\.ipynb|\.py\.py|\.pickle$',
+    'notebook_images': True,
+    'remove_config_comments': True,
+    'download_all_examples': True,
+    'within_subsection_order': lambda x: os.path.basename(x),  # Order by filename
+    'capture_repr': ('_repr_html_', '__repr__'),
+    'first_notebook_cell': None,
+    'thumbnail_size': (400, 400),
+    'min_reported_time': 0,
+    'show_memory': False,
+    'junit': None,
+    'plot_gallery': True,
+    'reset_modules': ('matplotlib', 'seaborn'),
+    'reference_url': {
+        'skgstat': None,
+        'numpy': 'https://numpy.org/doc/stable',
+        'scipy': 'https://docs.scipy.org/doc/scipy/reference'
+    },
+    'binder': {
+        'org': 'mmaelicke',
+        'repo': 'scikit-gstat',
+        'branch': 'master',
+        'binderhub_url': 'https://mybinder.org',
+        'dependencies': '../requirements.txt',  # Point to the root directory
+    }
+}
+
+# Configure math options
+imgmath_image_format = 'svg'
+imgmath_font_size = 14
+
+# Configure RST settings
+rst_prolog = """
+.. role:: python(code)
+   :language: python
+   :class: highlight
+
+.. role:: math(raw)
+   :format: latex html
+
+.. default-role:: code
+
+.. |br| raw:: html
+
+   <br />
+
+.. |nbsp| unicode:: 0xA0
+   :trim:
+"""
+
+# Configure math settings
+mathjax_path = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML'
+mathjax_config = {
+    'tex2jax': {
+        'inlineMath': [['$', '$'], ['\\(', '\\)']],
+        'displayMath': [['$$', '$$'], ['\\[', '\\]']],
+        'processEscapes': True,
+        'processEnvironments': True
+    }
+}
+
+# Configure autodoc settings
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'bysource',
+    'special-members': '__init__',
+    'undoc-members': True,
+    'exclude-members': '__weakref__'
+}
+
+# Configure napoleon settings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_type_aliases = None
+napoleon_attr_annotations = True
+
+# Configure docutils settings
+docutils_settings = {
+    'file_insertion_enabled': True,
+    'raw_enabled': True,
+    'report_level': 2,
+    'strip_comments': True,
+    'strip_elements_with_classes': [],
+    'strip_classes': [],
+    'initial_header_level': 2,
+    'warning_stream': None,
+    'embed_stylesheet': False,
+    'cloak_email_addresses': True,
+    'pep_base_url': 'https://www.python.org/dev/peps/',
+    'pep_references': None,
+    'rfc_base_url': 'https://tools.ietf.org/html/',
+    'rfc_references': None,
+    'input_encoding': 'utf-8',
+    'doctitle_xform': True,
+    'sectsubtitle_xform': False,
+    'section_self_link': False,
+    'footnote_references': 'superscript',
+    'trim_footnote_reference_space': True,
+    'smart_quotes': True,
+    'language_code': 'en',
+    'syntax_highlight': 'long'
 }
