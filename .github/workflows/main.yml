@@ -4,6 +4,17 @@ on:
   - push
   - pull_request
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   test:
    name: Run Unittest
@@ -34,7 +45,7 @@ jobs:
           env_vars: OS, PYTHON
 
   docs:
-    name: Build and deploy documentation
+    name: Build documentation
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main'
@@ -52,31 +63,29 @@ jobs:
           python3 setup.py install
       - name: Install Sphinx requirements
         run: pip3 install -r requirements.rtd.txt
-#      - name: Upgrade
-#        run: sudo apt update && sudo apt -y upgrade
-#      - name: Install pdflatex
-#        run: sudo apt install --fix-missing texlive-latex-extra texlive-latex-recommended texlive-fonts-recommended pandoc
-#        continue-on-error: true
-      - name: make HTML & LaTeX docs
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+      - name: Build HTML docs
         run: |
           cd docs
           make html
-#          make latex
-        continue-on-error: true
-#      - name: compile LaTeX
-#        run: |
-#          cd docs/_build/latex
-#          pdflatex -interaction=nonstopmode -halt-on-error SciKitGStat.tex
-#          cd ../..
-#          cp _build/latex/SciKitGStat.pdf _build/html
-#        continue-on-error: true
-      - name: deploy to gh pages
-        uses: crazy-max/ghaction-github-pages@v1
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          target_branch: gh-pages
-          build_dir: docs/_build/html
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: docs/_build/html
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: docs
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   release:
     name: Create Github release
