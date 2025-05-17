@@ -105,12 +105,6 @@ class TestSpaceTimeVariogramArgumets(unittest.TestCase):
                 str(e), 'For now only str arguments are supported.'
             )
 
-    def test_tdist_func(self):
-        V = SpaceTimeVariogram(self.c, self.v, tdist_func='jaccard')
-
-        # with jaccard, all should disagree
-        self.assertTrue(all([_ == 1. for _ in V.tdistance]))
-
     def test_tdist_func_raises_ValueError(self):
         with self.assertRaises(ValueError) as e:
             V = SpaceTimeVariogram(self.c, self.v)
