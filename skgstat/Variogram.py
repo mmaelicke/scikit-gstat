@@ -42,7 +42,7 @@ class Variogram(object):
                  maxlag=None,
                  samples=None,
                  n_lags=10,
-                 special=False,
+                 high_dimension_data=False,
                  verbose=False,
                  **kwargs,
                  ):
@@ -216,7 +216,7 @@ class Variogram(object):
         n_lags : int
             Specify the number of lag classes to be defined by the binning
             function.
-        special: bool
+        high_dimension_data: bool
             If set to True, the Variogram will be performed on high D data.
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
@@ -323,7 +323,7 @@ class Variogram(object):
         # pairwise differences
         self._diff = None
 
-        self.special = special
+        self.high_dimension_data = high_dimension_data
         # set verbosity
         self.verbose = verbose
 
@@ -543,7 +543,7 @@ class Variogram(object):
             )
             
         elif _y.ndim == 2:
-            if self.special:
+            if self.high_dimension_data:
                 warnings.warn(f'Perform analysis on {_y.ndim} dimension data')
                 self._is_cross = False
             else:

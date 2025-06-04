@@ -37,7 +37,7 @@ class DirectionalVariogram(Variogram):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
-                 special=False,
+                 high_dimension_data=False,
                  verbose=False,
                  **kwargs
                  ):
@@ -202,7 +202,7 @@ class DirectionalVariogram(Variogram):
             separating distances
         n_lags : int
             Specify the number of lag classes to be defined by the binning
-        special: bool
+        high_dimension_data: bool
             If set to True, the Variogram will be performed on high D data.
             function.
         verbose : bool
@@ -248,7 +248,7 @@ class DirectionalVariogram(Variogram):
         # pairwise difference
         self._diff = None
         
-        self.special = special
+        self.high_dimension_data = high_dimension_data
         # set verbosity
         self.verbose = verbose
 
