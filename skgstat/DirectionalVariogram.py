@@ -37,6 +37,7 @@ class DirectionalVariogram(Variogram):
                  use_nugget=False,
                  maxlag=None,
                  n_lags=10,
+                 multivariate='cross',
                  verbose=False,
                  **kwargs
                  ):
@@ -201,7 +202,12 @@ class DirectionalVariogram(Variogram):
             separating distances
         n_lags : int
             Specify the number of lag classes to be defined by the binning
-            function.
+        multivariate: str
+            Specify how multivariate data should be used, can be one of:
+                * 'cross' (default): Cross variogram, i.e. the covariance
+                    between the first and second variable.
+                * 'aggregate': Aggregate multivariate data into a variable in
+                    high-dimension space.
         verbose : bool
             Set the Verbosity of the class. Not Implemented yet.
 
@@ -244,7 +250,8 @@ class DirectionalVariogram(Variogram):
 
         # pairwise difference
         self._diff = None
-
+        
+        self.multivariate = multivariate
         # set verbosity
         self.verbose = verbose
 
