@@ -163,7 +163,7 @@ dot product of the :math:`\gamma_i` and the :math:`a_i` part.
 
 That might look a bit complicated at first, but we have calculated almost everything.
 The last matrix are the `variances` that we calculated in the last step.
-The first matrix is of same shape as the sqaureform distance matrix calculated in
+The first matrix is of same shape as the squareform distance matrix calculated in
 the very beginning. All we need to do is to map the variogram model on it and
 solve the system for the matrix of factors :math:`a_1 \ldots a_5`.
 In Python, there are several strategies how you could solve this problem.
