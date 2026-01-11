@@ -5,6 +5,7 @@ inspired by the scipy.interpolate classes.
 """
 import time
 import warnings
+import sys
 
 import numpy as np
 from scipy.spatial.distance import squareform
@@ -38,6 +39,9 @@ class IllMatrixError(RuntimeWarning):
 
 def inv_solve(a, b):
     return inv(a).dot(b)
+
+
+
 
 
 class OrdinaryKriging:
@@ -321,10 +325,30 @@ class OrdinaryKriging:
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
         else:
-            def f(idxs):
-                return self._estimator(idxs)
-            with Pool(self.n_jobs) as p:
-                z = p.starmap(f, range(len(self.transform_coords)))
+            # Temporarily disable multiprocessing for Python 3.13+ due to pickling issues
+            # TODO: Fix lambda function pickling in variogram for proper multiprocessing support
+            if sys.version_info >= (3, 13):
+                warnings.warn(
+                    "Multiprocessing is temporarily disabled in Python 3.13+ due to pickling issues "
+                    "with lambda functions in variogram models. Falling back to serial execution. "
+                    "A proper fix is in development.",
+                    UserWarning
+                )
+                z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
+            else:
+                # For older Python versions, try original approach
+                try:
+                    with Pool(self.n_jobs) as p:
+                        def f(idxs):
+                            return self._estimator(idxs)
+                        z = p.starmap(f, range(len(self.transform_coords)))
+                except Exception as e:
+                    warnings.warn(
+                        f"Multiprocessing failed ({str(e)}). "
+                        "Falling back to serial execution.",
+                        UserWarning
+                    )
+                    z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
 
         # print warnings
         if self.singular_error > 0:

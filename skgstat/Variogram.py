@@ -1876,16 +1876,17 @@ class Variogram(object):
                 model = model.lower()
                 model = getattr(models, model)
 
-        if model.__name__ == "harmonize":
-            code = """fitted_model = lambda x: model(x)"""
-        else:
-            code = """fitted_model = lambda x: model(x, %s)""" % \
-               (', '.join([str(_) for _ in cof]))
-
-        # run the code
-        loc = dict(model=model)
-        exec(code, loc, loc)
-        return loc['fitted_model']
+        # Create a picklable function instead of lambda
+        def _create_fitted_model(model, cof):
+            if model.__name__ == "harmonize":
+                def fitted_model(x):
+                    return model(x)
+            else:
+                def fitted_model(x):
+                    return model(x, *cof)
+            return fitted_model
+        
+        return _create_fitted_model(model, cof)
 
     def _format_values_stack(self, values: np.ndarray) -> np.ndarray:
         """
