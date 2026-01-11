@@ -250,7 +250,7 @@ class DirectionalVariogram(Variogram):
 
         # pairwise difference
         self._diff = None
-        
+
         self.multivariate = multivariate
         # set verbosity
         self.verbose = verbose
