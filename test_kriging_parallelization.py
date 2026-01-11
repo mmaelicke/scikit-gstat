@@ -93,53 +93,48 @@ def test_different_n_jobs_values():
     print("  PASS: All n_jobs values give consistent results")
     return True
 
-def test_python_version_compatibility():
-    """Test Python version specific behavior."""
-    print("Testing Python version compatibility...")
+def test_multiprocessing_works_across_python_versions():
+    """Test that multiprocessing works on all supported Python versions."""
+    print("Testing multiprocessing across Python versions...")
 
     import sys
     py_version = sys.version_info
-
     print(f"  Python version: {py_version.major}.{py_version.minor}.{py_version.micro}")
 
-    if py_version >= (3, 13):
-        print("  Testing Python 3.13+ warning behavior...")
+    np.random.seed(42)
+    coords = np.random.gamma(10, 4, size=(20, 2))
+    values = np.random.normal(10, 2, size=20)
+    V = Variogram(coords, values, model='spherical', normalize=False)
 
-        np.random.seed(42)
-        coords = np.random.gamma(10, 4, size=(15, 2))
-        values = np.random.normal(10, 2, size=15)
-        V = Variogram(coords, values, model='spherical', normalize=False)
+    try:
+        # Test both serial and parallel execution
+        ok_serial = OrdinaryKriging(V, min_points=5, max_points=15, n_jobs=1)
+        ok_parallel = OrdinaryKriging(V, min_points=5, max_points=15, n_jobs=2)
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            ok = OrdinaryKriging(V, min_points=5, max_points=15, n_jobs=2)
-            result = ok.transform(coords[:, 0], coords[:, 1])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            result_serial = ok_serial.transform(coords[:, 0], coords[:, 1])
+            result_parallel = ok_parallel.transform(coords[:, 0], coords[:, 1])
 
-            # Check if warning was issued for Python 3.13+
-            warning_found = any("multiprocessing" in str(warning.message).lower() for warning in w)
+        # Verify results are consistent
+        nan_mask_serial = np.isnan(result_serial)
+        nan_mask_parallel = np.isnan(result_parallel)
 
-            if warning_found:
-                print("  PASS: Appropriate warning issued for Python 3.13+")
-            else:
-                print("  INFO: No multiprocessing warning (may be fixed)")
-
-    else:
-        print("  Testing older Python version multiprocessing...")
-
-        np.random.seed(42)
-        coords = np.random.gamma(10, 4, size=(15, 2))
-        values = np.random.normal(10, 2, size=15)
-        V = Variogram(coords, values, model='cubic', normalize=False)
-
-        try:
-            ok = OrdinaryKriging(V, min_points=5, max_points=15, n_jobs=2)
-            result = ok.transform(coords[:, 0], coords[:, 1])
-            print("  PASS: Multiprocessing works on older Python versions")
-        except Exception as e:
-            print(f"  FAIL: Multiprocessing failed on Python {py_version.major}.{py_version.minor}: {e}")
+        if not np.array_equal(nan_mask_serial, nan_mask_parallel):
+            print("  FAIL: NaN patterns differ between serial and parallel")
             return False
 
-    return True
+        valid_mask = ~nan_mask_serial
+        if not np.allclose(result_serial[valid_mask], result_parallel[valid_mask], rtol=1e-10):
+            print("  FAIL: Results differ between serial and parallel")
+            return False
+
+        print(f"  PASS: Multiprocessing works correctly on Python {py_version.major}.{py_version.minor}")
+        return True
+
+    except Exception as e:
+        print(f"  FAIL: Multiprocessing failed on Python {py_version.major}.{py_version.minor}: {e}")
+        return False
 
 def test_different_variogram_models():
     """Test with different variogram models."""

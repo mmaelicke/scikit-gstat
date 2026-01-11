@@ -5,9 +5,9 @@ Test script to reproduce the Python 3.13 multiprocessing error in OrdinaryKrigin
 import numpy as np
 from skgstat import Variogram, OrdinaryKriging
 
-def test_reproduce_error():
-    """Reproduce the multiprocessing error from issue #201."""
-    print("Testing OrdinaryKriging with n_jobs > 1 in Python 3.13...")
+def test_multiprocessing_fix():
+    """Test that the Python 3.13 multiprocessing fix works."""
+    print("Testing OrdinaryKriging multiprocessing fix...")
     print(f"Python version: {__import__('sys').version}")
 
     # Create test data
@@ -22,12 +22,12 @@ def test_reproduce_error():
     print(f"Created variogram: {V}")
 
     try:
-        # Test with n_jobs > 1 (should fail on Python 3.13)
+        # Test with n_jobs > 1 (should work with the fix)
         print("\n--- Testing with n_jobs=2 (parallel) ---")
         ok = OrdinaryKriging(V, min_points=5, max_points=20, n_jobs=2)
         print("OrdinaryKriging instance created successfully")
 
-        # This should trigger the error
+        # This should work with the fix
         result = ok.transform(coords[:, 0], coords[:, 1])
         print(f"SUCCESS: Parallel kriging completed. Result shape: {result.shape}")
         return True
@@ -59,21 +59,21 @@ def test_serial_baseline():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("Reproducing Python 3.13 multiprocessing issue #201")
+    print("Testing Python 3.13 multiprocessing fix for issue #201")
     print("=" * 60)
 
     # Test serial baseline
     serial_result = test_serial_baseline()
 
-    # Test parallel (should fail)
-    parallel_success = test_reproduce_error()
+    # Test parallel fix
+    parallel_success = test_multiprocessing_fix()
 
     print("\n" + "=" * 60)
     print("SUMMARY:")
     print(f"Serial execution: {'SUCCESS' if serial_result is not None else 'FAILED'}")
     print(f"Parallel execution: {'SUCCESS' if parallel_success else 'FAILED'}")
 
-    if not parallel_success:
-        print("\nThis confirms the Python 3.13 multiprocessing issue.")
+    if parallel_success:
+        print("\n✅ Python 3.13 multiprocessing fix is working!")
     else:
-        print("\nIssue appears to be resolved or not reproducible.")
+        print("\n❌ Python 3.13 multiprocessing fix needs more work.")
