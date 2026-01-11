@@ -188,7 +188,7 @@ def run_all_tests():
     tests = [
         test_serial_vs_parallel_consistency,
         test_different_n_jobs_values,
-        test_python_version_compatibility,
+        test_multiprocessing_works_across_python_versions,
         test_different_variogram_models,
     ]
 
