@@ -1251,6 +1251,23 @@ class Variogram(object):
         :class:`MetricSpace <skgstat.MetricSpace>`, only absolute
         limits can be used.
 
+        Examples
+        --------
+        Using absolute maxlag:
+
+        >>> import skgstat as skg
+        >>> c, v = skg.data.pancake().get('sample')
+        >>> V = skg.Variogram(c, v, maxlag=250)  # absolute limit
+
+        Using relative maxlag:
+
+        >>> V = skg.Variogram(c, v, maxlag=0.5)  # 50% of max distance
+
+        Using pre-computed MetricSpace (only absolute maxlag supported):
+
+        >>> ms = skg.MetricSpace(c, max_dist=250)
+        >>> V = skg.Variogram(ms, v, maxlag=250)
+
         """
         return self._maxlag
 
