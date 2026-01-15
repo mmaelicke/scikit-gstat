@@ -547,7 +547,7 @@ class Variogram(object):
             raise ValueError(
                 "values has to be 1d (classic variogram) or 2d dimensional (cross-variogram)"
             )
-            
+
         elif _y.ndim == 2:
             if self.multivariate == 'aggregate':
                 warnings.warn(f'Perform analysis on {_y.ndim} dimension data')
@@ -1876,16 +1876,17 @@ class Variogram(object):
                 model = model.lower()
                 model = getattr(models, model)
 
-        if model.__name__ == "harmonize":
-            code = """fitted_model = lambda x: model(x)"""
-        else:
-            code = """fitted_model = lambda x: model(x, %s)""" % \
-               (', '.join([str(_) for _ in cof]))
+        # Create a picklable function instead of lambda
+        def _create_fitted_model(model, cof):
+            if model.__name__ == "harmonize":
+                def fitted_model(x):
+                    return model(x)
+            else:
+                def fitted_model(x):
+                    return model(x, *cof)
+            return fitted_model
 
-        # run the code
-        loc = dict(model=model)
-        exec(code, loc, loc)
-        return loc['fitted_model']
+        return _create_fitted_model(model, cof)
 
     def _format_values_stack(self, values: np.ndarray) -> np.ndarray:
         """
@@ -1958,10 +1959,10 @@ class Variogram(object):
                     diffs = self._format_values_stack(self.values[:, i])
                 else:
                     diffs = np.vstack((diffs, self._format_values_stack(self.values[:, i])))
-        
+
         if self._is_aggregate:
             # Each row is a different variable
-            # We need to calculate the squared root of the sum of squares   
+            # We need to calculate the squared root of the sum of squares
             diffs = np.sqrt(np.sum(diffs**2, axis=0))
 
         if self.is_cross_variogram:

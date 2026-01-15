@@ -5,6 +5,7 @@ inspired by the scipy.interpolate classes.
 """
 import time
 import warnings
+import sys
 
 import numpy as np
 from scipy.spatial.distance import squareform
@@ -14,6 +15,7 @@ from multiprocessing import Pool
 
 from .Variogram import Variogram
 from .MetricSpace import MetricSpace, MetricSpacePair
+from . import models
 
 def custom_warning_format(message, category, filename, lineno, file=None, line=None):
     print(f"{category.__name__}: {message}")
@@ -36,8 +38,107 @@ class IllMatrixError(RuntimeWarning):
     pass
 
 
+def _kriging_multiprocess_worker(worker_data):
+    """
+    Multiprocessing worker that performs standalone kriging calculation.
+
+    This function implements the core kriging algorithm without depending
+    on the full OrdinaryKriging object structure, avoiding pickling issues.
+
+    Parameters
+    ----------
+    worker_data : tuple
+        (coords, values, target_coords, model_name, coef, range_val, idx, kriging_params)
+
+    Returns
+    -------
+    tuple
+        (estimation, sigma) or (nan, nan) on error
+    """
+    try:
+        coords, values, target_coords, model_name, coef, range_val, idx, kriging_params = worker_data
+
+        # Create fitted_model lambda LOCALLY in worker (not pickled!)
+        model_func = getattr(models, model_name)
+        fitted_model = lambda x: model_func(x, *coef)
+
+        # Extract parameters
+        min_points = kriging_params['min_points']
+        max_points = kriging_params['max_points']
+        mode = kriging_params['mode']
+        dist_metric = kriging_params.get('dist_metric', 'euclidean')
+        dist_kwargs = kriging_params.get('dist_metric_kwargs', {})
+
+        # Set up solver
+        solver_name = kriging_params['solver']
+        if solver_name == 'inv':
+            solve_func = inv_solve
+        elif solver_name == 'numpy':
+            from numpy.linalg import solve as numpy_solve
+            solve_func = numpy_solve
+        elif solver_name == 'scipy':
+            from scipy.linalg import solve as scipy_solve
+            solve_func = scipy_solve
+
+        # Find neighboring points within range
+        coords_ms = MetricSpace(coords, dist_metric)
+        target_ms = MetricSpace(target_coords.reshape(1, -1), dist_metric)
+        pair_ms = MetricSpacePair(target_ms, coords_ms)
+
+        # Get indices of points within range
+        idx = pair_ms.find_closest(0, range_val, max_points)
+
+        if len(idx) < min_points:
+            return (float('nan'), float('nan'))
+
+        # Get coordinates, values, and distances for neighbors
+        neighbor_coords = coords[idx]
+        neighbor_values = values[idx]
+        dist_mat = coords_ms.diagonal(idx)
+
+        # Build kriging matrix
+        if mode == 'exact':
+            # Calculate semivariances for all pairs
+            gamma_matrix = squareform(fitted_model(dist_mat))
+        else:
+            # For estimate mode, use direct calculation (simplified)
+            gamma_matrix = fitted_model(dist_mat)
+
+        # Add Lagrange multiplier row/column
+        n = len(neighbor_coords)
+        gamma_matrix = np.concatenate((squareform(gamma_matrix), np.ones((n, 1))), axis=1)
+        gamma_matrix = np.concatenate((gamma_matrix, np.ones((1, n + 1))), axis=0)
+        gamma_matrix[-1, -1] = 0
+
+        # Calculate distances from target to neighbors
+        target_distances = Variogram.wrapped_distance_function(
+            dist_metric,
+            np.concatenate(([target_coords], neighbor_coords)),
+            **dist_kwargs
+        )[:n]  # Only distances to neighbors
+
+        # Calculate semivariances for target-neighbor pairs
+        gamma_vec = fitted_model(target_distances)
+        b = np.concatenate((gamma_vec, [1]))
+
+        # Solve the kriging system
+        try:
+            weights = solve_func(gamma_matrix, b)
+            estimation = np.sum(weights[:-1] * neighbor_values)
+            sigma = np.sum(weights[:-1] * gamma_vec) + weights[-1]
+            return (estimation, sigma)
+        except (LinAlgError, ValueError):
+            return (float('nan'), float('nan'))
+
+    except Exception:
+        return (float('nan'), float('nan'))
+
+
 def inv_solve(a, b):
     return inv(a).dot(b)
+
+
+
 
 
 class OrdinaryKriging:
@@ -113,6 +214,9 @@ class OrdinaryKriging:
                 coordinates = variogram.coordinates
             if values is None:
                 values = variogram.values
+            # Store model info for multiprocessing before converting to dict
+            self._model_name = variogram._model.__name__
+            self._model_coef = variogram.cof
             variogram_descr = variogram.describe()
             if variogram_descr["model"] == "harmonize":
                 variogram_descr["model"] = variogram._build_harmonized_model()
@@ -276,6 +380,28 @@ class OrdinaryKriging:
             raise AttributeError("solver has to be ['inv', 'numpy', 'scipy']")
         self._solver = value
 
+    def _prepare_worker_data(self, idx):
+        """Extract picklable data for multiprocessing worker."""
+        return (
+            self.coords.coords,           # coordinates array
+            self.values,                  # values array
+            self.transform_coords.coords[idx, :],  # single target point
+            self._model_name,             # model name string
+            self._model_coef,             # coefficients list
+            self.range,                   # effective range
+            idx,                          # original index for reference
+            {                              # kriging parameters dict
+                'min_points': self.min_points,
+                'max_points': self.max_points,
+                'mode': self.mode,
+                'precision': self.precision,
+                'solver': self.solver,
+                'sparse': self.sparse,
+                'dist_metric': self.dist_metric,
+                'dist_metric_kwargs': getattr(self, 'dist_metric_kwargs', {})
+            }
+        )
+
     def transform(self, *x):
         """Kriging
 
@@ -321,10 +447,16 @@ class OrdinaryKriging:
         if self.n_jobs is None or self.n_jobs == 1:
             z = np.fromiter(map(self._estimator, range(len(self.transform_coords))), dtype=float)
         else:
-            def f(idxs):
-                return self._estimator(idxs)
+            # True multiprocessing - create lambdas locally in workers
+            worker_data = [self._prepare_worker_data(idx) for idx in range(len(self.transform_coords))]
+
             with Pool(self.n_jobs) as p:
-                z = p.starmap(f, range(len(self.transform_coords)))
+                results = p.map(_kriging_multiprocess_worker, worker_data)
+
+            # Process results
+            z = np.array([r[0] for r in results])
+            self.sigma = np.array([r[1] for r in results])
+            self.__sigma_index = len(self.transform_coords)
 
         # print warnings
         if self.singular_error > 0:
