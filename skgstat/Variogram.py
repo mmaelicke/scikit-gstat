@@ -296,22 +296,16 @@ class Variogram(object):
                 ))
                 self._1d = True
 
-            # handle maxlag for MetricSpace
-            if maxlag and not isinstance(maxlag, str) and maxlag >= 1:
-                _maxlag = maxlag
-            else:
-                _maxlag = None
-
             if samples is None:
                 coordinates = MetricSpace(
                     coordinates.copy(),
                     dist_func,
-                    _maxlag
+                    None
                 )
             else:
                 coordinates = ProbabalisticMetricSpace(
                     coordinates.copy(),
-                    dist_func, _maxlag,
+                    dist_func, None,
                     samples=samples,
                     rnd=self._kwargs.get("binning_random_state", None)
                 )

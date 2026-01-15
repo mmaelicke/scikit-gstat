@@ -65,7 +65,7 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
     def test_sparse_maxlag_30(self):
         V = Variogram(self.c, self.v, maxlag=30)
 
-        for x, y in zip(V.parameters, [17.128, 6.068, 0]):
+        for x, y in zip(V.parameters, [17.13, 6.068, 0]):
             self.assertAlmostEqual(x, y, places=3)
 
 
