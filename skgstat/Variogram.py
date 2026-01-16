@@ -296,22 +296,16 @@ class Variogram(object):
                 ))
                 self._1d = True
 
-            # handle maxlag for MetricSpace
-            if maxlag and not isinstance(maxlag, str) and maxlag >= 1:
-                _maxlag = maxlag
-            else:
-                _maxlag = None
-
             if samples is None:
                 coordinates = MetricSpace(
                     coordinates.copy(),
                     dist_func,
-                    _maxlag
+                    None
                 )
             else:
                 coordinates = ProbabalisticMetricSpace(
                     coordinates.copy(),
-                    dist_func, _maxlag,
+                    dist_func, None,
                     samples=samples,
                     rnd=self._kwargs.get("binning_random_state", None)
                 )
@@ -1256,6 +1250,23 @@ class Variogram(object):
         Thus, if you pre-calcualte the distance matrix using
         :class:`MetricSpace <skgstat.MetricSpace>`, only absolute
         limits can be used.
+
+        Examples
+        --------
+        Using absolute maxlag:
+
+        >>> import skgstat as skg
+        >>> c, v = skg.data.pancake().get('sample')
+        >>> V = skg.Variogram(c, v, maxlag=250)  # absolute limit
+
+        Using relative maxlag:
+
+        >>> V = skg.Variogram(c, v, maxlag=0.5)  # 50% of max distance
+
+        Using pre-computed MetricSpace (only absolute maxlag supported):
+
+        >>> ms = skg.MetricSpace(c, max_dist=250)
+        >>> V = skg.Variogram(ms, v, maxlag=250)
 
         """
         return self._maxlag
