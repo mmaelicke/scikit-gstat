@@ -42,6 +42,7 @@ The code itself is published and has a DOI. It can be cited as:
 
     install
     getting_started
+    tutorials/tutorials
     userguide/userguide
     auto_examples/index
     technical/technical

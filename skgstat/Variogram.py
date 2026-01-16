@@ -1990,11 +1990,11 @@ class Variogram(object):
         bin_edges = self.bins
         d = self.distance
 
-        # -1 is the group fir distances outside maxlag
-        self._groups = np.ones(len(d), dtype=int) * -1
+        # use digitize for efficient binning
+        self._groups = np.digitize(d, bin_edges)
 
-        for i, bounds in enumerate(zip([0] + list(bin_edges), bin_edges)):
-            self._groups[np.where((d >= bounds[0]) & (d < bounds[1]))] = i
+        # -1 is the group for distances outside maxlag
+        self._groups[self._groups == len(bin_edges)] = -1
 
     def clone(self):
         """Deep copy of self
