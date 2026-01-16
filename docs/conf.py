@@ -238,12 +238,7 @@ todo_include_todos = True
 
 # -- Intersphinx mapping -----------------------------------------------------
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.6', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'numpy':  ('https://docs.scipy.org/doc/numpy', None),
-    'scipy':  ('https://docs.scipy.org/doc/scipy/reference', None),
-    'gstools': ('https://geostat-framework.readthedocs.io/projects/gstools/en/latest/', None),
-    'sklearn': ('http://scikit-learn.org/stable', None),
+    'gstools': ('https://geostat-framework.readthedocs.io/projects/gstools/en/stable/api.html', None),
 }
 
 from plotly.io._sg_scraper import plotly_sg_scraper
