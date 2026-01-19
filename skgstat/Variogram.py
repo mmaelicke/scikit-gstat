@@ -38,9 +38,10 @@ class Variogram(object):
                  normalize=False,
                  fit_method='trf',
                  fit_sigma=None,
-                 use_nugget=False,
-                 maxlag=None,
-                 samples=None,
+                  use_nugget=False,
+                  maxlag=None,
+                  max_dist=None,
+                  samples=None,
                  n_lags=10,
                  multivariate='cross',
                  verbose=False,
@@ -203,10 +204,16 @@ class Variogram(object):
             is relative and maxlag * max(Variogram.distance) will be used.
             In case maxlag is a string it has to be one of 'median', 'mean'.
             Then the median or mean of all Variogram.distance will be used.
-            Note maxlag=0.5 will use half the maximum separating distance,
-            this is not the same as 'median', which is the median of all
-            separating distances
-        samples : float, int
+             Note maxlag=0.5 will use half the maximum separating distance,
+             this is not the same as 'median', which is the median of all
+             separating distances
+         max_dist : float
+             .. versionadded:: 1.0.13
+
+             Maximum distance at which distances are calculated. If set, overrides
+             maxlag-based limiting. Useful for large datasets to limit computation.
+             If not set and maxlag is relative, max_dist is estimated approximately.
+         samples : float, int
             If set to a non-None value point pairs are sampled
             randomly. Two random subset of all points are chosen, and
             the distance matrix is calculated only between these two
@@ -296,16 +303,44 @@ class Variogram(object):
                 ))
                 self._1d = True
 
+            # Determine max_dist for MetricSpace
+            computed_max_dist = max_dist
+            if computed_max_dist is None:
+                if maxlag is not None and not isinstance(maxlag, str) and 0 < maxlag < 1:
+                    # Estimate max_distance for relative maxlag
+                    warnings.warn(
+                        "Relative maxlag requires estimating max_distance from a sample of pairs. "
+                        "This may be approximate; for exact results, provide max_dist or use absolute maxlag.",
+                        UserWarning
+                    )
+                    n_points = coordinates.shape[0]
+                    if n_points < 2:
+                        estimated_max = 0.0
+                    else:
+                        import random
+                        n_pairs = n_points * (n_points - 1) // 2
+                        n_samples = min(200, n_pairs)
+                        pairs = random.sample(
+                            [(i, j) for i in range(n_points) for j in range(i + 1, n_points)],
+                            n_samples
+                        )
+                        distances = [pdist(np.array([coordinates[i], coordinates[j]]), metric=dist_func)[0] for i, j in pairs]
+                        max_sampled = max(distances) if distances else 0.0
+                        estimated_max = max_sampled * 3
+                    computed_max_dist = estimated_max
+                elif maxlag is not None and not isinstance(maxlag, str) and maxlag >= 1:
+                    computed_max_dist = maxlag
+
             if samples is None:
                 coordinates = MetricSpace(
                     coordinates.copy(),
                     dist_func,
-                    None
+                    computed_max_dist
                 )
             else:
                 coordinates = ProbabalisticMetricSpace(
                     coordinates.copy(),
-                    dist_func, None,
+                    dist_func, computed_max_dist,
                     samples=samples,
                     rnd=self._kwargs.get("binning_random_state", None)
                 )
