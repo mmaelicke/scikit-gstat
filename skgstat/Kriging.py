@@ -8,7 +8,7 @@ import warnings
 import sys
 
 import numpy as np
-from scipy.spatial.distance import squareform
+from scipy.spatial.distance import squareform, pdist
 from scipy.linalg import solve as scipy_solve
 from numpy.linalg import solve as numpy_solve, LinAlgError, inv
 from multiprocessing import Pool
@@ -86,27 +86,25 @@ def _kriging_multiprocess_worker(worker_data):
         pair_ms = MetricSpacePair(target_ms, coords_ms)
 
         # Get indices of points within range
-        idx = pair_ms.find_closest(0, range_val, max_points)
+        neighbor_idx = pair_ms.find_closest(0, range_val, max_points)
 
-        if len(idx) < min_points:
+        if len(neighbor_idx) < min_points:
             return (float('nan'), float('nan'))
 
         # Get coordinates, values, and distances for neighbors
-        neighbor_coords = coords[idx]
-        neighbor_values = values[idx]
-        dist_mat = coords_ms.diagonal(idx)
+        neighbor_coords = coords[neighbor_idx]
+        neighbor_values = values[neighbor_idx]
+        dist_mat = pdist(neighbor_coords, metric=dist_metric, **dist_kwargs)
+
+        if len(dist_mat) == 0:
+            return (float('nan'), float('nan'))
 
         # Build kriging matrix
-        if mode == 'exact':
-            # Calculate semivariances for all pairs
-            gamma_matrix = squareform(fitted_model(dist_mat))
-        else:
-            # For estimate mode, use direct calculation (simplified)
-            gamma_matrix = fitted_model(dist_mat)
+        gamma_matrix = squareform(fitted_model(dist_mat))
 
         # Add Lagrange multiplier row/column
         n = len(neighbor_coords)
-        gamma_matrix = np.concatenate((squareform(gamma_matrix), np.ones((n, 1))), axis=1)
+        gamma_matrix = np.concatenate((gamma_matrix, np.ones((n, 1))), axis=1)
         gamma_matrix = np.concatenate((gamma_matrix, np.ones((1, n + 1))), axis=0)
         gamma_matrix[-1, -1] = 0
 
@@ -130,7 +128,10 @@ def _kriging_multiprocess_worker(worker_data):
         except (LinAlgError, ValueError):
             return (float('nan'), float('nan'))
 
-    except Exception:
+    except Exception as e:
+        import traceback
+        print(f"Exception in worker: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         return (float('nan'), float('nan'))
 
 

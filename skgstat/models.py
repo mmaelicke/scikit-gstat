@@ -19,7 +19,6 @@ def variogram(func):
 
 
 @variogram
-@jit(nopython=True)
 def spherical(h, r, c0, b=0.0):
     r"""Spherical Variogram function
 
@@ -83,7 +82,6 @@ def spherical(h, r, c0, b=0.0):
 
 
 @variogram
-@jit(nopython=True)
 def exponential(h, r, c0, b=0.0):
     r"""Exponential Variogram function
 
@@ -145,7 +143,6 @@ def exponential(h, r, c0, b=0.0):
 
 
 @variogram
-@jit(nopython=True)
 def gaussian(h, r, c0, b=0.0):
     r""" Gaussian Variogram function
 
@@ -210,7 +207,6 @@ def gaussian(h, r, c0, b=0.0):
 
 
 @variogram
-@jit(nopython=True)
 def cubic(h, r, c0, b=0.0):
     r"""Cubic Variogram function
 
@@ -273,7 +269,6 @@ def cubic(h, r, c0, b=0.0):
 
 
 @variogram
-@jit(nopython=True)
 def stable(h, r, c0, s, b=0.0):
     r"""Stable Variogram function
 
@@ -345,7 +340,6 @@ def stable(h, r, c0, s, b=0.0):
 
 
 @variogram
-@jit(forceobj=True)
 def matern(h, r, c0, s, b=0.0):
     r"""Matérn Variogram function
 
