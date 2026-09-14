@@ -1,5 +1,5 @@
 setuptools
-scipy
+scipy<1.17
 numpy
 pandas
 matplotlib
