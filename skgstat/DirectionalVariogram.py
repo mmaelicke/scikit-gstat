@@ -401,12 +401,12 @@ class DirectionalVariogram(Variogram):
         # (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)
         # cos(v) = (a - b).[1,0] / ||a - b||
         # cos(v) = (a.[1,0] - b.[1,0]) / ||a - b||
-        scalar = pdist(np.array([np.dot(_x, [1, 0])]).T, np.subtract)
+        scalar = pdist(_x[:, [0]], lambda a, b: a[0] - b[0])
         pos_angles = np.arccos(scalar / self._euclidean_dist)
 
         # cos(v) for [2,1] and [2, -1] is the same,
         # but v is not (v vs -v), fix that.
-        ydiff = pdist(np.array([np.dot(_x, [0, 1])]).T, np.subtract)
+        ydiff = pdist(_x[:, [1]], lambda a, b: a[0] - b[0])
 
         # store the angle or negative angle, depending on the
         # amount of the x coordinate

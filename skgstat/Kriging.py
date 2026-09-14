@@ -17,11 +17,6 @@ from .Variogram import Variogram
 from .MetricSpace import MetricSpace, MetricSpacePair
 from . import models
 
-def custom_warning_format(message, category, filename, lineno, file=None, line=None):
-    print(f"{category.__name__}: {message}")
-
-warnings.showwarning = custom_warning_format
-
 class KrigingWarning(Warning):
     pass
 
