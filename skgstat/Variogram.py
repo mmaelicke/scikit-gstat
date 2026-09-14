@@ -1552,7 +1552,7 @@ class Variogram(object):
         # get the groups
         groups = self.lag_groups()
 
-        # yield all groups 
+        # yield all groups
         for i in range(len(self.bins)):
             yield diffs[np.where(groups == i)]
 
@@ -2000,10 +2000,10 @@ class Variogram(object):
         # get the bin edges and distances
         bin_edges = self.bins
         d = self.distance
-        
+
         # -1 is the group for distances outside maxlag
         bins = np.digitize(d, bin_edges)
-        self._groups = np.where(bins == self.n_lags, -1, bins) 
+        self._groups = np.where(bins == self.n_lags, -1, bins)
 
     def clone(self):
         """Deep copy of self
