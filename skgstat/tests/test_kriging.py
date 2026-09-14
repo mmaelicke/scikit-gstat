@@ -1,8 +1,20 @@
+import importlib
 import unittest
+import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 from skgstat import Variogram, OrdinaryKriging
+
+
+class TestKrigingWarnings(unittest.TestCase):
+    def test_import_does_not_replace_global_warning_handler(self):
+        kriging_module = importlib.import_module('skgstat.Kriging')
+        warning_handler = warnings.showwarning
+
+        importlib.reload(kriging_module)
+
+        self.assertIs(warnings.showwarning, warning_handler)
 
 
 class TestKrigingInstantiation(unittest.TestCase):
