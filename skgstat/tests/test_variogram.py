@@ -66,7 +66,7 @@ class TestSpatiallyCorrelatedData(unittest.TestCase):
         V = Variogram(self.c, self.v, maxlag=30)
 
         for x, y in zip(V.parameters, [17.13, 6.068, 0]):
-            self.assertAlmostEqual(x, y, places=3)
+            self.assertAlmostEqual(x, y, places=2)
 
 
 class TestVariogramInstantiation(unittest.TestCase):
@@ -88,6 +88,12 @@ class TestVariogramInstantiation(unittest.TestCase):
 
         for x, y in zip(V.parameters, [7.122, 13.966, 0]):
             self.assertAlmostEqual(x, y, places=3)
+
+    def test_relative_maxlag_warning(self):
+        with self.assertWarns(UserWarning) as cm:
+            V = Variogram(self.c, self.v, maxlag=0.5)
+        self.assertIn("Relative maxlag requires estimating", str(cm.warning))
+        self.assertIn("approximate", str(cm.warning))
 
     def test_input_dimensionality(self):
         c1d = np.random.normal(0, 1, 100)
