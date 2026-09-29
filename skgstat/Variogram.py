@@ -393,9 +393,7 @@ class Variogram(object):
 
         # do the preprocessing and fitting upon initialization
         # Note that fit() calls preprocessing
-        fit_bounds = self._kwargs.get('fit_bounds') # returns None if empty
-        fit_p0 = self._kwargs.get('fit_p0')
-        self.fit(force=True, bounds=fit_bounds, p0=fit_p0)
+        self.fit(force=True)
 
         # finally check if any of the uncertainty propagation kwargs are set
         self._experimental_conf_interval = None
@@ -1657,6 +1655,12 @@ class Variogram(object):
         scipy.optimize.least_squares
 
         """
+        # get `bounds` and `p0` from `self._kwargs`, still `None` if not set
+        if bounds is None:
+            bounds = self._kwargs.get('fit_bounds') # returns None if empty
+        if p0 is None:
+            p0 = self._kwargs.get('fit_p0')
+
         # store the old cof
         if self.cof is None:
             old_params = {}
