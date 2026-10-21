@@ -666,9 +666,9 @@ class OrdinaryKriging:
         out_ = np.where(dist_n >= self.precision)[0]
         in_ = np.where(dist_n < self.precision)[0]
 
-        # all semivariances outside are set to sill,
+        # all semivariances outside are set to the total sill,
         # the inside are estimated from the precompiled
-        g[out_] = self.sill
+        g[out_] = self.sill + self.nugget
         g[in_] = self._prec_g[dist_n[in_]]
 
         return g
