@@ -136,6 +136,27 @@ class TestKrigingInstantiation(unittest.TestCase):
         )
 
 
+class TestEstimatedNugget(unittest.TestCase):
+    def test_estimate_matches_exact_beyond_range(self):
+        coordinates = np.array([[-0.75, 0.], [0.75, 0.],
+                                [0., -0.75], [0., 0.75]])
+        values = np.array([1., 2., 3., 4.])
+        targets = np.array([[0., 0.], [0.1, 0.1]])
+        for model in ('spherical', 'cubic'):
+            for nugget in (0., 1.):
+                variogram = Variogram(
+                    coordinates, values, model=model, use_nugget=True,
+                    fit_method='manual', fit_range=1., fit_sill=2.,
+                    fit_nugget=nugget)
+                exact = OrdinaryKriging(variogram, min_points=4, max_points=4)
+                estimated = OrdinaryKriging(
+                    variogram, min_points=4, max_points=4, mode='estimate')
+                reference = exact.transform(*targets.T)
+                result = estimated.transform(*targets.T)
+                assert_array_almost_equal(result, reference)
+                assert_array_almost_equal(estimated.sigma, exact.sigma)
+
+
 class TestPerformance(unittest.TestCase):
     """
     The TestPerformance class is not a real unittest. It will always be true.
