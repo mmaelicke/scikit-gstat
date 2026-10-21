@@ -136,6 +136,30 @@ class TestKrigingInstantiation(unittest.TestCase):
         )
 
 
+class TestSparseEstimatedKriging(unittest.TestCase):
+    def test_sparse_estimate_matches_dense_beyond_range(self):
+        coordinates = np.array([[-0.75, 0.], [0.75, 0.],
+                                [0., -0.75], [0., 0.75]])
+        values = np.array([1., 2., 3., 4.])
+        targets = np.array([[0., 0.], [0.1, 0.1]])
+        for model in ('spherical', 'cubic'):
+            for precision in (100, 10000):
+                variogram = Variogram(
+                    coordinates, values, model=model, fit_method='manual',
+                    fit_range=1., fit_sill=2.)
+                dense = OrdinaryKriging(
+                    variogram, min_points=4, max_points=4, mode='estimate',
+                    precision=precision)
+                sparse = OrdinaryKriging(
+                    variogram, min_points=4, max_points=4, mode='estimate',
+                    precision=precision, sparse=True)
+                reference = dense.transform(*targets.T)
+                with np.errstate(invalid='raise'):
+                    result = sparse.transform(*targets.T)
+                assert_array_almost_equal(result, reference)
+                assert_array_almost_equal(sparse.sigma, dense.sigma)
+
+
 class TestPerformance(unittest.TestCase):
     """
     The TestPerformance class is not a real unittest. It will always be true.
