@@ -5,6 +5,9 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.25
+--------------
+
 .. warning::
   This version changes the experimental cross-variogram values. **This is a breaking change**.
 
@@ -17,6 +20,9 @@ Version 1.1-rc
 - [Variogram] cross-variograms raise a ``NotImplementedError`` for all estimators other than ``'matheron'``
 - [Variogram] the default fit bounds of sill and nugget are negative for cross-variograms dominated by
   negative values. This way, negative cross-variograms can be fitted with the default arguments.
+- [Kriging] estimated kriging handles sparse distance matrices
+- [Kriging] estimated kriging semi-variances include the nugget
+- [setup] dropped support for Python 3.9 and 3.10, added Python 3.14
 
 Version 1.0.11
 --------------
