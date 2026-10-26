@@ -6,6 +6,7 @@ from scipy.spatial.distance import pdist
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import inspect
+import warnings
 
 from skgstat import binning, estimators, Variogram, stmodels, plotting
 
@@ -29,6 +30,14 @@ class SpaceTimeVariogram:
                  model='product-sum',
                  verbose=False
                  ):
+        warnings.warn(
+            'SpaceTimeVariogram is deprecated and will be replaced by '
+            'SpatioTemporalVariogram. Existing grids can be converted with '
+            'SpatioTemporalVariogram.from_grid(coordinates, values).',
+            FutureWarning,
+            stacklevel=2
+        )
+
         # set coordinates array
         self._X = np.asarray(coordinates)
 

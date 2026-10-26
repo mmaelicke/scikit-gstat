@@ -8,6 +8,7 @@ from .directtional_variogram import matplotlib_pair_field, plotly_pair_field
 from .stvariogram_plot3d import matplotlib_plot_3d, plotly_plot_3d
 from .stvariogram_plot2d import matplotlib_plot_2d, plotly_plot_2d
 from .stvariogram_marginal import matplotlib_marginal, plotly_marginal
+from .spatiotemporal_plot import matplotlib_spatiotemporal_plot, plotly_spatiotemporal_plot
 
 
 ALLOWED_BACKENDS = [

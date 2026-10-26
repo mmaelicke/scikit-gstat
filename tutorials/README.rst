@@ -16,3 +16,4 @@ Start with the basic tutorials to learn the fundamentals of SciKit-GStat:
 * **Tutorial 5**: Binning - Understanding and customizing distance binning
 * **Tutorial 6**: GSTools Integration - Using SciKit-GStat with GSTools
 * **Tutorial 7**: Maximum Likelihood - Fitting variograms using maximum likelihood estimation
+* **Tutorial 8**: Spatio-temporal Variograms - Observations located freely in space and time
