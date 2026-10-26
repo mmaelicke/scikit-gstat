@@ -5,6 +5,17 @@ Changelog
 Version 1.1-rc
 ==============
 
+- [SpatioTemporalVariogram] added :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>` for
+  observations located freely in space and time. Each observation is one coordinate row ``(x, y, ..., time)``,
+  time can be numeric or datetime-like.
+- [SpatioTemporalVariogram] added :func:`from_grid <skgstat.SpatioTemporalVariogram.from_grid>` to convert
+  location-by-time grids. Missing grid cells are dropped.
+- [SpaceTimeVariogram] deprecated in favor of :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>`.
+  The class raises a ``FutureWarning`` and will be replaced in a future minor release.
+- [plotting] added matplotlib and plotly plots for :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>`
+- [docs] added a tutorial for spatio-temporal variograms
+- [docs] generated notebooks of the tutorial gallery are not parsed as source files anymore
+
 Version 1.0.11
 --------------
 - [models] the models now use `@numba.jit(nopython=True)` as this will be the default behaviour starting with `numba==0.59.0`

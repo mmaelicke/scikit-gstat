@@ -13,7 +13,8 @@ The base class is called :class:`Variogram <skgstat.Variogram>`, which is probab
 only import needed. However, several other classes exist:
 
 * :class:`DirectionalVariogram <skgstat.DirectionalVariogram>` for directional variograms
-* :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` for spatio-temporal variograms
+* :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>` for spatio-temporal variograms
+* :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>` for spatio-temporal grids (deprecated)
 * :class:`OrdinaryKriging <skgstat.OrdinaryKriging>` for interpolation
 * :class:`MetricSpace <skgstat.MetricSpace>` for pre-computed spatial samples
 

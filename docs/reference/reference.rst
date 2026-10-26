@@ -8,6 +8,7 @@ Code Reference
 
     variogram
     directionalvariogram
+    spatiotemporalvariogram
     spacetimevariogram
     binning
     estimator
