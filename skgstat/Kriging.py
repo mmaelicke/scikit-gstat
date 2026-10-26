@@ -656,8 +656,8 @@ class OrdinaryKriging:
         self._prec_g = self.gamma_model(self._prec_dist)
 
     def _estimate_matrix(self, distance_matrix):
-        # transform to the 'precision-space', which matches with the index
-        dist_n = ((distance_matrix / self.range) * self.precision).astype(int)
+        # Limit sparse infinities to the out-of-range lookup index.
+        dist_n = (np.minimum(distance_matrix / self.range, 1.) * self.precision).astype(int)
 
         # create the gamma array
         g = np.ones(dist_n.shape) * -1
