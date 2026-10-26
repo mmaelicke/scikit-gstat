@@ -67,6 +67,54 @@ def matheron(x):
 
 
 @njit
+def cross_matheron(x):
+    r"""Matheron Cross-Semi-Variance
+
+    .. versionadded:: 1.1
+
+    Calculates the Matheron Cross-Semi-Variance from an array of products of
+    pairwise differences of two co-located variables. Unlike
+    :func:`matheron <skgstat.estimators.matheron>`, the input is not
+    squared, as each element already is the product of two differences.
+    Thus, the cross-semi-variance can be negative, if the two variables
+    are negatively correlated.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        Array of products of pairwise differences. If xi and x[i+h] fall
+        into the h separating distance class, x should contain
+        (Z1(xi) - Z1(x[i+h])) * (Z2(xi) - Z2(x[i+h])) as an element. Both
+        differences have to be taken in the same order.
+
+    Returns
+    -------
+    numpy.float64
+
+    Notes
+    -----
+
+    The cross-semi-variance is calculated as:
+
+    .. math::
+        \gamma_{12} (h) = \frac{1}{2N(h)} * \sum_{i=1}^{N(h)}x
+
+    with:
+
+    .. math::
+        x = (Z_1(x_i) - Z_1(x_{i+h})) * (Z_2(x_i) - Z_2(x_{i+h}))
+
+    where x is exactly the input array x.
+
+    """
+    # prevent ZeroDivisionError
+    if x.size == 0:
+        return np.nan
+
+    return (1. / (2 * x.size)) * np.sum(x)
+
+
+@njit
 def cressie(x):
     r""" Cressie-Hawkins Semi-Variance
 

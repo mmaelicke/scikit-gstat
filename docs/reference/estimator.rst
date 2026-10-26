@@ -13,6 +13,11 @@ Matheron
 
 .. autofunction:: skgstat.estimators.matheron
 
+Cross-Matheron
+~~~~~~~~~~~~~~
+
+.. autofunction:: skgstat.estimators.cross_matheron
+
 Cressie
 ~~~~~~~
 

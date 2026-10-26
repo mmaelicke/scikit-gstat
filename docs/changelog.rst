@@ -16,6 +16,25 @@ Version 1.1-rc
 - [docs] added a tutorial for spatio-temporal variograms
 - [docs] generated notebooks of the tutorial gallery are not parsed as source files anymore
 
+Version 1.0.25
+--------------
+
+.. warning::
+  This version changes the experimental cross-variogram values. **This is a breaking change**.
+
+- [Variogram] fixed the cross-variogram. So far, the absolute pairwise differences of both variables
+  were multiplied and the Matheron estimator squared that product. Now, the signed pairwise differences
+  of both variables are multiplied and :func:`cross_matheron <skgstat.estimators.cross_matheron>`
+  calculates the cross-semi-variance as ``0.5 * mean(x)``. Cross-variograms of negatively correlated
+  variables are negative now. **This is a breaking change**.
+- [estimators] added :func:`cross_matheron <skgstat.estimators.cross_matheron>`
+- [Variogram] cross-variograms raise a ``NotImplementedError`` for all estimators other than ``'matheron'``
+- [Variogram] the default fit bounds of sill and nugget are negative for cross-variograms dominated by
+  negative values. This way, negative cross-variograms can be fitted with the default arguments.
+- [Kriging] estimated kriging handles sparse distance matrices
+- [Kriging] estimated kriging semi-variances include the nugget
+- [setup] dropped support for Python 3.9 and 3.10, added Python 3.14
+
 Version 1.0.11
 --------------
 - [models] the models now use `@numba.jit(nopython=True)` as this will be the default behaviour starting with `numba==0.59.0`

@@ -1718,7 +1718,12 @@ class Variogram(object):
 
             # get p0
             if bounds is None:
-                bounds = (0, self.__get_fit_bounds(x, y))
+                limits = np.asarray(self.__get_fit_bounds(x, y))
+
+                # negative limits are only used by cross-variograms with negative sill
+                bounds = (np.minimum(limits, 0), np.maximum(limits, 0))
+                if p0 is None:
+                    p0 = limits
             if p0 is None:
                 p0 = np.asarray(bounds[1])
         # Else, inspect the function for the number of arguments
@@ -1784,7 +1789,8 @@ class Variogram(object):
                 return - np.sum(p * sigma)
 
             # apply maximum likelihood estimation by minimizing ml
-            result = minimize(ml, p0 * 0.5, method='SLSQP', bounds=[(0, _) for _ in p0])
+            # p0 is negative for the sill of negative cross-variograms
+            result = minimize(ml, p0 * 0.5, method='SLSQP', bounds=[(min(0, _), max(0, _)) for _ in p0])
 
             if not result.success:  # pragma: no cover
                 raise OptimizeWarning('Maximum Likelihood could not estimate parameters.')
@@ -1899,12 +1905,18 @@ class Variogram(object):
 
         return _create_fitted_model(model, cof)
 
-    def _format_values_stack(self, values: np.ndarray) -> np.ndarray:
+    def _format_values_stack(self, values: np.ndarray, signed: bool = False) -> np.ndarray:
         """
         Create a numpy column stack to calculate differences between two value arrays.
         The format function will handle sparse matrices, as these do not include
         pairwise differences that are separated beyond maxlag.
         The dense numpy.array matrices contain all point pairs.
+        If signed is True, the differences are not made absolute. They are
+        always oriented the same way, which is needed to multiply the
+        differences of two variables for cross-variograms.
+
+        .. versionchanged:: 1.1
+            added the signed option
 
         """
         # handle sparse matrix
@@ -1933,7 +1945,14 @@ class Variogram(object):
             # Note: it might be compelling to do np.abs(Vrow -
             # Vcol).data instead here, but that might optimize away
             # some zeros, leaving _diff in a different shape
-            return np.abs(Vrow.data - Vcol.data)
+            diffs = Vrow.data - Vcol.data
+
+            return diffs if signed else np.abs(diffs)
+
+        elif signed:
+            # same pair order as pdist: upper triangle, row by row
+            rows, cols = np.triu_indices(len(values), k=1)
+            return values[rows] - values[cols]
 
         else:
             # Append a column of zeros to make pdist happy
@@ -1946,11 +1965,15 @@ class Variogram(object):
     def _calc_diff(self, force=False):
         """
         Calculates the pairwise differences for all coordinate locations.
-        If the Variogram is a cross-variogram, the differences are calculated
-        between the main variable (self.values) and the co-variable.
+        If the Variogram is a cross-variogram, the signed differences of the
+        main variable (self.values) are multiplied by the signed differences
+        of the co-variable.
 
         .. versionchanged:: 1.0.5
             calculates co-variate differences
+
+        .. versionchanged:: 1.1
+            cross-variograms use signed differences
 
         Returns
         -------
@@ -1963,7 +1986,8 @@ class Variogram(object):
 
         # format into column-stack for faster calculation
         if len(self.values.shape) == 1:
-            diffs = self._format_values_stack(self.values)
+            # cross-variograms need the sign of the differences
+            diffs = self._format_values_stack(self.values, signed=self.is_cross_variogram)
         else:
             for i in range(self.values.shape[1]):
                 if i == 0:
@@ -1978,7 +2002,7 @@ class Variogram(object):
 
         if self.is_cross_variogram:
             # check if this is a cross-variogram
-            co_diffs = self._format_values_stack(self._co_variable)
+            co_diffs = self._format_values_stack(self._co_variable, signed=True)
 
             # multiply to cross-difference
             diffs *= co_diffs
@@ -2055,6 +2079,12 @@ class Variogram(object):
             makes use of `kwargs <skgstat.Variogram._kwargs>` for
             specific estimators now
 
+        .. versionchanged:: 1.1
+            cross-variograms use the
+            :func:`cross_matheron <skgstat.estimators.cross_matheron>`
+            estimator and raise a NotImplementedError for all other
+            estimators
+
         Returns
         -------
         experimental : np.ndarray
@@ -2062,7 +2092,19 @@ class Variogram(object):
             as :func:`bins <skgstat.Variogram.bins>`
 
         """
-        if self._estimator.__name__ == 'entropy':
+        if self.is_cross_variogram:
+            # only matheron is implemented for cross-variograms
+            if self._estimator.__name__ != 'matheron':
+                raise NotImplementedError(
+                    (
+                        'The %s estimator is not implemented for '
+                        'cross-variograms, use matheron.'
+                    ) % self._estimator.__name__
+                )
+
+            mapper = estimators.cross_matheron
+
+        elif self._estimator.__name__ == 'entropy':
             # get the parameter from kwargs, if not set use 50
             N = self._kwargs.get('entropy_bins', 50)
 
@@ -2137,13 +2179,27 @@ class Variogram(object):
     def __get_fit_bounds(self, x, y):
         """
         Return the bounds for parameter space in fitting a variogram model.
-        The bounds are depended on the Model that is used
+        The bounds are depended on the Model that is used.
+        The sill of a cross-variogram is the cross-covariance, which is
+        negative for negatively correlated variables. If the experimental
+        cross-variogram is dominated by negative values, the sill and nugget
+        bounds are negative and the fit is bounded by them from below.
+
+        .. versionchanged:: 1.1
+            sill and nugget bounds can be negative for cross-variograms
 
         Returns
         -------
         list
 
         """
+        # use the sill with the largest magnitude, which might be negative
+        # for cross-variograms
+        if self.is_cross_variogram and np.nanmin(y) < -np.nanmax(y):
+            ymax = np.nanmin(y)
+        else:
+            ymax = np.nanmax(y)
+
         all_mname = self._model_name
 
         # for a sum of models, create a list
@@ -2159,12 +2215,12 @@ class Variogram(object):
             # use range, sill and smoothness parameter
             if mname == 'matern':
                 # a is max(x), C0 is max(y) s is limited to 20?
-                bounds = [np.nanmax(x), np.nanmax(y), 20.]
+                bounds = [np.nanmax(x), ymax, 20.]
 
             # use range, sill and shape parameter
             elif mname == 'stable':
                 # a is max(x), C0 is max(y) s is limited to 2?
-                bounds = [np.nanmax(x), np.nanmax(y), 2.]
+                bounds = [np.nanmax(x), ymax, 2.]
 
             # use only sill
             elif mname == 'nugget':
@@ -2174,11 +2230,11 @@ class Variogram(object):
             # use range and sill
             else:
                 # a is max(x), C0 is max(y)
-                bounds = [np.nanmax(x), np.nanmax(y)]
+                bounds = [np.nanmax(x), ymax]
 
             # if use_nugget is True add the nugget (for the last model only in case it is a sum)
             if self.use_nugget and i == (len(list_mname) - 1):
-                bounds.append(0.99*np.nanmax(y))
+                bounds.append(0.99*ymax)
 
             all_bounds += bounds
 
