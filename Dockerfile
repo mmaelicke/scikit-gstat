@@ -1,5 +1,5 @@
 # specify a default Python version
-ARG PYTHON_VERSION=3.8
+ARG PYTHON_VERSION=3.13
 
 # build from Python
 FROM python:${PYTHON_VERSION}

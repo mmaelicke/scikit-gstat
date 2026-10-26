@@ -10,38 +10,32 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   test:
    name: Run Unittest
-   runs-on: ubuntu-22.04
+   runs-on: ubuntu-latest
    strategy:
     matrix:
-      python: ['3.9', '3.10', '3.11', '3.12', '3.13']
+      python: ['3.11', '3.12', '3.13', '3.14']
 
    steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v7
       - name: Install Python ${{ matrix.python }}
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       - name: Install SciKit-GStat
-        run: |
-          pip3 install -r requirements.txt
-          python3 setup.py install
+        run: pip install .
       - name: Install PyTest requirements
-        run: pip3 install -r "requirements.unittest.${{ matrix.python }}.txt"
+        run: pip install -r requirements.unittest.txt
       - name: Run tests
         run: pytest --cov-config=.coveragerc --cov=./ --cov-report=xml
       - name: Upload coverage to codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v7
         with:
-          file: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
           env_vars: OS, PYTHON
 
   docs:
@@ -52,31 +46,33 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v7
       - name: Install Python
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install SciKit-GStat
-        run: |
-          pip3 install -r requirements.txt
-          python3 setup.py install
+        run: pip install .
       - name: Install Sphinx requirements
-        run: pip3 install -r requirements.rtd.txt
+        run: pip install -r requirements.rtd.txt
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
       - name: Build HTML docs
         run: |
           cd docs
           make html
         continue-on-error: true
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/_build/html
 
   deploy:
+    # Allow only one concurrent deployment, but let a running one finish
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -86,7 +82,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   release:
     name: Create Github release
@@ -96,10 +92,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           body_path: RELEASE.md
           generate_release_notes: true
@@ -111,9 +107,9 @@ jobs:
     if: startsWith(github.event.ref, 'refs/tags/v')
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v7
     - name: Set up Python
-      uses: actions/setup-python@master
+      uses: actions/setup-python@v7
       with:
         python-version: '3.x'
     - name: Install dependencies
@@ -130,7 +126,7 @@ jobs:
 
   ci_develop:
     name: Print Github Context for Development
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: true
 
     steps:
