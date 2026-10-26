@@ -209,16 +209,16 @@ class SpatioTemporalVariogram:
             raise ValueError('times has to match the second axis of values.')
 
         # one row per grid cell: locations change slowest, time fastest
+        # use a DataFrame, as numpy turns datetime64[ns] into int in object arrays
         n_loc, n_time = values.shape
-        X = np.empty((n_loc * n_time, coordinates.shape[1] + 1), dtype=object)
-        X[:, :-1] = np.repeat(coordinates, n_time, axis=0)
-        X[:, -1] = np.tile(times, n_loc)
+        X = pd.DataFrame(np.repeat(coordinates, n_time, axis=0))
+        X['time'] = np.tile(times, n_loc)
 
         # drop missing observations
         values = values.flatten()
         idx = np.isfinite(values)
 
-        return cls(X[idx], values[idx], **kwargs)
+        return cls(X.loc[idx], values[idx], **kwargs)
 
     # ----------------------------------------------------------------------- #
     #                        ATTRIBUTE SETTING                                #

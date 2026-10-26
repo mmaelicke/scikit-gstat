@@ -230,13 +230,16 @@ class TestSpatioTemporalVariogramGrid(unittest.TestCase):
         self.assertEqual(V.bin_count.sum(), 10)
 
     def test_datetime_times(self):
-        V = SpatioTemporalVariogram.from_grid(
-            np.array([[0.], [1.]]),
-            np.array([[0., 1.], [2., 3.]]),
-            times=pd.date_range('2024-01-01', periods=2, freq='h')
-        )
+        # pandas < 3 creates nanosecond timestamps, pandas 3 microseconds
+        for unit in ('ns', 'us', 's'):
+            V = SpatioTemporalVariogram.from_grid(
+                np.array([[0.], [1.]]),
+                np.array([[0., 1.], [2., 3.]]),
+                times=pd.date_range('2024-01-01', periods=2, freq='h').as_unit(unit)
+            )
 
-        self.assertEqual(V.time_unit, 'hours')
+            self.assertEqual(V.time_unit, 'hours', unit)
+            self.assertEqual(V.time.tolist(), [0., 3600., 0., 3600.], unit)
 
     def test_legacy_class_warns(self):
         with self.assertWarns(FutureWarning):
