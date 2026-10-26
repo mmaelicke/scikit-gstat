@@ -5,6 +5,19 @@ Changelog
 Version 1.1-rc
 ==============
 
+.. warning::
+  This version changes the experimental cross-variogram values. **This is a breaking change**.
+
+- [Variogram] fixed the cross-variogram. So far, the absolute pairwise differences of both variables
+  were multiplied and the Matheron estimator squared that product. Now, the signed pairwise differences
+  of both variables are multiplied and :func:`cross_matheron <skgstat.estimators.cross_matheron>`
+  calculates the cross-semi-variance as ``0.5 * mean(x)``. Cross-variograms of negatively correlated
+  variables are negative now. **This is a breaking change**.
+- [estimators] added :func:`cross_matheron <skgstat.estimators.cross_matheron>`
+- [Variogram] cross-variograms raise a ``NotImplementedError`` for all estimators other than ``'matheron'``
+- [Variogram] the default fit bounds of sill and nugget are negative for cross-variograms dominated by
+  negative values. This way, negative cross-variograms can be fitted with the default arguments.
+
 Version 1.0.11
 --------------
 - [models] the models now use `@numba.jit(nopython=True)` as this will be the default behaviour starting with `numba==0.59.0`

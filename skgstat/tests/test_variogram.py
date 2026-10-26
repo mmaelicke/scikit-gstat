@@ -22,7 +22,7 @@ try:
 except ImportError:
     GSTOOLS_AVAILABLE = False  # pragma: no cover
 
-from skgstat import Variogram, DirectionalVariogram
+from skgstat import Variogram, DirectionalVariogram, MetricSpace
 from skgstat import OrdinaryKriging
 from skgstat import estimators
 from skgstat import plotting
@@ -1663,6 +1663,72 @@ class TestCrossVariogram(unittest.TestCase):
                 vario.to_gstools()
 
             self.assertTrue("This instance is a cross-variogram!!" in str(w.warning))
+
+    def test_cross_pairwise_diffs(self):
+        """Check that the signed differences of both variables are multiplied"""
+        vario = Variogram(self.c, self.v, fit_method=None)
+
+        # differences in the same pair order as pdist
+        rows, cols = np.triu_indices(len(self.v), k=1)
+        diffs = self.v[rows] - self.v[cols]
+
+        assert_array_almost_equal(vario.pairwise_diffs, diffs[:, 0] * diffs[:, 1])
+
+    def test_cross_with_itself(self):
+        """A cross-variogram of a variable with itself is its variogram"""
+        v = self.v[:, 0]
+        primary = Variogram(self.c, v, fit_method=None)
+        cross = Variogram(self.c, np.column_stack((v, v)), fit_method=None)
+
+        assert_array_almost_equal(cross.experimental, primary.experimental)
+
+    def test_negative_cross_semivariance(self):
+        """A cross-variogram with the negated variable is the negative variogram"""
+        v = self.v[:, 0]
+        primary = Variogram(self.c, v, fit_method=None)
+        cross = Variogram(self.c, np.column_stack((v, -v)), fit_method=None)
+
+        self.assertTrue((cross.experimental < 0).all())
+        assert_array_almost_equal(cross.experimental, -primary.experimental)
+
+    def test_negative_cross_semivariance_sparse(self):
+        """Check the signed differences on a sparse MetricSpace"""
+        v = self.v[:, 0]
+        ms = MetricSpace(self.c, max_dist=30)
+        primary = Variogram(ms, v, maxlag=30, fit_method=None)
+        cross = Variogram(ms, np.column_stack((v, -v)), maxlag=30, fit_method=None)
+
+        assert_array_almost_equal(cross.experimental, -primary.experimental)
+
+    def test_negative_cross_default_fit(self):
+        """Fit a negative cross-variogram with default arguments"""
+        np.random.seed(42)
+        v = self.v[:, 0]
+        values = np.column_stack((v, -v + np.random.normal(0, 0.1, len(v))))
+
+        # the sill is the negative cross-covariance
+        vario = Variogram(self.c, values)
+        self.assertTrue(vario.describe()['sill'] < 0)
+
+        for method in ('lm', 'ml'):
+            vario.fit(method=method)
+            self.assertTrue(vario.describe()['sill'] < 0)
+
+    def test_negative_cross_directional(self):
+        """Fit a negative directional cross-variogram"""
+        np.random.seed(42)
+        v = self.v[:, 0]
+        values = np.column_stack((v, -v + np.random.normal(0, 0.1, len(v))))
+
+        vario = DirectionalVariogram(self.c, values, azimuth=0, tolerance=45)
+        self.assertTrue(vario.describe()['sill'] < 0)
+
+    def test_cross_estimator_not_implemented(self):
+        """Only the matheron estimator is implemented for cross-variograms"""
+        with self.assertRaises(NotImplementedError) as e:
+            Variogram(self.c, self.v, estimator='cressie')
+
+        self.assertTrue('not implemented for cross-variograms' in str(e.exception))
 
 
 if __name__ == '__main__':  # pragma: no cover
