@@ -10,11 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
   test:
    name: Run Unittest
@@ -74,6 +69,10 @@ jobs:
           path: docs/_build/html
 
   deploy:
+    # Allow only one concurrent deployment, but let a running one finish
+    concurrency:
+      group: "pages"
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
