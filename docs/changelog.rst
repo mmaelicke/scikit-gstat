@@ -5,6 +5,9 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.26
+--------------
+
 - [SpatioTemporalVariogram] added :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>` for
   observations located freely in space and time. Each observation is one coordinate row ``(x, y, ..., time)``,
   time can be numeric or datetime-like.
