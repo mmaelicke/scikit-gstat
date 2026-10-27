@@ -108,7 +108,8 @@ class MetricSpace(DistanceMethods):
         try:
             if self.dist_metric == "mahalanobis":
                 _ = pdist(
-                    self.coords[: self.coords.shape[1] + 1, :], metric=self.dist_metric
+                    self.coords[: self.coords.shape[1] + 1, :],
+                    metric=self.dist_metric, **self.dist_metric_kwargs
                 )
             else:
                 pdist(self.coords[:1, :], metric=self.dist_metric, **self.dist_metric_kwargs)
