@@ -1915,7 +1915,7 @@ class Variogram(object):
         always oriented the same way, which is needed to multiply the
         differences of two variables for cross-variograms.
 
-        .. versionchanged:: 1.1
+        .. versionchanged:: 1.0.25
             added the signed option
 
         """
@@ -1972,7 +1972,7 @@ class Variogram(object):
         .. versionchanged:: 1.0.5
             calculates co-variate differences
 
-        .. versionchanged:: 1.1
+        .. versionchanged:: 1.0.25
             cross-variograms use signed differences
 
         Returns
@@ -2079,7 +2079,7 @@ class Variogram(object):
             makes use of `kwargs <skgstat.Variogram._kwargs>` for
             specific estimators now
 
-        .. versionchanged:: 1.1
+        .. versionchanged:: 1.0.25
             cross-variograms use the
             :func:`cross_matheron <skgstat.estimators.cross_matheron>`
             estimator and raise a NotImplementedError for all other
@@ -2185,7 +2185,7 @@ class Variogram(object):
         cross-variogram is dominated by negative values, the sill and nugget
         bounds are negative and the fit is bounded by them from below.
 
-        .. versionchanged:: 1.1
+        .. versionchanged:: 1.0.25
             sill and nugget bounds can be negative for cross-variograms
 
         Returns
