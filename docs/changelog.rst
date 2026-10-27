@@ -5,6 +5,9 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.27
+--------------
+
 - [SpatioTemporalVariogram] added the ``'metric'`` space-time model. It applies the ``marginal_model`` to the
   space-time distance :math:`\sqrt{h^2 + (r_x / r_t \cdot t)^2}` and is fitted to the experimental variogram
   directly. Thus, it does not need the marginal variograms and works for irregular observations without pairs
@@ -12,7 +15,7 @@ Version 1.1-rc
 - [SpatioTemporalVariogram] added :func:`parameters <skgstat.SpatioTemporalVariogram.parameters>` to read the
   fitted space-time model parameters by name.
 - [stmodels] added the ``metric`` space-time model function
-- [interface] added :func:`to_gstools <skgstat.SpatioTemporalVariogram.to_gstools>` and
+- [interfaces] added :func:`to_gstools <skgstat.SpatioTemporalVariogram.to_gstools>` and
   :func:`to_gs_krige <skgstat.SpatioTemporalVariogram.to_gs_krige>` to export metric space-time models to a
   temporal GSTools CovModel and to spatio-temporal kriging. This needs GSTools v1.5 or greater. The separable
   models cannot be exported, as GSTools only supports metric space-time models.

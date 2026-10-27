@@ -199,7 +199,7 @@ def metric(lags, model, rx, rt, *args):
     combined space-time distance. This is a geometric anisotropy between
     space and time.
 
-    .. versionadded:: 1.1
+    .. versionadded:: 1.0.27
 
     Parameters
     ----------

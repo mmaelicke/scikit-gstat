@@ -780,7 +780,7 @@ class SpatioTemporalVariogram:
         """
         Instantiate a corresponding spatio-temporal GSTools CovModel.
 
-        .. versionadded:: 1.1
+        .. versionadded:: 1.0.27
 
         GSTools only supports metric space-time models. The CovModel is
         temporal with the time as last dimension, the length scales are
@@ -821,7 +821,7 @@ class SpatioTemporalVariogram:
         """
         Instantiate a spatio-temporal GSTools Krige class.
 
-        .. versionadded:: 1.1
+        .. versionadded:: 1.0.27
 
         GSTools only supports metric space-time models. The conditioning
         positions are the spatial coordinates followed by the time.
