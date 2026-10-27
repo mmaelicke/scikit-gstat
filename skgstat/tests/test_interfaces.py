@@ -288,6 +288,22 @@ class TestGstoolsInterface(unittest.TestCase):
             model.variogram(self.xi), self.yi, decimal=2
         )
 
+    def test_nugget_partial_sill(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        # this fit has a nugget larger than the partial sill
+        V = Variogram(self.c, self.v, model='spherical', normalize=False, use_nugget=True)
+        self.assertGreater(V.describe()['nugget'], 0.5)
+
+        xi = np.linspace(0, V.bins[-1], 100)
+        model = V.to_gstools()
+
+        self.assertAlmostEqual(model.var, V.describe()['sill'])
+        assert_array_almost_equal(
+            model.variogram(xi), V.transform(xi), decimal=2
+        )
+
 
 class TestGstoolsAllModels(unittest.TestCase):
     def setUp(self):

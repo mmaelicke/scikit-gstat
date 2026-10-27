@@ -101,8 +101,9 @@ def skgstat_to_gstools(variogram, **kwargs):
     # set variogram parameters
     gs_describe.setdefault("rescale", 1.0)
     gs_describe.setdefault("arg_map", dict())
+    # the skgstat sill is already the partial sill
     gs_kwargs = dict(
-        var=float(describe["sill"] - describe["nugget"]),
+        var=float(describe["sill"]),
         len_scale=float(describe["effective_range"]),
         nugget=float(describe["nugget"]),
     )

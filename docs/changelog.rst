@@ -5,6 +5,10 @@ Changelog
 Version 1.1-rc
 ==============
 
+- [interfaces] fixed :func:`skgstat_to_gstools <skgstat.interfaces.gstools.skgstat_to_gstools>`, which
+  subtracted the nugget from the sill. The sill of a :class:`Variogram <skgstat.Variogram>` is already the
+  partial sill. Exported models with a nugget had a wrong variance or raised a ``ValueError``.
+
 Version 1.0.26
 --------------
 
