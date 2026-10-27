@@ -10,6 +10,7 @@ from scipy.spatial.distance import pdist
 from scipy.optimize import curve_fit
 
 from skgstat import binning, estimators, models, stmodels, plotting
+from skgstat.interfaces.gstools import stvariogram_to_gstools, stvariogram_to_krige
 
 
 class SpatioTemporalVariogram:
@@ -98,7 +99,9 @@ class SpatioTemporalVariogram:
     range :math:`r_x`. Thus, :math:`r_x` and :math:`r_t` are the effective
     ranges along the space and time axis. In contrast to the separable
     models, the metric model does not need the marginal variograms and can
-    be used for irregular observations without pairs at zero lag.
+    be used for irregular observations without pairs at zero lag. It is
+    the only model that can be exported to GSTools, refer to
+    :func:`to_gstools <skgstat.SpatioTemporalVariogram.to_gstools>`.
 
     """
     def __init__(self,
@@ -769,6 +772,100 @@ class SpatioTemporalVariogram:
         params['nugget'] = self.cof[-1] if self._use_nugget else 0.
 
         return params
+
+    # ----------------------------------------------------------------------- #
+    #                              INTERFACES                                 #
+    # ----------------------------------------------------------------------- #
+    def to_gstools(self, **kwargs):
+        """
+        Instantiate a corresponding spatio-temporal GSTools CovModel.
+
+        .. versionadded:: 1.1
+
+        GSTools only supports metric space-time models. The CovModel is
+        temporal with the time as last dimension, the length scales are
+        the effective ranges ``[r_x, ..., r_x, r_t]``.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments forwarded to the instantiated GSTools CovModel.
+            The default parameters 'temporal', 'spatial_dim', 'var',
+            'len_scale', 'nugget', 'rescale' and optional shape parameters
+            will be extracted from the SpatioTemporalVariogram but they can
+            be overwritten here.
+
+        Raises
+        ------
+        ImportError
+            When GSTools is not installed.
+        ValueError
+            When GSTools version is not v1.5 or greater.
+        ValueError
+            When the space-time model is not 'metric'.
+
+        Returns
+        -------
+        :any:`CovModel`
+            Corresponding GSTools covmodel.
+
+        Note
+        ----
+        The time length scale is given in the internal time unit, which is
+        seconds for datetime-like input.
+
+        """
+        return stvariogram_to_gstools(self, **kwargs)
+
+    def to_gs_krige(self, **kwargs):
+        """
+        Instantiate a spatio-temporal GSTools Krige class.
+
+        .. versionadded:: 1.1
+
+        GSTools only supports metric space-time models. The conditioning
+        positions are the spatial coordinates followed by the time.
+        Note: the `fit_variogram` is always set to `False`
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments forwarded to GSTools Krige.
+            Refer to :any:`Krige <gstools.krige.Krige>` to
+            learn about all possible options.
+            Note that the `fit_variogram` parameter will
+            always be False.
+
+        Raises
+        ------
+        ImportError
+            When GSTools is not installed.
+        ValueError
+            When GSTools version is not v1.5 or greater.
+        ValueError
+            When the space-time model is not 'metric'.
+
+        Returns
+        -------
+        :any:`Krige`
+            Instantiated GSTools Krige class.
+
+        Note
+        ----
+        The kriging targets have to be given in the same unit as
+        :func:`time <skgstat.SpatioTemporalVariogram.time>`. For
+        datetime-like input, this is seconds since
+        :func:`time_origin <skgstat.SpatioTemporalVariogram.time_origin>`:
+
+        >> t = (pd.DatetimeIndex(times) - V.time_origin).total_seconds()
+        >> field, variance = V.to_gs_krige()((x, y, t))
+
+        See Also
+        --------
+        gstools.Krige
+
+        """
+        return stvariogram_to_krige(self, **kwargs)
 
     # ----------------------------------------------------------------------- #
     #                              PROPERTIES                                 #

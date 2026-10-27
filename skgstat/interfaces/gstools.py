@@ -190,3 +190,158 @@ def skgstat_to_krige(variogram, **kwargs):
 
     # return the class
     return krige
+
+
+def stvariogram_to_gstools(stvariogram, **kwargs):
+    """
+    Instantiate a spatio-temporal GSTools :any:`CovModel <gstools.CovModel>`.
+
+    .. versionadded:: 1.1
+
+    Only the metric space-time model can be exported. The CovModel is
+    temporal, the time is the last dimension and the effective ranges of
+    space and time become the length scales.
+
+    Parameters
+    ----------
+    stvariogram : :any:`SpatioTemporalVariogram`
+        Scikit-Gstat SpatioTemporalVariogram instance.
+    **kwargs
+        Keyword arguments forwarded to the instantiated GSTools CovModel.
+        The default parameters 'temporal', 'spatial_dim', 'var',
+        'len_scale', 'nugget', 'rescale' and optional shape parameters
+        will be extracted from the given SpatioTemporalVariogram but they
+        can be overwritten here.
+
+    Raises
+    ------
+    ImportError
+        When GSTools is not installed.
+    ValueError
+        When GSTools version is not v1.5 or greater.
+    ValueError
+        When the space-time model is not 'metric'.
+
+    Returns
+    -------
+    model : :any:`CovModel <gstools.CovModel>`
+        Corresponding spatio-temporal GSTools covmodel.
+
+    Note
+    ----
+    The length scale of the time axis is given in the internal time unit
+    of the SpatioTemporalVariogram, which is seconds for datetime-like
+    input.
+
+    """
+    # try to import gstools and notify user if not installed
+    try:
+        import gstools as gs
+    except ImportError as e:  # pragma: no cover
+        raise ImportError("to_gstools: GSTools not installed.") from e
+
+    # at least gstools>=1.5.0 is needed for spatio-temporal models
+    if list(map(int, gs.__version__.split(".")[:2])) < [1, 5]:  # pragma: no cover
+        raise ValueError("to_gstools: GSTools v1.5 or greater required.")
+
+    # gstools only supports metric space-time models
+    if stvariogram._model_name != 'metric':
+        raise ValueError(
+            "to_gstools: GSTools only supports metric space-time models, "
+            "but the model is '%s'. Use model='metric'." % stvariogram._model_name
+        )
+
+    # extract all needed settings
+    params = stvariogram.parameters
+    name = stvariogram._marginal_model_name
+    gs_describe = MODEL_MAP[name]
+
+    # the time is appended as last dimension with its own length scale
+    spatial_dim = stvariogram.coordinates.shape[1]
+    gs_kwargs = dict(
+        temporal=True,
+        spatial_dim=spatial_dim,
+        var=float(params["sill"]),
+        len_scale=[float(params["space_range"])] * spatial_dim + [float(params["time_range"])],
+        nugget=float(params["nugget"]),
+    )
+
+    # some skgstat models need different rescale
+    rescale = gs_describe.get("rescale", 1.0)
+    gs_kwargs["rescale"] = rescale(params) if callable(rescale) else rescale
+    arg_map = gs_describe.get("arg_map", dict())
+    for arg in arg_map:
+        gs_kwargs[arg] = float(params[arg_map[arg]])
+
+    # update the parameters
+    gs_kwargs.update(kwargs)
+
+    # get the model and return the CovModel
+    gs_model = getattr(gs, gs_describe["gs_cls"])
+    return gs_model(**gs_kwargs)
+
+
+def stvariogram_to_krige(stvariogram, **kwargs):
+    """
+    Instantiate a spatio-temporal GSTools Krige class.
+
+    .. versionadded:: 1.1
+
+    Only the metric space-time model can be exported.
+    Note: the `fit_variogram` is always set to `False`
+
+    Parameters
+    ----------
+    stvariogram : skgstat.SpatioTemporalVariogram
+        Scikit-GStat SpatioTemporalVariogram instance
+    **kwargs
+        Keyword arguments forwarded to GSTools Krige.
+        Refer to :any:`Krige <gstools.krige.Krige>` to
+        learn about all possible options.
+        Note that the `fit_variogram` parameter will
+        always be False.
+
+    Raises
+    ------
+    ImportError
+        When GSTools is not installed.
+    ValueError
+        When GSTools version is not v1.5 or greater.
+    ValueError
+        When the space-time model is not 'metric'.
+
+    Returns
+    -------
+    :any:`Krige <gstools.krige.Krige>`
+        Instantiated GSTools Krige class.
+
+    See Also
+    --------
+    gstools.Krige
+
+    """
+    # try to import gstools and notify user if not installed
+    try:
+        import gstools as gs
+    except ImportError as e:  # pragma: no cover
+        raise ImportError("to_gstools: GSTools not installed.") from e
+
+    # at least gstools>=1.5.0 is needed for spatio-temporal models
+    if list(map(int, gs.__version__.split(".")[:2])) < [1, 5]:  # pragma: no cover
+        raise ValueError("to_gstools: GSTools v1.5 or greater required.")
+
+    # convert variogram to a CovModel
+    model = stvariogram_to_gstools(stvariogram=stvariogram)
+
+    # extract cond_pos and cond_vals, the time is the last dimension
+    cond_pos = np.column_stack((stvariogram.coordinates, stvariogram.time)).T
+    cond_vals = stvariogram.values
+
+    # disable the re-fitting of the variogram in gstools
+    kwargs['fit_variogram'] = False
+
+    # instantiate the Krige class
+    krige = gs.krige.Krige(model, cond_pos, cond_vals, **kwargs)
+
+    # return the class
+    return krige
