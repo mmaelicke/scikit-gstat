@@ -1,7 +1,7 @@
 """
 8. Spatio-temporal Variograms
 =============================
-With version ``1.1``, SciKit-GStat implements the
+With version ``1.0.26``, SciKit-GStat implements the
 :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>` class.
 It replaces the :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>`, which
 is deprecated now. The main difference is the input data: the old class needed
