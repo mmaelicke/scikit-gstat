@@ -15,7 +15,7 @@ from skgstat import binning, estimators, models, stmodels, plotting
 class SpatioTemporalVariogram:
     """Spatio-temporal Variogram
 
-    .. versionadded:: 1.1
+    .. versionadded:: 1.0.26
 
     Estimates an experimental space-time variogram from observations that
     are located freely in space and time. Each observation is one row of
