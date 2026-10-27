@@ -189,3 +189,57 @@ def product_sum(lags, Vx, Vt, k1, k2, k3, Cx, Ct):
     """
     h, t = lags
     return (k2 + k1*Ct)*Vx(h) + (k3 + k1*Cx) * Vt(t) - k1 * Vx(h) * Vt(t)
+
+
+def metric(lags, model, rx, rt, *args):
+    r"""Metric space-time model
+
+    Non-separable space-time variogram model. The time axis is rescaled
+    into a space distance and one variogram model is applied to the
+    combined space-time distance. This is a geometric anisotropy between
+    space and time.
+
+    .. versionadded:: 1.1
+
+    Parameters
+    ----------
+    lags : numpy.ndarray
+        Space (x) and time (t) lag given as tuple (x, t) or an array of
+        shape (n, 2) holding n lag pairs.
+    model : Callable
+        Theoretical variogram function from :mod:`skgstat.models` of
+        signature ``model(h, r, c0, [s], b)``.
+    rx : float
+        Effective range along the space axis.
+    rt : float
+        Effective range along the time axis.
+    args : float
+        All further parameters of the model: the sill, the shape parameter
+        for the stable and matern model and the nugget.
+
+    Returns
+    -------
+    gamma : float, numpy.ndarray
+        The semi-variance modeled for the given lags.
+
+    Notes
+    -----
+    This model is implemented like:
+
+    .. math::
+        \gamma (h,t) = \gamma_m \left(\sqrt{h^2 + \left(\frac{r_x}{r_t}t\right)^2}\right)
+
+    Where :math:`\gamma_m` is the theoretical model with the effective
+    range :math:`r_x`. Thus, :math:`r_x` and :math:`r_t` are the effective
+    ranges along the space and time axis. The metric model is described
+    by Gräler et al. [17]_.
+
+    References
+    ----------
+    .. [17] Gräler, B., Pebesma, E. and Heuvelink, G. (2016),
+       Spatio-Temporal Interpolation using gstat. The R Journal 8(1),
+       204-218.
+
+    """
+    h, t = np.asarray(lags, dtype=float).T
+    return model(np.sqrt(h**2 + (rx / rt * t)**2), rx, *args)

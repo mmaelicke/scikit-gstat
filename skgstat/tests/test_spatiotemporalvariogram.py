@@ -8,7 +8,25 @@ from numpy.testing import assert_array_almost_equal
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from skgstat import SpaceTimeVariogram, SpatioTemporalVariogram, estimators, plotting
+from skgstat import SpaceTimeVariogram, SpatioTemporalVariogram, estimators, models, stmodels, plotting
+
+
+def metric_field(seed, model='spherical', rx=30., rt=5., sill=2., s=None, nugget=0., nx=40, nt=30):
+    """Simulate a field of a metric model on a transect-by-time grid"""
+    rng = np.random.default_rng(seed)
+    x, t = np.meshgrid(np.arange(nx) * 5., np.arange(nt, dtype=float), indexing='ij')
+    x, t = x.flatten(), t.flatten()
+
+    # covariance of the space-time distance
+    lags = np.column_stack((np.subtract.outer(x, x).flatten(), np.subtract.outer(t, t).flatten()))
+    args = (sill, ) + ((s, ) if s is not None else ()) + (0., )
+    C = sill - stmodels.metric(np.abs(lags), getattr(models, model), rx, rt, *args).reshape(x.size, x.size)
+
+    # correlated field plus white noise for the nugget
+    L = np.linalg.cholesky(C + 1e-6 * np.eye(x.size))
+    v = L @ rng.standard_normal(x.size) + np.sqrt(nugget) * rng.standard_normal(x.size)
+
+    return np.column_stack((x, t)), v
 
 
 class TestSpatioTemporalVariogramInitialization(unittest.TestCase):
@@ -304,6 +322,137 @@ class TestSpatioTemporalVariogramFit(unittest.TestCase):
         restored = pickle.loads(pickle.dumps(V))
 
         assert_array_almost_equal(restored.transform(np.array([[1., 1.]])), expected)
+
+
+class TestSpatioTemporalVariogramMetric(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # every lag class holds exactly one space and time lag
+        cls.kwargs = dict(xbins=np.arange(13) * 5., tbins=np.arange(11.), model='metric')
+        cls.c, cls.v = metric_field(42)
+        cls.c_nugget, cls.v_nugget = metric_field(42, nugget=0.5)
+
+    def exact(self, marginal_model, cof, use_nugget=False):
+        """Variogram with the experimental variogram replaced by the model"""
+        V = SpatioTemporalVariogram(
+            self.c, self.v, marginal_model=marginal_model, use_nugget=use_nugget, **self.kwargs
+        )
+        xx, tt = V.meshbins
+        args = cof[2:] if use_nugget else cof[2:] + [0.]
+        lags = np.column_stack((xx.flatten(), tt.flatten()))
+        V._experimental = stmodels.metric(
+            lags, getattr(models, marginal_model), *cof[:2], *args
+        ).reshape(xx.shape)
+        return V
+
+    def test_recover_parameters(self):
+        V = SpatioTemporalVariogram(self.c, self.v, **self.kwargs)
+        params = V.parameters
+
+        # one realization: true values are 30, 5, 2
+        self.assertAlmostEqual(params['space_range'] / 30., 1., delta=0.15)
+        self.assertAlmostEqual(params['time_range'] / 5., 1., delta=0.15)
+        self.assertAlmostEqual(params['sill'] / 2., 1., delta=0.15)
+        self.assertEqual(params['nugget'], 0.)
+
+    def test_recover_nugget(self):
+        V = SpatioTemporalVariogram(self.c_nugget, self.v_nugget, use_nugget=True, **self.kwargs)
+        params = V.parameters
+
+        self.assertEqual(len(V.cof), 4)
+        self.assertAlmostEqual(params['nugget'], 0.5, delta=0.15)
+        self.assertAlmostEqual(params['space_range'] / 30., 1., delta=0.15)
+        self.assertAlmostEqual(V.transform(np.array([[0., 0.]]))[0], params['nugget'])
+
+    def test_recover_exact_surface(self):
+        for name, shape in (('spherical', []), ('exponential', []), ('gaussian', []),
+                            ('cubic', []), ('stable', [1.5]), ('matern', [1.5])):
+            for use_nugget in (False, True):
+                cof = [30., 5., 2.] + shape + ([0.3] if use_nugget else [])
+                V = self.exact(name, cof, use_nugget=use_nugget)
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore')
+                    V.fit()
+
+                assert_array_almost_equal(V.cof / cof, np.ones(len(cof)), decimal=2)
+
+    def test_shape_parameters(self):
+        stable = self.exact('stable', [30., 5., 2., 1.5]).parameters
+        matern = self.exact('matern', [30., 5., 2., 1.5]).parameters
+
+        self.assertAlmostEqual(stable['shape'], 1.5, places=2)
+        self.assertAlmostEqual(matern['smoothness'], 1.5, places=2)
+        self.assertNotIn('smoothness', stable)
+        self.assertNotIn('shape', matern)
+
+    def test_irregular_without_zero_lags(self):
+        # random locations and times: no pairs at zero lag
+        rng = np.random.default_rng(42)
+        c = np.column_stack((rng.uniform(0, 100, (150, 2)), rng.uniform(0, 20, 150)))
+        V = SpatioTemporalVariogram(c, rng.normal(0, 1, 150), model='metric', marginal_model='exponential')
+        V.fit()
+
+        self.assertEqual(len(V.cof), 3)
+        self.assertTrue(np.all(np.isfinite(V.transform(np.array([[10., 2.], [50., 5.]])))))
+
+        # the marginals and separable models are not available
+        with self.assertRaises(ValueError):
+            V.get_marginal('time')
+        with self.assertRaises(ValueError):
+            SpatioTemporalVariogram(c, V.values).fit()
+
+    def test_transform_is_metric(self):
+        V = self.exact('gaussian', [30., 5., 2.])
+        V.fit()
+
+        # a time lag of r_t is equal to a space lag of r_x
+        z = V.transform(np.array([[0., 5.], [30., 0.], [18., 4.]]))
+        self.assertAlmostEqual(z[0], z[1], places=4)
+        self.assertAlmostEqual(z[2], z[1], places=4)
+
+    def test_single_lag_pair(self):
+        V = self.exact('spherical', [30., 5., 2.])
+
+        self.assertAlmostEqual(V.fitted_model((30., 5.)), 2.)
+
+    def test_missing_axis_raises(self):
+        V = SpatioTemporalVariogram(np.array([[0., 0.], [1., 0.], [2., 0.]]), [0., 1., 2.], model='metric')
+
+        with self.assertRaises(ValueError):
+            V.fit()
+
+    def test_too_few_lag_classes_raise(self):
+        V = SpatioTemporalVariogram(self.c, self.v, x_lags=1, t_lags=1, model='metric')
+
+        with self.assertRaises(ValueError):
+            V.fit()
+
+    def test_parameters_of_separable_models(self):
+        V = SpatioTemporalVariogram.from_grid(
+            np.arange(5.)[:, None], np.add.outer(np.arange(5.)**2, np.sqrt(np.arange(6.))), x_lags=4, t_lags=5
+        )
+
+        self.assertEqual(set(V.parameters.keys()), {'k1', 'k2', 'k3', 'Cx', 'Ct'})
+
+    def test_pickle(self):
+        V = self.exact('stable', [30., 5., 2., 1.5])
+        V.fit()
+        restored = pickle.loads(pickle.dumps(V))
+
+        assert_array_almost_equal(restored.cof, V.cof)
+        assert_array_almost_equal(
+            restored.transform(np.array([[10., 2.]])), V.transform(np.array([[10., 2.]]))
+        )
+
+    def test_plots(self):
+        V = SpatioTemporalVariogram(self.c, self.v, x_lags=4, t_lags=4, model='metric')
+        V.fit()
+        try:
+            for kind in ('scatter', 'contourf'):
+                fig = V.plot(kind=kind, x_resolution=10, t_resolution=10)
+                self.assertGreater(len(fig.axes), 0)
+        finally:
+            plt.close('all')
 
 
 class TestSpatioTemporalVariogramPlots(unittest.TestCase):

@@ -13,7 +13,7 @@ from skgstat import binning, estimators, models, stmodels, plotting
 
 
 class SpatioTemporalVariogram:
-    """Spatio-temporal Variogram
+    r"""Spatio-temporal Variogram
 
     .. versionadded:: 1.0.26
 
@@ -68,14 +68,19 @@ class SpatioTemporalVariogram:
         ``'cressie'``, ``'dowd'``, ``'genton'``, ``'minmax'``,
         ``'percentile'``, ``'entropy'`` or a function.
     use_nugget : bool
-        If True, the marginal models are fitted with a nugget.
+        If True, the marginal models, or the metric model, are fitted with
+        a nugget.
     model : str
-        Space-time model. Has to be one of ``'sum'``, ``'product'`` or
-        ``'product-sum'``.
+        Space-time model. Has to be one of ``'sum'``, ``'product'``,
+        ``'product-sum'`` or ``'metric'``. The first three are separable
+        models built from the two marginal models. The metric model applies
+        ``marginal_model`` to a combined space-time distance and is fitted
+        to the experimental variogram directly.
     marginal_model : str
         Theoretical model fitted to both marginal variograms. Has to be one
         of ``'spherical'``, ``'exponential'``, ``'gaussian'``,
-        ``'cubic'``, ``'stable'`` or ``'matern'``.
+        ``'cubic'``, ``'stable'`` or ``'matern'``. For the metric model,
+        this is the model applied to the space-time distance.
 
     Notes
     -----
@@ -83,6 +88,17 @@ class SpatioTemporalVariogram:
     elapsed seconds. All lags, bins and fitted models use seconds; only the
     plots convert the time axis into the unit implied by the data
     resolution. Numeric time is used as it is.
+
+    The metric model is defined as:
+
+    .. math::
+        \gamma (h,t) = \gamma_m \left(\sqrt{h^2 + \left(\frac{r_x}{r_t}t\right)^2}\right)
+
+    Where :math:`\gamma_m` is the ``marginal_model`` with the effective
+    range :math:`r_x`. Thus, :math:`r_x` and :math:`r_t` are the effective
+    ranges along the space and time axis. In contrast to the separable
+    models, the metric model does not need the marginal variograms and can
+    be used for irregular observations without pairs at zero lag.
 
     """
     def __init__(self,
@@ -346,10 +362,12 @@ class SpatioTemporalVariogram:
                 return name, stmodels.product
             elif name == 'product-sum':
                 return name, stmodels.product_sum
+            elif name == 'metric':
+                return name, stmodels.metric
 
         raise ValueError(
             "%s is not a valid space-time model. Use one of ['sum', "
-            "'product', 'product-sum']." % model
+            "'product', 'product-sum', 'metric']." % model
         )
 
     @staticmethod
@@ -522,6 +540,53 @@ class SpatioTemporalVariogram:
             bounds=(0, bounds)
         )
 
+    def _fit_metric(self):
+        """Fit the metric model to the experimental variogram"""
+        # use all filled lag classes, like the product-sum model
+        xx, tt = self.meshbins
+        idx = np.isfinite(self._experimental)
+        lags = np.column_stack((xx[idx], tt[idx]))
+        y = self._experimental[idx]
+
+        # the anisotropy needs lags on both axes
+        if not np.any(lags[:, 0] > 0) or not np.any(lags[:, 1] > 0):
+            raise ValueError(
+                'The metric model needs space and time lags larger than zero.'
+            )
+
+        # check that there are enough lag classes for all parameters
+        n_params = 3 + int(self._marginal_model_name in ('stable', 'matern')) + int(self._use_nugget)
+        if y.size < n_params:
+            raise ValueError(
+                'The experimental variogram has not enough filled lag '
+                'classes to fit the metric model.'
+            )
+
+        # upper bounds as in Variogram: space range, time range, sill, shape and nugget
+        bounds = [np.max(lags[:, 0]), np.max(lags[:, 1]), np.max(y)]
+        if self._marginal_model_name == 'stable':
+            bounds.append(2.)
+        elif self._marginal_model_name == 'matern':
+            bounds.append(20.)
+        if self._use_nugget:
+            bounds.append(0.99 * np.max(y))
+
+        # wrap the model to include or exclude the nugget
+        if self._use_nugget:
+            def wrapped(lags, *args):
+                return self._model(lags, self._marginal_model, *args)
+        else:
+            def wrapped(lags, *args):
+                return self._model(lags, self._marginal_model, *args, 0)
+
+        return curve_fit(
+            wrapped,
+            lags, y,
+            method='trf',
+            p0=np.asarray(bounds),
+            bounds=(0, bounds)
+        )
+
     def _marginal(self, axis, h):
         """Apply the fitted marginal model"""
         cof = self._marginal_cof[axis]
@@ -535,7 +600,10 @@ class SpatioTemporalVariogram:
         Fits the marginal model to both marginal variograms first. The sum
         and product models are then fully defined, the product-sum model
         fits its three parameters k1, k2 and k3 to the experimental
-        variogram.
+        variogram. The metric model does not use the marginals, but is
+        fitted to the experimental variogram directly. Its coefficients
+        ``cof`` are ``[r_x, r_t, sill, (shape), (nugget)]``, refer to
+        :func:`parameters <skgstat.SpatioTemporalVariogram.parameters>`.
 
         Parameters
         ----------
@@ -544,6 +612,12 @@ class SpatioTemporalVariogram:
 
         """
         if self.cof is not None and not force:
+            return
+
+        # the metric model is fitted to the experimental variogram directly
+        if self._model_name == 'metric':
+            self._model_params = {}
+            self.cof, self.cov = self._fit_metric()
             return
 
         # fit the marginal models
@@ -612,6 +686,16 @@ class SpatioTemporalVariogram:
         cof = self.cof
         params = self._model_params
 
+        # the metric model applies the marginal model to the space-time distance
+        if self._model_name == 'metric':
+            if not self._use_nugget:
+                cof = np.append(cof, 0)
+
+            def model(lags):
+                return func(lags, self._marginal_model, *cof)
+
+            return model
+
         def Vx(h):
             return self._marginal('space', h)
 
@@ -639,6 +723,52 @@ class SpatioTemporalVariogram:
 
         """
         return self.fitted_model(lags)
+
+    @property
+    def parameters(self):
+        """Fitted space-time model parameters
+
+        Returns
+        -------
+        params : dict
+            For the metric model, the keys are ``'space_range'``,
+            ``'time_range'``, ``'sill'``, ``'nugget'`` and ``'shape'`` for
+            the stable or ``'smoothness'`` for the matern model. The
+            nugget is 0 if ``use_nugget=False``. For the product-sum model,
+            the keys are ``'k1'``, ``'k2'``, ``'k3'``, ``'Cx'`` and
+            ``'Ct'``, for the product model ``'Cx'`` and ``'Ct'``. The sum
+            model has no parameters.
+
+        Notes
+        -----
+        The ranges are effective ranges and the sill is the partial sill,
+        like in :func:`Variogram.describe <skgstat.Variogram.describe>`.
+        The time range is given in the internal time unit, which is seconds
+        for datetime-like input.
+
+        """
+        # if the model is not fitted, fit it
+        if self.cof is None:
+            self.fit()
+
+        if self._model_name != 'metric':
+            names = ('k1', 'k2', 'k3') if self._model_name == 'product-sum' else ()
+            params = dict(zip(names, self.cof))
+            params.update(self._model_params)
+            return params
+
+        params = dict(
+            space_range=self.cof[0],
+            time_range=self.cof[1],
+            sill=self.cof[2]
+        )
+        if self._marginal_model_name == 'stable':
+            params['shape'] = self.cof[3]
+        elif self._marginal_model_name == 'matern':
+            params['smoothness'] = self.cof[3]
+        params['nugget'] = self.cof[-1] if self._use_nugget else 0.
+
+        return params
 
     # ----------------------------------------------------------------------- #
     #                              PROPERTIES                                 #
