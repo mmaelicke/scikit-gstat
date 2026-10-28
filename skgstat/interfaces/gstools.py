@@ -196,7 +196,7 @@ def stvariogram_to_gstools(stvariogram, **kwargs):
     """
     Instantiate a spatio-temporal GSTools :any:`CovModel <gstools.CovModel>`.
 
-    .. versionadded:: 1.0.27
+    .. versionadded:: 1.0.28
 
     Only the metric space-time model can be exported. The CovModel is
     temporal, the time is the last dimension and the effective ranges of
@@ -285,7 +285,7 @@ def stvariogram_to_krige(stvariogram, **kwargs):
     """
     Instantiate a spatio-temporal GSTools Krige class.
 
-    .. versionadded:: 1.0.27
+    .. versionadded:: 1.0.28
 
     Only the metric space-time model can be exported.
     Note: the `fit_variogram` is always set to `False`
