@@ -1,7 +1,7 @@
 """
 8. Spatio-temporal Variograms
 =============================
-With version ``1.1``, SciKit-GStat implements the
+With version ``1.0.26``, SciKit-GStat implements the
 :class:`SpatioTemporalVariogram <skgstat.SpatioTemporalVariogram>` class.
 It replaces the :class:`SpaceTimeVariogram <skgstat.SpaceTimeVariogram>`, which
 is deprecated now. The main difference is the input data: the old class needed
@@ -121,3 +121,89 @@ fig = STV.plot(kind='contourf', figsize=(8, 5), levels=15)
 # %%
 # The 3D plot shows the experimental variogram along with the model.
 fig = STV.plot(kind='scatter', figsize=(8, 6))
+
+# %%
+# 8.6 Metric model
+# ----------------
+# The sum, product and product-sum models are separable: they are built from
+# the two marginal variograms. These need pairs at the same location and at
+# the same time, which irregular observations often do not have. The
+# ``'metric'`` model rescales the time axis into a space distance and applies
+# the ``marginal_model`` to the combined distance:
+#
+# .. math::
+#     \gamma (h,t) = \gamma_m \left(\sqrt{h^2 + \left(\frac{r_x}{r_t}t\right)^2}\right)
+#
+# Here, :math:`r_x` and :math:`r_t` are the effective ranges along the space
+# and time axis. The model is fitted to the experimental variogram directly.
+# The 12 hour values follow a daily cycle, which the metric model cannot
+# represent. Thus, we use the daily values at midnight for the full 15 days.
+daily = np.array(data_obj['values'])[::5][:10, ::24]
+days = pd.date_range('2019-05-01', periods=daily.shape[1], freq='D')
+
+MTV = skg.SpatioTemporalVariogram.from_grid(
+    coords,
+    daily,
+    times=days,
+    model='metric',
+    marginal_model='exponential'
+)
+
+# %%
+# The :func:`parameters <skgstat.SpatioTemporalVariogram.parameters>` hold the
+# fitted parameters by name. The time range is given in seconds.
+params = MTV.parameters
+print('Space range: %.1f' % params['space_range'])
+print('Time range: %.1f days' % (params['time_range'] / 86400))
+print('Sill: %.2f' % params['sill'])
+
+# %%
+# The space range is the largest space lag. Within the extent of the ten
+# stations, the semi-variance does not reach a sill along the space axis.
+fig = MTV.plot(kind='contourf', figsize=(8, 5), levels=15)
+
+# %%
+# 8.7 Kriging with GSTools
+# ------------------------
+# The metric model can be exported to a spatio-temporal GSTools
+# :any:`CovModel <gstools.CovModel>`. The time is appended as last dimension,
+# the length scales are the effective ranges of space and time. The separable
+# models cannot be exported, as GSTools only supports metric space-time models.
+model = MTV.to_gstools()
+print(model)
+
+# %%
+# :func:`to_gs_krige <skgstat.SpatioTemporalVariogram.to_gs_krige>` returns a
+# GSTools :any:`Krige <gstools.krige.Krige>` instance conditioned on all
+# observations. The kriging targets have to use the same time unit as the
+# variogram. For datetime input, these are the seconds since
+# :func:`time_origin <skgstat.SpatioTemporalVariogram.time_origin>`.
+# Here, we interpolate a time series every 3 hours at the first station.
+krige = MTV.to_gs_krige()
+
+targets = pd.date_range(days[0], days[-1], freq='3h')
+t = (targets - MTV.time_origin).total_seconds()
+x = np.full(t.size, coords[0, 0])
+y = np.full(t.size, coords[0, 1])
+field, variance = krige((x, y, t))
+
+fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+ax.fill_between(targets, field - np.sqrt(variance), field + np.sqrt(variance), alpha=0.3, label='kriging std')
+ax.plot(targets, field, '-b', label='kriging')
+ax.plot(days, daily[0], 'or', label='observations')
+ax.set_ylabel('soil temperature')
+ax.legend()
+fig.autofmt_xdate()
+
+# %%
+# The same instance interpolates a map at any time, here noon of May 8th,
+# which lies between two observation days.
+gx = np.linspace(coords[:, 0].min(), coords[:, 0].max(), 50)
+gy = np.linspace(coords[:, 1].min(), coords[:, 1].max(), 50)
+noon = (pd.Timestamp('2019-05-08 12:00') - MTV.time_origin).total_seconds()
+field, variance = krige.structured((gx, gy, [noon]))
+
+fig, ax = plt.subplots(1, 1, figsize=(6, 6))
+art = ax.imshow(field[:, :, 0].T, origin='lower', extent=(gx[0], gx[-1], gy[0], gy[-1]), cmap='RdYlBu_r')
+ax.plot(coords[:, 0], coords[:, 1], '+k')
+plt.colorbar(art, ax=ax)

@@ -7,7 +7,7 @@ import pandas as pd
 from numpy.testing import assert_array_almost_equal
 from sklearn.model_selection import GridSearchCV
 
-from skgstat import Variogram, OrdinaryKriging
+from skgstat import Variogram, OrdinaryKriging, SpatioTemporalVariogram
 from skgstat.interfaces import VariogramEstimator
 
 
@@ -288,6 +288,22 @@ class TestGstoolsInterface(unittest.TestCase):
             model.variogram(self.xi), self.yi, decimal=2
         )
 
+    def test_nugget_partial_sill(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        # this fit has a nugget larger than the partial sill
+        V = Variogram(self.c, self.v, model='spherical', normalize=False, use_nugget=True)
+        self.assertGreater(V.describe()['nugget'], 0.5)
+
+        xi = np.linspace(0, V.bins[-1], 100)
+        model = V.to_gstools()
+
+        self.assertAlmostEqual(model.var, V.describe()['sill'])
+        assert_array_almost_equal(
+            model.variogram(xi), V.transform(xi), decimal=2
+        )
+
 
 class TestGstoolsAllModels(unittest.TestCase):
     def setUp(self):
@@ -366,6 +382,112 @@ class TestGstoolsKrige(unittest.TestCase):
             gs_res.flatten(),
             decimal=1
         )
+
+
+class TestGstoolsSpatioTemporal(unittest.TestCase):
+    def setUp(self):
+        # irregular observations in two spatial dimensions and time
+        rng = np.random.default_rng(42)
+        self.c = np.column_stack((rng.uniform(0, 100, (60, 2)), rng.uniform(0, 20, 60)))
+        self.v = rng.normal(0, 1, 60) + self.c[:, 0] / 30
+
+        # grid of space and time lag pairs
+        h, t = np.meshgrid(np.linspace(0, 80, 9), np.linspace(0, 15, 6), indexing='ij')
+        self.lags = np.column_stack((h.flatten(), t.flatten()))
+
+        if not GSTOOLS_AVAILABLE:
+            print('GSTools not found, will skip all gstools interface tests')
+
+    def assert_model(self, model: str, cof):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        # set known parameters: r_x, r_t, sill, (shape), nugget
+        V = SpatioTemporalVariogram(self.c, self.v, model='metric', marginal_model=model, use_nugget=True)
+        V.cof = np.asarray(cof)
+        model = V.to_gstools()
+
+        # space lags along the diagonal of both spatial dimensions
+        h, t = self.lags.T
+        pos = np.array([h / np.sqrt(2), h / np.sqrt(2), t])
+
+        self.assertEqual(model.dim, 3)
+        self.assertEqual(model.spatial_dim, 2)
+        self.assertTrue(model.temporal)
+        assert_array_almost_equal(model.vario_spatial(pos), V.transform(self.lags), decimal=6)
+        assert_array_almost_equal(model.vario_axis(t, axis=2), V.transform(np.column_stack((0 * t, t))), decimal=6)
+
+    def test_spherical_model(self):
+        self.assert_model('spherical', [40., 8., 2., 0.3])
+
+    def test_exponential_model(self):
+        self.assert_model('exponential', [40., 8., 2., 0.3])
+
+    def test_gaussian_model(self):
+        self.assert_model('gaussian', [40., 8., 2., 0.3])
+
+    def test_cubic_model(self):
+        self.assert_model('cubic', [40., 8., 2., 0.3])
+
+    def test_stable_model(self):
+        self.assert_model('stable', [40., 8., 2., 1.2, 0.3])
+
+    def test_matern_model(self):
+        self.assert_model('matern', [40., 8., 2., 1.5, 0.3])
+
+    def test_fitted_model(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        V = SpatioTemporalVariogram(self.c, self.v, model='metric', marginal_model='exponential')
+        model = V.to_gstools()
+
+        self.assertEqual(model.nugget, 0.)
+        self.assertAlmostEqual(model.len_scale, V.parameters['space_range'])
+        assert_array_almost_equal(model.len_scale_vec, [V.cof[0], V.cof[0], V.cof[1]])
+
+    def test_kwargs(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        V = SpatioTemporalVariogram(self.c, self.v, model='metric')
+
+        self.assertEqual(V.to_gstools(var=5.).var, 5.)
+
+    def test_separable_models_raise(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        V = SpatioTemporalVariogram(self.c, self.v, model='product-sum')
+
+        for func in (V.to_gstools, V.to_gs_krige):
+            with self.assertRaises(ValueError) as e:
+                func()
+            self.assertIn('metric', str(e.exception))
+
+    def test_krige_reproduces_observations(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        V = SpatioTemporalVariogram(self.c, self.v, model='metric', marginal_model='gaussian')
+        krige = V.to_gs_krige()
+        field, _ = krige(self.c.T)
+
+        assert_array_almost_equal(field, self.v, decimal=4)
+
+    def test_krige_datetime(self):
+        if not GSTOOLS_AVAILABLE:  # pragma: no cover
+            return True
+
+        # time as datetime, kriging targets as seconds since time_origin
+        c = pd.DataFrame(self.c[:, :2], columns=['x', 'y'])
+        c['time'] = pd.Timestamp('2024-01-01') + pd.to_timedelta(self.c[:, 2], unit='h')
+        V = SpatioTemporalVariogram(c, self.v, model='metric')
+
+        t = (pd.DatetimeIndex(c['time']) - V.time_origin).total_seconds()
+        field, _ = V.to_gs_krige()((c.x, c.y, t))
+
+        assert_array_almost_equal(field, self.v, decimal=4)
 
 
 if __name__ == '__main__':

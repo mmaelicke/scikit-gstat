@@ -125,6 +125,44 @@ class TestProductSumModel(unittest.TestCase):
         )
 
 
+class TestMetricModel(unittest.TestCase):
+    def setUp(self):
+        self.lags = np.array([
+            [0., 0.],
+            [3., 0.],
+            [0., 1.],
+            [6., 2.],
+            [12., 4.]
+        ])
+
+    def test_default(self):
+        # space range = 10, time range = 2.5, sill = 5
+        assert_array_almost_equal(
+            stmodels.metric(self.lags, models.spherical, 10, 2.5, 5),
+            [0., 2.18, 2.84, 5., 5.],
+            decimal=2
+        )
+
+    def test_with_nugget(self):
+        assert_array_almost_equal(
+            stmodels.metric(self.lags, models.spherical, 10, 2.5, 5, 1),
+            [1., 3.18, 3.84, 6., 6.],
+            decimal=2
+        )
+
+    def test_as_space_model(self):
+        assert_array_almost_equal(
+            stmodels.metric(self.lags[:2], models.stable, 10, 2.5, 5, 1.5),
+            models.stable(self.lags[:2, 0], 10, 5, 1.5),
+            decimal=2
+        )
+
+    def test_single_lag(self):
+        self.assertAlmostEqual(
+            stmodels.metric((0., 2.5), models.exponential, 10, 2.5, 5),
+            models.exponential(10., 10, 5)
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

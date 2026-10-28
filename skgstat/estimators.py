@@ -70,7 +70,7 @@ def matheron(x):
 def cross_matheron(x):
     r"""Matheron Cross-Semi-Variance
 
-    .. versionadded:: 1.1
+    .. versionadded:: 1.0.25
 
     Calculates the Matheron Cross-Semi-Variance from an array of products of
     pairwise differences of two co-located variables. Unlike
