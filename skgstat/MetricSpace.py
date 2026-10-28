@@ -108,7 +108,8 @@ class MetricSpace(DistanceMethods):
         try:
             if self.dist_metric == "mahalanobis":
                 _ = pdist(
-                    self.coords[: self.coords.shape[1] + 1, :], metric=self.dist_metric
+                    self.coords[: self.coords.shape[1] + 1, :],
+                    metric=self.dist_metric, **self.dist_metric_kwargs
                 )
             else:
                 pdist(self.coords[:1, :], metric=self.dist_metric, **self.dist_metric_kwargs)
@@ -283,6 +284,7 @@ class ProbabalisticMetricSpace(MetricSpace):
         """
         self.coords = coords.copy()
         self.dist_metric = dist_metric
+        self.dist_metric_kwargs = {}
         self.max_dist = max_dist
         self.samples = samples
         if rnd is None:
@@ -600,6 +602,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
         self.coords = coords.copy()
         self.dist_metric = dist_metric
+        self.dist_metric_kwargs = {}
         self.shape = shape
         self.extent = extent
         self.res = np.mean(
