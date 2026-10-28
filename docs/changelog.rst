@@ -5,6 +5,15 @@ Changelog
 Version 1.1-rc
 ==============
 
+Version 1.0.27
+--------------
+
+- [Kriging] fixed :class:`OrdinaryKriging <skgstat.OrdinaryKriging>`, which dropped the ``dist_metric_kwargs`` of
+  the variogram when building the observation and query :class:`MetricSpace <skgstat.MetricSpace>`. Parameterized
+  distances like ``'seuclidean'``, ``'minkowski'`` or ``'mahalanobis'`` estimated their parameters from each
+  subset and selected different neighbors. The multiprocessing worker is not yet covered.
+- [MetricSpace] the ``'mahalanobis'`` validation uses a supplied ``VI``, so single point query spaces work.
+
 Version 1.0.26
 --------------
 
