@@ -284,6 +284,7 @@ class ProbabalisticMetricSpace(MetricSpace):
         """
         self.coords = coords.copy()
         self.dist_metric = dist_metric
+        self.dist_metric_kwargs = {}
         self.max_dist = max_dist
         self.samples = samples
         if rnd is None:
@@ -601,6 +602,7 @@ class RasterEquidistantMetricSpace(MetricSpace):
 
         self.coords = coords.copy()
         self.dist_metric = dist_metric
+        self.dist_metric_kwargs = {}
         self.shape = shape
         self.extent = extent
         self.res = np.mean(

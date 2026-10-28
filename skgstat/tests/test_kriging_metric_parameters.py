@@ -42,3 +42,17 @@ class TestKrigingMetricParameters(unittest.TestCase):
                             dist_metric_kwargs={'VI': np.eye(2)})
         self.assertEqual(space.dists.shape, (1, 1))
         assert_allclose(space.dists, 0.)
+
+    def test_sampled_variogram(self):
+        coordinates = np.random.default_rng(42).random((50, 2)) * 100
+        values = np.random.default_rng(13).random(50)
+        targets = np.array([[20., 30.], [60., 70.]])
+        settings = dict(min_points=3, max_points=10, solver='numpy')
+        expected = OrdinaryKriging(
+            Variogram(coordinates, values, fit_method='manual',
+                      fit_range=50., fit_sill=1.), **settings
+        ).transform(*targets.T)
+        sampled = Variogram(coordinates, values, samples=0.5,
+                            fit_method='manual', fit_range=50., fit_sill=1.)
+        kriging = OrdinaryKriging(sampled, **settings)
+        assert_allclose(kriging.transform(*targets.T), expected)
