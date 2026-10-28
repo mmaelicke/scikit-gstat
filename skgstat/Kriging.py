@@ -204,7 +204,9 @@ class OrdinaryKriging:
         """
         # store arguments to the instance
 
+        dist_metric_kwargs = {}
         if isinstance(variogram, Variogram):
+            dist_metric_kwargs = variogram.metric_space.dist_metric_kwargs
             if coordinates is None:
                 coordinates = variogram.coordinates
             if values is None:
@@ -237,11 +239,14 @@ class OrdinaryKriging:
             self.dist_metric_kwargs = coordinates.dist_metric_kwargs
         else:
             self.dist_metric = variogram["dist_func"]
-            self.dist_metric_kwargs = {}
+            self.dist_metric_kwargs = dist_metric_kwargs
         # coordinates and semivariance function
         if not isinstance(coordinates, MetricSpace):
             coordinates, values = self._remove_duplicated_coordinates(coordinates, values)
-            coordinates = MetricSpace(coordinates.copy(), self.dist_metric, self.range if self.sparse else None)
+            coordinates = MetricSpace(
+                coordinates.copy(), self.dist_metric,
+                self.range if self.sparse else None,
+                dist_metric_kwargs=self.dist_metric_kwargs)
         else:
             assert self.dist_metric == coordinates.dist_metric, "Distance metric of variogram differs from distance metric of coordinates"
             assert coordinates.max_dist is None or coordinates.max_dist == self.range, "Sparse coordinates must have max_dist == variogram.effective_range"
@@ -428,7 +433,10 @@ class OrdinaryKriging:
             self.perf_dist, self.perf_mat, self.perf_solv = [], [], []
 
         if len(x) != 1 or not isinstance(x[0], MetricSpace):
-            self.transform_coords = MetricSpace(np.column_stack(x).copy(), self.dist_metric, self.range if self.sparse else None)
+            self.transform_coords = MetricSpace(
+                np.column_stack(x).copy(), self.dist_metric,
+                self.range if self.sparse else None,
+                dist_metric_kwargs=self.dist_metric_kwargs)
         else:
             self.transform_coords = x[0]
         self.transform_coords_pair = MetricSpacePair(self.transform_coords, self.coords)
