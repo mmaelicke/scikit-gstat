@@ -1,7 +1,12 @@
 import unittest
+from unittest.mock import patch
+import importlib
+import math
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_equal, assert_allclose
+from scipy.spatial.distance import pdist
 
 from skgstat import DirectionalVariogram, Variogram
 
@@ -133,6 +138,74 @@ class TestDirectionalVariogramMethods(unittest.TestCase):
             [63.4, 26.6],
             decimal=1
         )
+
+
+class TestDirectionalAngles(unittest.TestCase):
+    @staticmethod
+    def make(coordinates):
+        class NoFit(DirectionalVariogram):
+            def fit(self, *args, **kwargs):
+                pass
+
+        return NoFit(coordinates, np.arange(len(coordinates)), bandwidth=1)
+
+    def test_pair_order_and_quadrants(self):
+        coordinates = np.array([[0., 0.], [2., 1.], [-2., 1.],
+                                [-2., -1.], [2., -1.], [0., 3.], [3., 0.]])
+        expected = []
+        for i in range(len(coordinates) - 1):
+            for j in range(i + 1, len(coordinates)):
+                dx, dy = coordinates[i] - coordinates[j]
+                expected.append(math.atan2(dy, dx) if dy != 0 else
+                                (math.pi if dx < 0 else 0.))
+        var = self.make(coordinates)
+        var._calc_direction_mask_data()
+        assert_allclose(var._angles, expected, atol=1e-15)
+        assert_array_equal(var._euclidean_dist, pdist(coordinates))
+
+    def test_preserves_subtraction_dtype_and_extra_dimensions(self):
+        coordinates = np.array([[1.1, 2.2, 3.], [4.4, 1.1, 2.],
+                                [0.1, 5.5, -1.], [2.2, 3.3, 5.]])
+        for dtype in [np.float16, np.float32, np.float64, np.longdouble,
+                      np.int16, np.int64]:
+            # Non-contiguous views must retain the same condensed order.
+            c = np.repeat(coordinates.astype(dtype), 2, axis=1)[:, ::2]
+            distances = pdist(c)
+            dx = pdist(c[:, [0]], lambda a, b: a[0] - b[0])
+            dy = pdist(c[:, [1]], lambda a, b: a[0] - b[0])
+            positive = np.arccos(dx / distances)
+            expected = np.where(dy >= 0, positive, -positive)
+            var = self.make(c)
+            var._calc_direction_mask_data()
+            assert_array_equal(var._angles, expected, err_msg=str(dtype))
+            assert_array_equal(var._euclidean_dist, distances)
+
+    def test_coincident_points_and_cache(self):
+        c = np.array([[0., 0.], [0., 0.], [2., 1.], [-2., -1.]])
+        var = self.make(c)
+        with np.errstate(invalid='ignore'):
+            var._calc_direction_mask_data()
+        angles = var._angles
+        self.assertTrue(np.isnan(angles[0]))
+        var._calc_direction_mask_data()
+        self.assertIs(var._angles, angles)
+        with np.errstate(invalid='ignore'):
+            var._calc_direction_mask_data(force=True)
+        self.assertIsNot(var._angles, angles)
+        assert_array_equal(var._angles, angles)
+
+    def test_no_python_distance_callback_per_pair(self):
+        module = importlib.import_module('skgstat.DirectionalVariogram')
+        var = self.make(np.arange(128).reshape(64, 2))
+
+        def compiled_distance(coordinates, metric):
+            # A callable metric invokes Python once for every pair, which
+            # dominated construction time in issue #187.
+            self.assertFalse(callable(metric))
+            return pdist(coordinates, metric)
+
+        with patch.object(module, 'pdist', side_effect=compiled_distance):
+            var._calc_direction_mask_data()
 
 
 if __name__ == '__main__':

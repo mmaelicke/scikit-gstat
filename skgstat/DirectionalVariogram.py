@@ -401,16 +401,21 @@ class DirectionalVariogram(Variogram):
         # (a - b).[1,0] = ||a - b|| * ||[1,0]|| * cos(v)
         # cos(v) = (a - b).[1,0] / ||a - b||
         # cos(v) = (a.[1,0] - b.[1,0]) / ||a - b||
-        scalar = pdist(_x[:, [0]], lambda a, b: a[0] - b[0])
-        pos_angles = np.arccos(scalar / self._euclidean_dist)
+        # Fill the condensed pdist order one row at a time. Calling a Python
+        # distance function for each pair makes this much slower than the
+        # other preprocessing steps. Rows also avoid full square temporaries.
+        angles = np.empty_like(self._euclidean_dist)
+        offset = 0
+        for i in range(len(_x) - 1):
+            end = offset + len(_x) - i - 1
+            scalar = np.asarray(_x[i, 0] - _x[i + 1:, 0], dtype=float)
+            pos_angles = np.arccos(scalar / self._euclidean_dist[offset:end])
 
-        # cos(v) for [2,1] and [2, -1] is the same,
-        # but v is not (v vs -v), fix that.
-        ydiff = pdist(_x[:, [1]], lambda a, b: a[0] - b[0])
-
-        # store the angle or negative angle, depending on the
-        # amount of the x coordinate
-        self._angles = np.where(ydiff >= 0, pos_angles, -pos_angles)
+            # cos(v) is the same above and below the x-axis; retain the sign.
+            ydiff = np.asarray(_x[i, 1] - _x[i + 1:, 1], dtype=float)
+            angles[offset:end] = np.where(ydiff >= 0, pos_angles, -pos_angles)
+            offset = end
+        self._angles = angles
 
     @property
     def azimuth(self):
