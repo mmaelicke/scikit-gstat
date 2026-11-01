@@ -440,9 +440,7 @@ class DirectionalVariogram(Variogram):
         else:
             self._azimuth = angle
 
-        # reset groups and mask cache on azimuth change
-        self._direction_mask_cache = None
-        self._groups = None
+        self._invalidate_directional_caches()
 
     @property
     def tolerance(self):
@@ -472,9 +470,7 @@ class DirectionalVariogram(Variogram):
         else:
             self._tolerance = angle
 
-        # reset groups and mask on tolerance change
-        self._direction_mask_cache = None
-        self._groups = None
+        self._invalidate_directional_caches()
 
     @property
     def bandwidth(self):
@@ -515,9 +511,7 @@ class DirectionalVariogram(Variogram):
         else:
             self._bandwidth = width
 
-        # reset groups and direction mask cache on bandwidth change
-        self._direction_mask_cache = None
-        self._groups = None
+        self._invalidate_directional_caches()
 
     def set_directional_model(self, model_name):
         """Set new directional model
@@ -571,8 +565,17 @@ class DirectionalVariogram(Variogram):
                              'model name, or it has to be the search area '
                              'itself')
 
-        # reset the groups as the directional model changed
+        self._invalidate_directional_caches()
+
+    def _invalidate_directional_caches(self):
+        # Directions change which pairs contribute to binning and fitting,
+        # but not the cached coordinate angles and Euclidean distances.
+        self._direction_mask_cache = None
         self._groups = None
+        self._bin_count = None
+        if getattr(self, '_bin_func_name', None) != 'custom_bin_edges':
+            self._bins = None
+        self.cof, self.cov = None, None
 
     @property
     def bins(self):
