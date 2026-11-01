@@ -646,6 +646,20 @@ class OrdinaryKriging:
         # plus the lagrange factor
         sigma = sum(b[:-1] * _lambda[:-1]) + _lambda[-1]
 
+        if sigma < 0:
+            # Near an observation, the terms above can cancel to roundoff.
+            # Evaluate the same error variance relative to that observation:
+            # Var(Z(p) - Z(j) - sum(w_i * (Z(i) - Z(j)))).
+            j = np.argmin(b[:-1])
+            other = np.arange(n) != j
+            weights = _lambda[:-1][other]
+            gamma = a[:-1, j][other]
+            covariance = (gamma[:, None] + gamma[None, :]
+                          - a[:-1, :-1][np.ix_(other, other)])
+            cross_covariance = b[j] + gamma - b[:-1][other]
+            sigma = (2 * b[j] - 2 * weights.dot(cross_covariance)
+                     + weights.dot(covariance).dot(weights))
+
         # calculate Z
         Z = _lambda[:-1].dot(values)
 

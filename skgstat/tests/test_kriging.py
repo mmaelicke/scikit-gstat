@@ -181,6 +181,37 @@ class TestEstimatedNugget(unittest.TestCase):
                 assert_array_almost_equal(estimated.sigma, exact.sigma)
 
 
+class TestKrigingVariance(unittest.TestCase):
+    def test_standard_deviation_at_observations(self):
+        coordinates = np.random.default_rng(123).uniform(0, 1, (12, 2))
+        for scale in (1e-6, 1., 1e6):
+            values = np.arange(12.) * scale
+            variogram = Variogram(
+                coordinates, values, model='exponential',
+                fit_method='manual', fit_range=2., fit_sill=scale ** 2)
+            for solver in ('inv', 'numpy', 'scipy'):
+                kriging = OrdinaryKriging(
+                    variogram, min_points=3, max_points=12, solver=solver)
+                result = kriging.transform(*coordinates.T)
+                np.testing.assert_allclose(result, values, atol=scale * 1e-11)
+                with np.errstate(invalid='raise'):
+                    self.assertTrue(np.all(np.isfinite(np.sqrt(kriging.sigma))))
+                np.testing.assert_allclose(
+                    kriging.sigma, 0., atol=scale ** 2 * 1e-13)
+
+    def test_invalid_variogram_is_not_clipped(self):
+        coordinates = np.array([[0., 0.], [1., 0.], [0., 1.], [1., 1.]])
+        variogram = Variogram(
+            coordinates, np.arange(4.), fit_method='manual',
+            fit_range=10., fit_sill=1.)
+        kriging = OrdinaryKriging(variogram, min_points=4, max_points=4)
+        # h**4 is not a valid variogram. Its negative error variances must
+        # remain visible rather than being replaced by a plausible zero.
+        kriging.gamma_model = lambda h: np.asarray(h) ** 4
+        kriging.transform([.25, .5], [.25, .5])
+        np.testing.assert_allclose(kriging.sigma, [-.6328125, -1.])
+
+
 class TestPerformance(unittest.TestCase):
     """
     The TestPerformance class is not a real unittest. It will always be true.
